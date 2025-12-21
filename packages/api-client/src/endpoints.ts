@@ -1,4 +1,3 @@
-import { ApiClient } from './client';
 import type {
   User,
   AuthTokens,
@@ -6,34 +5,43 @@ import type {
   Menu,
   Order,
   Table,
-} from '@restorio/types';
+} from "@restorio/types";
+
+import { type ApiClient } from "./client";
 
 export class RestorioApi {
   constructor(private client: ApiClient) {}
 
   auth = {
     login: (email: string, password: string): Promise<AuthTokens> =>
-      this.client.post('/auth/login', { email, password }),
+      this.client.post("/auth/login", { email, password }),
     
-    register: (data: { email: string; password: string; firstName: string; lastName: string }): Promise<AuthTokens> =>
-      this.client.post('/auth/register', data),
+    register: (
+      data: {
+        email: string;
+        password: string;
+        firstName: string;
+        lastName: string;
+      },
+    ): Promise<AuthTokens> =>
+      this.client.post("/auth/register", data),
     
     refresh: (refreshToken: string): Promise<AuthTokens> =>
-      this.client.post('/auth/refresh', { refreshToken }),
+      this.client.post("/auth/refresh", { refreshToken }),
     
     me: (): Promise<User> =>
-      this.client.get('/auth/me'),
+      this.client.get("/auth/me"),
   };
 
   restaurants = {
     list: (): Promise<Restaurant[]> =>
-      this.client.get('/restaurants'),
+      this.client.get("/restaurants"),
     
     get: (id: string): Promise<Restaurant> =>
       this.client.get(`/restaurants/${id}`),
     
     create: (data: Partial<Restaurant>): Promise<Restaurant> =>
-      this.client.post('/restaurants', data),
+      this.client.post("/restaurants", data),
     
     update: (id: string, data: Partial<Restaurant>): Promise<Restaurant> =>
       this.client.put(`/restaurants/${id}`, data),

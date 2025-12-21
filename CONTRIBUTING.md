@@ -98,8 +98,8 @@ refactor: simplify tenant resolution logic
 
 1. Update documentation if you're changing functionality
 2. Add tests for new features
-3. Ensure all tests pass: `npm test`
-4. Format code: `npm run format`
+3. Ensure all tests pass: `bun test`
+4. Format code: `bun run format`
 5. Update the CHANGELOG if applicable
 6. Request review from maintainers
 

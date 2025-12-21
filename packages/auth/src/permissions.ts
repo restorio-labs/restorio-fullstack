@@ -1,14 +1,14 @@
-import { UserRole } from '@restorio/types';
+import { UserRole } from "@restorio/types";
 
 export const Permissions = {
-  MANAGE_RESTAURANTS: 'manage_restaurants',
-  MANAGE_MENUS: 'manage_menus',
-  MANAGE_ORDERS: 'manage_orders',
-  VIEW_ORDERS: 'view_orders',
-  MANAGE_TABLES: 'manage_tables',
-  MANAGE_USERS: 'manage_users',
-  VIEW_ANALYTICS: 'view_analytics',
-  MANAGE_SETTINGS: 'manage_settings',
+  MANAGE_RESTAURANTS: "manage_restaurants",
+  MANAGE_MENUS: "manage_menus",
+  MANAGE_ORDERS: "manage_orders",
+  VIEW_ORDERS: "view_orders",
+  MANAGE_TABLES: "manage_tables",
+  MANAGE_USERS: "manage_users",
+  VIEW_ANALYTICS: "view_analytics",
+  MANAGE_SETTINGS: "manage_settings",
 } as const;
 
 export type Permission = typeof Permissions[keyof typeof Permissions];
@@ -61,7 +61,7 @@ const rolePermissions: Record<UserRole, Permission[]> = {
 };
 
 export const hasPermission = (role: UserRole, permission: Permission): boolean => {
-  return rolePermissions[role]?.includes(permission) ?? false;
+  return rolePermissions[role].includes(permission);
 };
 
 export const hasAnyPermission = (role: UserRole, permissions: Permission[]): boolean => {

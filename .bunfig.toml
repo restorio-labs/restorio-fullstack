@@ -1,0 +1,13 @@
+[install]
+# Use workspaces for monorepo
+workspace = true
+
+# Auto-install peer dependencies
+peer = true
+
+# Production-only installs
+production = false
+
+[install.scopes]
+# Configure scoped packages if needed
+

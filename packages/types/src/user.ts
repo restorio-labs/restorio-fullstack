@@ -1,10 +1,10 @@
 export enum UserRole {
-  SUPER_ADMIN = 'super_admin',
-  ADMIN = 'admin',
-  OWNER = 'owner',
-  MANAGER = 'manager',
-  WAITER = 'waiter',
-  KITCHEN_STAFF = 'kitchen_staff',
+  SUPER_ADMIN = "super_admin",
+  ADMIN = "admin",
+  OWNER = "owner",
+  MANAGER = "manager",
+  WAITER = "waiter",
+  KITCHEN_STAFF = "kitchen_staff",
 }
 
 export interface User {

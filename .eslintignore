@@ -1,0 +1,12 @@
+node_modules
+dist
+build
+.next
+coverage
+*.config.js
+*.config.ts
+e2e-tests
+bun.lockb
+package-lock.json
+*.log
+

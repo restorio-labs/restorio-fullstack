@@ -4,7 +4,7 @@
 
 ### Prerequisites
 
-- Node.js 18+ and npm 9+
+- [Bun](https://bun.sh) 1.0+ (fast JavaScript runtime)
 - Docker and Docker Compose
 - Git
 
@@ -18,7 +18,11 @@ cd restorio-fullstack
 
 2. Install dependencies:
 ```bash
-npm install
+# Install Bun if you haven't already
+curl -fsSL https://bun.sh/install | bash
+
+# Install all dependencies
+bun install
 ```
 
 3. Set up environment variables:
@@ -66,22 +70,22 @@ restorio-fullstack/
 
 ```bash
 # Install all dependencies
-npm install
+bun install
 
 # Run all apps in dev mode
-npm run dev
+bun run dev
 
 # Build all apps
-npm run build
+bun run build
 
 # Lint all apps
-npm run lint
+bun run lint
 
 # Format all files
-npm run format
+bun run format
 
 # Clean all build artifacts
-npm run clean
+bun run clean
 ```
 
 ### Individual Apps
@@ -89,31 +93,31 @@ npm run clean
 #### Public Web (Next.js)
 ```bash
 cd apps/public-web
-npm run dev     # Start dev server on port 3000
-npm run build   # Build for production
-npm run start   # Start production server
+bun run dev     # Start dev server on port 3000
+bun run build   # Build for production
+bun run start   # Start production server
 ```
 
 #### Admin Panel (React + Vite)
 ```bash
 cd apps/admin-panel
-npm run dev     # Start dev server on port 3001
-npm run build   # Build for production
-npm run preview # Preview production build
+bun run dev     # Start dev server on port 3001
+bun run build   # Build for production
+bun run preview # Preview production build
 ```
 
 #### Kitchen Panel (React + Vite)
 ```bash
 cd apps/kitchen-panel
-npm run dev     # Start dev server on port 3002
-npm run build   # Build for production
+bun run dev     # Start dev server on port 3002
+bun run build   # Build for production
 ```
 
 #### Tablet App (React + Vite)
 ```bash
 cd apps/tablet-app
-npm run dev     # Start dev server on port 3003
-npm run build   # Build for production
+bun run dev     # Start dev server on port 3003
+bun run build   # Build for production
 ```
 
 #### API (FastAPI)
@@ -250,16 +254,88 @@ Add MongoDB to `docker-compose.yml`:
 
 ## Testing
 
-### Backend Tests
+### Unit Tests (Vitest)
+
+Unit tests are located in `tests-unit/` folders within each package and app.
+
+```bash
+# Run all unit tests
+bun run test:unit
+
+# Run tests in watch mode
+bun run test:unit --watch
+
+# Run tests for a specific package
+cd packages/auth
+bun run test
+
+# Run tests with coverage
+bun run test:unit --coverage
+```
+
+**Test Structure:**
+- `packages/*/tests-unit/` - Shared package tests
+- `apps/*/tests-unit/` - Application-specific tests
+
+### E2E Tests (Playwright)
+
+End-to-end tests are in the `e2e-tests/` folder.
+
+```bash
+# Install Playwright browsers (first time)
+cd e2e-tests
+bunx playwright install
+
+# Run all E2E tests
+bun run test:e2e
+
+# Run tests in UI mode (interactive)
+bun run test:e2e:ui
+
+# Run tests in headed mode (see browser)
+cd e2e-tests
+bun run test:headed
+
+# Debug tests
+cd e2e-tests
+bun run test:debug
+```
+
+**E2E Test Structure:**
+- `e2e-tests/tests/` - Test files
+- `e2e-tests/fixtures/` - Test helpers and fixtures
+
+### Backend Tests (Python)
+
 ```bash
 cd apps/api
 pytest
 ```
 
-### Frontend Tests
-```bash
-cd apps/admin-panel
-npm test
+### Writing Tests
+
+**Unit Test Example:**
+```typescript
+import { describe, it, expect } from 'vitest';
+import { hasPermission, Permissions, UserRole } from '@restorio/auth';
+
+describe('Permissions', () => {
+  it('should allow owner to manage menus', () => {
+    expect(hasPermission(UserRole.OWNER, Permissions.MANAGE_MENUS)).toBe(true);
+  });
+});
+```
+
+**E2E Test Example:**
+```typescript
+import { test, expect } from '@playwright/test';
+
+test('user can login', async ({ page }) => {
+  await page.goto('/login');
+  await page.fill('[name="email"]', 'user@example.com');
+  await page.click('button[type="submit"]');
+  await expect(page).toHaveURL('/dashboard');
+});
 ```
 
 ## Troubleshooting
@@ -282,15 +358,15 @@ docker compose up -d --build
 ### Module resolution errors
 ```bash
 # Clear all node_modules and reinstall
-npm run clean
-rm -rf node_modules
-npm install
+bun run clean
+rm -rf node_modules bun.lockb
+bun install
 ```
 
 ### TypeScript errors
 ```bash
 # Rebuild TypeScript projects
-npm run build
+bun run build
 ```
 
 ## Git Workflow
