@@ -22,7 +22,7 @@ export class ApiClient {
     this.client.interceptors.request.use((requestConfig) => {
       const token = this.config.getAccessToken?.();
 
-      if (token) {
+      if (token && requestConfig.headers) {
         requestConfig.headers.Authorization = `Bearer ${token}`;
       }
 
