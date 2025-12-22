@@ -28,8 +28,8 @@ uv pip install .
 # Or for development (editable install)
 uv pip install -e .
 
-# Generate lock file (optional, for reproducible builds)
-uv lock
+# Generate requirements.txt for Docker (auto-generated, don't commit)
+uv pip compile pyproject.toml -o requirements.txt
 ```
 
 ### Run Locally
@@ -64,17 +64,20 @@ Once running, visit:
 ### Add a Dependency
 
 ```bash
-# Add a new package
-uv pip install package-name
+# 1. Add to pyproject.toml dependencies list
+# 2. Regenerate requirements.txt (for Docker)
+uv pip compile pyproject.toml -o requirements.txt
 
-# Update pyproject.toml manually, then:
+# Or use uv lock (alternative approach)
 uv lock
 ```
 
-### Lock Dependencies
+### Update Dependencies
 
 ```bash
-# Generate/update lock file
-uv lock
+# After modifying pyproject.toml, regenerate requirements.txt
+uv pip compile pyproject.toml -o requirements.txt
+
+# This ensures Docker builds use the same resolved dependencies
 ```
 

@@ -4,7 +4,8 @@
 
 ### Prerequisites
 
-- [Bun](https://bun.sh) 1.0+ (fast JavaScript runtime)
+- [Python](https://www.python.org/downloads/release/python-31212/) 3.12.x
+- [Bun](https://bun.sh) 1.3.5+ (fast JavaScript runtime)
 - Docker and Docker Compose
 - Git
 
@@ -33,16 +34,37 @@ cp .env.example .env
 
 4. Start the development environment:
 ```bash
+# Copy environment file
+cp .env.example .env
+# Edit .env with your MongoDB Atlas connection string
+
+# Start all services
 docker compose up -d
+
+# Verify services are running
+docker compose ps
 ```
 
-5. Access the services:
+For detailed Docker documentation, see [DOCKER.md](./DOCKER.md).
+
+5. Start frontend apps:
+```bash
+# Install dependencies (first time)
+bun install
+
+# Start all frontend apps
+bun run dev
+```
+
+6. Access the services:
 - API: http://localhost:8000
 - API Docs: http://localhost:8000/docs
-- Admin Panel: http://localhost:3001
-- Kitchen Panel: http://localhost:3002
-- Tablet App: http://localhost:3003
-- Public Web: http://localhost:3000
+- Public Web: http://localhost:3000 (Next.js)
+- Admin Panel: http://localhost:3001 (React)
+- Kitchen Panel: http://localhost:3002 (React)
+- Tablet App: http://localhost:3003 (React)
+
+For detailed startup instructions, see [START.md](./START.md).
 
 ## Project Structure
 

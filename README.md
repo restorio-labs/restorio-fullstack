@@ -2,7 +2,6 @@
 
 ## Multi-tenant Restaurant Creation & Management System
 
----
 
 ## 1. Project Overview
 

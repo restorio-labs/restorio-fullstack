@@ -11,4 +11,5 @@ ENV/
 dist/
 build/
 .uv/
+requirements.txt
 
