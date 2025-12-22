@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
-import { TokenStorage } from "../src/storage";
+import { TokenStorage } from "../../src/storage";
 
 describe("TokenStorage", () => {
   const mockGetItem = vi.fn();

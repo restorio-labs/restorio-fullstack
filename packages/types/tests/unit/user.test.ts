@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { UserRole } from "../src/user";
+import { UserRole } from "../../src/user";
 
 describe("User Types", () => {
   it("should have all required user roles", () => {

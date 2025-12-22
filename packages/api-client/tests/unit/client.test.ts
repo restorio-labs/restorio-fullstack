@@ -1,7 +1,7 @@
 import axios, { type AxiosInstance } from "axios";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { ApiClient } from "../src/client";
+import { ApiClient } from "../../src/client";
 
 vi.mock("axios");
 const mockedAxios = vi.mocked(axios);
