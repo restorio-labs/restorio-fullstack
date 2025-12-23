@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": true,
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@restorio/ui": ["./packages/ui/src"],
+      "@restorio/ui/*": ["./packages/ui/src/*"],
+      "@restorio/types": ["./packages/types/src"],
+      "@restorio/types/*": ["./packages/types/src/*"],
+      "@restorio/api-client": ["./packages/api-client/src"],
+      "@restorio/api-client/*": ["./packages/api-client/src/*"],
+      "@restorio/auth": ["./packages/auth/src"],
+      "@restorio/auth/*": ["./packages/auth/src/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist", "build", ".next"]
+}
