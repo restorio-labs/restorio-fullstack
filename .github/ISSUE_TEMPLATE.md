@@ -14,7 +14,6 @@ Focus on outcomes, not implementation details.
 
 ## Acceptance Criteria
 
-
 - [ ] Feature behaves as described
 - [ ] Multi-tenant rules are respected
 - [ ] RBAC permissions enforced

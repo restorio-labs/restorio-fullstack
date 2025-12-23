@@ -11,7 +11,7 @@ export const Permissions = {
   MANAGE_SETTINGS: "manage_settings",
 } as const;
 
-export type Permission = typeof Permissions[keyof typeof Permissions];
+export type Permission = (typeof Permissions)[keyof typeof Permissions];
 
 const rolePermissions: Record<UserRole, Permission[]> = {
   [UserRole.SUPER_ADMIN]: [
@@ -51,24 +51,27 @@ const rolePermissions: Record<UserRole, Permission[]> = {
     Permissions.MANAGE_TABLES,
     Permissions.VIEW_ANALYTICS,
   ],
-  [UserRole.WAITER]: [
-    Permissions.VIEW_ORDERS,
-    Permissions.MANAGE_ORDERS,
-  ],
-  [UserRole.KITCHEN_STAFF]: [
-    Permissions.VIEW_ORDERS,
-  ],
+  [UserRole.WAITER]: [Permissions.VIEW_ORDERS, Permissions.MANAGE_ORDERS],
+  [UserRole.KITCHEN_STAFF]: [Permissions.VIEW_ORDERS],
 };
 
-export const hasPermission = (role: UserRole, permission: Permission): boolean => {
+export const hasPermission = (
+  role: UserRole,
+  permission: Permission
+): boolean => {
   return rolePermissions[role].includes(permission);
 };
 
-export const hasAnyPermission = (role: UserRole, permissions: Permission[]): boolean => {
+export const hasAnyPermission = (
+  role: UserRole,
+  permissions: Permission[]
+): boolean => {
   return permissions.some((permission) => hasPermission(role, permission));
 };
 
-export const hasAllPermissions = (role: UserRole, permissions: Permission[]): boolean => {
+export const hasAllPermissions = (
+  role: UserRole,
+  permissions: Permission[]
+): boolean => {
   return permissions.every((permission) => hasPermission(role, permission));
 };
-

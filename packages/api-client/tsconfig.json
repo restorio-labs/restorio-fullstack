@@ -5,9 +5,6 @@
     "rootDir": "../../"
   },
   "include": ["src/**/*"],
-  "references": [
-    { "path": "../types" }
-  ],
+  "references": [{ "path": "../types" }],
   "exclude": ["node_modules", "dist"]
 }
-

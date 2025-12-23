@@ -87,6 +87,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 - `chore:` maintenance tasks
 
 Examples:
+
 ```
 feat: add user authentication endpoint
 fix: resolve order status update bug
@@ -120,4 +121,3 @@ refactor: simplify tenant resolution logic
 ## Questions?
 
 Feel free to open an issue for questions or discussions about contributing.
-

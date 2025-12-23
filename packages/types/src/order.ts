@@ -49,4 +49,3 @@ export interface SelectedModifier {
   name: string;
   priceAdjustment: number;
 }
-

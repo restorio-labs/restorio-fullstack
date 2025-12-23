@@ -23,4 +23,3 @@ describe("Button", () => {
     expect(button.className).toContain("btn-lg");
   });
 });
-

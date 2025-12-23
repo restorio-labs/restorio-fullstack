@@ -5,7 +5,9 @@ import { hasPermission, Permissions } from "../../src/permissions";
 
 describe("Permissions", () => {
   it("should allow super admin to manage restaurants", () => {
-    expect(hasPermission(UserRole.SUPER_ADMIN, Permissions.MANAGE_RESTAURANTS)).toBe(true);
+    expect(
+      hasPermission(UserRole.SUPER_ADMIN, Permissions.MANAGE_RESTAURANTS)
+    ).toBe(true);
   });
 
   it("should allow owner to manage menus", () => {
@@ -13,15 +15,20 @@ describe("Permissions", () => {
   });
 
   it("should not allow waiter to manage users", () => {
-    expect(hasPermission(UserRole.WAITER, Permissions.MANAGE_USERS)).toBe(false);
+    expect(hasPermission(UserRole.WAITER, Permissions.MANAGE_USERS)).toBe(
+      false
+    );
   });
 
   it("should allow kitchen staff to view orders", () => {
-    expect(hasPermission(UserRole.KITCHEN_STAFF, Permissions.VIEW_ORDERS)).toBe(true);
+    expect(hasPermission(UserRole.KITCHEN_STAFF, Permissions.VIEW_ORDERS)).toBe(
+      true
+    );
   });
 
   it("should not allow kitchen staff to manage orders", () => {
-    expect(hasPermission(UserRole.KITCHEN_STAFF, Permissions.MANAGE_ORDERS)).toBe(false);
+    expect(
+      hasPermission(UserRole.KITCHEN_STAFF, Permissions.MANAGE_ORDERS)
+    ).toBe(false);
   });
 });
-

@@ -56,6 +56,7 @@ docker run -p 8000:8000 restorio-api
 ## API Documentation
 
 Once running, visit:
+
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
 
@@ -80,4 +81,3 @@ uv pip compile pyproject.toml -o requirements.txt
 
 # This ensures Docker builds use the same resolved dependencies
 ```
-

@@ -43,20 +43,21 @@ e2e-tests/
 ## Writing Tests
 
 ```typescript
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test('user can login', async ({ page }) => {
-  await page.goto('/login');
-  await page.fill('[name="email"]', 'user@example.com');
-  await page.fill('[name="password"]', 'password123');
+test("user can login", async ({ page }) => {
+  await page.goto("/login");
+  await page.fill('[name="email"]', "user@example.com");
+  await page.fill('[name="password"]', "password123");
   await page.click('button[type="submit"]');
-  await expect(page).toHaveURL('/dashboard');
+  await expect(page).toHaveURL("/dashboard");
 });
 ```
 
 ## Configuration
 
 Tests are configured in `playwright.config.ts`. The config:
+
 - Automatically starts dev servers before tests
 - Runs tests in parallel
 - Generates HTML reports
@@ -66,7 +67,7 @@ Tests are configured in `playwright.config.ts`. The config:
 ## CI/CD
 
 In CI environments, tests will:
+
 - Retry failed tests twice
 - Run with a single worker
 - Generate trace files for debugging
-

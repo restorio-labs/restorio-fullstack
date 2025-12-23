@@ -2,7 +2,6 @@
 
 ## Multi-tenant Restaurant Creation & Management System
 
-
 ## 1. Project Overview
 
 ### Project name
@@ -21,11 +20,11 @@ The platform is designed with scalability, security, and cost-efficiency in mind
 
 Small restaurant owners often lack affordable, integrated digital tools that allow them to:
 
-* present a modern restaurant website and menu,
-* accept digital orders without waiter involvement,
-* manage staff workflows and kitchen operations,
-* integrate modern online payments,
-* analyze sales and customer behavior.
+- present a modern restaurant website and menu,
+- accept digital orders without waiter involvement,
+- manage staff workflows and kitchen operations,
+- integrate modern online payments,
+- analyze sales and customer behavior.
 
 Existing solutions are often expensive, closed-source, or overly complex for small businesses. Restorio aims to fill this gap.
 
@@ -33,21 +32,21 @@ Existing solutions are often expensive, closed-source, or overly complex for sma
 
 ## 3. Project Goals
 
-* Provide an easy-to-use restaurant management platform
-* Enable waiterless ordering via QR codes and tablets
-* Support multi-location restaurants
-* Ensure secure, multi-tenant architecture
-* Offer extensible CMS and analytics features
-* Remain cost-efficient and deployable without vendor lock-in
+- Provide an easy-to-use restaurant management platform
+- Enable waiterless ordering via QR codes and tablets
+- Support multi-location restaurants
+- Ensure secure, multi-tenant architecture
+- Offer extensible CMS and analytics features
+- Remain cost-efficient and deployable without vendor lock-in
 
 ---
 
 ## 4. Target Users
 
-* **Primary users:** Small restaurant owners (single or multiple locations)
-* **Secondary users:** Waiters, kitchen staff
-* **End users:** Restaurant customers (no login required)
-* **Administrators:** Platform admins and super-admins
+- **Primary users:** Small restaurant owners (single or multiple locations)
+- **Secondary users:** Waiters, kitchen staff
+- **End users:** Restaurant customers (no login required)
+- **Administrators:** Platform admins and super-admins
 
 ---
 
@@ -55,11 +54,11 @@ Existing solutions are often expensive, closed-source, or overly complex for sma
 
 This project emphasizes:
 
-* Multi-tenant SaaS architecture
-* Distributed systems (async processing, WebSockets)
-* Modular backend design
-* CMS extensibility via shared packages
-* Security, RBAC, and regulatory compliance
+- Multi-tenant SaaS architecture
+- Distributed systems (async processing, WebSockets)
+- Modular backend design
+- CMS extensibility via shared packages
+- Security, RBAC, and regulatory compliance
 
 ---
 
@@ -69,56 +68,56 @@ This project emphasizes:
 
 #### Restaurant Management
 
-* Restaurant and venue creation
-* Multi-location support
-* Menu management (categories, items, modifiers)
-* Allergens and nutritional metadata
-* Table management with QR codes
+- Restaurant and venue creation
+- Multi-location support
+- Menu management (categories, items, modifiers)
+- Allergens and nutritional metadata
+- Table management with QR codes
 
 #### Ordering System
 
-* QR-based browser ordering (anonymous sessions)
-* PWA-based ordering
-* Tablet/kiosk ordering
-* Order modification and cancellation (time-limited)
-* Split bills
-* Payment processing (Stripe, Przelewy24)
+- QR-based browser ordering (anonymous sessions)
+- PWA-based ordering
+- Tablet/kiosk ordering
+- Order modification and cancellation (time-limited)
+- Split bills
+- Payment processing (Stripe, Przelewy24)
 
 #### Staff & Permissions
 
-* Role-Based Access Control (RBAC)
-* Roles: Owner, Manager, Waiter, Kitchen Staff, Admin, Super-Admin
-* Custom role creation
+- Role-Based Access Control (RBAC)
+- Roles: Owner, Manager, Waiter, Kitchen Staff, Admin, Super-Admin
+- Custom role creation
 
 #### CMS
 
-* Static pages (About, Contact)
-* Dynamic pages (Events, Promotions)
-* SEO metadata per page
+- Static pages (About, Contact)
+- Dynamic pages (Events, Promotions)
+- SEO metadata per page
 
 #### Analytics (Basic)
 
-* Orders per day
-* Revenue overview
-* Popular menu items
-* Table turnover time
-* Basic sales display
+- Orders per day
+- Revenue overview
+- Popular menu items
+- Table turnover time
+- Basic sales display
 
 #### Infrastructure
 
-* Dockerized services
-* Real-time order updates
-* Async task processing
+- Dockerized services
+- Real-time order updates
+- Async task processing
 
 ---
 
 ### Explicitly Out of Scope (MVP)
 
-* Offline mode
-* Fiscal printer integration
-* Inventory and stock management
-* Staff scheduling
-* Loyalty programs
+- Offline mode
+- Fiscal printer integration
+- Inventory and stock management
+- Staff scheduling
+- Loyalty programs
 
 These features are intentionally excluded to control scope and complexity.
 
@@ -151,24 +150,21 @@ NGINX (Mikrus VPS)
 
 ### Hybrid Frontend Strategy
 
-* **Next.js**
+- **Next.js**
+  - Public restaurant websites
+  - SEO and metadata handling
+  - Marketplace and preview mode (Post-MVP)
 
-  * Public restaurant websites
-  * SEO and metadata handling
-  * Marketplace and preview mode (Post-MVP)
+- **React (Vite)**
+  - Admin dashboard
+  - Kitchen interface
+  - Tablet / kiosk UI
 
-* **React (Vite)**
-
-  * Admin dashboard
-  * Kitchen interface
-  * Tablet / kiosk UI
-
-* **Shared Packages**
-
-  * UI components
-  * Type definitions
-  * API client
-  * Authentication utilities
+- **Shared Packages**
+  - UI components
+  - Type definitions
+  - API client
+  - Authentication utilities
 
 ---
 
@@ -180,14 +176,14 @@ NGINX (Mikrus VPS)
 
 ### Core Modules
 
-* Authentication & RBAC
-* Tenant resolution
-* Restaurant management
-* Menu management
-* Orders
-* Payments
-* Analytics
-* CMS
+- Authentication & RBAC
+- Tenant resolution
+- Restaurant management
+- Menu management
+- Orders
+- Payments
+- Analytics
+- CMS
 
 Each module is logically separated but deployed as a single service.
 
@@ -195,10 +191,10 @@ Each module is logically separated but deployed as a single service.
 
 ## 10. Multi-Tenancy Model
 
-* Subdomain-based tenant resolution
-* Each request resolves a `tenant_id`
-* Data partitioned by tenant
-* Shared infrastructure with isolated data access
+- Subdomain-based tenant resolution
+- Each request resolves a `tenant_id`
+- Data partitioned by tenant
+- Shared infrastructure with isolated data access
 
 ---
 
@@ -206,14 +202,14 @@ Each module is logically separated but deployed as a single service.
 
 ### Real-Time
 
-* WebSockets for kitchen order updates
-* Redis pub/sub for event fan-out
+- WebSockets for kitchen order updates
+- Redis pub/sub for event fan-out
 
 ### Async Tasks
 
-* Payment webhooks
-* Analytics aggregation
-* Backup processes
+- Payment webhooks
+- Analytics aggregation
+- Backup processes
 
 ---
 
@@ -221,21 +217,21 @@ Each module is logically separated but deployed as a single service.
 
 ### Authentication
 
-* JWT access tokens
-* Refresh tokens
-* Anonymous customer session tokens
+- JWT access tokens
+- Refresh tokens
+- Anonymous customer session tokens
 
 ### Authorization
 
-* Role-Based Access Control (RBAC)
-* Custom roles and permission inheritance
+- Role-Based Access Control (RBAC)
+- Custom roles and permission inheritance
 
 ### GDPR Compliance
 
-* Minimal personal data storage
-* Consent handling
-* Data deletion mechanisms
-* Audit logging for administrative actions
+- Minimal personal data storage
+- Consent handling
+- Data deletion mechanisms
+- Audit logging for administrative actions
 
 ---
 
@@ -243,22 +239,22 @@ Each module is logically separated but deployed as a single service.
 
 ### Hosting
 
-* Mikrus VPS (Poland)
+- Mikrus VPS (Poland)
 
 ### Deployment Stack
 
-* Docker & Docker Compose
-* NGINX reverse proxy
-* MongoDB Atlas (Free Tier)
-* Redis
-* Cloudflare (DNS & CDN)
+- Docker & Docker Compose
+- NGINX reverse proxy
+- MongoDB Atlas (Free Tier)
+- Redis
+- Cloudflare (DNS & CDN)
 
 ### Benefits
 
-* Low operational cost
-* Predictable billing
-* No vendor lock-in
-* Production-grade setup
+- Low operational cost
+- Predictable billing
+- No vendor lock-in
+- Production-grade setup
 
 ---
 
@@ -266,29 +262,29 @@ Each module is logically separated but deployed as a single service.
 
 ### Phase 0 – Foundation
 
-* Monorepo setup
-* CI/CD (GitHub Actions)
-* Docker environment
-* Authentication and tenancy
-* Core data models
+- Monorepo setup
+- CI/CD (GitHub Actions)
+- Docker environment
+- Authentication and tenancy
+- Core data models
 
 ### Phase 1 – MVP
 
-* Restaurant onboarding wizard
-* Menu management
-* Ordering flow
-* Payment integration
-* Kitchen real-time UI
-* Basic analytics
-* Demo mode (7-day trial)
+- Restaurant onboarding wizard
+- Menu management
+- Ordering flow
+- Payment integration
+- Kitchen real-time UI
+- Basic analytics
+- Demo mode (7-day trial)
 
 ### Phase 2 – Post-MVP
 
-* Multi-language support
-* Advanced analytics
-* Public marketplace
-* Preview mode
-* Custom domains
+- Multi-language support
+- Advanced analytics
+- Public marketplace
+- Preview mode
+- Custom domains
 
 ---
 
@@ -296,15 +292,15 @@ Each module is logically separated but deployed as a single service.
 
 ### Architectural Decisions
 
-* Modular monolith reduces complexity while maintaining scalability
-* Hybrid frontend avoids future rewrites
-* NoSQL databases provide schema flexibility
-* Redis enables real-time and async features
+- Modular monolith reduces complexity while maintaining scalability
+- Hybrid frontend avoids future rewrites
+- NoSQL databases provide schema flexibility
+- Redis enables real-time and async features
 
 ### Risks & Mitigation
 
-* Scope creep → strict MVP definition
-* Payment complexity → external providers
+- Scope creep → strict MVP definition
+- Payment complexity → external providers
 
 ---
 

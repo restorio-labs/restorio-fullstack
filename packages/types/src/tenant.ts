@@ -17,4 +17,3 @@ export interface TenantSettings {
   language: string;
   theme?: Record<string, string>;
 }
-

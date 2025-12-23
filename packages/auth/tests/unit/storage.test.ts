@@ -33,7 +33,7 @@ describe("TokenStorage", () => {
     const mockToken = "test-access-token";
 
     mockGetItem.mockReturnValue(mockToken);
-    
+
     expect(TokenStorage.getAccessToken()).toBe(mockToken);
     expect(mockGetItem).toHaveBeenCalledWith("restorio_access_token");
   });
@@ -42,15 +42,17 @@ describe("TokenStorage", () => {
     const mockToken = "test-access-token";
 
     TokenStorage.setAccessToken(mockToken);
-    
-    expect(mockSetItem).toHaveBeenCalledWith("restorio_access_token", mockToken);
+
+    expect(mockSetItem).toHaveBeenCalledWith(
+      "restorio_access_token",
+      mockToken
+    );
   });
 
   it("should clear tokens from localStorage", () => {
     TokenStorage.clearTokens();
-    
+
     expect(mockRemoveItem).toHaveBeenCalledWith("restorio_access_token");
     expect(mockRemoveItem).toHaveBeenCalledWith("restorio_refresh_token");
   });
 });
-

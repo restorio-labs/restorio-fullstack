@@ -29,4 +29,3 @@ export interface JWTPayload {
   role: UserRole;
   exp: number;
 }
-

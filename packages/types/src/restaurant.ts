@@ -38,4 +38,3 @@ export interface Table {
   qrCode: string;
   isActive: boolean;
 }
-

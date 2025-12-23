@@ -12,4 +12,3 @@ describe("User Types", () => {
     expect(UserRole.ADMIN).toBe("admin");
   });
 });
-

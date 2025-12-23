@@ -50,4 +50,3 @@ export interface NutritionalInfo {
   carbs?: number;
   fat?: number;
 }
-

@@ -12,12 +12,14 @@
 ### Initial Setup
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd restorio-fullstack
 ```
 
 2. Install dependencies:
+
 ```bash
 # Install Bun if you haven't already
 curl -fsSL https://bun.sh/install | bash
@@ -27,12 +29,14 @@ bun install
 ```
 
 3. Set up environment variables:
+
 ```bash
 cp .env.example .env
 # Edit .env with your actual credentials
 ```
 
 4. Start the development environment:
+
 ```bash
 # Copy environment file
 cp .env.example .env
@@ -48,6 +52,7 @@ docker compose ps
 For detailed Docker documentation, see [DOCKER.md](./DOCKER.md).
 
 5. Start frontend apps:
+
 ```bash
 # Install dependencies (first time)
 bun install
@@ -57,6 +62,7 @@ bun run dev
 ```
 
 6. Access the services:
+
 - API: http://localhost:8000
 - API Docs: http://localhost:8000/docs
 - Public Web: http://localhost:3000 (Next.js)
@@ -113,6 +119,7 @@ bun run clean
 ### Individual Apps
 
 #### Public Web (Next.js)
+
 ```bash
 cd apps/public-web
 bun run dev     # Start dev server on port 3000
@@ -121,6 +128,7 @@ bun run start   # Start production server
 ```
 
 #### Admin Panel (React + Vite)
+
 ```bash
 cd apps/admin-panel
 bun run dev     # Start dev server on port 3001
@@ -129,6 +137,7 @@ bun run preview # Preview production build
 ```
 
 #### Kitchen Panel (React + Vite)
+
 ```bash
 cd apps/kitchen-panel
 bun run dev     # Start dev server on port 3002
@@ -136,6 +145,7 @@ bun run build   # Build for production
 ```
 
 #### Tablet App (React + Vite)
+
 ```bash
 cd apps/tablet-app
 bun run dev     # Start dev server on port 3003
@@ -143,6 +153,7 @@ bun run build   # Build for production
 ```
 
 #### API (FastAPI)
+
 ```bash
 cd apps/api
 # Using Docker (recommended)
@@ -156,11 +167,13 @@ uvicorn main:app --reload --port 8000
 ## Docker Services
 
 ### Start all services
+
 ```bash
 docker compose up -d
 ```
 
 ### View logs
+
 ```bash
 docker compose logs -f
 docker compose logs -f api    # API logs only
@@ -168,16 +181,19 @@ docker compose logs -f redis  # Redis logs only
 ```
 
 ### Stop all services
+
 ```bash
 docker compose down
 ```
 
 ### Rebuild services
+
 ```bash
 docker compose up -d --build
 ```
 
 ### Reset data
+
 ```bash
 docker compose down -v  # Remove volumes
 ```
@@ -187,32 +203,36 @@ docker compose down -v  # Remove volumes
 The monorepo uses Turborepo and npm workspaces for package management. Changes to shared packages are automatically reflected in apps during development.
 
 ### Types Package (`@restorio/types`)
+
 ```typescript
 // Import in any app
-import { User, Order, UserRole } from '@restorio/types';
+import { User, Order, UserRole } from "@restorio/types";
 ```
 
 ### UI Package (`@restorio/ui`)
+
 ```typescript
 // Import in React apps
-import { Button, Card, Input } from '@restorio/ui';
+import { Button, Card, Input } from "@restorio/ui";
 ```
 
 ### API Client (`@restorio/api-client`)
+
 ```typescript
-import { ApiClient, RestorioApi } from '@restorio/api-client';
+import { ApiClient, RestorioApi } from "@restorio/api-client";
 
 const client = new ApiClient({
-  baseURL: 'http://localhost:8000',
-  getAccessToken: () => localStorage.getItem('token'),
+  baseURL: "http://localhost:8000",
+  getAccessToken: () => localStorage.getItem("token"),
 });
 
 const api = new RestorioApi(client);
 ```
 
 ### Auth Helpers (`@restorio/auth`)
+
 ```typescript
-import { TokenStorage, hasPermission, Permissions } from '@restorio/auth';
+import { TokenStorage, hasPermission, Permissions } from "@restorio/auth";
 
 TokenStorage.setTokens(accessToken, refreshToken);
 const canManageMenus = hasPermission(userRole, Permissions.MANAGE_MENUS);
@@ -263,15 +283,15 @@ PRZELEWY24_API_KEY=...
 Add MongoDB to `docker-compose.yml`:
 
 ```yaml
-  mongodb:
-    image: mongo:7
-    ports:
-      - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password
-    volumes:
-      - mongodb-data:/data/db
+mongodb:
+  image: mongo:7
+  ports:
+    - "27017:27017"
+  environment:
+    MONGO_INITDB_ROOT_USERNAME: admin
+    MONGO_INITDB_ROOT_PASSWORD: password
+  volumes:
+    - mongodb-data:/data/db
 ```
 
 ## Testing
@@ -296,6 +316,7 @@ bun run test:unit --coverage
 ```
 
 **Test Structure:**
+
 - `packages/*/tests-unit/` - Shared package tests
 - `apps/*/tests-unit/` - Application-specific tests
 
@@ -324,6 +345,7 @@ bun run test:debug
 ```
 
 **E2E Test Structure:**
+
 - `e2e-tests/tests/` - Test files
 - `e2e-tests/fixtures/` - Test helpers and fixtures
 
@@ -337,32 +359,35 @@ pytest
 ### Writing Tests
 
 **Unit Test Example:**
-```typescript
-import { describe, it, expect } from 'vitest';
-import { hasPermission, Permissions, UserRole } from '@restorio/auth';
 
-describe('Permissions', () => {
-  it('should allow owner to manage menus', () => {
+```typescript
+import { describe, it, expect } from "vitest";
+import { hasPermission, Permissions, UserRole } from "@restorio/auth";
+
+describe("Permissions", () => {
+  it("should allow owner to manage menus", () => {
     expect(hasPermission(UserRole.OWNER, Permissions.MANAGE_MENUS)).toBe(true);
   });
 });
 ```
 
 **E2E Test Example:**
-```typescript
-import { test, expect } from '@playwright/test';
 
-test('user can login', async ({ page }) => {
-  await page.goto('/login');
-  await page.fill('[name="email"]', 'user@example.com');
+```typescript
+import { test, expect } from "@playwright/test";
+
+test("user can login", async ({ page }) => {
+  await page.goto("/login");
+  await page.fill('[name="email"]', "user@example.com");
   await page.click('button[type="submit"]');
-  await expect(page).toHaveURL('/dashboard');
+  await expect(page).toHaveURL("/dashboard");
 });
 ```
 
 ## Troubleshooting
 
 ### Port already in use
+
 ```bash
 # Find and kill the process
 lsof -ti:8000 | xargs kill -9  # For API
@@ -370,6 +395,7 @@ lsof -ti:3000 | xargs kill -9  # For Next.js
 ```
 
 ### Docker issues
+
 ```bash
 # Reset Docker environment
 docker compose down -v
@@ -378,6 +404,7 @@ docker compose up -d --build
 ```
 
 ### Module resolution errors
+
 ```bash
 # Clear all node_modules and reinstall
 bun run clean
@@ -386,6 +413,7 @@ bun install
 ```
 
 ### TypeScript errors
+
 ```bash
 # Rebuild TypeScript projects
 bun run build
@@ -394,17 +422,20 @@ bun run build
 ## Git Workflow
 
 1. Create a feature branch:
+
 ```bash
 git checkout -b feature/your-feature-name
 ```
 
 2. Make changes and commit:
+
 ```bash
 git add .
 git commit -m "feat: add feature description"
 ```
 
 3. Push and create PR:
+
 ```bash
 git push origin feature/your-feature-name
 ```
@@ -419,23 +450,27 @@ git push origin feature/your-feature-name
 ## Architecture Decisions
 
 ### Why Monorepo?
+
 - Code sharing between apps
 - Consistent tooling and dependencies
 - Atomic changes across packages
 - Better developer experience
 
 ### Why Hybrid Frontend?
+
 - Next.js for SEO-critical public pages
 - React + Vite for interactive dashboards (faster dev experience)
 - Shared UI components via `@restorio/ui`
 
 ### Why FastAPI?
+
 - High performance async Python
 - Automatic API documentation
 - Type hints and validation
 - Easy to deploy and scale
 
 ### Why MongoDB?
+
 - Schema flexibility for multi-tenant data
 - Easy to scale horizontally
 - Free tier for development and testing
@@ -460,4 +495,3 @@ git push origin feature/your-feature-name
 ## Support
 
 For issues, questions, or contributions, please refer to the project README or contact the development team.
-

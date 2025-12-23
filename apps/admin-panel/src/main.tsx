@@ -19,4 +19,3 @@ if (root) {
     </React.StrictMode>
   );
 }
-
