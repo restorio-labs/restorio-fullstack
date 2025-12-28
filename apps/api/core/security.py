@@ -3,7 +3,7 @@ from typing import Optional
 
 from jose import JWTError, jwt
 
-from app.core.config import settings
+from core.config import settings
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
@@ -23,4 +23,5 @@ def decode_access_token(token: str) -> Optional[dict]:
         return payload
     except JWTError:
         return None
+
 

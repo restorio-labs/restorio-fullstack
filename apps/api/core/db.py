@@ -3,7 +3,7 @@ from typing import Optional
 import asyncpg
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
-from app.core.config import settings
+from core.config import settings
 
 
 _mongo_client: Optional[AsyncIOMotorClient] = None
@@ -27,5 +27,6 @@ async def get_postgres_pool() -> asyncpg.Pool:
     if _postgres_pool is None:
         _postgres_pool = await asyncpg.create_pool(dsn=settings.POSTGRES_DSN)
     return _postgres_pool
+
 
 
