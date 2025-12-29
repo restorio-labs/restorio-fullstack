@@ -20,7 +20,7 @@ def success_response(
     message: str | None = None,
     status_code: int = status.HTTP_200_OK,
 ) -> JSONResponse:
-    response = SuccessResponse(message=message, data=data)
+    response = SuccessResponse[T](message=message, data=data)
     return JSONResponse(
         status_code=status_code,
         content=response.model_dump(exclude_none=True),
@@ -31,7 +31,7 @@ def created_response(
     data: T,
     message: str = "Resource created successfully",
 ) -> JSONResponse:
-    response = CreatedResponse(message=message, data=data)
+    response = CreatedResponse[T](message=message, data=data)
     return JSONResponse(
         status_code=status.HTTP_201_CREATED,
         content=response.model_dump(),
@@ -42,7 +42,7 @@ def updated_response(
     data: T,
     message: str = "Resource updated successfully",
 ) -> JSONResponse:
-    response = UpdatedResponse(message=message, data=data)
+    response = UpdatedResponse[T](message=message, data=data)
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content=response.model_dump(),
@@ -83,4 +83,5 @@ def error_response(
         status_code=status_code,
         content=response.model_dump(exclude_none=True),
     )
+
 

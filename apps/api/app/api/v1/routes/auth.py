@@ -17,3 +17,4 @@ async def register() -> dict[str, str]:
 async def refresh_token() -> dict[str, str]:
     return {"message": "Refresh token endpoint - to be implemented"}
 
+
