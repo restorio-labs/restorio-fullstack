@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from core.schemas import ErrorResponse
 
 
-class RestorioException(HTTPException):
+class BaseHTTPException(HTTPException):
     def __init__(
         self,
         status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -28,7 +28,7 @@ class RestorioException(HTTPException):
         )
 
 
-class NotFoundError(RestorioException):
+class NotFoundError(BaseHTTPException):
     def __init__(self, resource: str, identifier: str | None = None) -> None:
         message = f"{resource} not found"
         if identifier:
@@ -40,7 +40,7 @@ class NotFoundError(RestorioException):
         )
 
 
-class ValidationError(RestorioException):
+class ValidationError(BaseHTTPException):
     def __init__(
         self, message: str = "Validation failed", errors: list[dict[str, str]] | None = None
     ) -> None:
@@ -52,7 +52,7 @@ class ValidationError(RestorioException):
         )
 
 
-class UnauthorizedError(RestorioException):
+class UnauthorizedError(BaseHTTPException):
     def __init__(self, message: str = "Unauthorized") -> None:
         super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -61,7 +61,7 @@ class UnauthorizedError(RestorioException):
         )
 
 
-class ForbiddenError(RestorioException):
+class ForbiddenError(BaseHTTPException):
     def __init__(self, message: str = "Forbidden") -> None:
         super().__init__(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -70,7 +70,7 @@ class ForbiddenError(RestorioException):
         )
 
 
-class ConflictError(RestorioException):
+class ConflictError(BaseHTTPException):
     def __init__(self, message: str = "Resource conflict") -> None:
         super().__init__(
             status_code=status.HTTP_409_CONFLICT,
@@ -79,7 +79,7 @@ class ConflictError(RestorioException):
         )
 
 
-class BadRequestError(RestorioException):
+class BadRequestError(BaseHTTPException):
     def __init__(self, message: str = "Bad request") -> None:
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST,

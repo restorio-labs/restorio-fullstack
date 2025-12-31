@@ -88,6 +88,7 @@ services:
     networks:
       - restorio-network
     restart: unless-stopped
+    command: ["mongod", "--setParameter", "logLevel=1"]  # Suppress MongoDB startup logs 0=errors only 1=warnings >2=more verbose
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
