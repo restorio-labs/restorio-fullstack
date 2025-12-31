@@ -26,4 +26,3 @@ async def update_restaurant(restaurant_id: str) -> dict[str, str]:
 @router.delete("/{restaurant_id}")
 async def delete_restaurant(restaurant_id: str) -> dict[str, str]:
     return {"message": f"Delete restaurant {restaurant_id} endpoint - to be implemented"}
-

@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from api.v1 import api_router
+from api.v1.routes import health as health_route
 from core.config import settings
 from core.exceptions import RestorioException
 from core.middleware import TimingMiddleware
@@ -29,7 +30,7 @@ def create_application() -> FastAPI:
     )
 
     @app.exception_handler(RestorioException)
-    async def restorio_exception_handler(request: Request, exc: RestorioException) -> JSONResponse:
+    async def restorio_exception_handler(_: Request, exc: RestorioException) -> JSONResponse:
         error_response = ErrorResponse(
             error_code=exc.error_code,
             message=exc.detail,
@@ -41,7 +42,7 @@ def create_application() -> FastAPI:
         )
 
     @app.exception_handler(Exception)
-    async def general_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    async def general_exception_handler(_: Request, exc: Exception) -> JSONResponse:
         error_response = ErrorResponse(
             error_code="INTERNAL_ERROR",
             message="An unexpected error occurred",
@@ -63,12 +64,9 @@ def create_application() -> FastAPI:
         }
 
     app.include_router(api_router, prefix=settings.API_V1_PREFIX)
-    
-    from api.v1.routes import health as health_route
     app.include_router(health_route.router, prefix="/health", tags=["health"])
 
     return app
 
 
 app = create_application()
-

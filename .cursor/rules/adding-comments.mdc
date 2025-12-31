@@ -1,0 +1,4 @@
+---
+alwaysApply: true
+---
+Do not add comments, unless code created is senior level complex, super necessary to understand business value, we have some technical debt or if I ask explicitly for it

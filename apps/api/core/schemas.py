@@ -1,21 +1,21 @@
-from typing import Generic, TypeVar
+from typing import TypeVar
 
 from pydantic import BaseModel
 
 T = TypeVar("T")
 
 
-class SuccessResponse(BaseModel, Generic[T]):
+class SuccessResponse[T](BaseModel):
     message: str | None = None
     data: T
 
 
-class CreatedResponse(BaseModel, Generic[T]):
+class CreatedResponse[T](BaseModel):
     message: str = "Resource created successfully"
     data: T
 
 
-class UpdatedResponse(BaseModel, Generic[T]):
+class UpdatedResponse[T](BaseModel):
     message: str = "Resource updated successfully"
     data: T
 
@@ -36,7 +36,7 @@ class ValidationErrorResponse(BaseModel):
     errors: list[dict[str, str]]
 
 
-class PaginatedResponse(BaseModel, Generic[T]):
+class PaginatedResponse[T](BaseModel):
     items: list[T]
     total: int
     page: int

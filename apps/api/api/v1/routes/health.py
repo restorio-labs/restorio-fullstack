@@ -31,4 +31,3 @@ async def health_check() -> dict[str, str]:
         "mongodb": mongodb_status,
         "postgres": postgres_status,
     }
-

@@ -1,10 +1,12 @@
 from typing import Annotated
 
-from fastapi import Depends
-
-from core.db import get_mongo_db, get_postgres_pool
-from motor.motor_asyncio import AsyncIOMotorDatabase
 from asyncpg import Pool
+from fastapi import Depends
+from motor.motor_asyncio import AsyncIOMotorDatabase
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from core.database import get_db_session
+from core.db import get_mongo_db, get_postgres_pool
 
 
 async def get_mongo_database() -> AsyncIOMotorDatabase:
@@ -17,4 +19,4 @@ async def get_postgres_connection_pool() -> Pool:
 
 MongoDB = Annotated[AsyncIOMotorDatabase, Depends(get_mongo_database)]
 PostgresPool = Annotated[Pool, Depends(get_postgres_connection_pool)]
-
+PostgresSession = Annotated[AsyncSession, Depends(get_db_session)]

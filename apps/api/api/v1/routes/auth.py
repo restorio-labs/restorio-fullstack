@@ -16,4 +16,3 @@ async def register() -> dict[str, str]:
 @router.post("/refresh")
 async def refresh_token() -> dict[str, str]:
     return {"message": "Refresh token endpoint - to be implemented"}
-

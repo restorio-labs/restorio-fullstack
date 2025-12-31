@@ -1,20 +1,28 @@
-from typing import Optional
-
 import asyncpg
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
 from core.config import settings
 
 
-_mongo_client: Optional[AsyncIOMotorClient] = None
-_postgres_pool: Optional[asyncpg.Pool] = None
+class DatabaseConnections:
+    _mongo_client: AsyncIOMotorClient | None = None
+    _postgres_pool: asyncpg.Pool | None = None
+
+    @classmethod
+    def get_mongo_client(cls) -> AsyncIOMotorClient:
+        if cls._mongo_client is None:
+            cls._mongo_client = AsyncIOMotorClient(settings.DATABASE_URL)
+        return cls._mongo_client
+
+    @classmethod
+    async def get_postgres_pool(cls) -> asyncpg.Pool:
+        if cls._postgres_pool is None:
+            cls._postgres_pool = await asyncpg.create_pool(dsn=settings.POSTGRES_DSN)
+        return cls._postgres_pool
 
 
 def get_mongo_client() -> AsyncIOMotorClient:
-    global _mongo_client
-    if _mongo_client is None:
-        _mongo_client = AsyncIOMotorClient(settings.DATABASE_URL)
-    return _mongo_client
+    return DatabaseConnections.get_mongo_client()
 
 
 def get_mongo_db() -> AsyncIOMotorDatabase:
@@ -23,10 +31,4 @@ def get_mongo_db() -> AsyncIOMotorDatabase:
 
 
 async def get_postgres_pool() -> asyncpg.Pool:
-    global _postgres_pool
-    if _postgres_pool is None:
-        _postgres_pool = await asyncpg.create_pool(dsn=settings.POSTGRES_DSN)
-    return _postgres_pool
-
-
-
+    return await DatabaseConnections.get_postgres_pool()

@@ -41,7 +41,9 @@ class NotFoundError(RestorioException):
 
 
 class ValidationError(RestorioException):
-    def __init__(self, message: str = "Validation failed", errors: list[dict[str, str]] | None = None) -> None:
+    def __init__(
+        self, message: str = "Validation failed", errors: list[dict[str, str]] | None = None
+    ) -> None:
         super().__init__(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             message=message,

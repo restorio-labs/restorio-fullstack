@@ -1,0 +1,4 @@
+---
+alwaysApply: true
+---
+Do not add Markdown files if not asked

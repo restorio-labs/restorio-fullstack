@@ -1,6 +1,3 @@
-from typing import Any
-
-
 from fastapi import APIRouter, status
 
 from core.schemas import CreatedResponse, DeletedResponse, SuccessResponse, UpdatedResponse
@@ -45,4 +42,3 @@ async def delete_tenant(tenant_id: str) -> DeletedResponse:
     return DeletedResponse(
         message=f"Tenant {tenant_id} deleted successfully",
     )
-

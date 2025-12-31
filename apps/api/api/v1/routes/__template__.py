@@ -10,10 +10,9 @@ Best Practices:
 6. Document endpoints with docstrings
 """
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, status
 
 from core.dependencies import MongoDB, PostgresPool
-from core.exceptions import NotFoundError
 from core.schemas import (
     CreatedResponse,
     DeletedResponse,
@@ -21,16 +20,14 @@ from core.schemas import (
     SuccessResponse,
     UpdatedResponse,
 )
-from motor.motor_asyncio import AsyncIOMotorDatabase
-from asyncpg import Pool
 
 router = APIRouter()
 
 
 @router.get("", status_code=status.HTTP_200_OK)
 async def list_items(
-    db: MongoDB,
-    pool: PostgresPool,
+    _db: MongoDB,
+    _pool: PostgresPool,
     page: int = 1,
     page_size: int = 10,
 ) -> PaginatedResponse[dict]:
@@ -43,7 +40,7 @@ async def list_items(
     # Example: Use database connections
     # items = await db.collection.find().skip((page - 1) * page_size).limit(page_size).to_list(length=page_size)
     # total = await db.collection.count_documents({})
-    
+
     return PaginatedResponse.create(
         items=[],
         total=0,
@@ -55,7 +52,7 @@ async def list_items(
 @router.get("/{item_id}", status_code=status.HTTP_200_OK)
 async def get_item(
     item_id: str,
-    db: MongoDB,
+    _db: MongoDB,
 ) -> SuccessResponse[dict]:
     """
     Get a specific item by ID.
@@ -66,7 +63,7 @@ async def get_item(
     # item = await db.collection.find_one({"_id": item_id})
     # if not item:
     #     raise NotFoundError("Item", item_id)
-    
+
     return SuccessResponse(
         message=f"Item {item_id} retrieved successfully",
         data={"id": item_id},
@@ -75,8 +72,8 @@ async def get_item(
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def create_item(
-    db: MongoDB,
-    pool: PostgresPool,
+    _db: MongoDB,
+    _pool: PostgresPool,
 ) -> CreatedResponse[dict]:
     """
     Create a new item.
@@ -84,7 +81,7 @@ async def create_item(
     # Example: Insert into database
     # result = await db.collection.insert_one(data)
     # created_item = await db.collection.find_one({"_id": result.inserted_id})
-    
+
     return CreatedResponse(
         message="Item created successfully",
         data={"id": "new-item-id"},
@@ -94,7 +91,7 @@ async def create_item(
 @router.put("/{item_id}", status_code=status.HTTP_200_OK)
 async def update_item(
     item_id: str,
-    db: MongoDB,
+    _db: MongoDB,
 ) -> UpdatedResponse[dict]:
     """
     Update an existing item.
@@ -106,7 +103,7 @@ async def update_item(
     # if result.matched_count == 0:
     #     raise NotFoundError("Item", item_id)
     # updated_item = await db.collection.find_one({"_id": item_id})
-    
+
     return UpdatedResponse(
         message=f"Item {item_id} updated successfully",
         data={"id": item_id},
@@ -116,7 +113,7 @@ async def update_item(
 @router.delete("/{item_id}", status_code=status.HTTP_200_OK)
 async def delete_item(
     item_id: str,
-    db: MongoDB,
+    _db: MongoDB,
 ) -> DeletedResponse:
     """
     Delete an item.
@@ -127,7 +124,7 @@ async def delete_item(
     # result = await db.collection.delete_one({"_id": item_id})
     # if result.deleted_count == 0:
     #     raise NotFoundError("Item", item_id)
-    
+
     return DeletedResponse(
         message=f"Item {item_id} deleted successfully",
     )

@@ -1,5 +1,3 @@
-from typing import Generic, TypeVar
-
 from fastapi import status
 from fastapi.responses import JSONResponse
 
@@ -12,10 +10,8 @@ from core.schemas import (
     UpdatedResponse,
 )
 
-T = TypeVar("T")
 
-
-def success_response(
+def success_response[T](
     data: T,
     message: str | None = None,
     status_code: int = status.HTTP_200_OK,
@@ -27,7 +23,7 @@ def success_response(
     )
 
 
-def created_response(
+def created_response[T](
     data: T,
     message: str = "Resource created successfully",
 ) -> JSONResponse:
@@ -38,7 +34,7 @@ def created_response(
     )
 
 
-def updated_response(
+def updated_response[T](
     data: T,
     message: str = "Resource updated successfully",
 ) -> JSONResponse:
@@ -59,7 +55,7 @@ def deleted_response(
     )
 
 
-def paginated_response(
+def paginated_response[T](
     paginated_data: PaginatedResponse[T],
 ) -> JSONResponse:
     return JSONResponse(
@@ -83,5 +79,3 @@ def error_response(
         status_code=status_code,
         content=response.model_dump(exclude_none=True),
     )
-
-

@@ -9,4 +9,3 @@ api_router.include_router(auth.router, prefix="/auth", tags=["authentication"])
 api_router.include_router(tenants.router, prefix="/tenants", tags=["tenants"])
 api_router.include_router(restaurants.router, prefix="/restaurants", tags=["restaurants"])
 api_router.include_router(orders.router, prefix="/orders", tags=["orders"])
-

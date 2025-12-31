@@ -26,4 +26,3 @@ async def update_order(order_id: str) -> dict[str, str]:
 @router.delete("/{order_id}")
 async def delete_order(order_id: str) -> dict[str, str]:
     return {"message": f"Delete order {order_id} endpoint - to be implemented"}
-

@@ -1,4 +1,5 @@
-from typing import Callable
+from collections.abc import Callable
+import time
 
 from fastapi import APIRouter, Request, Response
 from fastapi.routing import APIRoute
@@ -40,8 +41,6 @@ class TimedRoute(APIRoute):
         original_route_handler = super().get_route_handler()
 
         async def custom_route_handler(request: Request) -> Response:
-            import time
-
             before = time.time()
             response: Response = await original_route_handler(request)
             duration = time.time() - before
@@ -49,4 +48,3 @@ class TimedRoute(APIRoute):
             return response
 
         return custom_route_handler
-

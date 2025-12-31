@@ -1,6 +1,5 @@
-from fastapi import APIRouter
-
 from app.core.db import get_mongo_db, get_postgres_pool
+from fastapi import APIRouter
 
 router = APIRouter()
 
@@ -31,4 +30,3 @@ async def health_check() -> dict[str, str]:
         "mongodb": mongodb_status,
         "postgres": postgres_status,
     }
-
