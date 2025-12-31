@@ -1,4 +1,3 @@
-
 from core.exceptions.http import (
     BadRequestError,
     BaseHTTPException,

@@ -86,6 +86,6 @@ force-sort-within-sections = true
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]  # Allow unused imports in __init__.py
-"migrations/*" = ["ALL"]  # Ignore all rules in migration files
+"alembic/versions/*" = ["ALL"]  # Ignore all rules in migration files
 "**/__template__.py" = ["ARG001", "ERA001"]  # Template files have unused args and example comments
 

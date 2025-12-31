@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from core.models.restaurant_table import RestaurantTable
     from core.models.tenant import Tenant
 
+
 class Order(Base):
     __tablename__ = "orders"
 
@@ -39,8 +40,12 @@ class Order(Base):
     )
     total_amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     currency: Mapped[str] = mapped_column(String(3), nullable=False, default="PLN")
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()
+    )
 
     tenant: Mapped[Tenant] = relationship("Tenant", back_populates="orders")
     table: Mapped[RestaurantTable] = relationship("RestaurantTable", back_populates="orders")
