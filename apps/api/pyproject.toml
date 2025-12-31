@@ -34,6 +34,7 @@ packages = ["core", "api", "modules"]
 [tool.ruff]
 target-version = "py312"
 line-length = 100
+exclude =[".venv", "**/__template__.py"]
 
 [tool.ruff.lint]
 select = [
@@ -86,6 +87,6 @@ force-sort-within-sections = true
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]  # Allow unused imports in __init__.py
-"alembic/versions/*" = ["ALL"]  # Ignore all rules in migration files
+"**/alembic/versions/*.py" = ["ALL"]  # Ignore all rules in migration files
 "**/__template__.py" = ["ARG001", "ERA001"]  # Template files have unused args and example comments
 
