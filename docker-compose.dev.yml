@@ -7,5 +7,43 @@ services:
       - ./apps/api:/app
     environment:
       - PYTHONUNBUFFERED=1
+      - DATABASE_URL=${DATABASE_URL:-mongodb://mongo:27017/restorio}
+      - POSTGRES_DSN=${POSTGRES_DSN:-postgresql://restorio:restorio@postgres:5432/restorio}
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: restorio-postgres-dev
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-restorio}
+      - POSTGRES_USER=${POSTGRES_USER:-restorio}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-restorio}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data-dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  mongo:
+    image: mongo:7
+    container_name: restorio-mongo-dev
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data-dev:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  postgres-data-dev:
+  mongo-data-dev:
 

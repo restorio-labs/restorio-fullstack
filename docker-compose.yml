@@ -7,7 +7,8 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=${DATABASE_URL:-mongodb://localhost:27017/restorio}
+      - DATABASE_URL=${DATABASE_URL:-mongodb://mongo:27017/restorio}
+      - POSTGRES_DSN=${POSTGRES_DSN:-postgresql://restorio:restorio@postgres:5432/restorio}
       - REDIS_URL=${REDIS_URL:-redis://redis:6379}
       - JWT_SECRET=${JWT_SECRET:-your-secret-key-change-in-production}
       - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
@@ -24,6 +25,10 @@ services:
       - ./apps/api:/app
     depends_on:
       redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      mongo:
         condition: service_healthy
     networks:
       - restorio-network
@@ -52,6 +57,45 @@ services:
       timeout: 3s
       retries: 3
 
+  postgres:
+    image: postgres:16-alpine
+    container_name: restorio-postgres
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-restorio}
+      - POSTGRES_USER=${POSTGRES_USER:-restorio}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-restorio}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - restorio-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  mongo:
+    image: mongo:7
+    container_name: restorio-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - restorio-network
+    restart: unless-stopped
+    command: ["mongod", "--setParameter", "logLevel=1"]  # Suppress MongoDB startup logs 0=errors only 1=warnings >2=more verbose
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
   nginx:
     image: nginx:alpine
     container_name: restorio-nginx
@@ -73,6 +117,8 @@ services:
 
 volumes:
   redis-data:
+  postgres-data:
+  mongo-data:
 
 networks:
   restorio-network:
