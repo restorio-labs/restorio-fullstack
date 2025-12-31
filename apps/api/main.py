@@ -2,12 +2,12 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from api.v1 import api_router
-from api.v1.routes import health as health_route
 from core.config import settings
 from core.exceptions import RestorioException
-from core.middleware import TimingMiddleware
+from core.middleware import TimingMiddleware, UnauthorizedMiddleware
 from core.schemas import ErrorResponse
+from routes import api_router as api_router_v1
+from routes import health as health_route
 
 
 def create_application() -> FastAPI:
@@ -28,6 +28,7 @@ def create_application() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    app.add_middleware(UnauthorizedMiddleware)
 
     @app.exception_handler(RestorioException)
     async def restorio_exception_handler(_: Request, exc: RestorioException) -> JSONResponse:
@@ -63,9 +64,8 @@ def create_application() -> FastAPI:
             "api_prefix": settings.API_V1_PREFIX,
         }
 
-    app.include_router(api_router, prefix=settings.API_V1_PREFIX)
+    app.include_router(api_router_v1, prefix=settings.API_V1_PREFIX)
     app.include_router(health_route.router, prefix="/health", tags=["health"])
-
     return app
 
 
