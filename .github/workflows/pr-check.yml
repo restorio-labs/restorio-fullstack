@@ -1,0 +1,93 @@
+name: CI / PR
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'e2e/**'
+
+concurrency:
+  group: pr-${{ github.ref }}
+  cancel-in-progress: true
+
+
+jobs:
+  detect-changes:
+    name: Detect changed areas
+    runs-on: ubuntu-slim
+    outputs:
+      frontends: ${{ steps.filter.outputs.frontends }}
+      packages: ${{ steps.filter.outputs.packages }}
+      api: ${{ steps.filter.outputs.api }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Path filter
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            frontends:
+              - 'apps/**'
+            packages:
+              - 'packages/**'
+            api:
+              - 'apps/api/**'
+
+  frontends:
+    name: Frontend
+    runs-on: ubuntu-slim
+    needs: detect-changes
+    if: needs.detect-changes.outputs.frontends == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - apps/public-web
+          - apps/admin-panel
+          - apps/kitchen-panel
+          - apps/tablet-app
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Validate ${{ matrix.target }} Code
+        uses: .github/actions/pr-validate/typescript
+        with:
+          package_dir: ${{ matrix.target }}
+
+  packages:
+    name: Packages
+    runs-on: ubuntu-slim
+    needs: detect-changes
+    if: needs.detect-changes.outputs.packages == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - packages/types
+          - packages/api-client
+          - packages/auth
+          - packages/ui
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Validate ${{ matrix.target }} Code
+        uses: .github/actions/pr-validate/typescript
+        with:
+          package_dir: ${{ matrix.target }}
+
+  api:
+    name: Python API Validation
+    runs-on: ubuntu-slim
+    needs: detect-changes
+    if: needs.detect-changes.outputs.api == 'true'
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Validate Python Code
+        uses: .github/actions/pr-validate/python
+        with:
+          package_dir: apps/api
+          python_version: ${{ vars.PYTHON_VERSION }}

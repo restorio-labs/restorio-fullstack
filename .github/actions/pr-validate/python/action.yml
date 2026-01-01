@@ -1,0 +1,36 @@
+name: Python Validation
+description: "Validate Python code"
+
+inputs:
+  package_dir:
+    required: true
+  python_version:
+    required: true
+
+runs:
+  using: composite
+  steps:
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python_version }}
+
+      - name: Install uv
+        shell: bash
+        run: pip install uv
+
+
+      - name: Install dependencies
+        working-directory: ${{ inputs.package_dir }}
+        shell: bash
+        run: make install
+
+      - name: Lint & format check
+        working-directory: ${{ inputs.package_dir }}
+        shell: bash
+        run: make check
+
+      - name: Tests
+        working-directory: ${{ inputs.package_dir }}
+        shell: bash
+        run: make test
