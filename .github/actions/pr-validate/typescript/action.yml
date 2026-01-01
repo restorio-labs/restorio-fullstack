@@ -1,0 +1,46 @@
+name: TypeScript Setup
+description: "Setup TypeScript environment"
+
+inputs:
+  package_dir:
+    required: true
+  
+runs:
+  using: composite
+  steps:
+      - name: Read Bun version from package.json
+        shell: bash
+        run: |
+          BUN_VERSION=$(jq -r '.packageManager' package.json | sed 's/^bun@//')
+          if [[ -z "$BUN_VERSION" || "$BUN_VERSION" == "null" ]]; then
+            echo "❌ packageManager not found or invalid in package.json"
+            exit 1
+          fi
+          echo "BUN_VERSION=$BUN_VERSION" >> $GITHUB_ENV
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Install dependencies (root dir)
+        shell: bash
+        run: bun install
+
+      - name: Lint
+        working-directory: ${{ inputs.package_dir }}
+        shell: bash
+        run: |
+            bun run lint
+
+      - name: Test
+        working-directory: ${{ inputs.package_dir }}
+        shell: bash
+        run: |
+            bun run test
+
+      - name: Build
+        working-directory: ${{ inputs.package_dir }}
+        shell: bash
+        run: |
+            bun run build
