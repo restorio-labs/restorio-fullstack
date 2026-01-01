@@ -52,7 +52,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Validate Admin Panel Code
-        uses: .github/actions/pr-validate/typescript
+        uses: ./.github/actions/pr-validate/typescript
         with:
           package_dir: apps/admin-panel
 
@@ -65,7 +65,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Validate Kitchen Panel Code
-        uses: .github/actions/pr-validate/typescript
+        uses: ./.github/actions/pr-validate/typescript
         with:
           package_dir: apps/kitchen-panel
 
@@ -78,7 +78,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Validate Tablet App Code
-        uses: .github/actions/pr-validate/typescript
+        uses: ./.github/actions/pr-validate/typescript
         with:
           package_dir: apps/tablet-app
 
@@ -91,7 +91,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Validate Public Web Code
-        uses: .github/actions/pr-validate/typescript
+        uses: ./.github/actions/pr-validate/typescript
         with:
           package_dir: apps/public-web
 
@@ -112,7 +112,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Validate ${{ matrix.target }} Code
-        uses: .github/actions/pr-validate/typescript
+        uses: ./.github/actions/pr-validate/typescript
         with:
           package_dir: ${{ matrix.target }}
 
@@ -125,7 +125,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Validate Python Code
-        uses: .github/actions/pr-validate/python
+        uses: ./.github/actions/pr-validate/python
         with:
           package_dir: apps/api
           python_version: ${{ vars.PYTHON_VERSION }}
