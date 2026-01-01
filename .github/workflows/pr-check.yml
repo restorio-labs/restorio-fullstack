@@ -1,4 +1,4 @@
-name: CI / PR
+name: PR Check
 
 on:
   pull_request:
@@ -6,7 +6,6 @@ on:
     paths:
       - 'apps/**'
       - 'packages/**'
-      - 'e2e/**'
 
 concurrency:
   group: pr-${{ github.ref }}
@@ -18,7 +17,10 @@ jobs:
     name: Detect changed areas
     runs-on: ubuntu-slim
     outputs:
-      frontends: ${{ steps.filter.outputs.frontends }}
+      kitchen-panel: ${{ steps.filter.outputs.kitchen-panel }}
+      tablet-app: ${{ steps.filter.outputs.tablet-app }}
+      admin-panel: ${{ steps.filter.outputs.admin-panel }}
+      public-web: ${{ steps.filter.outputs.public-web }}
       packages: ${{ steps.filter.outputs.packages }}
       api: ${{ steps.filter.outputs.api }}
     steps:
@@ -28,34 +30,70 @@ jobs:
         uses: dorny/paths-filter@v3
         with:
           filters: |
-            frontends:
-              - 'apps/**'
             packages:
               - 'packages/**'
             api:
               - 'apps/api/**'
+            kitchen-panel:
+              - 'apps/kitchen-panel/**'
+            tablet-app:
+              - 'apps/tablet-app/**'
+            admin-panel:
+              - 'apps/admin-panel/**'
+            public-web:
+              - 'apps/public-web/**'
 
-  frontends:
-    name: Frontend
+  admin-panel:
+    name: Admin Panel
     runs-on: ubuntu-slim
     needs: detect-changes
-    if: needs.detect-changes.outputs.frontends == 'true'
-    strategy:
-      fail-fast: false
-      matrix:
-        target:
-          - apps/public-web
-          - apps/admin-panel
-          - apps/kitchen-panel
-          - apps/tablet-app
-
+    if: needs.detect-changes.outputs.admin-panel == 'true'
     steps:
       - uses: actions/checkout@v6
 
-      - name: Validate ${{ matrix.target }} Code
+      - name: Validate Admin Panel Code
         uses: .github/actions/pr-validate/typescript
         with:
-          package_dir: ${{ matrix.target }}
+          package_dir: apps/admin-panel
+
+  kitchen-panel:
+    name: Kitchen Panel
+    runs-on: ubuntu-slim
+    needs: detect-changes
+    if: needs.detect-changes.outputs.kitchen-panel == 'true'
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Validate Kitchen Panel Code
+        uses: .github/actions/pr-validate/typescript
+        with:
+          package_dir: apps/kitchen-panel
+
+  tablet-app:
+    name: Tablet App
+    runs-on: ubuntu-slim
+    needs: detect-changes
+    if: needs.detect-changes.outputs.tablet-app == 'true'
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Validate Tablet App Code
+        uses: .github/actions/pr-validate/typescript
+        with:
+          package_dir: apps/tablet-app
+
+  public-web:
+    name: Public Web
+    runs-on: ubuntu-slim
+    needs: detect-changes
+    if: needs.detect-changes.outputs.public-web == 'true'
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Validate Public Web Code
+        uses: .github/actions/pr-validate/typescript
+        with:
+          package_dir: apps/public-web
 
   packages:
     name: Packages
