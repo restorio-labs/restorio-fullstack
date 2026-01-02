@@ -6,7 +6,7 @@ import { hasPermission, Permissions } from "../../src/permissions";
 describe("Permissions", () => {
   it("should allow super admin to manage restaurants", () => {
     expect(
-      hasPermission(UserRole.SUPER_ADMIN, Permissions.MANAGE_RESTAURANTS)
+      hasPermission(UserRole.SUPER_ADMIN, Permissions.MANAGE_RESTAURANTS),
     ).toBe(true);
   });
 
@@ -16,19 +16,19 @@ describe("Permissions", () => {
 
   it("should not allow waiter to manage users", () => {
     expect(hasPermission(UserRole.WAITER, Permissions.MANAGE_USERS)).toBe(
-      false
+      false,
     );
   });
 
   it("should allow kitchen staff to view orders", () => {
     expect(hasPermission(UserRole.KITCHEN_STAFF, Permissions.VIEW_ORDERS)).toBe(
-      true
+      true,
     );
   });
 
   it("should not allow kitchen staff to manage orders", () => {
     expect(
-      hasPermission(UserRole.KITCHEN_STAFF, Permissions.MANAGE_ORDERS)
+      hasPermission(UserRole.KITCHEN_STAFF, Permissions.MANAGE_ORDERS),
     ).toBe(false);
   });
 });

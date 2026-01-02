@@ -58,15 +58,16 @@ erDiagram
 
 Core tenant (restaurant/client) entity.
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | UUID | PRIMARY KEY | Unique identifier |
-| name | VARCHAR(255) | NOT NULL | Tenant display name |
-| slug | VARCHAR(100) | NOT NULL, UNIQUE | URL-friendly identifier |
-| status | tenant_status | NOT NULL, DEFAULT 'ACTIVE' | Tenant status (ACTIVE, SUSPENDED, INACTIVE) |
-| created_at | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() | Creation timestamp |
+| Column     | Type                     | Constraints                | Description                                 |
+| ---------- | ------------------------ | -------------------------- | ------------------------------------------- |
+| id         | UUID                     | PRIMARY KEY                | Unique identifier                           |
+| name       | VARCHAR(255)             | NOT NULL                   | Tenant display name                         |
+| slug       | VARCHAR(100)             | NOT NULL, UNIQUE           | URL-friendly identifier                     |
+| status     | tenant_status            | NOT NULL, DEFAULT 'ACTIVE' | Tenant status (ACTIVE, SUSPENDED, INACTIVE) |
+| created_at | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW()    | Creation timestamp                          |
 
 **Indexes:**
+
 - Primary key on `id`
 - Unique index on `slug`
 
@@ -74,15 +75,16 @@ Core tenant (restaurant/client) entity.
 
 System users (can belong to multiple tenants).
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | UUID | PRIMARY KEY | Unique identifier |
-| email | VARCHAR(255) | NOT NULL, UNIQUE | User email address |
-| password_hash | VARCHAR(255) | NOT NULL | Bcrypt password hash |
-| is_active | BOOLEAN | NOT NULL, DEFAULT TRUE | Account active status |
-| created_at | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() | Creation timestamp |
+| Column        | Type                     | Constraints             | Description           |
+| ------------- | ------------------------ | ----------------------- | --------------------- |
+| id            | UUID                     | PRIMARY KEY             | Unique identifier     |
+| email         | VARCHAR(255)             | NOT NULL, UNIQUE        | User email address    |
+| password_hash | VARCHAR(255)             | NOT NULL                | Bcrypt password hash  |
+| is_active     | BOOLEAN                  | NOT NULL, DEFAULT TRUE  | Account active status |
+| created_at    | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() | Creation timestamp    |
 
 **Indexes:**
+
 - Primary key on `id`
 - Unique index on `email`
 
@@ -90,14 +92,15 @@ System users (can belong to multiple tenants).
 
 Junction table for many-to-many relationship between users and tenants, with role assignment.
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| user_id | UUID | NOT NULL, FK -> users(id) | User reference |
-| tenant_id | UUID | NOT NULL, FK -> tenants(id) | Tenant reference |
-| role | VARCHAR(50) | NOT NULL | User role within tenant |
-| created_at | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() | Assignment timestamp |
+| Column     | Type                     | Constraints                 | Description             |
+| ---------- | ------------------------ | --------------------------- | ----------------------- |
+| user_id    | UUID                     | NOT NULL, FK -> users(id)   | User reference          |
+| tenant_id  | UUID                     | NOT NULL, FK -> tenants(id) | Tenant reference        |
+| role       | VARCHAR(50)              | NOT NULL                    | User role within tenant |
+| created_at | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW()     | Assignment timestamp    |
 
 **Indexes:**
+
 - Composite primary key on `(user_id, tenant_id)`
 - Index on `user_id`
 - Index on `tenant_id`
@@ -106,16 +109,17 @@ Junction table for many-to-many relationship between users and tenants, with rol
 
 Physical restaurant tables managed by tenants.
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | UUID | PRIMARY KEY | Unique identifier |
-| tenant_id | UUID | NOT NULL, FK -> tenants(id) | Tenant owner |
-| label | VARCHAR(50) | NOT NULL | Table label (e.g., "Table 1") |
-| capacity | INTEGER | NOT NULL, CHECK > 0 | Maximum seating capacity |
-| is_active | BOOLEAN | NOT NULL, DEFAULT TRUE | Table active status |
-| created_at | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() | Creation timestamp |
+| Column     | Type                     | Constraints                 | Description                   |
+| ---------- | ------------------------ | --------------------------- | ----------------------------- |
+| id         | UUID                     | PRIMARY KEY                 | Unique identifier             |
+| tenant_id  | UUID                     | NOT NULL, FK -> tenants(id) | Tenant owner                  |
+| label      | VARCHAR(50)              | NOT NULL                    | Table label (e.g., "Table 1") |
+| capacity   | INTEGER                  | NOT NULL, CHECK > 0         | Maximum seating capacity      |
+| is_active  | BOOLEAN                  | NOT NULL, DEFAULT TRUE      | Table active status           |
+| created_at | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW()     | Creation timestamp            |
 
 **Indexes:**
+
 - Primary key on `id`
 - Unique constraint on `(tenant_id, label)`
 - Index on `tenant_id`
@@ -124,41 +128,44 @@ Physical restaurant tables managed by tenants.
 
 **Finalized orders only** (immutable after creation). Draft orders remain in MongoDB.
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | UUID | PRIMARY KEY | Unique identifier |
-| tenant_id | UUID | NOT NULL, FK -> tenants(id) | Tenant owner |
-| table_id | UUID | NOT NULL, FK -> restaurant_tables(id) | Table reference |
-| status | order_status | NOT NULL, DEFAULT 'PLACED' | Order status (PLACED, PAID, CANCELLED) |
-| total_amount | DECIMAL(10, 2) | NOT NULL, CHECK >= 0 | Total order amount |
-| currency | VARCHAR(3) | NOT NULL, DEFAULT 'PLN' | Currency code (ISO 4217) |
-| created_at | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() | Creation timestamp |
-| updated_at | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() | Last update timestamp |
+| Column       | Type                     | Constraints                           | Description                            |
+| ------------ | ------------------------ | ------------------------------------- | -------------------------------------- |
+| id           | UUID                     | PRIMARY KEY                           | Unique identifier                      |
+| tenant_id    | UUID                     | NOT NULL, FK -> tenants(id)           | Tenant owner                           |
+| table_id     | UUID                     | NOT NULL, FK -> restaurant_tables(id) | Table reference                        |
+| status       | order_status             | NOT NULL, DEFAULT 'PLACED'            | Order status (PLACED, PAID, CANCELLED) |
+| total_amount | DECIMAL(10, 2)           | NOT NULL, CHECK >= 0                  | Total order amount                     |
+| currency     | VARCHAR(3)               | NOT NULL, DEFAULT 'PLN'               | Currency code (ISO 4217)               |
+| created_at   | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW()               | Creation timestamp                     |
+| updated_at   | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW()               | Last update timestamp                  |
 
 **Indexes:**
+
 - Primary key on `id`
 - Composite index on `(tenant_id, created_at DESC)` for tenant queries
 - Index on `table_id`
 - Index on `status`
 
 **Triggers:**
+
 - Auto-update `updated_at` on row update
 
 ### order_items
 
 Line items for finalized orders. Includes `name_snapshot` for historical correctness.
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | UUID | PRIMARY KEY | Unique identifier |
-| order_id | UUID | NOT NULL, FK -> orders(id) | Parent order |
-| product_id | VARCHAR(255) | NOT NULL | Product identifier (from MongoDB menu) |
-| name_snapshot | VARCHAR(255) | NOT NULL | Product name at time of order |
-| quantity | INTEGER | NOT NULL, CHECK > 0 | Item quantity |
-| unit_price | DECIMAL(10, 2) | NOT NULL, CHECK >= 0 | Price per unit at time of order |
-| created_at | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() | Creation timestamp |
+| Column        | Type                     | Constraints                | Description                            |
+| ------------- | ------------------------ | -------------------------- | -------------------------------------- |
+| id            | UUID                     | PRIMARY KEY                | Unique identifier                      |
+| order_id      | UUID                     | NOT NULL, FK -> orders(id) | Parent order                           |
+| product_id    | VARCHAR(255)             | NOT NULL                   | Product identifier (from MongoDB menu) |
+| name_snapshot | VARCHAR(255)             | NOT NULL                   | Product name at time of order          |
+| quantity      | INTEGER                  | NOT NULL, CHECK > 0        | Item quantity                          |
+| unit_price    | DECIMAL(10, 2)           | NOT NULL, CHECK >= 0       | Price per unit at time of order        |
+| created_at    | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW()    | Creation timestamp                     |
 
 **Indexes:**
+
 - Primary key on `id`
 - Index on `order_id`
 
@@ -168,41 +175,44 @@ Line items for finalized orders. Includes `name_snapshot` for historical correct
 
 Payment records for orders.
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | UUID | PRIMARY KEY | Unique identifier |
-| order_id | UUID | NOT NULL, FK -> orders(id) | Associated order |
-| provider | payment_provider | NOT NULL | Payment provider (PRZELEWY24, STRIPE, CASH) |
-| status | payment_status | NOT NULL, DEFAULT 'PENDING' | Payment status (PENDING, COMPLETED, FAILED, REFUNDED) |
-| amount | DECIMAL(10, 2) | NOT NULL, CHECK >= 0 | Payment amount |
-| external_reference | VARCHAR(255) | NULL | External payment gateway reference |
-| created_at | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() | Creation timestamp |
-| updated_at | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() | Last update timestamp |
+| Column             | Type                     | Constraints                 | Description                                           |
+| ------------------ | ------------------------ | --------------------------- | ----------------------------------------------------- |
+| id                 | UUID                     | PRIMARY KEY                 | Unique identifier                                     |
+| order_id           | UUID                     | NOT NULL, FK -> orders(id)  | Associated order                                      |
+| provider           | payment_provider         | NOT NULL                    | Payment provider (PRZELEWY24, STRIPE, CASH)           |
+| status             | payment_status           | NOT NULL, DEFAULT 'PENDING' | Payment status (PENDING, COMPLETED, FAILED, REFUNDED) |
+| amount             | DECIMAL(10, 2)           | NOT NULL, CHECK >= 0        | Payment amount                                        |
+| external_reference | VARCHAR(255)             | NULL                        | External payment gateway reference                    |
+| created_at         | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW()     | Creation timestamp                                    |
+| updated_at         | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW()     | Last update timestamp                                 |
 
 **Indexes:**
+
 - Primary key on `id`
 - Index on `order_id`
 - Index on `status`
 
 **Triggers:**
+
 - Auto-update `updated_at` on row update
 
 ### audit_logs
 
 Comprehensive audit trail for tenant actions.
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | UUID | PRIMARY KEY | Unique identifier |
-| tenant_id | UUID | NOT NULL, FK -> tenants(id) | Tenant context |
-| actor_user_id | UUID | NULL, FK -> users(id) | User who performed action (NULL for system) |
-| action | VARCHAR(100) | NOT NULL | Action performed (e.g., "CREATE_ORDER", "UPDATE_MENU") |
-| entity_type | VARCHAR(100) | NOT NULL | Entity type (e.g., "order", "menu_item") |
-| entity_id | UUID | NULL | Entity identifier |
-| metadata | JSONB | NULL | Additional context data |
-| created_at | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() | Action timestamp |
+| Column        | Type                     | Constraints                 | Description                                            |
+| ------------- | ------------------------ | --------------------------- | ------------------------------------------------------ |
+| id            | UUID                     | PRIMARY KEY                 | Unique identifier                                      |
+| tenant_id     | UUID                     | NOT NULL, FK -> tenants(id) | Tenant context                                         |
+| actor_user_id | UUID                     | NULL, FK -> users(id)       | User who performed action (NULL for system)            |
+| action        | VARCHAR(100)             | NOT NULL                    | Action performed (e.g., "CREATE_ORDER", "UPDATE_MENU") |
+| entity_type   | VARCHAR(100)             | NOT NULL                    | Entity type (e.g., "order", "menu_item")               |
+| entity_id     | UUID                     | NULL                        | Entity identifier                                      |
+| metadata      | JSONB                    | NULL                        | Additional context data                                |
+| created_at    | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW()     | Action timestamp                                       |
 
 **Indexes:**
+
 - Primary key on `id`
 - Composite index on `(tenant_id, created_at DESC)` for tenant queries
 - Composite index on `(entity_type, entity_id)` for entity lookups
@@ -211,21 +221,25 @@ Comprehensive audit trail for tenant actions.
 ## Enum Types
 
 ### tenant_status
+
 - `ACTIVE`: Tenant is active and operational
 - `SUSPENDED`: Tenant is temporarily suspended
 - `INACTIVE`: Tenant is inactive
 
 ### order_status
+
 - `PLACED`: Order has been placed
 - `PAID`: Order has been paid
 - `CANCELLED`: Order has been cancelled
 
 ### payment_provider
+
 - `PRZELEWY24`: Przelewy24 payment gateway
 - `STRIPE`: Stripe payment gateway
 - `CASH`: Cash payment
 
 ### payment_status
+
 - `PENDING`: Payment is pending
 - `COMPLETED`: Payment completed successfully
 - `FAILED`: Payment failed
@@ -234,12 +248,14 @@ Comprehensive audit trail for tenant actions.
 ## Order Lifecycle
 
 ### MongoDB Responsibility
+
 - Order draft creation
 - Live session management
 - UI interaction state
 - Real-time updates
 
 ### PostgreSQL Responsibility
+
 - **Finalized orders only**
 - Immutable order records
 - Financial correctness
@@ -250,7 +266,9 @@ Comprehensive audit trail for tenant actions.
 ## Constraints & Data Integrity
 
 ### Foreign Keys
+
 All foreign key constraints are **enabled** to ensure referential integrity:
+
 - `user_tenants.user_id` → `users.id` (CASCADE on delete)
 - `user_tenants.tenant_id` → `tenants.id` (CASCADE on delete)
 - `restaurant_tables.tenant_id` → `tenants.id` (CASCADE on delete)
@@ -262,6 +280,7 @@ All foreign key constraints are **enabled** to ensure referential integrity:
 - `audit_logs.actor_user_id` → `users.id` (SET NULL on delete)
 
 ### Check Constraints
+
 - `restaurant_tables.capacity > 0`
 - `orders.total_amount >= 0`
 - `order_items.quantity > 0`
@@ -269,11 +288,13 @@ All foreign key constraints are **enabled** to ensure referential integrity:
 - `payments.amount >= 0`
 
 ### Soft Deletes
+
 **No soft deletes** for financial tables (`orders`, `order_items`, `payments`) to maintain audit integrity.
 
 ## Indexing Strategy
 
 ### Performance Indexes
+
 - `users.email`: Unique lookup
 - `user_tenants.user_id`: User's tenant memberships
 - `user_tenants.tenant_id`: Tenant's users
@@ -307,6 +328,7 @@ asyncio.run(run_all_migrations())
 ```
 
 ### Migration Files
+
 Migrations are stored in `apps/api/migrations/` and executed in alphabetical order.
 
 ## Academic Justification
@@ -328,4 +350,3 @@ PostgreSQL is intentionally used as the **system of record**, while MongoDB hand
 - **Payment Integrations**: Extensible payment provider enum
 - **Audit Compliance**: Comprehensive audit trail for regulatory requirements
 - **Scalability**: Indexes optimized for tenant-scoped queries
-

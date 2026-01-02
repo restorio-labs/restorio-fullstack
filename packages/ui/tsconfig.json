@@ -4,7 +4,8 @@
     "jsx": "react-jsx",
     "outDir": "./dist",
     "rootDir": "../../",
-    "lib": ["ES2020", "DOM", "DOM.Iterable"]
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "types": []
   },
   "include": ["src/**/*", "tests/**/*"],
   "exclude": ["node_modules", "dist"]

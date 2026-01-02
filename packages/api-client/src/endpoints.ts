@@ -58,7 +58,7 @@ export class RestorioApi {
     update: (
       restaurantId: string,
       menuId: string,
-      data: Partial<Menu>
+      data: Partial<Menu>,
     ): Promise<Menu> =>
       this.client.put(`/restaurants/${restaurantId}/menus/${menuId}`, data),
 
@@ -79,11 +79,11 @@ export class RestorioApi {
     updateStatus: (
       restaurantId: string,
       orderId: string,
-      status: string
+      status: string,
     ): Promise<Order> =>
       this.client.patch(
         `/restaurants/${restaurantId}/orders/${orderId}/status`,
-        { status }
+        { status },
       ),
   };
 
@@ -97,7 +97,7 @@ export class RestorioApi {
     update: (
       restaurantId: string,
       tableId: string,
-      data: Partial<Table>
+      data: Partial<Table>,
     ): Promise<Table> =>
       this.client.put(`/restaurants/${restaurantId}/tables/${tableId}`, data),
 

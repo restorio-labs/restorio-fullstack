@@ -1,12 +1,13 @@
+import { resolve } from "path";
+
 import { defineConfig } from "vitest/config";
-import path from "path";
 
 export default defineConfig({
   test: {
     globals: true,
     environment: "node",
     include: ["**/tests-unit/**/*.{test,spec}.{ts,tsx}"],
-    exclude: ["node_modules", "dist", ".next", "e2e-tests"],
+    exclude: ["node_modules", "dist", ".next", "e2e"],
     setupFiles: ["./vitest.setup.ts"],
     environmentMatchGlobs: [
       ["**/tests-unit/**/*.tsx", "jsdom"],
@@ -27,13 +28,10 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@restorio/types": path.resolve(__dirname, "./packages/types/src"),
-      "@restorio/ui": path.resolve(__dirname, "./packages/ui/src"),
-      "@restorio/api-client": path.resolve(
-        __dirname,
-        "./packages/api-client/src"
-      ),
-      "@restorio/auth": path.resolve(__dirname, "./packages/auth/src"),
+      "@restorio/types": resolve(__dirname, "./packages/types/src"),
+      "@restorio/ui": resolve(__dirname, "./packages/ui/src"),
+      "@restorio/api-client": resolve(__dirname, "./packages/api-client/src"),
+      "@restorio/auth": resolve(__dirname, "./packages/auth/src"),
     },
   },
 });

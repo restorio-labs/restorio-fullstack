@@ -57,21 +57,21 @@ const rolePermissions: Record<UserRole, Permission[]> = {
 
 export const hasPermission = (
   role: UserRole,
-  permission: Permission
+  permission: Permission,
 ): boolean => {
   return rolePermissions[role].includes(permission);
 };
 
 export const hasAnyPermission = (
   role: UserRole,
-  permissions: Permission[]
+  permissions: Permission[],
 ): boolean => {
   return permissions.some((permission) => hasPermission(role, permission));
 };
 
 export const hasAllPermissions = (
   role: UserRole,
-  permissions: Permission[]
+  permissions: Permission[],
 ): boolean => {
   return permissions.every((permission) => hasPermission(role, permission));
 };

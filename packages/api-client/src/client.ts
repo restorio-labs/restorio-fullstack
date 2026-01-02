@@ -22,8 +22,8 @@ export class ApiClient {
     this.client.interceptors.request.use((requestConfig) => {
       const token = this.config.getAccessToken?.();
 
-      if (token && requestConfig.headers) {
-        requestConfig.headers.Authorization = `Bearer ${token}`;
+      if (token && requestConfig.headers["Authorization"] === undefined) {
+        requestConfig.headers["Authorization"] = `Bearer ${token}`;
       }
 
       return requestConfig;
@@ -37,7 +37,7 @@ export class ApiClient {
         }
 
         return Promise.reject(error);
-      }
+      },
     );
   }
 
@@ -50,7 +50,7 @@ export class ApiClient {
   async post<T>(
     url: string,
     data?: object,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<T> {
     const response = await this.client.post<T>(url, data, config);
 
@@ -60,7 +60,7 @@ export class ApiClient {
   async put<T>(
     url: string,
     data?: object,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<T> {
     const response = await this.client.put<T>(url, data, config);
 
@@ -70,7 +70,7 @@ export class ApiClient {
   async patch<T>(
     url: string,
     data?: object,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<T> {
     const response = await this.client.patch<T>(url, data, config);
 

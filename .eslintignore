@@ -4,9 +4,8 @@ build
 .next
 coverage
 *.config.js
-*.config.ts
-e2e-tests
+e2e
 bun.lockb
 package-lock.json
 *.log
-
+*.md

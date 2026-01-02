@@ -1,20 +1,21 @@
-import { defineConfig } from "vite";
+import { resolve } from "path";
+
 import react from "@vitejs/plugin-react";
-import path from "path";
+import { defineConfig } from "vite";
 
 export default defineConfig({
   plugins: [react()],
   root: ".",
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
-      "@restorio/types": path.resolve(__dirname, "../../packages/types/src"),
-      "@restorio/api-client": path.resolve(
+      "@": resolve(__dirname, "./src"),
+      "@restorio/types": resolve(__dirname, "../../packages/types/src"),
+      "@restorio/api-client": resolve(
         __dirname,
-        "../../packages/api-client/src"
+        "../../packages/api-client/src",
       ),
-      "@restorio/auth": path.resolve(__dirname, "../../packages/auth/src"),
-      "@restorio/ui": path.resolve(__dirname, "../../packages/ui/src"),
+      "@restorio/auth": resolve(__dirname, "../../packages/auth/src"),
+      "@restorio/ui": resolve(__dirname, "../../packages/ui/src"),
     },
   },
   server: {

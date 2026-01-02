@@ -45,7 +45,7 @@ describe("TokenStorage", () => {
 
     expect(mockSetItem).toHaveBeenCalledWith(
       "restorio_access_token",
-      mockToken
+      mockToken,
     );
   });
 
