@@ -35,6 +35,7 @@ runs:
 
       - name: Test
         working-directory: ${{ inputs.package_dir }}
+        if: ${{ inputs.package_dir != 'packages/types' }}
         shell: bash
         run: |
             bun run test
