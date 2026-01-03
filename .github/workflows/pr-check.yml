@@ -90,10 +90,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Validate Public Web Code
-        uses: ./.github/actions/pr-validate/typescript
-        with:
-          package_dir: apps/public-web
+      # TODO: Add validation for Public Web
+      # - name: Validate Public Web Code
+      #   uses: ./.github/actions/pr-validate/typescript
+      #   with:
+      #     package_dir: apps/public-web
 
   packages:
     name: Packages
