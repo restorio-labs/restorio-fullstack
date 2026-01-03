@@ -24,7 +24,7 @@
     "format:app:tablet-app": "eslint apps/tablet-app --fix",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" && eslint . --fix",
     "check": "prettier --check \"**/*.{ts,tsx,json,md}\" && eslint . --ext ts,tsx",
-    "sync:eslintignore": "for d in packages/*; do cp .eslintignore \"$d/.eslintignore\"; done"
+    "sync:eslintignore": "for d in apps/* packages/*; do cp .eslintignore \"$d/.eslintignore\"; done"
   },
   "devDependencies": {
     "@playwright/test": "^1.41.0",

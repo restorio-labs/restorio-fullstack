@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
 
-describe("Kitchen Panel", () => {
+describe("Tablet App", () => {
   it("should have basic test setup", () => {
     expect(true).toBe(true);
   });

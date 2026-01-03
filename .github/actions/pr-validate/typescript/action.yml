@@ -27,12 +27,6 @@ runs:
         shell: bash
         run: bun install
 
-      - name: Build
-        working-directory: ${{ inputs.package_dir }}
-        shell: bash
-        run: |
-            bun run build
-
       - name: Lint
         working-directory: ${{ inputs.package_dir }}
         shell: bash
@@ -44,3 +38,9 @@ runs:
         shell: bash
         run: |
             bun run test
+
+      - name: Build
+        working-directory: ${{ inputs.package_dir }}
+        shell: bash
+        run: |
+            bun run build
