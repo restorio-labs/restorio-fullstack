@@ -8,14 +8,16 @@
     "clean": "rm -rf dist",
     "test": "vitest run",
     "test:unit": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" && eslint . --fix",
+    "check": "prettier --check \"**/*.{ts,tsx,json,md}\" && eslint . --ext ts,tsx"
   },
   "dependencies": {
     "@restorio/types": "*",
     "axios": "^1.6.2"
   },
   "devDependencies": {
-    "typescript": "^5.3.3",
+    "typescript": "^5.9",
     "vitest": "^1.2.0"
   }
 }

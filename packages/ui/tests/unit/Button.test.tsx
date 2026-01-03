@@ -20,6 +20,6 @@ describe("Button", () => {
     render(<Button size="lg">Large</Button>);
     const button = screen.getByText("Large");
 
-    expect(button.className).toContain("btn-lg");
+    expect(button).toHaveClass("btn-lg");
   });
 });

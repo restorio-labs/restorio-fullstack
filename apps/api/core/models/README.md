@@ -54,7 +54,7 @@ All relationships use string references to avoid circular imports:
 # In tenant.py
 orders: Mapped[list[Order]] = relationship(...)
 
-# In order.py  
+# In order.py
 tenant: Mapped[Tenant] = relationship(...)
 ```
 
@@ -70,5 +70,3 @@ from core.database import Base
 class Tenant(Base):
     ...
 ```
-
-

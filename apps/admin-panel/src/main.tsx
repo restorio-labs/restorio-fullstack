@@ -1,7 +1,7 @@
 import React from "react";
-import ReactDOM from "react-dom/client";
+import { createRoot } from "react-dom/client";
 
-const App = (): JSX.Element => {
+const App = (): React.ReactElement => {
   return (
     <div>
       <h1>Restorio Admin Panel</h1>
@@ -13,9 +13,11 @@ const App = (): JSX.Element => {
 const root = document.getElementById("root");
 
 if (root) {
-  ReactDOM.createRoot(root).render(
+  const reactRoot = createRoot(root);
+
+  reactRoot.render(
     <React.StrictMode>
       <App />
-    </React.StrictMode>
+    </React.StrictMode>,
   );
 }

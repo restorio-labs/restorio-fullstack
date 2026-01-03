@@ -1,10 +1,3 @@
-/* eslint-disable
-  @typescript-eslint/no-unsafe-member-access,
-  @typescript-eslint/no-unsafe-call,
-  @typescript-eslint/no-unsafe-assignment,
-  @typescript-eslint/no-unsafe-return,
-  @typescript-eslint/no-redundant-type-constituents
-*/
 // Browser-only code - localStorage API is safe to use
 
 const ACCESS_TOKEN_KEY = "restorio_access_token";
@@ -83,7 +76,7 @@ export class TokenStorage {
         atob(base64)
           .split("")
           .map((c) => `%${`00${c.charCodeAt(0).toString(16)}`.slice(-2)}`)
-          .join("")
+          .join(""),
       );
 
       return JSON.parse(jsonPayload) as Record<string, string>;

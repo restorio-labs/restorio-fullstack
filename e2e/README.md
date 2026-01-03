@@ -34,8 +34,8 @@ bun run report
 ## Test Structure
 
 ```
-e2e-tests/
-├── tests/           # Test files
+e2e/
+├── specs/           # Test files
 ├── fixtures/        # Test fixtures and helpers
 └── playwright.config.ts
 ```

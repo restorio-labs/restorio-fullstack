@@ -5,6 +5,7 @@ This project uses **Alembic** for database migrations with SQLAlchemy ORM.
 ## Running Migrations
 
 ### Apply all pending migrations
+
 ```bash
 make migrate
 # or
@@ -12,6 +13,7 @@ uv run alembic upgrade head
 ```
 
 ### Create a new migration
+
 ```bash
 make migrate-create NAME="add_user_profile"
 # or
@@ -19,6 +21,7 @@ uv run alembic revision --autogenerate -m "add_user_profile"
 ```
 
 ### Show migration history
+
 ```bash
 make migrate-history
 # or
@@ -26,6 +29,7 @@ uv run alembic history
 ```
 
 ### Show current migration version
+
 ```bash
 make migrate-current
 # or
@@ -33,6 +37,7 @@ uv run alembic current
 ```
 
 ### Downgrade one migration
+
 ```bash
 make migrate-downgrade
 # or
@@ -57,6 +62,7 @@ uv run alembic downgrade -1
 ## Migration Files
 
 Migration files are auto-generated in `alembic/versions/` with format:
+
 - `{revision}_{description}.py`
 
 ## Schema Documentation
