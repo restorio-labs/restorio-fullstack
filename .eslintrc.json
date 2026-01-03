@@ -170,35 +170,6 @@
       }
     ]
   },
-  "overrides": [
-    {
-      "files": ["**/main.tsx", "**/index.tsx", "**/entry.tsx", "**/*Provider.tsx", "storage.ts", "**/*.test.tsx"],
-      "rules": {
-        "@typescript-eslint/no-unsafe-assignment": "off",
-        "@typescript-eslint/no-unsafe-call": "off",
-        "@typescript-eslint/no-unsafe-member-access": "off",
-        "@typescript-eslint/no-unsafe-argument": "off",
-        "@typescript-eslint/no-redundant-type-constituents": "off",
-        "@typescript-eslint/no-unsafe-return": "off"
-      }
-    },
-    {
-      "files": [
-        "**/*.config.ts",
-        "**/*.config.js",
-        "**/*.config.cjs",
-        "**/.eslintrc.*",
-        "**/vite.config.ts",
-        "**/tailwind.config.ts",
-        "**/postcss.config.ts",
-        "**/test.setup.ts",
-        "**/vitest.setup.ts"
-      ],
-      "parserOptions": {
-        "project": null
-      }
-    }
-  ],
 
   "settings": {
     "import/resolver": {

@@ -152,7 +152,6 @@
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.9",
-        "vitest": "^1.2.0",
       },
     },
     "packages/ui": {

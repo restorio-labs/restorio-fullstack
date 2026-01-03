@@ -1,11 +1,17 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "./dist",
-    "rootDir": "../../",
-    "lib": ["ES2020", "DOM"]
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+
+    "outDir": "dist",
+    "rootDir": "src",
+
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+
+    "types": ["react", "react-dom"]
   },
-  "include": ["src/**/*"],
   "references": [{ "path": "../types" }],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src"]
 }

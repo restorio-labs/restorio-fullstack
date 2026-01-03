@@ -1,5 +1,5 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["src/**/*", "tests/**/*", "tailwind.config.ts"],
+  "include": ["src", "tests", "tailwind.config.ts"],
   "exclude": ["postcss.config.js"]
 }
