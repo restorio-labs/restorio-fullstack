@@ -10,8 +10,8 @@
     "test": "vitest run",
     "test:unit": "vitest run",
     "test:watch": "vitest",
-    "format": "eslint . --fix",
-    "check": "eslint . --ext ts,tsx"
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" && eslint . --fix",
+    "check": "prettier --check \"**/*.{ts,tsx,json,md}\" && eslint . --ext ts,tsx"
   },
   "dependencies": {
     "react": "^18.2.0",

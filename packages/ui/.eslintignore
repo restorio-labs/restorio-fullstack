@@ -12,3 +12,6 @@ package-lock.json
 *.md
 postcss.config.js
 test.setup.ts
+vitest.setup.ts
+apps/public-web/**
+vitest.config.ts
