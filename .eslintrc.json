@@ -25,17 +25,7 @@
       {
         "blankLine": "always",
         "prev": "*",
-        "next": [
-          "return",
-          "throw",
-          "break",
-          "continue",
-          "if",
-          "for",
-          "while",
-          "switch",
-          "try"
-        ]
+        "next": ["return", "throw", "break", "continue", "if", "for", "while", "switch", "try"]
       },
       {
         "blankLine": "always",
@@ -105,14 +95,7 @@
     "import/order": [
       "error",
       {
-        "groups": [
-          "builtin",
-          "external",
-          "internal",
-          "parent",
-          "sibling",
-          "index"
-        ],
+        "groups": ["builtin", "external", "internal", "parent", "sibling", "index"],
         "newlines-between": "always",
         "alphabetize": {
           "order": "asc",
@@ -189,13 +172,7 @@
   },
   "overrides": [
     {
-      "files": [
-        "**/main.tsx",
-        "**/index.tsx",
-        "**/entry.tsx",
-        "**/*Provider.tsx",
-        "storage.ts"
-      ],
+      "files": ["**/main.tsx", "**/index.tsx", "**/entry.tsx", "**/*Provider.tsx", "storage.ts", "**/*.test.tsx"],
       "rules": {
         "@typescript-eslint/no-unsafe-assignment": "off",
         "@typescript-eslint/no-unsafe-call": "off",
@@ -203,6 +180,22 @@
         "@typescript-eslint/no-unsafe-argument": "off",
         "@typescript-eslint/no-redundant-type-constituents": "off",
         "@typescript-eslint/no-unsafe-return": "off"
+      }
+    },
+    {
+      "files": [
+        "**/*.config.ts",
+        "**/*.config.js",
+        "**/*.config.cjs",
+        "**/.eslintrc.*",
+        "**/vite.config.ts",
+        "**/tailwind.config.ts",
+        "**/postcss.config.ts",
+        "**/test.setup.ts",
+        "**/vitest.setup.ts"
+      ],
+      "parserOptions": {
+        "project": null
       }
     }
   ],
@@ -215,12 +208,5 @@
       }
     }
   },
-  "ignorePatterns": [
-    "node_modules",
-    "dist",
-    "build",
-    ".next",
-    "coverage",
-    "e2e"
-  ]
+  "ignorePatterns": ["node_modules", "dist", "build", ".next", "coverage", "e2e"]
 }

@@ -1,25 +1,21 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "bun:test";
 
 import { Button } from "../../src/Button";
 
 describe("Button", () => {
-  it("should render button with children", () => {
+  it("renders children", () => {
     render(<Button>Click me</Button>);
-    expect(screen.getByText("Click me")).toBeInTheDocument();
+    expect(screen.getByText("Click me")).toBeDefined();
   });
 
-  it("should apply primary variant class", () => {
+  it("applies primary variant class", () => {
     render(<Button variant="primary">Primary</Button>);
-    const button = screen.getByText("Primary");
-
-    expect(button.className).toContain("btn-primary");
+    expect(screen.getByText("Primary").className).toContain("btn-primary");
   });
 
-  it("should apply size class", () => {
+  it("applies size class", () => {
     render(<Button size="lg">Large</Button>);
-    const button = screen.getByText("Large");
-
-    expect(button.className).toContain("btn-lg");
+    expect(screen.getByText("Large").className).toContain("btn-lg");
   });
 });

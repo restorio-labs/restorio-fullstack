@@ -31,7 +31,7 @@ runs:
         working-directory: ${{ inputs.package_dir }}
         shell: bash
         run: |
-            bun run lint
+            bun run check
 
       - name: Test
         working-directory: ${{ inputs.package_dir }}

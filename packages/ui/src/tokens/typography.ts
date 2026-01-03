@@ -12,15 +12,9 @@ export const typographyTokens = {
       '"Segoe UI Emoji"',
       '"Segoe UI Symbol"',
     ].join(", "),
-    mono: [
-      "ui-monospace",
-      "SFMono-Regular",
-      '"SF Mono"',
-      "Menlo",
-      "Consolas",
-      '"Liberation Mono"',
-      "monospace",
-    ].join(", "),
+    mono: ["ui-monospace", "SFMono-Regular", '"SF Mono"', "Menlo", "Consolas", '"Liberation Mono"', "monospace"].join(
+      ", ",
+    ),
   },
   fontSize: {
     xs: ["0.75rem", { lineHeight: "1rem" }],

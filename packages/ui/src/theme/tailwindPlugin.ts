@@ -12,16 +12,8 @@ const flattenToCSSVars = (
 
     if (typeof value === "string") {
       result[cssKey] = value;
-    } else if (
-      typeof value === "object" &&
-      value !== null &&
-      !Array.isArray(value)
-    ) {
-      flattenToCSSVars(
-        value as Record<string, unknown>,
-        prefix ? `${prefix}-${key}` : key,
-        result,
-      );
+    } else if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+      flattenToCSSVars(value as Record<string, unknown>, prefix ? `${prefix}-${key}` : key, result);
     }
   }
 

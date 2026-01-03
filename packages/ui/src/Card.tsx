@@ -6,11 +6,7 @@ interface CardProps {
   className?: string;
 }
 
-export const Card: React.FC<CardProps> = ({
-  title,
-  children,
-  className = "",
-}) => {
+export const Card: React.FC<CardProps> = ({ title, children, className = "" }) => {
   return (
     <div className={`card ${className}`}>
       {title && <div className="card-header">{title}</div>}

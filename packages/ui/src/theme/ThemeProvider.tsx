@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  useMemo,
-} from "react";
+import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
 
 import { colorTokens, type ThemeMode, type ThemeOverride } from "../tokens";
 
@@ -47,12 +41,8 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   initialOverride = null,
 }) => {
   const [mode, setModeState] = useState<ThemeMode>(defaultMode);
-  const [override, setOverrideState] = useState<ThemeOverride | null>(
-    initialOverride,
-  );
-  const [systemTheme, setSystemTheme] = useState<"light" | "dark">(
-    getSystemTheme(),
-  );
+  const [override, setOverrideState] = useState<ThemeOverride | null>(initialOverride);
+  const [systemTheme, setSystemTheme] = useState<"light" | "dark">(getSystemTheme());
 
   useEffect(() => {
     if (mode !== "system" || typeof window === "undefined") {
@@ -117,8 +107,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   };
 
   const colors = useMemo(() => {
-    const baseColors =
-      resolvedMode === "dark" ? colorTokens.dark : colorTokens.light;
+    const baseColors = resolvedMode === "dark" ? colorTokens.dark : colorTokens.light;
 
     if (!override?.colors) {
       return baseColors;
@@ -172,9 +161,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     [mode, resolvedMode, override, colors],
   );
 
-  return (
-    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };
 
 export const useTheme = (): ThemeContextValue => {

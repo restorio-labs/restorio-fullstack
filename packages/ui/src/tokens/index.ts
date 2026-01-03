@@ -16,9 +16,7 @@ export type ThemeMode = "light" | "dark" | "system";
 
 export interface ThemeOverride {
   colors?: Partial<{
-    [K in keyof typeof colorTokens.light]: Partial<
-      (typeof colorTokens.light)[K]
-    >;
+    [K in keyof typeof colorTokens.light]: Partial<(typeof colorTokens.light)[K]>;
   }>;
   spacing?: Partial<typeof spacingTokens>;
   radius?: Partial<typeof radiusTokens>;

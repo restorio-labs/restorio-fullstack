@@ -43,10 +43,7 @@ describe("TokenStorage", () => {
 
     TokenStorage.setAccessToken(mockToken);
 
-    expect(mockSetItem).toHaveBeenCalledWith(
-      "restorio_access_token",
-      mockToken,
-    );
+    expect(mockSetItem).toHaveBeenCalledWith("restorio_access_token", mockToken);
   });
 
   it("should clear tokens from localStorage", () => {
