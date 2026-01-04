@@ -13,13 +13,37 @@ concurrency:
 
 
 jobs:
+  detect-changes:
+    name: Detect changed areas
+    runs-on: ubuntu-slim
+    outputs:
+      packages-and-apps: ${{ steps.filter.outputs.packages-and-apps }}
+      api: ${{ steps.filter.outputs.api }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Path filter
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            packages-and-apps:
+              - 'packages/**'
+              - 'apps/kitchen-panel/**'
+              - 'apps/tablet-app/**'
+              - 'apps/admin-panel/**'
+              - 'apps/public-web/**'
+            api:
+              - 'apps/api/**'
+
   apps-and-packages:
     name: Apps and Packages Validation
     runs-on: ubuntu-slim
+    needs: detect-changes
+    if: needs.detect-changes.outputs.packages-and-apps == 'true'
     steps:
       - uses: actions/checkout@v6
 
-      - name Validate all apps and packages
+      - name: Validate all Apps and Packages
         uses: ./.github/actions/pr-validate/typescript
 
   api:
