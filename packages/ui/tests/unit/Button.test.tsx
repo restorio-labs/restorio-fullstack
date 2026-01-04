@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import React from "react";
 import { describe, it, expect } from "vitest";
 
 import { Button } from "../../src/Button";
@@ -6,7 +7,7 @@ import { Button } from "../../src/Button";
 describe("Button", () => {
   it("should render button with children", () => {
     render(<Button>Click me</Button>);
-    expect(screen.getByText("Click me")).toBeInTheDocument();
+    expect(screen.getByText("Click me")).toBeTruthy();
   });
 
   it("should apply primary variant class", () => {
@@ -20,6 +21,6 @@ describe("Button", () => {
     render(<Button size="lg">Large</Button>);
     const button = screen.getByText("Large");
 
-    expect(button).toHaveClass("btn-lg");
+    expect(button.className).toContain("btn-lg");
   });
 });

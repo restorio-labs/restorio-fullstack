@@ -1,11 +1,4 @@
 {
   "extends": "./tsconfig.json",
-  "include": [
-    "app",
-    "src",
-    "tests",
-    "next-env.d.ts",
-    "vite.config.ts",
-    "vitest.config.ts"
-  ]
+  "include": ["app", "src", "tests", "next-env.d.ts", "vite.config.ts", "vitest.config.ts"]
 }

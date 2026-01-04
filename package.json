@@ -6,7 +6,6 @@
     "apps/*",
     "packages/*"
   ],
-
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
@@ -15,6 +14,8 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "clean": "turbo run clean && rm -rf node_modules bun.lockb",
+    "format:packages": "turbo run check",
+    "format:apps": "turbo run format:apps",
     "format:package:api-client": "eslint packages/api-client --fix",
     "format:package:auth": "eslint packages/auth --fix",
     "format:package:types": "eslint packages/types --fix",
@@ -23,6 +24,14 @@
     "format:app:kitchen-panel": "eslint apps/kitchen-panel --fix",
     "format:app:public-web": "eslint apps/public-web --fix",
     "format:app:tablet-app": "eslint apps/tablet-app --fix",
+    "check:package:api-client": "eslint packages/api-client",
+    "check:package:auth": "eslint packages/auth",
+    "check:package:types": "eslint packages/types",
+    "check:package:ui": "eslint packages/ui",
+    "check:app:admin-panel": "eslint apps/admin-panel",
+    "check:app:kitchen-panel": "eslint apps/kitchen-panel",
+    "check:app:public-web": "eslint apps/public-web",
+    "check:app:tablet-app": "eslint apps/tablet-app",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" && eslint . --fix",
     "check": "prettier --check \"**/*.{ts,tsx,json,md}\" && eslint . --ext ts,tsx",
     "sync:eslintignore": "for d in apps/* packages/*; do [ \"$d\" = \"apps/api\" ] && continue; cp .eslintignore \"$d/.eslintignore\"; done",

@@ -13,109 +13,14 @@ concurrency:
 
 
 jobs:
-  detect-changes:
-    name: Detect changed areas
+  apps-and-packages:
+    name: Apps and Packages Validation
     runs-on: ubuntu-slim
-    outputs:
-      kitchen-panel: ${{ steps.filter.outputs.kitchen-panel }}
-      tablet-app: ${{ steps.filter.outputs.tablet-app }}
-      admin-panel: ${{ steps.filter.outputs.admin-panel }}
-      public-web: ${{ steps.filter.outputs.public-web }}
-      packages: ${{ steps.filter.outputs.packages }}
-      api: ${{ steps.filter.outputs.api }}
-    steps:
-      - uses: actions/checkout@v6
-      - name: Path filter
-        id: filter
-        uses: dorny/paths-filter@v3
-        with:
-          filters: |
-            packages:
-              - 'packages/**'
-            api:
-              - 'apps/api/**'
-            kitchen-panel:
-              - 'apps/kitchen-panel/**'
-            tablet-app:
-              - 'apps/tablet-app/**'
-            admin-panel:
-              - 'apps/admin-panel/**'
-            public-web:
-              - 'apps/public-web/**'
-
-  admin-panel:
-    name: Admin Panel
-    runs-on: ubuntu-slim
-    needs: detect-changes
-    if: needs.detect-changes.outputs.admin-panel == 'true'
     steps:
       - uses: actions/checkout@v6
 
-      - name: Validate Admin Panel Code
+      - name Validate all apps and packages
         uses: ./.github/actions/pr-validate/typescript
-        with:
-          package_dir: apps/admin-panel
-
-  kitchen-panel:
-    name: Kitchen Panel
-    runs-on: ubuntu-slim
-    needs: detect-changes
-    if: needs.detect-changes.outputs.kitchen-panel == 'true'
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Validate Kitchen Panel Code
-        uses: ./.github/actions/pr-validate/typescript
-        with:
-          package_dir: apps/kitchen-panel
-
-  tablet-app:
-    name: Tablet App
-    runs-on: ubuntu-slim
-    needs: detect-changes
-    if: needs.detect-changes.outputs.tablet-app == 'true'
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Validate Tablet App Code
-        uses: ./.github/actions/pr-validate/typescript
-        with:
-          package_dir: apps/tablet-app
-
-  public-web:
-    name: Public Web
-    runs-on: ubuntu-slim
-    needs: detect-changes
-    if: needs.detect-changes.outputs.public-web == 'true'
-    steps:
-      - uses: actions/checkout@v6
-
-      # TODO: Add validation for Public Web
-      # - name: Validate Public Web Code
-      #   uses: ./.github/actions/pr-validate/typescript
-      #   with:
-      #     package_dir: apps/public-web
-
-  packages:
-    name: Packages
-    runs-on: ubuntu-slim
-    needs: detect-changes
-    if: needs.detect-changes.outputs.packages == 'true'
-    strategy:
-      fail-fast: false
-      matrix:
-        target:
-          - packages/types
-          - packages/api-client
-          - packages/auth
-          - packages/ui
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Validate ${{ matrix.target }} Code
-        uses: ./.github/actions/pr-validate/typescript
-        with:
-          package_dir: ${{ matrix.target }}
 
   api:
     name: Python API Validation

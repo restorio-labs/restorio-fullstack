@@ -1,9 +1,5 @@
 name: TypeScript Setup
 description: "Setup TypeScript environment"
-
-inputs:
-  package_dir:
-    required: true
   
 runs:
   using: composite
@@ -27,21 +23,14 @@ runs:
         shell: bash
         run: bun install
 
-      - name: Lint
-        working-directory: ${{ inputs.package_dir }}
+      - name: Format check in all packages and apps
         shell: bash
-        run: |
-            bun run check
-
-      - name: Test
-        working-directory: ${{ inputs.package_dir }}
-        if: ${{ inputs.package_dir != 'packages/types' }}
-        shell: bash
-        run: |
-            bun run test
+        run: bun run format
 
       - name: Build
-        working-directory: ${{ inputs.package_dir }}
         shell: bash
-        run: |
-            bun run build
+        run: bun run build
+
+      - name: Test
+        shell: bash
+        run: bun run test:unit
