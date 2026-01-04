@@ -11,7 +11,3 @@ package-lock.json
 *.log
 *.md
 postcss.config.js
-test.setup.ts
-vitest.setup.ts
-apps/public-web/**
-next-env.d.ts

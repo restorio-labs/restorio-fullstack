@@ -6,6 +6,7 @@
     "apps/*",
     "packages/*"
   ],
+
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
@@ -24,7 +25,8 @@
     "format:app:tablet-app": "eslint apps/tablet-app --fix",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" && eslint . --fix",
     "check": "prettier --check \"**/*.{ts,tsx,json,md}\" && eslint . --ext ts,tsx",
-    "sync:eslintignore": "for d in apps/* packages/*; do cp .eslintignore \"$d/.eslintignore\"; done"
+    "sync:eslintignore": "for d in apps/* packages/*; do cp .eslintignore \"$d/.eslintignore\"; done",
+    "sync:prettierignore": "for d in apps/* packages/*; do cp .prettierignore \"$d/.prettierignore\"; done"
   },
   "devDependencies": {
     "@playwright/test": "^1.41.0",

@@ -1,15 +1,16 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "composite": true,
+    "rootDir": "src",
+    "outDir": "dist",
+
     "declaration": true,
     "declarationMap": true,
 
-    "outDir": "dist",
-    "rootDir": "src",
-
-    "types": []
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true
   },
-  "references": [{ "path": "../types" }],
-  "include": ["src"]
+  "include": ["src", "../tests/vitest.setup.ts"],
+  "exclude": ["../node_modules", "../dist"]
 }

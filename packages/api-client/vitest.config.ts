@@ -6,13 +6,8 @@ export default defineConfig({
   plugins: [react()],
   test: {
     globals: true,
-    environment: "jsdom",
+    environment: "node",
     include: ["tests/unit/**/*.{test,spec}.{ts,tsx}"],
-    setupFiles: ["../../vitest.setup.ts", "./tests/test.setup.ts"],
-  },
-  resolve: {
-    alias: {
-      "@restorio/types": resolve(__dirname, "../../packages/types/src"),
-    },
+    setupFiles: ["./tests/vitest.setup.ts"],
   },
 });

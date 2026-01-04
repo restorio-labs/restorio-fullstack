@@ -1,5 +1,5 @@
-import { UserRole } from "@restorio/types";
 import { describe, it, expect } from "vitest";
+import { User}
 
 import { hasPermission, Permissions } from "../../src/permissions";
 

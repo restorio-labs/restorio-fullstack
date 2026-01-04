@@ -1,8 +1,9 @@
 {
   "name": "@restorio/api-client",
-  "version": "0.1.0",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "private": true,
   "scripts": {
     "build": "tsc -b",
     "clean": "rm -rf dist",
@@ -14,6 +15,7 @@
   },
   "dependencies": {
     "@restorio/types": "*",
+    "@restorio/auth": "*",
     "axios": "^1.6.2"
   },
   "devDependencies": {

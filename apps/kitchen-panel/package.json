@@ -17,10 +17,10 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.21.1",
-    "@restorio/types": "*",
-    "@restorio/api-client": "*",
-    "@restorio/auth": "*",
-    "@restorio/ui": "*"
+    "@restorio/types": "file:../../packages/types",
+    "@restorio/api-client": "file:../../packages/api-client",
+    "@restorio/auth": "file:../../packages/auth",
+    "@restorio/ui": "file:../../packages/ui"
   },
   "devDependencies": {
     "@types/react": "^18.2.45",

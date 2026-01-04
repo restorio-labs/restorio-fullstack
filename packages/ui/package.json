@@ -1,11 +1,12 @@
 {
   "name": "@restorio/ui",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "private": true,
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
   "scripts": {
-    "build": "tsc -b",
+    "build": "tsc",
     "clean": "rm -rf dist",
     "test": "vitest run",
     "test:unit": "vitest run",
@@ -13,9 +14,12 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" && eslint . --fix",
     "check": "prettier --check \"**/*.{ts,tsx,json,md}\" && eslint . --ext ts,tsx"
   },
-  "dependencies": {
+  "peerDependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
+  },
+  "dependencies": {
+    "@restorio/types": "1.0.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.1.5",
@@ -27,11 +31,7 @@
     "jsdom": "^27.4.0",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5.9",
+    "typescript": "^5.9.0",
     "vitest": "^1.2.0"
-  },
-  "peerDependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
   }
 }
