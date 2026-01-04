@@ -2,11 +2,17 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "jsx": "react-jsx"
-  },
-  "rootDir": "src",
-  "outDir": "dist",
+    "jsx": "react-jsx",
 
-  "include": ["src", "tests", "tailwind.config.ts", "../tests/vitest.setup.ts"],
-  "exclude": ["postcss.config.js"]
+    "rootDir": "src",
+    "outDir": "dist",
+
+    "declaration": true,
+    "declarationMap": true,
+
+    "noEmit": false
+  },
+
+  "include": ["src"],
+  "exclude": ["tests", "tailwind.config.ts", "postcss.config.js"]
 }

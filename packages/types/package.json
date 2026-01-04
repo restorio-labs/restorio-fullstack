@@ -2,12 +2,15 @@
   "name": "@restorio/types",
   "version": "1.0.0",
   "private": true,
-
-  "types": "dist/index.d.ts",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./dist/index.d.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
-
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist",

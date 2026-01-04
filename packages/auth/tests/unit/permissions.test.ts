@@ -1,7 +1,7 @@
+import { UserRole } from "@restorio/types";
 import { describe, it, expect } from "vitest";
-import { User}
 
-import { hasPermission, Permissions } from "../../src/permissions";
+import { hasPermission, Permissions } from "@restorio/auth";
 
 describe("Permissions", () => {
   it("should allow super admin to manage restaurants", () => {

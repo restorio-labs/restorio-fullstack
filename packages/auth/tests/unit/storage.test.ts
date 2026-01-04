@@ -9,7 +9,6 @@ describe("TokenStorage", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // @ts-expect-error - intentionally mocking localStorage for tests
     Object.defineProperty(window, "localStorage", {
       value: {
         getItem: mockGetItem,
