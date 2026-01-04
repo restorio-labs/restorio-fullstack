@@ -13,6 +13,7 @@
   },
   "scripts": {
     "build": "tsc -b",
+    "prepare": "bun run build",
     "clean": "rm -rf dist",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" && eslint . --fix",
     "check": "prettier --check \"**/*.{ts,tsx,json,md}\" && eslint . --ext ts,tsx"
