@@ -23,14 +23,14 @@ runs:
         shell: bash
         run: bun install
 
-      - name: Format check in all packages and apps
-        shell: bash
-        run: bun run format
-
-      - name: Build
+      - name: Build apps and packages
         shell: bash
         run: bun run build
 
-      - name: Test
+      - name: Format check in all packages and apps
+        shell: bash
+        run: bun run format      
+
+      - name: Unit tests apps and packages
         shell: bash
         run: bun run test:unit
