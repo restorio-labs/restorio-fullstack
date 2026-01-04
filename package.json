@@ -13,7 +13,7 @@
     "test:unit": "turbo run test:unit",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "clean": "rm -rf node_modules bun.lockb && turbo run clean",
+    "clean": "turbo run clean",
     "format:packages": "turbo run check",
     "format:apps": "turbo run format:apps",
     "format:package:api-client": "eslint packages/api-client --fix",
