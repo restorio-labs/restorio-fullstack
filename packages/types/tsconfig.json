@@ -4,11 +4,10 @@
     "rootDir": "src",
     "outDir": "dist",
 
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
 
     "declaration": true,
-    "emitDeclarationOnly": false,
 
     "strict": true
   },

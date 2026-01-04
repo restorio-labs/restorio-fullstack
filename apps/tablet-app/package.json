@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --port 3003",
     "build": "tsc && vite build",
+    "clean": "rm -rf dist && rm -rf node_modules",
     "preview": "vite preview",
     "test": "vitest run",
     "test:unit": "vitest run",
