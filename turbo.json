@@ -19,7 +19,7 @@
     },
     "test:unit": {
       "dependsOn": ["^test:unit"],
-      "outputs": ["coverage/**"]
+      "cache": false
     },
     "clean": {
       "cache": false
