@@ -45,6 +45,11 @@ jobs:
 
       - name: Validate all Apps and Packages
         uses: ./.github/actions/pr-validate/typescript
+      
+      - name: Comment coverage on PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          path: coverage-summary.md
 
   api:
     name: Python API Validation

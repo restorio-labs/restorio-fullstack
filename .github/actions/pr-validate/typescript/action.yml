@@ -34,3 +34,7 @@ runs:
     - name: Unit tests apps and packages
       shell: bash
       run: bun run test:unit
+
+    - name: Generate coverage report
+      shell: bash
+      run: bun run coverage:report

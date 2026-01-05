@@ -14,3 +14,4 @@ postcss.config.js
 vitest.setup.ts
 apps/public-web/**
 vitest.config.ts
+scripts
