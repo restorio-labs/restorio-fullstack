@@ -15,11 +15,12 @@
     },
     "test": {
       "dependsOn": ["^test"],
-      "outputs": ["coverage/**"]
+      "cache": false
     },
     "test:unit": {
       "dependsOn": ["^test:unit"],
-      "cache": false
+      "cache": false,
+      "outputs": ["coverage/**"]
     },
     "clean": {
       "cache": false

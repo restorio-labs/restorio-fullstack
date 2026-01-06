@@ -1,5 +1,5 @@
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   plugins: [react()],
@@ -7,14 +7,16 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     include: ["tests/unit/**/*.{test,spec}.{ts,tsx}"],
+    exclude: ["/node_modules/", "/dist/", "/.turbo/", "/.next/"],
     setupFiles: ["../../vitest.setup.ts"],
     coverage: {
+      enabled: true,
       provider: "v8",
-      reporter: ["text", "json", "html"],
-      exclude: ["node_modules/", "**/*.d.ts", "**/*.config.*", "**/dist/**"],
+      reportsDirectory: "./coverage",
+      reporter: ["text", "json-summary"],
     },
   },
   server: {
-    port: 3003,
+    port: 3002,
   },
 });

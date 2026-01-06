@@ -1,23 +1,45 @@
 import { defineConfig } from "vitest/config";
 import { resolve } from "path";
 
+const isCI = !!process.env.GITHUB_ACTIONS;
+
 export default defineConfig({
   test: {
     globals: true,
-    environment: "node",
-    include: ["**/tests/unit/**/*.{test,spec}.{ts,tsx}"],
-    exclude: ["node_modules", "dist", ".next", "e2e-tests"],
-    setupFiles: ["./vitest.setup.ts"],
-    environmentMatchGlobs: [
-      ["**/tests/unit/**/*.tsx", "jsdom"],
-      ["**/tests/unit/**/*.test.tsx", "jsdom"],
-      ["**/auth/tests/unit/storage.test.ts", "jsdom"],
+    root: process.cwd(),
+    environment: "jsdom",
+    include: [
+      "packages/*/tests/unit/**/*.{test,spec}.{ts,tsx}",
+      "apps/*/tests/unit/**/*.{test,spec}.{ts,tsx}",
     ],
+
+    exclude: [
+      "/node_modules/",
+      "/dist/",
+      "/\.turbo/",
+      "/\.next/",
+    ],
+
+    setupFiles: ["vitest.setup.ts"],
+    reporters: isCI
+    ? ["default", "github-actions"]
+    : ["default"],
+
     coverage: {
+      enabled: true,
       provider: "v8",
-      reporter: ["text-summary", "json"],
       reportsDirectory: "./coverage",
-      exclude: ["node_modules/", "**/*.d.ts", "**/*.config.*", "**/dist/**"],
+
+      reporter: isCI
+        ? ["json-summary"]
+        : ["html", "text"],
+
+      exclude: [
+        "node_modules",
+        "**/*.d.ts",
+        "**/*.config.*",
+        "**/dist/**"
+      ],
     },
   },
   resolve: {
