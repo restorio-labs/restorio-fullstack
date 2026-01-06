@@ -1,19 +1,18 @@
+import { resolve } from "path";
+
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vitest/config";
+import { defineConfig } from "vite";
 
 export default defineConfig({
   plugins: [react()],
-  test: {
-    globals: true,
-    environment: "jsdom",
-    include: ["tests/unit/**/*.{test,spec}.{ts,tsx}"],
-    exclude: ["/node_modules/", "/dist/", "/.turbo/", "/.next/"],
-    setupFiles: ["../../vitest.setup.ts"],
-    coverage: {
-      enabled: true,
-      provider: "v8",
-      reportsDirectory: "./coverage",
-      reporter: ["text", "json-summary"],
+  root: ".",
+  resolve: {
+    alias: {
+      "@": resolve(__dirname, "./src"),
+      "@restorio/types": resolve(__dirname, "../../packages/types/src"),
+      "@restorio/api-client": resolve(__dirname, "../../packages/api-client/src"),
+      "@restorio/auth": resolve(__dirname, "../../packages/auth/src"),
+      "@restorio/ui": resolve(__dirname, "../../packages/ui/src"),
     },
   },
   server: {
