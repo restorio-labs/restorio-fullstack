@@ -27,11 +27,7 @@ type Row = {
   branches: number;
 };
 
-const COVERAGE_PATH = path.resolve(
-  process.cwd(),
-  process.env.COVERAGE_DIR ?? "coverage",
-  "coverage-summary.json"
-);
+const COVERAGE_PATH = path.resolve(process.cwd(), process.env.COVERAGE_DIR ?? "coverage", "coverage-summary.json");
 
 function color(pct: number): string {
   if (pct >= 80) return "🟢";
@@ -54,14 +50,10 @@ function readCoverage(): CoverageSummary {
 
   console.log("📄 Using coverage file:", COVERAGE_PATH);
 
-  return JSON.parse(
-    fs.readFileSync(COVERAGE_PATH, "utf8")
-  ) as CoverageSummary;
+  return JSON.parse(fs.readFileSync(COVERAGE_PATH, "utf8")) as CoverageSummary;
 }
 
-function extractGroup(
-  filePath: string
-): { type: "apps" | "packages"; name: string } | null {
+function extractGroup(filePath: string): { type: "apps" | "packages"; name: string } | null {
   const match = filePath.match(/\/(apps|packages)\/([^/]+)\//);
   if (!match) return null;
 
@@ -71,9 +63,7 @@ function extractGroup(
   };
 }
 
-function aggregateByGroup(
-  summary: CoverageSummary
-): { apps: Row[]; packages: Row[] } {
+function aggregateByGroup(summary: CoverageSummary): { apps: Row[]; packages: Row[] } {
   const apps = new Map<string, FileCoverage[]>();
   const packages = new Map<string, FileCoverage[]>();
 
@@ -94,21 +84,17 @@ function aggregateByGroup(
   };
 }
 
-function mapToRows(
-  map: Map<string, FileCoverage[]>
-): Row[] {
+function mapToRows(map: Map<string, FileCoverage[]>): Row[] {
   return [...map.entries()]
     .map(([name, files]) => ({
       name,
-      lines: round(avg(files, f => f.lines.pct)),
-      statements: round(avg(files, f => f.statements.pct)),
-      functions: round(avg(files, f => f.functions.pct)),
-      branches: round(avg(files, f => f.branches.pct)),
+      lines: round(avg(files, (f) => f.lines.pct)),
+      statements: round(avg(files, (f) => f.statements.pct)),
+      functions: round(avg(files, (f) => f.functions.pct)),
+      branches: round(avg(files, (f) => f.branches.pct)),
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
 }
-
-
 
 function renderTable(title: string, rows: Row[]): string {
   if (!rows.length) {
@@ -120,23 +106,20 @@ function renderTable(title: string, rows: Row[]): string {
 |------|-------|------------|-----------|----------|
 ${rows
   .map(
-    r =>
-      `| ${r.name} | ${color(r.lines)} ${r.lines}% | ${color(
-        r.statements
-      )} ${r.statements}% | ${color(r.functions)} ${
+    (r) =>
+      `| ${r.name} | ${color(r.lines)} ${r.lines}% | ${color(r.statements)} ${r.statements}% | ${color(r.functions)} ${
         r.functions
-      }% | ${color(r.branches)} ${r.branches}% |`
+      }% | ${color(r.branches)} ${r.branches}% |`,
   )
   .join("\n")}
 `;
 }
 
-
-
 const coverage = readCoverage();
 const { apps, packages } = aggregateByGroup(coverage);
 
-const markdown = `## 🧪 Unit Test Coverage${apps.length ? "\n" + renderTable("Apps", apps) : ""}${packages.length ? "\n" + renderTable("Packages", packages) : ""}\n`.trim();
+const markdown =
+  `## 🧪 Unit Test Coverage${apps.length ? "\n" + renderTable("Apps", apps) : ""}${packages.length ? "\n" + renderTable("Packages", packages) : ""}\n`.trim();
 
 fs.writeFileSync("coverage-summary.md", markdown);
 

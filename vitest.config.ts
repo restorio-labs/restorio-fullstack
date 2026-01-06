@@ -8,38 +8,21 @@ export default defineConfig({
     globals: true,
     root: process.cwd(),
     environment: "jsdom",
-    include: [
-      "packages/*/tests/unit/**/*.{test,spec}.{ts,tsx}",
-      "apps/*/tests/unit/**/*.{test,spec}.{ts,tsx}",
-    ],
+    include: ["packages/*/tests/unit/**/*.{test,spec}.{ts,tsx}", "apps/*/tests/unit/**/*.{test,spec}.{ts,tsx}"],
 
-    exclude: [
-      "/node_modules/",
-      "/dist/",
-      "/\.turbo/",
-      "/\.next/",
-    ],
+    exclude: ["/node_modules/", "/dist/", "/\.turbo/", "/\.next/"],
 
     setupFiles: ["vitest.setup.ts"],
-    reporters: isCI
-    ? ["default", "github-actions"]
-    : ["default"],
+    reporters: isCI ? ["default", "github-actions"] : ["default"],
 
     coverage: {
       enabled: true,
       provider: "v8",
       reportsDirectory: "./coverage",
 
-      reporter: isCI
-        ? ["json-summary"]
-        : ["html", "text"],
+      reporter: isCI ? ["json-summary"] : ["html", "text"],
 
-      exclude: [
-        "node_modules",
-        "**/*.d.ts",
-        "**/*.config.*",
-        "**/dist/**"
-      ],
+      exclude: ["node_modules", "**/*.d.ts", "**/*.config.*", "**/dist/**"],
     },
   },
   resolve: {

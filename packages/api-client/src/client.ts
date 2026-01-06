@@ -22,8 +22,8 @@ export class ApiClient {
     this.client.interceptors.request.use((requestConfig) => {
       const token = this.config.getAccessToken?.();
 
-      if (token && requestConfig.headers["Authorization"] === undefined) {
-        requestConfig.headers["Authorization"] = `Bearer ${token}`;
+      if (token && requestConfig.headers.Authorization === undefined) {
+        requestConfig.headers.Authorization = `Bearer ${token}`;
       }
 
       return requestConfig;

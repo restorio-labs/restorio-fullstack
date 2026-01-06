@@ -29,7 +29,7 @@ runs:
 
     - name: Format check in all packages and apps
       shell: bash
-      run: bun run format
+      run: bun run check
 
     - name: Unit tests apps and packages
       shell: bash

@@ -53,6 +53,7 @@ jobs:
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           path: coverage-summary.md
+          delete: true
 
   api:
     name: Python API Validation
