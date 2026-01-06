@@ -1,9 +1,21 @@
 import { UserRole } from "@restorio/types";
 import { describe, it, expect } from "vitest";
 
-import { hasPermission, Permissions } from "@restorio/auth";
+import { hasAllPermissions, hasAnyPermission, hasPermission, Permissions } from "@restorio/auth";
 
 describe("Permissions", () => {
+  it("hasAnyPermission", () => {
+    expect(hasAnyPermission(UserRole.SUPER_ADMIN, [Permissions.MANAGE_RESTAURANTS, Permissions.MANAGE_MENUS])).toBe(
+      true,
+    );
+  });
+
+  it("hasAllPermissions", () => {
+    expect(hasAllPermissions(UserRole.SUPER_ADMIN, [Permissions.MANAGE_RESTAURANTS, Permissions.MANAGE_MENUS])).toBe(
+      true,
+    );
+  });
+
   it("should allow super admin to manage restaurants", () => {
     expect(hasPermission(UserRole.SUPER_ADMIN, Permissions.MANAGE_RESTAURANTS)).toBe(true);
   });

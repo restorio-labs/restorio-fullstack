@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import React from "react";
 import { describe, it, expect } from "vitest";
 
-import { Button } from "../../src/Button";
+import { Button } from "../../src/components/Button";
 
 describe("Button", () => {
   it("should render button with children", () => {

@@ -1,7 +1,7 @@
 // Browser-only code - localStorage API is safe to use
 
-const ACCESS_TOKEN_KEY = "restorio_access_token";
-const REFRESH_TOKEN_KEY = "restorio_refresh_token";
+const ACCESS_TOKEN_KEY = process.env.ACCESS_TOKEN_KEY ?? "restorio_access_token";
+const REFRESH_TOKEN_KEY = process.env.REFRESH_TOKEN_KEY ?? "restorio_refresh_token";
 
 const getLocalStorage = (): Storage | undefined => {
   if (typeof window === "undefined") {
