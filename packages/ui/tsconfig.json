@@ -1,11 +1,22 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
-    "outDir": "./dist",
-    "rootDir": "../../",
-    "lib": ["ES2020", "DOM", "DOM.Iterable"]
+
+    "rootDir": "src",
+    "outDir": "dist",
+
+    "declaration": true,
+    "declarationMap": true,
+
+    "noEmit": false,
+
+    "baseUrl": ".",
+    "paths": {
+      "@components/*": ["./src/components/*"]
+    }
   },
-  "include": ["src/**/*", "tests/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src"],
+  "exclude": ["tests", "tailwind.config.ts", "postcss.config.js"]
 }

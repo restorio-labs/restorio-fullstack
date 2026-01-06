@@ -55,23 +55,14 @@ const rolePermissions: Record<UserRole, Permission[]> = {
   [UserRole.KITCHEN_STAFF]: [Permissions.VIEW_ORDERS],
 };
 
-export const hasPermission = (
-  role: UserRole,
-  permission: Permission
-): boolean => {
+export const hasPermission = (role: UserRole, permission: Permission): boolean => {
   return rolePermissions[role].includes(permission);
 };
 
-export const hasAnyPermission = (
-  role: UserRole,
-  permissions: Permission[]
-): boolean => {
+export const hasAnyPermission = (role: UserRole, permissions: Permission[]): boolean => {
   return permissions.some((permission) => hasPermission(role, permission));
 };
 
-export const hasAllPermissions = (
-  role: UserRole,
-  permissions: Permission[]
-): boolean => {
+export const hasAllPermissions = (role: UserRole, permissions: Permission[]): boolean => {
   return permissions.every((permission) => hasPermission(role, permission));
 };

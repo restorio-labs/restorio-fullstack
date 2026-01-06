@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@restorio/e2e-tests",
+      "name": "@restorio/e2e",
       "devDependencies": {
         "@playwright/test": "^1.41.0",
       },

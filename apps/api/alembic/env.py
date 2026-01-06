@@ -9,14 +9,14 @@ from alembic import context
 from core.config import settings
 from core.database import Base
 from core.models import (
-    AuditLog,
-    Order,
-    OrderItem,
-    Payment,
-    RestaurantTable,
-    Tenant,
-    User,
-    UserTenant,
+    AuditLog,  # pyright: ignore[reportUnusedImport] # noqa: F401
+    Order,  # pyright: ignore[reportUnusedImport] # noqa: F401
+    OrderItem,  # pyright: ignore[reportUnusedImport] # noqa: F401
+    Payment,  # pyright: ignore[reportUnusedImport] # noqa: F401
+    RestaurantTable,  # pyright: ignore[reportUnusedImport] # noqa: F401
+    Tenant,  # pyright: ignore[reportUnusedImport] # noqa: F401
+    User,  # pyright: ignore[reportUnusedImport] # noqa: F401
+    UserTenant,  # pyright: ignore[reportUnusedImport] # noqa: F401
 )
 
 config = context.config

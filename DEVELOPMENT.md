@@ -322,11 +322,11 @@ bun run test:unit --coverage
 
 ### E2E Tests (Playwright)
 
-End-to-end tests are in the `e2e-tests/` folder.
+End-to-end tests are in the `e2e/` folder.
 
 ```bash
 # Install Playwright browsers (first time)
-cd e2e-tests
+cd e2e
 bunx playwright install
 
 # Run all E2E tests
@@ -336,18 +336,18 @@ bun run test:e2e
 bun run test:e2e:ui
 
 # Run tests in headed mode (see browser)
-cd e2e-tests
+cd e2e
 bun run test:headed
 
 # Debug tests
-cd e2e-tests
+cd e2e
 bun run test:debug
 ```
 
 **E2E Test Structure:**
 
-- `e2e-tests/tests/` - Test files
-- `e2e-tests/fixtures/` - Test helpers and fixtures
+- `e2e/tests/` - Test files
+- `e2e/fixtures/` - Test helpers and fixtures
 
 ### Backend Tests (Python)
 
