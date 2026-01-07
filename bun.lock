@@ -15,6 +15,7 @@
         "@typescript-eslint/parser": "^6.19.0",
         "@vitest/coverage-v8": "^4.0.16",
         "@vitest/ui": "^4.0.16",
+        "clsx": "^2.1.1",
         "eslint": "^8.56.0",
         "eslint-config-prettier": "^10.1.8",
         "eslint-import-resolver-typescript": "^3.6.1",
@@ -24,6 +25,7 @@
         "eslint-plugin-react-hooks": "^4.6.0",
         "eslint-plugin-unused-imports": "^3.0.0",
         "prettier": "^3.1.1",
+        "tailwind-merge": "^3.4.0",
         "turbo": "^2.7.2",
         "typescript": "^5.9",
         "vitest": "^4.0.16",
@@ -172,6 +174,7 @@
       "version": "1.0.0",
       "dependencies": {
         "@restorio/types": "1.0.0",
+        "@testing-library/user-event": "^14.6.1",
       },
       "devDependencies": {
         "@testing-library/jest-dom": "^6.1.5",
@@ -182,8 +185,10 @@
         "@vitest/coverage-v8": "^4.0.16",
         "@vitest/ui": "^4.0.16",
         "autoprefixer": "^10.4.17",
+        "clsx": "^2.1.1",
         "jsdom": "^27.4.0",
         "postcss": "^8.4.35",
+        "tailwind-merge": "^3.4.0",
         "tailwindcss": "^3.4.1",
         "typescript": "^5.9.0",
         "vite": "^5.4.0",
@@ -518,6 +523,8 @@
 
     "@testing-library/react": ["@testing-library/react@14.3.1", "", { "dependencies": { "@babel/runtime": "^7.12.5", "@testing-library/dom": "^9.0.0", "@types/react-dom": "^18.0.0" }, "peerDependencies": { "react": "^18.0.0", "react-dom": "^18.0.0" } }, "sha512-H99XjUhWQw0lTgyMN05W3xQG1Nh4lq574D8keFf1dDoNTJgp66VbJozRaczoF+wsiaPJNt/TcnfpLGufGxSrZQ=="],
 
+    "@testing-library/user-event": ["@testing-library/user-event@14.6.1", "", { "peerDependencies": { "@testing-library/dom": ">=7.21.4" } }, "sha512-vq7fv0rnt+QTXgPxr5Hjc210p6YKq2kmdziLgnsZGgLJ9e6VAShx1pACLuRjd/AS/sr7phAR58OIIpf0LlmQNw=="],
+
     "@tybys/wasm-util": ["@tybys/wasm-util@0.10.1", "", { "dependencies": { "tslib": "^2.4.0" } }, "sha512-9tTaPJLSiejZKx+Bmog4uSubteqTvFrVrURwkmHixBo0G4seD0zUxp98E1DzUBJxLQ3NPwXrGKDiVjwx/DpPsg=="],
 
     "@types/aria-query": ["@types/aria-query@5.0.4", "", {}, "sha512-rfT93uj5s0PRL7EzccGMs3brplhcrghnDoV26NqKhCAS1hVo+WdNsPvE/yb6ilfr5hi2MEk6d5EWJTKdxg8jVw=="],
@@ -739,6 +746,8 @@
     "chokidar": ["chokidar@3.6.0", "", { "dependencies": { "anymatch": "~3.1.2", "braces": "~3.0.2", "glob-parent": "~5.1.2", "is-binary-path": "~2.1.0", "is-glob": "~4.0.1", "normalize-path": "~3.0.0", "readdirp": "~3.6.0" }, "optionalDependencies": { "fsevents": "~2.3.2" } }, "sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw=="],
 
     "client-only": ["client-only@0.0.1", "", {}, "sha512-IV3Ou0jSMzZrd3pZ48nLkT9DA7Ag1pnPzaiQhpW7c3RbcqqzvzzVu+L8gfqMp/8IM2MQtSiqaCxrrcfu8I8rMA=="],
+
+    "clsx": ["clsx@2.1.1", "", {}, "sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA=="],
 
     "color-convert": ["color-convert@2.0.1", "", { "dependencies": { "color-name": "~1.1.4" } }, "sha512-RRECPsj7iu/xb5oKYcsFHSppFNnsj/52OVTRKb4zP5onXwVF3zVmmToNcOfGC+CRDpfK/U584fMg38ZHCaElKQ=="],
 
@@ -1428,6 +1437,8 @@
 
     "synckit": ["synckit@0.11.11", "", { "dependencies": { "@pkgr/core": "^0.2.9" } }, "sha512-MeQTA1r0litLUf0Rp/iisCaL8761lKAZHaimlbGK4j0HysC4PLfqygQj9srcs0m2RdtDYnF8UuYyKpbjHYp7Jw=="],
 
+    "tailwind-merge": ["tailwind-merge@3.4.0", "", {}, "sha512-uSaO4gnW+b3Y2aWoWfFpX62vn2sR3skfhbjsEnaBI81WD1wBLlHZe5sWf0AqjksNdYTbGBEd0UasQMT3SNV15g=="],
+
     "tailwindcss": ["tailwindcss@3.4.19", "", { "dependencies": { "@alloc/quick-lru": "^5.2.0", "arg": "^5.0.2", "chokidar": "^3.6.0", "didyoumean": "^1.2.2", "dlv": "^1.1.3", "fast-glob": "^3.3.2", "glob-parent": "^6.0.2", "is-glob": "^4.0.3", "jiti": "^1.21.7", "lilconfig": "^3.1.3", "micromatch": "^4.0.8", "normalize-path": "^3.0.0", "object-hash": "^3.0.0", "picocolors": "^1.1.1", "postcss": "^8.4.47", "postcss-import": "^15.1.0", "postcss-js": "^4.0.1", "postcss-load-config": "^4.0.2 || ^5.0 || ^6.0", "postcss-nested": "^6.2.0", "postcss-selector-parser": "^6.1.2", "resolve": "^1.22.8", "sucrase": "^3.35.0" }, "bin": { "tailwind": "lib/cli.js", "tailwindcss": "lib/cli.js" } }, "sha512-3ofp+LL8E+pK/JuPLPggVAIaEuhvIz4qNcf3nA1Xn2o/7fb7s/TYpHhwGDv1ZU3PkBluUVaF8PyCHcm48cKLWQ=="],
 
     "text-table": ["text-table@0.2.0", "", {}, "sha512-N+8UisAXDGk8PFXP4HAzVR9nbfmVJ3zYLAWiTIoqC5v5isinhr+r5uaO8+7r3BMfuNIufIsA7RdpVgacC2cSpw=="],
@@ -1592,7 +1603,7 @@
 
     "@restorio/admin-panel/@restorio/types": ["@restorio/types@file:packages/types", { "devDependencies": { "typescript": "^5.9.0" } }],
 
-    "@restorio/admin-panel/@restorio/ui": ["@restorio/ui@file:packages/ui", { "dependencies": { "@restorio/types": "1.0.0" }, "devDependencies": { "@testing-library/jest-dom": "^6.1.5", "@testing-library/react": "^14.1.2", "@types/jsdom": "^27.0.0", "@types/react": "^18.2.45", "@types/react-dom": "^18.2.18", "@vitest/coverage-v8": "^4.0.16", "@vitest/ui": "^4.0.16", "autoprefixer": "^10.4.17", "jsdom": "^27.4.0", "postcss": "^8.4.35", "tailwindcss": "^3.4.1", "typescript": "^5.9.0", "vite": "^5.4.0", "vitest": "^4.0.16" }, "peerDependencies": { "react": "^18.2.0", "react-dom": "^18.2.0" } }],
+    "@restorio/admin-panel/@restorio/ui": ["@restorio/ui@file:packages/ui", { "dependencies": { "@restorio/types": "1.0.0" }, "devDependencies": { "@testing-library/jest-dom": "^6.1.5", "@testing-library/react": "^14.1.2", "@types/jsdom": "^27.0.0", "@types/react": "^18.2.45", "@types/react-dom": "^18.2.18", "@vitest/coverage-v8": "^4.0.16", "@vitest/ui": "^4.0.16", "autoprefixer": "^10.4.17", "clsx": "^2.1.1", "jsdom": "^27.4.0", "postcss": "^8.4.35", "tailwind-merge": "^3.4.0", "tailwindcss": "^3.4.1", "typescript": "^5.9.0", "vite": "^5.4.0", "vitest": "^4.0.16" }, "peerDependencies": { "react": "^18.2.0", "react-dom": "^18.2.0" } }],
 
     "@restorio/auth/jsdom": ["jsdom@27.4.0", "", { "dependencies": { "@acemir/cssom": "^0.9.28", "@asamuzakjp/dom-selector": "^6.7.6", "@exodus/bytes": "^1.6.0", "cssstyle": "^5.3.4", "data-urls": "^6.0.0", "decimal.js": "^10.6.0", "html-encoding-sniffer": "^6.0.0", "http-proxy-agent": "^7.0.2", "https-proxy-agent": "^7.0.6", "is-potential-custom-element-name": "^1.0.1", "parse5": "^8.0.0", "saxes": "^6.0.0", "symbol-tree": "^3.2.4", "tough-cookie": "^6.0.0", "w3c-xmlserializer": "^5.0.0", "webidl-conversions": "^8.0.0", "whatwg-mimetype": "^4.0.0", "whatwg-url": "^15.1.0", "ws": "^8.18.3", "xml-name-validator": "^5.0.0" }, "peerDependencies": { "canvas": "^3.0.0" }, "optionalPeers": ["canvas"] }, "sha512-mjzqwWRD9Y1J1KUi7W97Gja1bwOOM5Ug0EZ6UDK3xS7j7mndrkwozHtSblfomlzyB4NepioNt+B2sOSzczVgtQ=="],
 

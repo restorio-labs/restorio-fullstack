@@ -1,4 +1,4 @@
-import { forwardRef, useId, type ReactElement } from "react";
+import { forwardRef, useId } from "react";
 
 import { cn } from "@utils";
 
@@ -9,7 +9,7 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, helperText, id, className, ...props }, ref): ReactElement => {
+  ({ label, error, helperText, id, className, ...props }, ref) => {
     const generatedId = useId();
     const inputId = id ?? generatedId;
     const errorId = `${inputId}-error`;
@@ -33,7 +33,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             error && "border-status-error-border focus:ring-status-error-border focus:border-status-error-border",
             className,
           )}
-          aria-invalid={error ? "true" : "false"}
+          aria-invalid={error ? "true" : undefined}
           aria-describedby={(error ? errorId : undefined) ?? helperId}
           {...props}
         />
