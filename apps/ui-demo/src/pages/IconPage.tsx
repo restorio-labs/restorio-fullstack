@@ -1,7 +1,6 @@
-import type { ReactElement } from "react";
-
 import { Icon, Stack, Text } from "@restorio/ui";
 import type { IconSize } from "@restorio/ui";
+import type { ReactElement } from "react";
 
 interface DemoIcon {
   label: string;
@@ -85,4 +84,3 @@ const IconPage = (): ReactElement => {
 };
 
 export default IconPage;
-

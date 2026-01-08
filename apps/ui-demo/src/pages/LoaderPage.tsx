@@ -1,7 +1,6 @@
-import type { ReactElement } from "react";
-
 import { Loader, Stack, Text } from "@restorio/ui";
 import type { LoaderSize } from "@restorio/ui";
+import type { ReactElement } from "react";
 
 const sizes: LoaderSize[] = ["sm", "md", "lg"];
 
@@ -29,4 +28,3 @@ const LoaderPage = (): ReactElement => {
 };
 
 export default LoaderPage;
-

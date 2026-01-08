@@ -1,6 +1,5 @@
-import type { ReactElement } from "react";
-
 import { Button, EmptyState, Icon, Stack, Text } from "@restorio/ui";
+import type { ReactElement } from "react";
 
 const EmptyStatePage = (): ReactElement => {
   return (
@@ -41,4 +40,3 @@ const EmptyStatePage = (): ReactElement => {
 };
 
 export default EmptyStatePage;
-

@@ -1,6 +1,5 @@
-import { useState, type ReactElement } from "react";
-
 import { Input, Stack, Text } from "@restorio/ui";
+import { useState, type ReactElement } from "react";
 
 const InputPage = (): ReactElement => {
   const [name, setName] = useState("");
@@ -18,7 +17,12 @@ const InputPage = (): ReactElement => {
         <Text variant="h4" weight="semibold">
           Controlled
         </Text>
-        <Input label="Name" placeholder="Jane Doe" value={name} onChange={(event): void => setName(event.target.value)} />
+        <Input
+          label="Name"
+          placeholder="Jane Doe"
+          value={name}
+          onChange={(event): void => setName(event.target.value)}
+        />
       </Stack>
       <Stack spacing="md">
         <Text variant="h4" weight="semibold">
@@ -42,4 +46,3 @@ const InputPage = (): ReactElement => {
 };
 
 export default InputPage;
-

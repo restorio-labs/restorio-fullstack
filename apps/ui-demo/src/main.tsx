@@ -24,4 +24,3 @@ if (root) {
     </React.StrictMode>,
   );
 }
-

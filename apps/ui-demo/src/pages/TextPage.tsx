@@ -1,7 +1,6 @@
-import type { ReactElement } from "react";
-
 import { Stack, Text } from "@restorio/ui";
 import type { TextVariant, TextWeight } from "@restorio/ui";
+import type { ReactElement } from "react";
 
 const variants: TextVariant[] = ["h1", "h2", "h3", "h4", "body-lg", "body-md", "body-sm", "caption"];
 const weights: TextWeight[] = ["regular", "medium", "semibold", "bold"];
@@ -13,7 +12,9 @@ const TextPage = (): ReactElement => {
         <Text variant="h2" weight="semibold">
           Text
         </Text>
-        <Text className="text-text-secondary">Typography variants and weights for headings, body copy, and captions.</Text>
+        <Text className="text-text-secondary">
+          Typography variants and weights for headings, body copy, and captions.
+        </Text>
       </Stack>
       <Stack spacing="md">
         <Text variant="h4" weight="semibold">
@@ -44,4 +45,3 @@ const TextPage = (): ReactElement => {
 };
 
 export default TextPage;
-

@@ -1,6 +1,5 @@
-import type { ReactElement } from "react";
-
 import { Box, Stack, Text } from "@restorio/ui";
+import type { ReactElement } from "react";
 
 const BoxPage = (): ReactElement => {
   return (
@@ -10,7 +9,8 @@ const BoxPage = (): ReactElement => {
           Box
         </Text>
         <Text className="text-text-secondary">
-          Box renders semantic wrappers while inheriting spacing, borders, and interactive states through className overrides.
+          Box renders semantic wrappers while inheriting spacing, borders, and interactive states through className
+          overrides.
         </Text>
       </Stack>
       <Stack direction="row" spacing="md" wrap>
@@ -20,7 +20,6 @@ const BoxPage = (): ReactElement => {
         </Box>
         <Box
           as="button"
-          type="button"
           className="px-4 py-3 rounded-button bg-interactive-primary text-text-inverse hover:bg-interactive-primaryHover transition-colors"
         >
           As button element
@@ -46,4 +45,3 @@ const BoxPage = (): ReactElement => {
 };
 
 export default BoxPage;
-

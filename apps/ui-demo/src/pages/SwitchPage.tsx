@@ -1,6 +1,5 @@
-import { useState, type ReactElement } from "react";
-
 import { Stack, Switch, Text } from "@restorio/ui";
+import { useState, type ReactElement } from "react";
 
 const SwitchPage = (): ReactElement => {
   const [enabled, setEnabled] = useState(true);
@@ -17,7 +16,11 @@ const SwitchPage = (): ReactElement => {
         <Text variant="h4" weight="semibold">
           Controlled
         </Text>
-        <Switch label="Enable notifications" checked={enabled} onChange={(event): void => setEnabled(event.target.checked)} />
+        <Switch
+          label="Enable notifications"
+          checked={enabled}
+          onChange={(event): void => setEnabled(event.target.checked)}
+        />
         <Text variant="body-sm" className="text-text-secondary">
           Status: {enabled ? "Enabled" : "Disabled"}
         </Text>
@@ -36,4 +39,3 @@ const SwitchPage = (): ReactElement => {
 };
 
 export default SwitchPage;
-

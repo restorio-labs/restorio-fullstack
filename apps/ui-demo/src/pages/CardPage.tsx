@@ -1,6 +1,5 @@
-import type { ReactElement } from "react";
-
 import { Button, Card, Stack, Text } from "@restorio/ui";
+import type { ReactElement } from "react";
 
 const CardPage = (): ReactElement => {
   return (
@@ -9,7 +8,9 @@ const CardPage = (): ReactElement => {
         <Text variant="h2" weight="semibold">
           Card
         </Text>
-        <Text className="text-text-secondary">Simple container with optional header. Style via className overrides.</Text>
+        <Text className="text-text-secondary">
+          Simple container with optional header. Style via className overrides.
+        </Text>
       </Stack>
       <Stack direction="row" spacing="md" wrap>
         <Card title="Compact card" className="max-w-sm">
@@ -39,4 +40,3 @@ const CardPage = (): ReactElement => {
 };
 
 export default CardPage;
-

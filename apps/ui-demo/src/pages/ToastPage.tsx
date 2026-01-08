@@ -1,7 +1,6 @@
-import { useState, type ReactElement } from "react";
-
 import { Button, Stack, Text, Toast, ToastContainer } from "@restorio/ui";
 import type { ToastVariant } from "@restorio/ui";
+import { useState, type ReactElement } from "react";
 
 interface DemoToast {
   id: string;
@@ -41,7 +40,9 @@ const ToastPage = (): ReactElement => {
         <Text variant="h2" weight="semibold">
           Toast
         </Text>
-        <Text className="text-text-secondary">Inline notifications with variant-based styling and dismiss controls.</Text>
+        <Text className="text-text-secondary">
+          Inline notifications with variant-based styling and dismiss controls.
+        </Text>
       </Stack>
       <Stack direction="row" spacing="sm" wrap>
         {variants.map((variant) => (
@@ -72,4 +73,3 @@ const ToastPage = (): ReactElement => {
 };
 
 export default ToastPage;
-

@@ -1,7 +1,6 @@
-import { useState, type ReactElement } from "react";
-
 import { Button, Dropdown, Stack, Text } from "@restorio/ui";
 import type { DropdownPlacement } from "@restorio/ui";
+import { useState, type ReactElement } from "react";
 
 const placements: DropdownPlacement[] = ["bottom-start", "bottom-end", "top-start", "top-end"];
 
@@ -17,7 +16,10 @@ const DropdownPage = (): ReactElement => {
         <button type="button" className="w-full text-left px-4 py-2 hover:bg-surface-secondary">
           Edit {label}
         </button>
-        <button type="button" className="w-full text-left px-4 py-2 text-status-danger-text hover:bg-status-danger-background">
+        <button
+          type="button"
+          className="w-full text-left px-4 py-2 text-status-danger-text hover:bg-status-danger-background"
+        >
           Delete {label}
         </button>
       </div>
@@ -49,7 +51,11 @@ const DropdownPage = (): ReactElement => {
           Controlled
         </Text>
         <Stack direction="row" spacing="sm" align="center" wrap>
-          <Dropdown trigger={<Button variant="primary">Toggle programmatically</Button>} isOpen={isControlledOpen} onOpenChange={setIsControlledOpen}>
+          <Dropdown
+            trigger={<Button variant="primary">Toggle programmatically</Button>}
+            isOpen={isControlledOpen}
+            onOpenChange={setIsControlledOpen}
+          >
             {menu("controlled menu")}
           </Dropdown>
           <Button variant="secondary" onClick={(): void => setIsControlledOpen(false)} disabled={!isControlledOpen}>
@@ -65,4 +71,3 @@ const DropdownPage = (): ReactElement => {
 };
 
 export default DropdownPage;
-

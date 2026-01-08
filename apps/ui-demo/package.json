@@ -8,9 +8,6 @@
     "build": "tsc && vite build",
     "clean": "rm -rf dist && rm -rf node_modules",
     "preview": "vite preview",
-    "test": "vitest run",
-    "test:unit": "vitest run",
-    "test:watch": "vitest",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" && eslint . --fix",
     "check": "prettier --check \"**/*.{ts,tsx,json,md}\" && eslint . --ext ts,tsx"
   },
@@ -21,19 +18,14 @@
     "react-router-dom": "^6.21.1"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.1.5",
-    "@testing-library/react": "^14.1.2",
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.18",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.17",
     "eslint": "^8.56.0",
-    "jsdom": "^23.0.1",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.9",
-    "vite": "^5.4.0",
-    "vitest": "^4.0.16"
+    "vite": "^5.4.0"
   }
 }
-

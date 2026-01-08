@@ -1,7 +1,6 @@
+import { Stack, Text } from "@restorio/ui";
 import type { ReactElement } from "react";
 import { Link } from "react-router-dom";
-
-import { Stack, Text } from "@restorio/ui";
 
 const quickLinks = [
   { label: "Buttons", path: "/buttons" },
@@ -42,8 +41,8 @@ const OverviewPage = (): ReactElement => {
           What is included
         </Text>
         <Text variant="body-md" className="text-text-secondary">
-          Layout primitives, form controls, feedback indicators, overlays, navigation helpers, and cards are showcased with multiple
-          states on their own pages.
+          Layout primitives, form controls, feedback indicators, overlays, navigation helpers, and cards are showcased
+          with multiple states on their own pages.
         </Text>
       </Stack>
     </Stack>
@@ -51,4 +50,3 @@ const OverviewPage = (): ReactElement => {
 };
 
 export default OverviewPage;
-

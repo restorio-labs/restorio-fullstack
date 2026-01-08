@@ -1,6 +1,5 @@
-import { useState, type ReactElement } from "react";
-
 import { Checkbox, Stack, Text } from "@restorio/ui";
+import { useState, type ReactElement } from "react";
 
 const CheckboxPage = (): ReactElement => {
   const [newsletter, setNewsletter] = useState(false);
@@ -38,4 +37,3 @@ const CheckboxPage = (): ReactElement => {
 };
 
 export default CheckboxPage;
-

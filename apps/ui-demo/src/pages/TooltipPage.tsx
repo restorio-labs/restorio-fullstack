@@ -1,6 +1,5 @@
-import type { ReactElement } from "react";
-
 import { Button, Stack, Text, Tooltip } from "@restorio/ui";
+import type { ReactElement } from "react";
 
 const TooltipPage = (): ReactElement => {
   return (
@@ -30,4 +29,3 @@ const TooltipPage = (): ReactElement => {
 };
 
 export default TooltipPage;
-

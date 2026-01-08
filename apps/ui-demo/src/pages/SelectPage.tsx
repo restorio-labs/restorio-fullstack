@@ -1,7 +1,6 @@
-import { useState, type ReactElement } from "react";
-
 import { Select, Stack, Text } from "@restorio/ui";
 import type { SelectOption } from "@restorio/ui";
+import { useState, type ReactElement } from "react";
 
 const options: SelectOption[] = [
   { value: "pizza", label: "Pizza" },
@@ -18,7 +17,9 @@ const SelectPage = (): ReactElement => {
         <Text variant="h2" weight="semibold">
           Select
         </Text>
-        <Text className="text-text-secondary">Native select with labels, placeholders, helper text, and validation.</Text>
+        <Text className="text-text-secondary">
+          Native select with labels, placeholders, helper text, and validation.
+        </Text>
       </Stack>
       <Stack spacing="md">
         <Text variant="h4" weight="semibold">
@@ -40,11 +41,16 @@ const SelectPage = (): ReactElement => {
         <Text variant="h4" weight="semibold">
           Error state
         </Text>
-        <Select label="Required field" options={options} placeholder="Pick one" error="Selection is required" className="max-w-xs" />
+        <Select
+          label="Required field"
+          options={options}
+          placeholder="Pick one"
+          error="Selection is required"
+          className="max-w-xs"
+        />
       </Stack>
     </Stack>
   );
 };
 
 export default SelectPage;
-

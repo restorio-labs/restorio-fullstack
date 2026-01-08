@@ -1,7 +1,6 @@
-import { useState, type ReactElement } from "react";
-
 import { Button, Modal, Stack, Text } from "@restorio/ui";
 import type { ModalSize } from "@restorio/ui";
+import { useState, type ReactElement } from "react";
 
 const sizes: ModalSize[] = ["sm", "md", "lg", "xl", "full"];
 
@@ -48,4 +47,3 @@ const ModalPage = (): ReactElement => {
 };
 
 export default ModalPage;
-

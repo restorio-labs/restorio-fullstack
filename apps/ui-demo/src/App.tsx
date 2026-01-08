@@ -1,7 +1,6 @@
+import { Button, Stack, Text, ThemeProvider, useTheme } from "@restorio/ui";
 import type { ReactElement } from "react";
 import { Navigate, NavLink, Route, Routes } from "react-router-dom";
-
-import { Button, Stack, Text, ThemeProvider, useTheme } from "@restorio/ui";
 
 import {
   BoxPage,
@@ -85,7 +84,9 @@ const App = (): ReactElement => {
                   className={({ isActive }): string =>
                     [
                       "block px-3 py-2 rounded-md transition-colors",
-                      isActive ? "bg-surface-secondary text-text-primary" : "text-text-secondary hover:bg-surface-secondary",
+                      isActive
+                        ? "bg-surface-secondary text-text-primary"
+                        : "text-text-secondary hover:bg-surface-secondary",
                     ].join(" ")
                   }
                 >
@@ -109,4 +110,3 @@ const App = (): ReactElement => {
 };
 
 export default App;
-
