@@ -67,3 +67,8 @@ jobs:
         with:
           package_dir: apps/api
           python_version: ${{ vars.PYTHON_VERSION }}
+
+      - name: Comment coverage on PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          path: apps/api/coverage-summary.md
