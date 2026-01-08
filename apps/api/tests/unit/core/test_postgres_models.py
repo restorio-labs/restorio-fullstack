@@ -1,6 +1,6 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from core import postgres_models as pm
 
@@ -8,7 +8,7 @@ from core import postgres_models as pm
 class TestPostgresModels:
     def test_tenant_model(self) -> None:
         tenant_id = uuid4()
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         tenant = pm.Tenant(
             id=tenant_id,
             name="Tenant",
@@ -24,7 +24,7 @@ class TestPostgresModels:
         order_id = uuid4()
         tenant_id = uuid4()
         table_id = uuid4()
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         order = pm.Order(
             id=order_id,
             tenant_id=tenant_id,
@@ -42,7 +42,7 @@ class TestPostgresModels:
     def test_payment_model(self) -> None:
         payment_id = uuid4()
         order_id = uuid4()
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         payment = pm.Payment(
             id=payment_id,
             order_id=order_id,

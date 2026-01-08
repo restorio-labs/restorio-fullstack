@@ -40,7 +40,7 @@ async def test_unauthorized_middleware_transforms_not_found() -> None:
 
     response = await middleware.dispatch(request, call_next)
 
-    assert response.status_code == 401
+    assert response.status_code == 401  # noqa: PLR2004
 
 
 @pytest.mark.asyncio
@@ -54,4 +54,4 @@ async def test_unauthorized_middleware_passes_other_status() -> None:
 
     response = await middleware.dispatch(request, call_next)
 
-    assert response.status_code == 200
+    assert response.status_code == 200  # noqa: PLR2004

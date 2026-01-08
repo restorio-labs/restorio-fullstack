@@ -1,7 +1,4 @@
 from datetime import timedelta
-from unittest.mock import patch
-
-import pytest
 
 from core.security import create_access_token, decode_access_token
 
