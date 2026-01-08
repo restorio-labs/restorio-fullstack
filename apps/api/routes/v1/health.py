@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from core.db import get_mongo_db, get_postgres_pool
+from core.foundation.database.connection import get_mongo_db, get_postgres_pool
 
 router = APIRouter()
 

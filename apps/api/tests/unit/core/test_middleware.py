@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 import pytest
 
-from core.config import Settings
+from core.foundation.infra.config import Settings
 from core.middleware import TimingMiddleware, UnauthorizedMiddleware, setup_cors
 
 

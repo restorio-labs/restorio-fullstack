@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from core.security import create_access_token, decode_access_token
+from core.foundation.security import create_access_token, decode_access_token
 
 
 class TestCreateAccessToken:

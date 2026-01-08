@@ -17,7 +17,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from core.database import Base
+from core.foundation.database.database import Base
 
 if TYPE_CHECKING:
     from core.models.order import Order

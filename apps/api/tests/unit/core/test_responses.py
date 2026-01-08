@@ -1,6 +1,6 @@
 from fastapi import status
 
-from core.responses import (
+from core.foundation.http.responses import (
     created_response,
     deleted_response,
     error_response,
@@ -8,7 +8,7 @@ from core.responses import (
     success_response,
     updated_response,
 )
-from core.schemas import PaginatedResponse as PaginatedResponseSchema
+from core.foundation.http.schemas import PaginatedResponse as PaginatedResponseSchema
 
 
 class TestSuccessResponse:

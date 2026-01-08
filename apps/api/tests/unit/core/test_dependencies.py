@@ -1,6 +1,6 @@
 import pytest
 
-from core import dependencies
+from core.foundation import dependencies
 
 
 class DummyPool:

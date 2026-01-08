@@ -1,7 +1,7 @@
 import logging
 import sys
 
-from core.config import settings
+from core.foundation.infra.config import settings
 
 
 def setup_logger(name: str = "restorio") -> logging.Logger:

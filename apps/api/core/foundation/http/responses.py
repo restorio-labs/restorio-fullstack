@@ -1,7 +1,7 @@
 from fastapi import status
 from fastapi.responses import JSONResponse
 
-from core.schemas import (
+from core.foundation.http.schemas import (
     CreatedResponse,
     DeletedResponse,
     ErrorResponse,

@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from decimal import Decimal
 from uuid import uuid4
 
-from core import postgres_models as pm
+from core.foundation.database import postgres_models as pm
 
 
 class TestPostgresModels:

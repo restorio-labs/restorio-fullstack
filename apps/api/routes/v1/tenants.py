@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status
 
-from core.schemas import CreatedResponse, DeletedResponse, SuccessResponse, UpdatedResponse
+from core.foundation.http.schemas import CreatedResponse, DeletedResponse, SuccessResponse, UpdatedResponse
 
 router = APIRouter()
 

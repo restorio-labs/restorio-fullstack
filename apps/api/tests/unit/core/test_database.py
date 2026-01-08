@@ -1,6 +1,6 @@
 import pytest
 
-from core import database
+from core.foundation.database import database
 
 
 class FakeSession:

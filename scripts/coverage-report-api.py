@@ -45,6 +45,8 @@ def extract_module_name(file_path: str) -> str | None:
 
     module = parts[0]
     if module in ("core", "api", "modules", "routes"):
+        if len(parts) >= 2 and parts[1] != "__init__.py":
+            return f"{module}/{parts[1]}"
         return module
     return None
 

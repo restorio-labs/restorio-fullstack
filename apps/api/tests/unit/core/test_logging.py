@@ -1,6 +1,6 @@
 import logging
 
-from core.logging import setup_logger
+from core.foundation.logging.logger import setup_logger
 
 
 def test_setup_logger_creates_handler() -> None:

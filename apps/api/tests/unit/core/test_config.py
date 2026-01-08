@@ -1,4 +1,4 @@
-from core.config import Settings
+from core.foundation.infra.config import Settings
 
 
 class TestSettingsCorsOrigins:

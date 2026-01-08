@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, Response
 from fastapi.routing import APIRoute
 
-from core.router import RouterSingleton, TimedRoute, create_router
+from core.foundation.http.router import RouterSingleton, TimedRoute, create_router
 
 
 class TestRouterSingleton:

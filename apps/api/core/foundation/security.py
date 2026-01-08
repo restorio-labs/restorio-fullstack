@@ -2,7 +2,7 @@ from datetime import UTC, datetime, timedelta
 
 from jose import JWTError, jwt
 
-from core.config import settings
+from core.foundation.infra.config import settings
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:

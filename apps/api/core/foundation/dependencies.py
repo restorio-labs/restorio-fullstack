@@ -5,8 +5,8 @@ from fastapi import Depends
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.database import get_db_session
-from core.db import get_mongo_db, get_postgres_pool
+from core.foundation.database.connection import get_mongo_db, get_postgres_pool
+from core.foundation.database.database import get_db_session
 
 
 async def get_mongo_database() -> AsyncIOMotorDatabase:

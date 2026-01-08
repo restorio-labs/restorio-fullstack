@@ -1,6 +1,6 @@
 import pytest
 
-from core import db
+from core.foundation.database import connection as db
 
 
 class FakeMongoDatabase:
