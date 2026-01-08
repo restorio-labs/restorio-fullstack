@@ -55,7 +55,6 @@ def aggregate_by_module(
     modules: dict[str, list[dict[str, Any]]] = {}
 
     files = coverage_data.get("files", {})
-    totals = coverage_data.get("totals", {})
 
     for file_path, file_data in files.items():
         if file_path == "__init__.py" or not file_path.endswith(".py"):
@@ -79,11 +78,9 @@ def aggregate_by_module(
 
 def calculate_avg_metrics(summaries: list[dict[str, Any]]) -> dict[str, float]:
     if not summaries:
-        return {"lines": 0.0, "statements": 0.0, "functions": 0.0, "branches": 0.0}
+        return {"lines": 0.0, "statements": 0.0}
 
     statements_with_data = [s for s in summaries if s.get("num_statements", 0) > 0]
-    functions_with_data = [s for s in summaries if s.get("num_functions", 0) > 0]
-    branches_with_data = [s for s in summaries if s.get("num_branches", 0) > 0]
 
     lines_pct = sum(s.get("percent_covered", 0) for s in summaries) / len(summaries)
     statements_pct = (
@@ -92,24 +89,10 @@ def calculate_avg_metrics(summaries: list[dict[str, Any]]) -> dict[str, float]:
         if statements_with_data
         else 0.0
     )
-    functions_pct = (
-        sum(s.get("percent_covered", 0) for s in functions_with_data)
-        / len(functions_with_data)
-        if functions_with_data
-        else 0.0
-    )
-    branches_pct = (
-        sum(s.get("percent_covered", 0) for s in branches_with_data)
-        / len(branches_with_data)
-        if branches_with_data
-        else 0.0
-    )
 
     return {
         "lines": round_pct(lines_pct),
         "statements": round_pct(statements_pct),
-        "functions": round_pct(functions_pct),
-        "branches": round_pct(branches_pct),
     }
 
 
@@ -117,15 +100,13 @@ def render_table(title: str, rows: list[dict[str, Any]]) -> str:
     if not rows:
         return ""
 
-    table = f"\n| {title} | Lines | Statements | Functions | Branches |\n"
-    table += "|------|-------|------------|-----------|----------|\n"
+    table = f"\n| {title} | Lines | Statements |\n"
+    table += "|------|-------|------------|\n"
 
     for row in rows:
         table += (
             f"| {row['name']} | {color(row['lines'])} {row['lines']}% | "
-            f"{color(row['statements'])} {row['statements']}% | "
-            f"{color(row['functions'])} {row['functions']}% | "
-            f"{color(row['branches'])} {row['branches']}% |\n"
+            f"{color(row['statements'])} {row['statements']}% |\n"
         )
 
     return table
@@ -143,8 +124,6 @@ def main() -> None:
                 "name": module_name,
                 "lines": metrics["lines"],
                 "statements": metrics["statements"],
-                "functions": metrics["functions"],
-                "branches": metrics["branches"],
             }
         )
 
