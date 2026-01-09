@@ -111,3 +111,5 @@ addopts = [
 ]
 cov_fail_under = 0
 
+[tool.coverage.run]
+data_file = "coverage/.coverage"
