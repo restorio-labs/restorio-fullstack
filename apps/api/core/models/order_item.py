@@ -8,7 +8,7 @@ from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Numeric, St
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from core.database import Base
+from core.foundation.database.database import Base
 from core.models import Order
 
 

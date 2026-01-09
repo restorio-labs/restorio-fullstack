@@ -98,6 +98,13 @@
       "error",
       {
         "groups": ["builtin", "external", "internal", "parent", "sibling", "index"],
+        "pathGroups": [
+          {
+            "pattern": "@**",
+            "group": "internal"
+          }
+        ],
+        "pathGroupsExcludedImportTypes": ["builtin"],
         "newlines-between": "always",
         "alphabetize": {
           "order": "asc",
@@ -126,7 +133,7 @@
         "array": false
       }
     ],
-    "no-nested-ternary": "warn",
+    "no-nested-ternary": "off",
     "no-unneeded-ternary": "error",
     "eqeqeq": [
       "error",

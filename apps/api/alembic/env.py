@@ -6,8 +6,8 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
-from core.config import settings
-from core.database import Base
+from core.foundation.database.database import Base
+from core.foundation.infra.config import settings
 from core.models import (
     AuditLog,  # pyright: ignore[reportUnusedImport] # noqa: F401
     Order,  # pyright: ignore[reportUnusedImport] # noqa: F401

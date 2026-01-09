@@ -27,9 +27,8 @@ check-fix: lint-fix format ## Run all checks and auto-fix issues
 
 all: check ## Alias for check
 
-test: ## Run tests (placeholder - add your test command)
-	@echo "Add your test command here"
-	# pytest tests/
+test: ## Run tests with coverage
+	uv run --extra dev pytest --cov-report=markdown:coverage/coverage.md --cov-report=term-missing
 
 migrate: ## Run database migrations (alembic upgrade head)
 	uv run alembic upgrade head

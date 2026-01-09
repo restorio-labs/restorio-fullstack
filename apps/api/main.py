@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
-from core.config import settings
 from core.exceptions.handlers import setup_exception_handlers
+from core.foundation.infra.config import settings
 from core.middleware import TimingMiddleware, UnauthorizedMiddleware, setup_cors
 from routes import api_router as api_router_v1
 from routes import health as health_route

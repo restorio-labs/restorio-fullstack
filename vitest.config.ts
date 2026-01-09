@@ -31,6 +31,8 @@ export default defineConfig({
       "@restorio/ui": resolve(__dirname, "./packages/ui/src"),
       "@restorio/api-client": resolve(__dirname, "./packages/api-client/src"),
       "@restorio/auth": resolve(__dirname, "./packages/auth/src"),
+      "@utils": resolve(__dirname, "./packages/ui/src/utils/index.ts"),
+      "@components": resolve(__dirname, "./packages/ui/src/components"),
     },
   },
 });

@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from fastapi.responses import JSONResponse
 
-from core.schemas import ErrorResponse
+from core.foundation.http.schemas import ErrorResponse
 
 
 class BaseHTTPException(HTTPException):

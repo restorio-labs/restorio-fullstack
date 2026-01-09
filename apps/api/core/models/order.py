@@ -9,7 +9,7 @@ from sqlalchemy import CheckConstraint, DateTime, Enum, ForeignKey, Index, Numer
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from core.database import Base
+from core.foundation.database.database import Base
 from core.models.enums import OrderStatus
 
 if TYPE_CHECKING:

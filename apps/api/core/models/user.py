@@ -8,7 +8,7 @@ from sqlalchemy import Boolean, DateTime, String, func
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from core.database import Base
+from core.foundation.database.database import Base
 
 if TYPE_CHECKING:
     from core.models.audit_log import AuditLog

@@ -1,9 +1,9 @@
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 
-from core.config import Settings
 from core.exceptions import BaseHTTPException
-from core.schemas import ErrorResponse
+from core.foundation.http.schemas import ErrorResponse
+from core.foundation.infra.config import Settings
 
 
 def setup_exception_handlers(app: FastAPI, settings: Settings) -> None:

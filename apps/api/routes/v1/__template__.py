@@ -12,8 +12,8 @@ Best Practices:
 
 from fastapi import APIRouter, status
 
-from core.dependencies import MongoDB, PostgresPool
-from core.schemas import (
+from core.foundation.dependencies import MongoDB, PostgresPool
+from core.foundation.http.schemas import (
     CreatedResponse,
     DeletedResponse,
     PaginatedResponse,

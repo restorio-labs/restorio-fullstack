@@ -8,6 +8,7 @@ dependencies = [
     "uvicorn[standard]==0.27.0",
     "pydantic==2.5.3",
     "pydantic-settings==2.1.0",
+    "email-validator>=2.0.0",
     "python-jose[cryptography]==3.3.0",
     "passlib[bcrypt]==1.7.4",
     "python-multipart==0.0.6",
@@ -16,12 +17,14 @@ dependencies = [
     "sqlalchemy[asyncio]==2.0.25",
     "alembic==1.13.1",
     "redis==5.0.1",
-    "stripe==7.11.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "ruff>=0.1.0",
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.23.0",
 ]
 
 [build-system]
@@ -89,4 +92,24 @@ force-sort-within-sections = true
 "__init__.py" = ["F401"]  # Allow unused imports in __init__.py
 "**/alembic/versions/*.py" = ["ALL"]  # Ignore all rules in migration files
 "**/__template__.py" = ["ARG001", "ERA001"]  # Template files have unused args and example comments
+"tests/**" = ["ARG001"]  # Allow unused arguments in test fixtures
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+addopts = [
+    "--strict-markers",
+    "--cov=core",
+    "--cov=api",
+    "--cov=modules",
+    "--cov-report=json:coverage/coverage.json",
+    "--cov-report=term",
+    "--cov-report=html:coverage/html",
+]
+cov_fail_under = 0
+
+[tool.coverage.run]
+data_file = "coverage/.coverage"
