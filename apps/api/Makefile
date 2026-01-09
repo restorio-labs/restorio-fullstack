@@ -51,3 +51,8 @@ migrate-head: ## Upgrade to latest migration
 install: ## Install dependencies
 	uv sync --extra dev
 
+dev:
+	uv run uvicorn main:app --reload --port 8000
+
+build: ## Build API
+	uv run python main.py
