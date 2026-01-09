@@ -1,9 +1,9 @@
 from fastapi import FastAPI, Request, status
 import pytest
 
-from core.foundation.infra.config import Settings
 from core.exceptions import BaseHTTPException
 from core.exceptions.handlers import setup_exception_handlers
+from core.foundation.infra.config import Settings
 
 
 @pytest.mark.asyncio
