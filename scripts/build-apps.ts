@@ -1,3 +1,4 @@
+/// <reference types="bun" />
 import { $ } from "bun";
 
 const apps = ["admin-panel", "kitchen-panel", "tablet-app", "ui-demo", "public-web"] as const;

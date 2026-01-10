@@ -14,7 +14,7 @@
   },
   "private": true,
   "scripts": {
-    "build": "bunx tsup",
+    "build": "tsup",
     "clean": "rm -rf dist && rm -rf node_modules",
     "test": "vitest run",
     "test:unit": "vitest run",

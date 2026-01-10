@@ -14,7 +14,7 @@
     }
   },
   "scripts": {
-    "build": "bunx tsup",
+    "build": "tsup",
     "prepare": "bun run build",
     "clean": "rm -rf dist",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" && eslint . --fix",

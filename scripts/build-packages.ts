@@ -1,12 +1,16 @@
+/// <reference types="bun" />
 import { $ } from "bun";
+import { resolve } from "path";
 
 const packages = ["types", "auth", "api-client", "ui"] as const;
+const rootDir = process.cwd();
 
 console.log("🔨 Building packages...\n");
 
 try {
   console.log("📦 Building @restorio/types (must be built first)...");
-  const typesResult = await $`cd packages/types && bun run build`;
+  const typesDir = resolve(rootDir, "packages/types");
+  const typesResult = await $`cd ${typesDir} && PATH="${typesDir}/node_modules/.bin:${rootDir}/node_modules/.bin:$PATH" bun run build`;
   if (typesResult.exitCode !== 0) {
     console.error("❌ Failed to build @restorio/types");
     console.error("stdout:", typesResult.stdout.toString());
@@ -21,7 +25,8 @@ try {
 
   const buildPromises = otherPackages.map(async (pkg) => {
     try {
-      const result = await $`cd packages/${pkg} && bun run build`;
+      const pkgDir = resolve(rootDir, `packages/${pkg}`);
+      const result = await $`cd ${pkgDir} && PATH="${pkgDir}/node_modules/.bin:${rootDir}/node_modules/.bin:$PATH" bun run build`;
       if (result.exitCode !== 0) {
         console.error(`\n❌ Failed to build @restorio/${pkg}`);
         console.error("stdout:", result.stdout.toString());
