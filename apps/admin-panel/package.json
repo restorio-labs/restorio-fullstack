@@ -31,6 +31,9 @@
     "@vitejs/plugin-react": "^4.2.1",
     "@testing-library/react": "^14.1.2",
     "@testing-library/jest-dom": "^6.1.5",
-    "jsdom": "^23.0.1"
+    "jsdom": "^23.0.1",
+    "tailwindcss": "^3.4.1",
+    "postcss": "^8.4.35",
+    "autoprefixer": "^10.4.17"
   }
 }

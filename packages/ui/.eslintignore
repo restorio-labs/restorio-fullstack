@@ -4,6 +4,7 @@ build
 .next
 coverage
 *.config.js
+*.config.cjs
 *.eslintrc.cjs
 e2e
 bun.lockb
@@ -14,3 +15,4 @@ postcss.config.js
 vitest.setup.ts
 apps/public-web/**
 vitest.config.ts
+scripts

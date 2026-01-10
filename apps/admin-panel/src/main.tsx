@@ -1,23 +1,35 @@
-import { StrictMode } from "react";
+import { StrictMode, type ReactElement } from "react";
 import { createRoot } from "react-dom/client";
 
-const App = (): React.ReactElement => {
+import { AppLayout } from "./layouts/AppLayout";
+import { PageLayout } from "./layouts/PageLayout";
+import { AppProviders } from "./wrappers/AppProviders";
+import "./index.css";
+
+const App = (): ReactElement => {
   return (
-    <div>
-      <h1>Restorio Admin Panel</h1>
-      <p>Admin dashboard coming soon...</p>
-    </div>
+    <AppProviders>
+      <AppLayout>
+        <PageLayout title="Restorio Admin Panel">
+          <div className="p-6">
+            <p>Admin dashboard coming soon...</p>
+          </div>
+        </PageLayout>
+      </AppLayout>
+    </AppProviders>
   );
 };
 
 const root = document.getElementById("root");
 
-if (root) {
-  const reactRoot = createRoot(root);
-
-  reactRoot.render(
-    <StrictMode>
-      <App />
-    </StrictMode>,
-  );
+if (!root) {
+  throw new Error("Root element not found");
 }
+
+const reactRoot = createRoot(root);
+
+reactRoot.render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+);

@@ -12,7 +12,10 @@
     "check": "prettier --check \"**/*.{ts,tsx,json,md}\" && eslint . --ext ts,tsx"
   },
   "dependencies": {
+    "@types/node": "^22",
+    "@restorio/types": "file:../../packages/types",
     "@restorio/ui": "file:../../packages/ui",
+    "@restorio/auth": "file:../../packages/auth",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.21.1"
