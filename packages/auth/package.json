@@ -14,7 +14,7 @@
   },
   "private": true,
   "scripts": {
-    "build": "tsup",
+    "build": "bunx tsup",
     "clean": "rm -rf dist",
     "test": "vitest run",
     "test:unit": "vitest run --coverage",
