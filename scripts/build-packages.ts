@@ -20,6 +20,21 @@ try {
   }
   console.log("✅ @restorio/types built successfully\n");
 
+  console.log("🔗 Linking @restorio/types to dependent packages...");
+  try {
+    const linkResult = await $`bun install`.quiet();
+    if (linkResult.exitCode !== 0) {
+      console.error("❌ Failed to link @restorio/types");
+      console.error("stdout:", linkResult.stdout.toString());
+      console.error("stderr:", linkResult.stderr.toString());
+      process.exit(1);
+    }
+    console.log("✅ @restorio/types linked successfully\n");
+  } catch (error) {
+    console.error("❌ Error linking @restorio/types:", error);
+    process.exit(1);
+  }
+
   const otherPackages = packages.filter((pkg) => pkg !== "types");
 
   console.log(`📦 Building other packages: ${otherPackages.join(", ")}...\n`);
@@ -32,19 +47,21 @@ try {
         console.error(`\n❌ Failed to build @restorio/${pkg}`);
         console.error("stdout:", result.stdout.toString());
         console.error("stderr:", result.stderr.toString());
-        return false;
+        return { success: false, pkg };
       }
       console.log(`✅ @restorio/${pkg} built successfully`);
-      return true;
+      return { success: true, pkg };
     } catch (error) {
       console.error(`\n❌ Error building @restorio/${pkg}:`, error);
-      return false;
+      return { success: false, pkg };
     }
   });
 
   const results = await Promise.all(buildPromises);
 
-  if (results.every((r) => r)) {
+  const failedPackages = results.filter((r) => !r.success).map((r) => r.pkg);
+
+  if (failedPackages.length === 0) {
     console.log("\n✨ All packages built successfully!");
     console.log("🔗 Linking packages to apps...");
     try {
@@ -61,7 +78,10 @@ try {
     }
     process.exit(0);
   } else {
-    console.error("\n❌ Some packages failed to build");
+    console.error(`\n❌ Failed to build ${failedPackages.length} package(s):`);
+    failedPackages.forEach((pkg) => {
+      console.error(`   - @restorio/${pkg}`);
+    });
     process.exit(1);
   }
 } catch (error) {
