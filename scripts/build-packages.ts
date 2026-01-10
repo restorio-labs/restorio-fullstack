@@ -11,7 +11,8 @@ console.log("🔨 Building packages...\n");
 try {
   console.log("📦 Building @restorio/types (must be built first)...");
   const typesDir = resolve(rootDir, "packages/types");
-  const typesResult = await $`cd ${typesDir} && PATH="${typesDir}/node_modules/.bin:${rootDir}/node_modules/.bin:$PATH" bun run build`;
+  const typesResult =
+    await $`cd ${typesDir} && PATH="${typesDir}/node_modules/.bin:${rootDir}/node_modules/.bin:$PATH" bun run build`;
   if (typesResult.exitCode !== 0) {
     console.error("❌ Failed to build @restorio/types");
     console.error("stdout:", typesResult.stdout.toString());
@@ -60,7 +61,8 @@ try {
   const buildPromises = otherPackages.map(async (pkg) => {
     try {
       const pkgDir = resolve(rootDir, `packages/${pkg}`);
-      const result = await $`cd ${pkgDir} && PATH="${pkgDir}/node_modules/.bin:${rootDir}/node_modules/.bin:$PATH" bun run build`;
+      const result =
+        await $`cd ${pkgDir} && PATH="${pkgDir}/node_modules/.bin:${rootDir}/node_modules/.bin:$PATH" bun run build`;
       if (result.exitCode !== 0) {
         console.error(`\n❌ Failed to build @restorio/${pkg}`);
         console.error("stdout:", result.stdout.toString());

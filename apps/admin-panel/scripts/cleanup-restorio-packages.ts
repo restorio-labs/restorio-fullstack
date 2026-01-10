@@ -1,4 +1,16 @@
-import { existsSync, readdirSync, statSync, rmSync, readFileSync, writeFileSync, copyFileSync, lstatSync, mkdirSync, readlinkSync, realpathSync } from "fs";
+import {
+  existsSync,
+  readdirSync,
+  statSync,
+  rmSync,
+  readFileSync,
+  writeFileSync,
+  copyFileSync,
+  lstatSync,
+  mkdirSync,
+  readlinkSync,
+  realpathSync,
+} from "fs";
 import { join, dirname } from "path";
 
 const packagesToClean = ["@restorio/ui", "@restorio/types", "@restorio/api-client", "@restorio/auth"];
@@ -7,7 +19,7 @@ const nodeModulesPath = join(process.cwd(), "node_modules");
 
 for (const packageName of packagesToClean) {
   const packagePath = join(nodeModulesPath, packageName);
-  
+
   if (!existsSync(packagePath)) {
     continue;
   }
@@ -16,20 +28,19 @@ for (const packageName of packagesToClean) {
   const packageJsonPath = join(packagePath, "package.json");
 
   const filesToKeep = new Set<string>(["package.json", "node_modules"]);
-  
+
   const copyRecursive = (src: string, dest: string): void => {
     let actualSrc = src;
-    
+
     try {
       const srcStat = lstatSync(src);
       if (srcStat.isSymbolicLink()) {
         actualSrc = realpathSync(src);
       }
-    } catch {
-    }
-    
+    } catch {}
+
     const srcStat = statSync(actualSrc);
-    
+
     if (srcStat.isDirectory()) {
       if (!existsSync(dest)) {
         mkdirSync(dest, { recursive: true });
@@ -46,7 +57,7 @@ for (const packageName of packagesToClean) {
       copyFileSync(actualSrc, dest);
     }
   };
-  
+
   if (existsSync(distPath)) {
     let actualDistPath = distPath;
     try {
@@ -54,29 +65,28 @@ for (const packageName of packagesToClean) {
       if (distStat.isSymbolicLink()) {
         actualDistPath = realpathSync(distPath);
       }
-    } catch {
-    }
-    
+    } catch {}
+
     const distEntries = readdirSync(actualDistPath);
-    
+
     for (const entry of distEntries) {
       const sourcePath = join(actualDistPath, entry);
       const targetPath = join(packagePath, entry);
-      
+
       if (existsSync(targetPath)) {
         rmSync(targetPath, { recursive: true, force: true });
       }
-      
+
       copyRecursive(sourcePath, targetPath);
       filesToKeep.add(entry);
     }
-    
+
     rmSync(distPath, { recursive: true, force: true });
   }
 
   if (existsSync(packageJsonPath)) {
     const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
-    
+
     if (packageJson.main && packageJson.main.startsWith("./dist/")) {
       packageJson.main = packageJson.main.replace("./dist/", "./");
     }
@@ -105,17 +115,17 @@ for (const packageName of packagesToClean) {
         }
       }
     }
-    
+
     writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + "\n");
   }
 
   const entries = readdirSync(packagePath);
-  
+
   for (const entry of entries) {
     if (filesToKeep.has(entry)) {
       continue;
     }
-    
+
     const entryPath = join(packagePath, entry);
     const stats = statSync(entryPath);
     if (stats.isDirectory() || stats.isFile()) {

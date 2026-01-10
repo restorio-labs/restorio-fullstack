@@ -11,7 +11,7 @@ try {
   if (rootLinkResult.exitCode !== 0) {
     console.error("⚠️  Warning: Failed to link packages at root");
   }
-  
+
   const appLinkPromises = apps.map(async (app) => {
     try {
       const result = await $`cd apps/${app} && bun install`.quiet();
@@ -25,7 +25,7 @@ try {
       return false;
     }
   });
-  
+
   await Promise.all(appLinkPromises);
   console.log("✅ Packages linked in all apps");
 } catch (error) {
