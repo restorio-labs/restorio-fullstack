@@ -1,4 +1,4 @@
-import { createTailwindConfig } from "@restorio/ui/src/theme/tailwindUtils";
+import { createTailwindConfig } from "@restorio/ui";
 
 const config = createTailwindConfig({
   content: ["./index.html", "./src/**/*.{ts,tsx}"],

@@ -9,10 +9,6 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": resolve(__dirname, "./src"),
-      "@restorio/types": resolve(__dirname, "../../packages/types/src"),
-      "@restorio/api-client": resolve(__dirname, "../../packages/api-client/src"),
-      "@restorio/auth": resolve(__dirname, "../../packages/auth/src"),
-      "@restorio/ui": resolve(__dirname, "../../packages/ui/src"),
     },
   },
   server: {

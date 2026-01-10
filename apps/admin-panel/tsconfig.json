@@ -19,6 +19,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "tests", "vite.config.ts", "tailwind.config.ts", "postcss.config.cjs"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src", "tests", "vite.config.ts", "tailwind.config.ts"],
+  "exclude": ["node_modules", "dist", "postcss.config.cjs"]
 }
