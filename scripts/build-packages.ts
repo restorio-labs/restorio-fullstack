@@ -22,17 +22,35 @@ try {
 
   console.log("🔗 Linking @restorio/types to dependent packages...");
   try {
-    const linkResult = await $`bun install`.quiet();
-    if (linkResult.exitCode !== 0) {
-      console.error("❌ Failed to link @restorio/types");
-      console.error("stdout:", linkResult.stdout.toString());
-      console.error("stderr:", linkResult.stderr.toString());
-      process.exit(1);
+    const rootLinkResult = await $`bun install`.quiet();
+    if (rootLinkResult.exitCode !== 0) {
+      console.error("⚠️  Warning: Failed to link at root, but continuing...");
     }
-    console.log("✅ @restorio/types linked successfully\n");
   } catch (error) {
-    console.error("❌ Error linking @restorio/types:", error);
-    process.exit(1);
+    console.error("⚠️  Warning: Error linking at root:", error);
+  }
+
+  const dependentPackages = packages.filter((pkg) => pkg !== "types");
+  const linkPromises = dependentPackages.map(async (pkg) => {
+    try {
+      const pkgDir = resolve(rootDir, `packages/${pkg}`);
+      const linkResult = await $`cd ${pkgDir} && bun install`.quiet();
+      if (linkResult.exitCode !== 0) {
+        console.error(`⚠️  Warning: Failed to link @restorio/types in @restorio/${pkg}`);
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.error(`⚠️  Warning: Error linking @restorio/types in @restorio/${pkg}:`, error);
+      return false;
+    }
+  });
+
+  const linkResults = await Promise.all(linkPromises);
+  if (linkResults.every((r) => r)) {
+    console.log("✅ @restorio/types linked successfully\n");
+  } else {
+    console.log("⚠️  Some packages had linking warnings, but continuing...\n");
   }
 
   const otherPackages = packages.filter((pkg) => pkg !== "types");
