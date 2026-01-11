@@ -53,7 +53,7 @@ jobs:
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           path: coverage-summary.md
-          message_id: typescript-coverage
+          header: typescript-coverage
 
   api:
     name: Python API Validation
@@ -73,4 +73,4 @@ jobs:
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           path: apps/api/coverage-summary.md
-          message_id: python-api-coverage
+          header: python-api-coverage
