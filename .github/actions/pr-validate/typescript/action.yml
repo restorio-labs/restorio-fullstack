@@ -19,9 +19,26 @@ runs:
       with:
         bun-version: ${{ env.BUN_VERSION }}
 
-    - name: Install dependencies (root dir)
+    - name: Install dependencies
       shell: bash
-      run: bun install
+      run: |
+        set -e
+
+        bun install
+
+        for app in apps/*; do
+          if [ "$app" != "apps/api" ] && [ -d "$app" ]; then
+            echo "📦 Installing dependencies for $app..."
+            (cd "$app" && bun install --frozen-lockfile)
+          fi
+        done
+
+        for package in packages/*; do
+          if [ -d "$package" ]; then
+            echo "📦 Installing dependencies for $package..."
+            (cd "$package" && bun install --frozen-lockfile)
+          fi
+        done
 
     - name: Build apps and packages
       shell: bash

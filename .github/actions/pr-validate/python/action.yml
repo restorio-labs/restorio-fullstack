@@ -19,6 +19,11 @@ runs:
         shell: bash
         run: make install
 
+      - name: Build API
+        working-directory: apps/api
+        shell: bash
+        run: make build
+
       - name: Lint & format check
         working-directory: apps/api
         shell: bash

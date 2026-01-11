@@ -139,7 +139,8 @@ NGINX (Mikrus VPS)
  ├─ React Apps (Admin, Kitchen, Tablet)
  └─ FastAPI (Backend API)
         |
-        ├─ MongoDB Atlas (Primary DB)
+        ├─ PostgreSQL (Transactional, relational data)
+        ├─ MongoDB (Order drafts, live sessions)
         ├─ Redis (Sessions, Pub/Sub, Queues)
         └─ Payment Providers (Stripe, Przelewy24)
 ```
@@ -245,8 +246,9 @@ Each module is logically separated but deployed as a single service.
 
 - Docker & Docker Compose
 - NGINX reverse proxy
-- MongoDB Atlas (Free Tier)
-- Redis
+- PostgreSQL (Transactional data)
+- MongoDB (Document-oriented data)
+- Redis (Sessions, Pub/Sub, Queues)
 - Cloudflare (DNS & CDN)
 
 ### Benefits

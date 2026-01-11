@@ -46,6 +46,8 @@ def extract_module_name(file_path: str) -> str | None:
     module = parts[0]
     if module in ("core", "api", "modules", "routes"):
         if len(parts) >= 2 and parts[1] != "__init__.py":
+            if module == "core":
+                return parts[1]
             return f"{module}/{parts[1]}"
         return module
     return None
@@ -129,7 +131,7 @@ def main() -> None:
             }
         )
 
-    markdown = f"## 🧪 Unit Test Coverage{render_table('API Modules', rows)}\n".strip()
+    markdown = f"## 🧪 API Unit Test Coverage{render_table('API Modules', rows)}\n".strip()
 
     output_path = Path("coverage-summary.md")
     output_path.write_text(markdown, encoding="utf-8")
