@@ -1,7 +1,8 @@
 import { ContentContainer, Text } from "@restorio/ui";
 import Link from "next/link";
+import type { ReactElement } from "react";
 
-export const Footer = (): JSX.Element => {
+export const Footer = (): ReactElement => {
   const currentYear = new Date().getFullYear();
 
   return (

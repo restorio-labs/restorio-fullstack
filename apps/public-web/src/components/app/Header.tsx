@@ -3,8 +3,9 @@
 import { Button, ContentContainer, Text } from "@restorio/ui";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ReactElement } from "react";
 
-export const Header = (): JSX.Element => {
+export const Header = (): ReactElement => {
   const pathname = usePathname();
 
   const navItems = [

@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { ReactElement, ReactNode } from "react";
 
 import { Footer } from "@components/app/Footer";
 import { Header } from "@components/app/Header";
@@ -9,7 +9,7 @@ interface MarketingLayoutProps {
   children: ReactNode;
 }
 
-export default function MarketingLayout({ children }: MarketingLayoutProps): JSX.Element {
+export default function MarketingLayout({ children }: MarketingLayoutProps): ReactElement {
   return (
     <div className="min-h-screen flex flex-col bg-background-primary">
       <Header />

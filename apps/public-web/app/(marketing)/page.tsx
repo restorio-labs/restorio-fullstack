@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactElement } from "react";
 
 import { HomeContent } from "./HomeContent";
 
@@ -7,6 +8,6 @@ export const metadata: Metadata = {
   description: "Welcome to Restorio Platform",
 };
 
-export default function HomePage(): JSX.Element {
+export default function HomePage(): ReactElement {
   return <HomeContent />;
 }

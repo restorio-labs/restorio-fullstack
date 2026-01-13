@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import type { ReactNode } from "react";
+import type { ReactElement, ReactNode } from "react";
 
 import { AppProviders } from "../src/wrappers/AppProviders";
 import "./globals.css";
@@ -31,7 +31,7 @@ interface RootLayoutProps {
   children: ReactNode;
 }
 
-export default function RootLayout({ children }: RootLayoutProps): JSX.Element {
+export default function RootLayout({ children }: RootLayoutProps): ReactElement {
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
