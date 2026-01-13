@@ -4,7 +4,7 @@ import { Button, ContentContainer, Text } from "@restorio/ui";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export const Header = () => {
+export const Header = (): JSX.Element => {
   const pathname = usePathname();
 
   const navItems = [

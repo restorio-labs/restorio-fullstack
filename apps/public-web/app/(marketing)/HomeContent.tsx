@@ -84,9 +84,9 @@ export const HomeContent = (): ReactElement => {
                 IconComponent: FaGlobe,
                 iconBackground: "bg-surface-secondary",
               },
-            ].map((feature, i) => (
+            ].map((feature) => (
               <div
-                key={i}
+                key={feature.title}
                 className={cn(
                   "group rounded-2xl border border-border-default bg-surface-primary p-8 transition-all hover:-translate-y-1 hover:shadow-lg",
                   feature.iconBackground,

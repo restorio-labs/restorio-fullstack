@@ -81,9 +81,7 @@ for (const pattern of directoryPatterns) {
     removedCount++;
   }
 
-  const foundDirs = findDirectories(rootDir, pattern).filter(
-    (p) => !p.includes("node_modules") && !p.includes(".git")
-  );
+  const foundDirs = findDirectories(rootDir, pattern).filter((p) => !p.includes("node_modules") && !p.includes(".git"));
 
   for (const dir of foundDirs) {
     if (removeDirectory(dir)) {

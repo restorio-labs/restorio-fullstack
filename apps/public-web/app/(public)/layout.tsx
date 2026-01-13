@@ -1,10 +1,10 @@
 "use client";
 
+import { ContentContainer } from "@restorio/ui";
 import type { ReactNode } from "react";
 
 import { Footer } from "@/components/app/Footer";
 import { Header } from "@/components/app/Header";
-import { ContentContainer } from "@restorio/ui";
 
 interface PublicLayoutProps {
   children: ReactNode;

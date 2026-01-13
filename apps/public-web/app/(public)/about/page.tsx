@@ -7,6 +7,6 @@ export const metadata: Metadata = {
   description: "Learn about the mission and goals of the Restorio Platform.",
 };
 
-export default function AboutPage() {
+export default function AboutPage(): JSX.Element {
   return <AboutContent />;
 }

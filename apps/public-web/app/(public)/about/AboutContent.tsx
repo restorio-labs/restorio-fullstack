@@ -130,8 +130,8 @@ export const AboutContent = (): ReactElement => {
                   "Distributed systems (async processing, WebSockets)",
                   "Modular backend design",
                   "Security, RBAC, and regulatory compliance",
-                ].map((item, i) => (
-                  <div key={i} className="flex items-start gap-3">
+                ].map((item) => (
+                  <div key={item} className="flex items-start gap-3">
                     <div className="mt-1.5 h-px w-8 bg-border-strong" />
                     <Text variant="body-md">{item}</Text>
                   </div>

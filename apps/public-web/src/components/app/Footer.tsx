@@ -1,7 +1,7 @@
 import { ContentContainer, Text } from "@restorio/ui";
 import Link from "next/link";
 
-export const Footer = () => {
+export const Footer = (): JSX.Element => {
   const currentYear = new Date().getFullYear();
 
   return (
@@ -26,17 +26,26 @@ export const Footer = () => {
               </Text>
               <ul className="space-y-2">
                 <li>
-                  <Link href="#" className="text-sm text-text-secondary transition-colors hover:text-interactive-primary">
+                  <Link
+                    href="#"
+                    className="text-sm text-text-secondary transition-colors hover:text-interactive-primary"
+                  >
                     Features
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-sm text-text-secondary transition-colors hover:text-interactive-primary">
+                  <Link
+                    href="#"
+                    className="text-sm text-text-secondary transition-colors hover:text-interactive-primary"
+                  >
                     Pricing
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-sm text-text-secondary transition-colors hover:text-interactive-primary">
+                  <Link
+                    href="#"
+                    className="text-sm text-text-secondary transition-colors hover:text-interactive-primary"
+                  >
                     Demo
                   </Link>
                 </li>
@@ -57,12 +66,18 @@ export const Footer = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-sm text-text-secondary transition-colors hover:text-interactive-primary">
+                  <Link
+                    href="#"
+                    className="text-sm text-text-secondary transition-colors hover:text-interactive-primary"
+                  >
                     Privacy
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-sm text-text-secondary transition-colors hover:text-interactive-primary">
+                  <Link
+                    href="#"
+                    className="text-sm text-text-secondary transition-colors hover:text-interactive-primary"
+                  >
                     Terms
                   </Link>
                 </li>
