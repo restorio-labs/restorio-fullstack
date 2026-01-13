@@ -57,6 +57,9 @@ For detailed Docker documentation, see [DOCKER.md](./DOCKER.md).
 # Install dependencies (first time)
 bun install
 
+# Build Packages
+bun run build
+
 # Start all frontend apps
 bun run dev
 ```
