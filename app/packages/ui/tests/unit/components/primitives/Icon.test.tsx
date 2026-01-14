@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import { render, screen } from "@testing-library/react";
-import React, { type ReactElement } from "react";
+import React, { type ReactElement, forwardRef, type SVGProps } from "react";
 import { describe, it, expect, vi } from "vitest";
 
 import { Icon } from "../../../../src/components/primitives/Icon";
@@ -76,7 +76,7 @@ describe("Icon", () => {
   });
 
   it("should render custom component via 'as' prop", () => {
-    const CustomComponent = React.forwardRef<SVGSVGElement, React.SVGProps<SVGSVGElement>>((props, ref) => (
+    const CustomComponent = forwardRef<SVGSVGElement, SVGProps<SVGSVGElement>>((props, ref) => (
       <g ref={ref} data-testid="custom-as" {...props} />
     ));
 
