@@ -5,10 +5,10 @@ const allApps = ["admin-panel", "kitchen-panel", "tablet-app", "ui-demo", "publi
 
 const filterEnv = process.env.CHANGED_APPS;
 const appsToBuild = filterEnv
-  ? (filterEnv.split(",").filter(Boolean) as typeof allApps[number][])
-  : ([...allApps] as typeof allApps[number][]);
+  ? (filterEnv.split(",").filter(Boolean) as (typeof allApps)[number][])
+  : ([...allApps] as (typeof allApps)[number][]);
 
-const apps = appsToBuild.filter((app) => allApps.includes(app)) as typeof allApps[number][];
+const apps = appsToBuild.filter((app) => allApps.includes(app)) as (typeof allApps)[number][];
 
 if (apps.length === 0) {
   console.log("📱 No apps to build\n");

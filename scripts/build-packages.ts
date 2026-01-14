@@ -8,10 +8,10 @@ const rootDir = process.cwd();
 
 const filterEnv = process.env.CHANGED_PACKAGES;
 const packagesToBuild = filterEnv
-  ? (filterEnv.split(",").filter(Boolean) as typeof allPackages[number][])
-  : ([...allPackages] as typeof allPackages[number][]);
+  ? (filterEnv.split(",").filter(Boolean) as (typeof allPackages)[number][])
+  : ([...allPackages] as (typeof allPackages)[number][]);
 
-let packages = packagesToBuild.filter((pkg) => allPackages.includes(pkg)) as typeof allPackages[number][];
+let packages = packagesToBuild.filter((pkg) => allPackages.includes(pkg)) as (typeof allPackages)[number][];
 
 if (packages.length === 0) {
   console.log("📦 No packages to build\n");
@@ -19,7 +19,7 @@ if (packages.length === 0) {
 }
 
 if (!packages.includes("types") && packages.some((pkg) => pkg !== "types")) {
-  packages = ["types", ...packages.filter((pkg) => pkg !== "types")] as typeof allPackages[number][];
+  packages = ["types", ...packages.filter((pkg) => pkg !== "types")] as (typeof allPackages)[number][];
 }
 
 if (filterEnv) {
@@ -30,18 +30,18 @@ if (filterEnv) {
 
 try {
   const needsTypes = packages.includes("types");
-  
+
   if (needsTypes) {
     console.log("📦 Building @restorio/types (must be built first)...");
-  const typesDir = resolve(rootDir, "app/packages/types");
-  const typesResult =
-    await $`cd ${typesDir} && PATH="${typesDir}/node_modules/.bin:${rootDir}/node_modules/.bin:$PATH" bun run build`;
-  if (typesResult.exitCode !== 0) {
-    console.error("❌ Failed to build @restorio/types");
-    console.error("stdout:", typesResult.stdout.toString());
-    console.error("stderr:", typesResult.stderr.toString());
-    process.exit(1);
-  }
+    const typesDir = resolve(rootDir, "app/packages/types");
+    const typesResult =
+      await $`cd ${typesDir} && PATH="${typesDir}/node_modules/.bin:${rootDir}/node_modules/.bin:$PATH" bun run build`;
+    if (typesResult.exitCode !== 0) {
+      console.error("❌ Failed to build @restorio/types");
+      console.error("stdout:", typesResult.stdout.toString());
+      console.error("stderr:", typesResult.stderr.toString());
+      process.exit(1);
+    }
     console.log("✅ @restorio/types built successfully\n");
 
     console.log("🔗 Linking @restorio/types to dependent packages...");

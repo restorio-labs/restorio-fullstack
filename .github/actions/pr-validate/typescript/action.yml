@@ -26,20 +26,17 @@ runs:
     - name: Build apps and packages
       shell: bash
       run: |
-        BASE_REF="${{ github.event.pull_request.base.ref || 'main' }}"
-        turbo run build --filter="...[origin/${BASE_REF}]" || turbo run build
+        bun run build
 
     - name: Format check in all packages and apps
       shell: bash
       run: |
-        BASE_REF="${{ github.event.pull_request.base.ref || 'main' }}"
-        turbo run check --filter="...[origin/${BASE_REF}]" || turbo run check
+        bun run check
 
     - name: Unit tests apps and packages
       shell: bash
       run: |
-        BASE_REF="${{ github.event.pull_request.base.ref || 'main' }}"
-        turbo run test:unit --filter="...[origin/${BASE_REF}]" || turbo run test:unit
+        bunx turbo run test:unit
 
     - name: Generate coverage report
       shell: bash

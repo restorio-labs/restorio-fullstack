@@ -14,8 +14,5 @@
   },
   "include": ["src/**/*.ts"],
   "exclude": ["../node_modules", "../dist"],
-  "references": [
-    { "path": "../types" },
-    { "path": "../auth" }
-  ]
+  "references": [{ "path": "../types" }, { "path": "../auth" }]
 }

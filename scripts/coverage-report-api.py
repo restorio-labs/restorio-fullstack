@@ -33,8 +33,8 @@ def read_coverage() -> dict[str, Any]:
 def extract_module_name(file_path: str) -> str | None:
     normalized_path = file_path.replace("\\", "/")
 
-    if "apps/api/" in normalized_path:
-        parts = normalized_path.split("apps/api/")[1].split("/")
+    if "app/api/" in normalized_path:
+        parts = normalized_path.split("app/api/")[1].split("/")
     elif normalized_path.startswith("/"):
         parts = normalized_path.lstrip("/").split("/")
     else:

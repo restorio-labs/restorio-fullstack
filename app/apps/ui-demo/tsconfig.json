@@ -20,9 +20,5 @@
   },
   "include": ["src", "tests", "vite.config.ts"],
   "exclude": ["node_modules", "dist"],
-  "references": [
-    { "path": "../../packages/types" },
-    { "path": "../../packages/auth" },
-    { "path": "../../packages/ui" }
-  ]
+  "references": [{ "path": "../../packages/types" }, { "path": "../../packages/auth" }, { "path": "../../packages/ui" }]
 }

@@ -38,7 +38,7 @@ jobs:
               - 'app/apps/admin-panel/**'
               - 'app/apps/public-web/**'
             api:
-              - 'app/apps/api/**'
+              - 'app/api/**'
 
   apps-and-packages:
     name: Apps and Packages Validation
@@ -67,12 +67,9 @@ jobs:
 
       - name: Validate Python Code
         uses: ./.github/actions/pr-validate/python
-        with:
-          package_dir: app/apps/api
-          python_version: ${{ vars.PYTHON_VERSION }}
 
       - name: Comment coverage on PR
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          path: app/apps/api/coverage-summary.md
+          path: app/api/coverage-summary.md
           header: python-api-coverage

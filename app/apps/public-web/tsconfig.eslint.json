@@ -3,11 +3,14 @@
   "include": [
     "app/**/*.ts",
     "app/**/*.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
     "next-env.d.ts",
+    "tailwind.config.ts",
     "vite.config.ts",
     "vitest.config.ts",
-    "tailwind.config.ts",
     "tests/**/*.ts",
     "tests/**/*.tsx"
-  ]
+  ],
+  "exclude": ["postcss.config.cjs"]
 }
