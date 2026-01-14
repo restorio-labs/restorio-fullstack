@@ -9,7 +9,7 @@ End-to-end tests for the Restorio Platform using Playwright.
 bun install
 
 # Install Playwright browsers
-bunx playwright install
+bun playwright install
 ```
 
 ## Running Tests

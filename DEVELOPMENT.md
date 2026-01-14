@@ -330,7 +330,7 @@ End-to-end tests are in the `e2e/` folder.
 ```bash
 # Install Playwright browsers (first time)
 cd e2e
-bunx playwright install
+bun playwright install
 
 # Run all E2E tests
 bun run test:e2e
