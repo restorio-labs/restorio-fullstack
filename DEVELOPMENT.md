@@ -83,7 +83,7 @@ restorio-fullstack/
 │   ├── public-web/        # Next.js public restaurant pages
 │   ├── admin-panel/       # React admin dashboard (Vite)
 │   ├── kitchen-panel/     # React kitchen UI (Vite)
-│   ├── tablet-app/        # React PWA / kiosk (Vite)
+│   ├── mobile-app/        # React PWA / kiosk (Vite)
 │   └── api/               # FastAPI backend
 ├── packages/
 │   ├── ui/                # Shared UI components
@@ -150,7 +150,7 @@ bun run build   # Build for production
 #### Tablet App (React + Vite)
 
 ```bash
-cd apps/tablet-app
+cd apps/mobile-app
 bun run dev     # Start dev server on port 3003
 bun run build   # Build for production
 ```

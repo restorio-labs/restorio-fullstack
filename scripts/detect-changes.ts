@@ -3,7 +3,7 @@ import { $ } from "bun";
 
 const isCI = !!process.env.GITHUB_ACTIONS;
 
-const apps = ["admin-panel", "kitchen-panel", "tablet-app", "ui-demo", "public-web"] as const;
+const apps = ["admin-panel", "kitchen-panel", "mobile-app", "ui-demo", "public-web"] as const;
 const packages = ["types", "auth", "api-client", "ui"] as const;
 
 type App = (typeof apps)[number];

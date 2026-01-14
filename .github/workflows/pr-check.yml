@@ -34,7 +34,7 @@ jobs:
             packages-and-apps:
               - 'app/packages/**'
               - 'app/apps/kitchen-panel/**'
-              - 'app/apps/tablet-app/**'
+              - 'app/apps/mobile-app/**'
               - 'app/apps/admin-panel/**'
               - 'app/apps/public-web/**'
             api:

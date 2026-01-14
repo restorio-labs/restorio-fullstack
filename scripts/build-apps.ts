@@ -1,7 +1,7 @@
 /// <reference types="bun" />
 import { $ } from "bun";
 
-const allApps = ["admin-panel", "kitchen-panel", "tablet-app", "ui-demo", "public-web"] as const;
+const allApps = ["admin-panel", "kitchen-panel", "mobile-app", "ui-demo", "public-web"] as const;
 
 const filterEnv = process.env.CHANGED_APPS;
 const appsToBuild = filterEnv
