@@ -21,36 +21,25 @@ runs:
 
     - name: Install dependencies
       shell: bash
-      run: |
-        set -e
-
-        bun install
-
-        for app in apps/*; do
-          if [ "$app" != "apps/api" ] && [ -d "$app" ]; then
-            echo "📦 Installing dependencies for $app..."
-            (cd "$app" && bun install --frozen-lockfile)
-          fi
-        done
-
-        for package in packages/*; do
-          if [ -d "$package" ]; then
-            echo "📦 Installing dependencies for $package..."
-            (cd "$package" && bun install --frozen-lockfile)
-          fi
-        done
+      run: bun install
 
     - name: Build apps and packages
       shell: bash
-      run: bun run build
+      run: |
+        BASE_REF="${{ github.event.pull_request.base.ref || 'main' }}"
+        turbo run build --filter="...[origin/${BASE_REF}]" || turbo run build
 
     - name: Format check in all packages and apps
       shell: bash
-      run: bun run check
+      run: |
+        BASE_REF="${{ github.event.pull_request.base.ref || 'main' }}"
+        turbo run check --filter="...[origin/${BASE_REF}]" || turbo run check
 
     - name: Unit tests apps and packages
       shell: bash
-      run: bun run test:unit
+      run: |
+        BASE_REF="${{ github.event.pull_request.base.ref || 'main' }}"
+        turbo run test:unit --filter="...[origin/${BASE_REF}]" || turbo run test:unit
 
     - name: Generate coverage report
       shell: bash
