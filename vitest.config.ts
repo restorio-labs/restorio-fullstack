@@ -8,7 +8,7 @@ export default defineConfig({
     globals: true,
     root: process.cwd(),
     environment: "jsdom",
-    include: ["packages/*/tests/unit/**/*.{test,spec}.{ts,tsx}", "apps/*/tests/unit/**/*.{test,spec}.{ts,tsx}"],
+    include: ["app/packages/*/tests/unit/**/*.{test,spec}.{ts,tsx}", "app/apps/*/tests/unit/**/*.{test,spec}.{ts,tsx}"],
 
     exclude: ["/node_modules/", "/dist/", "/\.turbo/", "/\.next/"],
 
@@ -27,12 +27,12 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@restorio/types": resolve(__dirname, "./packages/types/src"),
-      "@restorio/ui": resolve(__dirname, "./packages/ui/src"),
-      "@restorio/api-client": resolve(__dirname, "./packages/api-client/src"),
-      "@restorio/auth": resolve(__dirname, "./packages/auth/src"),
-      "@utils": resolve(__dirname, "./packages/ui/src/utils/index.ts"),
-      "@components": resolve(__dirname, "./packages/ui/src/components"),
+      "@restorio/types": resolve(__dirname, "./app/packages/types/src"),
+      "@restorio/ui": resolve(__dirname, "./app/packages/ui/src"),
+      "@restorio/api-client": resolve(__dirname, "./app/packages/api-client/src"),
+      "@restorio/auth": resolve(__dirname, "./app/packages/auth/src"),
+      "@utils": resolve(__dirname, "./app/packages/ui/src/utils/index.ts"),
+      "@components": resolve(__dirname, "./app/packages/ui/src/components"),
     },
   },
 });

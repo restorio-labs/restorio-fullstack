@@ -4,8 +4,8 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - 'apps/**'
-      - 'packages/**'
+      - 'app/apps/**'
+      - 'app/packages/**'
 
 concurrency:
   group: pr-${{ github.ref }}
@@ -24,19 +24,21 @@ jobs:
       api: ${{ steps.filter.outputs.api }}
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - name: Path filter
         id: filter
         uses: dorny/paths-filter@v3
         with:
           filters: |
             packages-and-apps:
-              - 'packages/**'
-              - 'apps/kitchen-panel/**'
-              - 'apps/tablet-app/**'
-              - 'apps/admin-panel/**'
-              - 'apps/public-web/**'
+              - 'app/packages/**'
+              - 'app/apps/kitchen-panel/**'
+              - 'app/apps/mobile-app/**'
+              - 'app/apps/admin-panel/**'
+              - 'app/apps/public-web/**'
             api:
-              - 'apps/api/**'
+              - 'app/api/**'
 
   apps-and-packages:
     name: Apps and Packages Validation
@@ -65,12 +67,9 @@ jobs:
 
       - name: Validate Python Code
         uses: ./.github/actions/pr-validate/python
-        with:
-          package_dir: apps/api
-          python_version: ${{ vars.PYTHON_VERSION }}
 
       - name: Comment coverage on PR
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          path: apps/api/coverage-summary.md
+          path: app/api/coverage-summary.md
           header: python-api-coverage

@@ -57,6 +57,9 @@ For detailed Docker documentation, see [DOCKER.md](./DOCKER.md).
 # Install dependencies (first time)
 bun install
 
+# Build Packages
+bun run build
+
 # Start all frontend apps
 bun run dev
 ```
@@ -80,7 +83,7 @@ restorio-fullstack/
 │   ├── public-web/        # Next.js public restaurant pages
 │   ├── admin-panel/       # React admin dashboard (Vite)
 │   ├── kitchen-panel/     # React kitchen UI (Vite)
-│   ├── tablet-app/        # React PWA / kiosk (Vite)
+│   ├── mobile-app/        # React PWA / kiosk (Vite)
 │   └── api/               # FastAPI backend
 ├── packages/
 │   ├── ui/                # Shared UI components
@@ -147,7 +150,7 @@ bun run build   # Build for production
 #### Tablet App (React + Vite)
 
 ```bash
-cd apps/tablet-app
+cd apps/mobile-app
 bun run dev     # Start dev server on port 3003
 bun run build   # Build for production
 ```
@@ -327,7 +330,7 @@ End-to-end tests are in the `e2e/` folder.
 ```bash
 # Install Playwright browsers (first time)
 cd e2e
-bunx playwright install
+bun playwright install
 
 # Run all E2E tests
 bun run test:e2e

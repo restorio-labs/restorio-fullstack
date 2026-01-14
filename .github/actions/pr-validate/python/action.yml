@@ -15,27 +15,27 @@ runs:
 
 
       - name: Install dependencies
-        working-directory: apps/api
+        working-directory: app/api
         shell: bash
         run: make install
 
       - name: Build API
-        working-directory: apps/api
+        working-directory: app/api
         shell: bash
         run: make build
 
       - name: Lint & format check
-        working-directory: apps/api
+        working-directory: app/api
         shell: bash
         run: make check
 
       - name: Tests
-        working-directory: apps/api
+        working-directory: app/api
         shell: bash
         run: make test
 
       - name: Generate coverage report
         shell: bash
         run: |
-          cd apps/api
+          cd app/api
           python3 ../../scripts/coverage-report-api.py

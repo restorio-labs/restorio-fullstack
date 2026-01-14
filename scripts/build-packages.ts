@@ -3,64 +3,95 @@
 import { $ } from "bun";
 import { resolve } from "path";
 
-const packages = ["types", "auth", "api-client", "ui"] as const;
+const allPackages = ["types", "auth", "api-client", "ui"] as const;
 const rootDir = process.cwd();
 
-console.log("🔨 Building packages...\n");
+const filterEnv = process.env.CHANGED_PACKAGES;
+const packagesToBuild = filterEnv
+  ? (filterEnv.split(",").filter(Boolean) as (typeof allPackages)[number][])
+  : ([...allPackages] as (typeof allPackages)[number][]);
+
+let packages = packagesToBuild.filter((pkg) => allPackages.includes(pkg)) as (typeof allPackages)[number][];
+
+if (packages.length === 0) {
+  console.log("📦 No packages to build\n");
+  process.exit(0);
+}
+
+if (!packages.includes("types") && packages.some((pkg) => pkg !== "types")) {
+  packages = ["types", ...packages.filter((pkg) => pkg !== "types")] as (typeof allPackages)[number][];
+}
+
+if (filterEnv) {
+  console.log(`🔨 Building changed packages: ${packages.join(", ")}...\n`);
+} else {
+  console.log("🔨 Building packages...\n");
+}
 
 try {
-  console.log("📦 Building @restorio/types (must be built first)...");
-  const typesDir = resolve(rootDir, "packages/types");
-  const typesResult =
-    await $`cd ${typesDir} && PATH="${typesDir}/node_modules/.bin:${rootDir}/node_modules/.bin:$PATH" bun run build`;
-  if (typesResult.exitCode !== 0) {
-    console.error("❌ Failed to build @restorio/types");
-    console.error("stdout:", typesResult.stdout.toString());
-    console.error("stderr:", typesResult.stderr.toString());
-    process.exit(1);
-  }
-  console.log("✅ @restorio/types built successfully\n");
+  const needsTypes = packages.includes("types");
 
-  console.log("🔗 Linking @restorio/types to dependent packages...");
-  try {
-    const rootLinkResult = await $`bun install`.quiet();
-    if (rootLinkResult.exitCode !== 0) {
-      console.error("⚠️  Warning: Failed to link at root, but continuing...");
+  if (needsTypes) {
+    console.log("📦 Building @restorio/types (must be built first)...");
+    const typesDir = resolve(rootDir, "app/packages/types");
+    const typesResult =
+      await $`cd ${typesDir} && PATH="${typesDir}/node_modules/.bin:${rootDir}/node_modules/.bin:$PATH" bun run build`;
+    if (typesResult.exitCode !== 0) {
+      console.error("❌ Failed to build @restorio/types");
+      console.error("stdout:", typesResult.stdout.toString());
+      console.error("stderr:", typesResult.stderr.toString());
+      process.exit(1);
     }
-  } catch (error) {
-    console.error("⚠️  Warning: Error linking at root:", error);
-  }
+    console.log("✅ @restorio/types built successfully\n");
 
-  const dependentPackages = packages.filter((pkg) => pkg !== "types");
-  const linkPromises = dependentPackages.map(async (pkg) => {
+    console.log("🔗 Linking @restorio/types to dependent packages...");
     try {
-      const pkgDir = resolve(rootDir, `packages/${pkg}`);
-      const linkResult = await $`cd ${pkgDir} && bun install`.quiet();
-      if (linkResult.exitCode !== 0) {
-        console.error(`⚠️  Warning: Failed to link @restorio/types in @restorio/${pkg}`);
-        return false;
+      const rootLinkResult = await $`bun install`.quiet();
+      if (rootLinkResult.exitCode !== 0) {
+        console.error("⚠️  Warning: Failed to link at root, but continuing...");
       }
-      return true;
     } catch (error) {
-      console.error(`⚠️  Warning: Error linking @restorio/types in @restorio/${pkg}:`, error);
-      return false;
+      console.error("⚠️  Warning: Error linking at root:", error);
     }
-  });
 
-  const linkResults = await Promise.all(linkPromises);
-  if (linkResults.every((r) => r)) {
-    console.log("✅ @restorio/types linked successfully\n");
-  } else {
-    console.log("⚠️  Some packages had linking warnings, but continuing...\n");
+    const dependentPackages = packages.filter((pkg) => pkg !== "types");
+    if (dependentPackages.length > 0) {
+      const linkPromises = dependentPackages.map(async (pkg) => {
+        try {
+          const pkgDir = resolve(rootDir, `app/packages/${pkg}`);
+          const linkResult = await $`cd ${pkgDir} && bun install`.quiet();
+          if (linkResult.exitCode !== 0) {
+            console.error(`⚠️  Warning: Failed to link @restorio/types in @restorio/${pkg}`);
+            return false;
+          }
+          return true;
+        } catch (error) {
+          console.error(`⚠️  Warning: Error linking @restorio/types in @restorio/${pkg}:`, error);
+          return false;
+        }
+      });
+
+      const linkResults = await Promise.all(linkPromises);
+      if (linkResults.every((r) => r)) {
+        console.log("✅ @restorio/types linked successfully\n");
+      } else {
+        console.log("⚠️  Some packages had linking warnings, but continuing...\n");
+      }
+    }
   }
 
   const otherPackages = packages.filter((pkg) => pkg !== "types");
+
+  if (otherPackages.length === 0) {
+    console.log("✨ All packages built successfully!");
+    process.exit(0);
+  }
 
   console.log(`📦 Building other packages: ${otherPackages.join(", ")}...\n`);
 
   const buildPromises = otherPackages.map(async (pkg) => {
     try {
-      const pkgDir = resolve(rootDir, `packages/${pkg}`);
+      const pkgDir = resolve(rootDir, `app/packages/${pkg}`);
       const result =
         await $`cd ${pkgDir} && PATH="${pkgDir}/node_modules/.bin:${rootDir}/node_modules/.bin:$PATH" bun run build`;
       if (result.exitCode !== 0) {
