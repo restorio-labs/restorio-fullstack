@@ -1,0 +1,259 @@
+---
+alwaysApply: false
+---
+These rules define **mandatory conventions** for frontend development across the entire monorepo.
+They are intended to be used as **IDE rules**, **Cursor rules**, or **team standards**.
+
+They apply to **all frontend apps** and **shared packages**, unless explicitly stated otherwise.
+
+---
+
+## 1. General Principles (Non-Negotiable)
+
+1. **UI is shared first**
+   - Base UI must live in `packages/ui`
+   - Apps must never re-implement base UI primitives
+
+2. **Composition over duplication**
+   - Apps compose UI, they do not redefine it
+   - Logic lives in apps, structure lives in UI package
+
+3. **Mobile / tablet first**
+   - Especially for kitchen and tablet apps
+   - Desktop is an enhancement, not a baseline
+
+4. **Accessibility is not optional**
+   - WCAG 2.1 AA is the minimum standard
+   - Keyboard and screen reader support required
+
+5. **Tokens, not values**
+   - No raw colors, spacing, radius, or motion values
+   - Everything comes from design tokens
+
+---
+
+## 2. Monorepo Boundaries
+
+### Allowed imports
+- Apps → `packages/ui`
+- Apps → `packages/types`
+- Apps → `packages/api-client`
+- Apps → their own local code
+
+### Forbidden imports
+- App → another app
+- App → deep imports inside another package
+- UI → app code
+
+---
+
+## 3. Folder Responsibilities
+
+### `packages/ui`
+**What it contains**
+- UI primitives
+- Layout primitives
+- Tokens
+- Guards (UI-only)
+- Hooks (UI-related)
+- Styling & motion utilities
+
+**What it must NOT contain**
+- Business logic
+- API calls
+- App-specific copy
+- Feature logic
+
+---
+
+### Frontend Apps (`apps/*`)
+**What they contain**
+- Views
+- Feature composition
+- App routing
+- Business copy
+- Data fetching & state
+
+**What they must NOT contain**
+- Base UI primitives
+- Token definitions
+- Duplicated layouts
+
+---
+
+## 4. Layout Rules
+
+1. Every app must use:
+   - `AppProviders`
+   - `AppLayout`
+   - `PageLayout`
+
+2. Layouts must:
+   - Be structural only
+   - Contain no business logic
+   - Use semantic HTML landmarks
+
+3. Views must:
+   - Never handle global layout concerns
+   - Focus only on business UI
+
+---
+
+## 5. Styling Rules (Tailwind)
+
+### Mandatory rules
+- Tailwind only
+- Token-driven values only
+- No inline styles
+- No arbitrary Tailwind values (`w-[123px]` ❌)
+
+### Allowed
+- Utility composition
+- Conditional classes
+- Responsive utilities
+
+---
+
+## 6. Design Tokens
+
+### Required token categories
+- Colors
+- Spacing
+- Radius
+- Typography
+- Shadows
+- Z-index
+- Motion
+
+### Rules
+- Tokens are the single source of truth
+- Dark mode handled via tokens only
+- No hardcoded values in components
+
+---
+
+## 7. Accessibility Rules
+
+Every UI element must:
+- Be keyboard operable
+- Have visible focus states
+- Be screen reader friendly
+- Avoid color-only meaning
+- Respect reduced motion preferences
+
+ARIA usage:
+- Use semantic HTML first
+- ARIA only when necessary
+- ARIA labels must be localizable
+
+---
+
+## 8. Motion & Animation
+
+1. All motion must be tokenized
+2. `prefers-reduced-motion` must be respected
+3. Motion must:
+   - Communicate state
+   - Never block interaction
+   - Never be decorative only
+
+---
+
+## 9. Forms & Inputs
+
+- Labels are mandatory (visual or SR-only)
+- Validation UI is standardized
+- No custom form layouts in apps
+- Touch-friendly input sizes required
+
+---
+
+## 10. Tables & Data Display
+
+- Use shared table system only
+- Semantic `<table>` required
+- Keyboard navigation mandatory
+- Horizontal scroll allowed, squashing is not
+
+---
+
+## 11. Navigation Rules
+
+- Navigation comes from shared system
+- Sidebar / Topbar / Rail chosen by layout
+- No inline permission checks in nav items
+- Disabled vs hidden must follow UX rules
+
+---
+
+## 12. Permissions & Guards (UI-only)
+
+- Guards are for UX clarity, not security
+- Never assume backend enforcement
+- No permission logic inside components
+- Use shared guard helpers only
+
+---
+
+## 13. Empty / Error / Offline States
+
+- Must use shared state components
+- No panic language
+- Always provide next steps
+- Must work in dark mode
+
+---
+
+## 14. Toasts & Global Feedback
+
+- Use global toast system only
+- No ad-hoc alerts
+- Feedback must be accessible
+- Reduced-motion respected
+
+---
+
+## 15. i18n & Content Rules
+
+1. No hardcoded user-facing strings in UI package
+2. Components must accept text via props
+3. Layouts must survive long translations
+4. RTL must not break layouts
+5. ARIA labels must be localizable
+
+---
+
+## 16. Testing Rules
+
+- Unit tests required for shared UI
+- Accessibility assertions encouraged
+- Snapshot-only tests are insufficient
+- Test behavior, not implementation
+
+---
+
+## 17. What Gets Rejected in Review
+
+- Duplicated UI components
+- Hardcoded styles or colors
+- Non-accessible interactions
+- App-to-app imports
+- Feature logic inside UI package
+- Desktop-only thinking for tablet apps
+
+---
+
+## 18. Guiding Question for Every PR
+
+> **“Can this be reused, accessed, themed, and understood by everyone?”**
+
+If the answer is **no**, the implementation is not done.
+
+---
+
+## Status
+
+- **Mandatory** for all frontend work
+- Applies to **existing and future code**
+- Violations must be fixed, not justified
+"""
