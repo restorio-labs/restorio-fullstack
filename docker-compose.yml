@@ -1,7 +1,7 @@
 services:
   api:
     build:
-      context: ./app/api
+      context: ./apps/api
       dockerfile: Dockerfile
     container_name: restorio-api
     ports:
@@ -22,7 +22,7 @@ services:
       - PRZELEWY24_CRC=${PRZELEWY24_CRC:-}
       - PRZELEWY24_API_KEY=${PRZELEWY24_API_KEY:-}
     volumes:
-      - ./app/api:/app
+      - ./apps/api:/app
     depends_on:
       redis:
         condition: service_healthy
@@ -123,4 +123,3 @@ volumes:
 networks:
   restorio-network:
     driver: bridge
-
