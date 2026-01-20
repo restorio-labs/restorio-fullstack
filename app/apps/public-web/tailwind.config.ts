@@ -1,4 +1,4 @@
-import { createTailwindConfig } from "@restorio/ui/tailwind";
+import { createTailwindConfig } from "../../packages/ui/src/theme/tailwindUtils";
 import type { Config } from "tailwindcss";
 
 /* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call */
