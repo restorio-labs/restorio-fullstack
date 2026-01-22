@@ -5,6 +5,7 @@ import { useMemo, useState, type ReactElement } from "react";
 export default function RegisterPage(): ReactElement {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [restaurantName, setRestaurantName] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [showPasswordRules, setShowPasswordRules] = useState(false);
@@ -21,7 +22,16 @@ export default function RegisterPage(): ReactElement {
     [password],
   );
   const emailInvalid = submitted && email.trim().length === 0;
-  const passwordInvalid = submitted && password.trim().length === 0;
+  const passwordInvalid =
+    submitted &&
+    (password.trim().length === 0 ||
+      !passwordChecks.minLength ||
+      !passwordChecks.lowercase ||
+      !passwordChecks.uppercase ||
+      !passwordChecks.number ||
+      !passwordChecks.special);
+  const confirmPasswordInvalid =
+    submitted && (confirmPassword.trim().length === 0 || confirmPassword !== password);
   const restaurantNameInvalid = submitted && restaurantName.trim().length === 0;
   const termsInvalid = submitted && !acceptTerms;
   const inputClassName =
@@ -30,7 +40,19 @@ export default function RegisterPage(): ReactElement {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSubmitted(true);
-    if (!email.trim() || !password.trim() || !restaurantName.trim() || !acceptTerms) {
+    if (
+      !email.trim() ||
+      !password.trim() ||
+      !passwordChecks.minLength ||
+      !passwordChecks.lowercase ||
+      !passwordChecks.uppercase ||
+      !passwordChecks.number ||
+      !passwordChecks.special ||
+      !confirmPassword.trim() ||
+      confirmPassword !== password ||
+      !restaurantName.trim() ||
+      !acceptTerms
+    ) {
       return;
     }
 
@@ -110,6 +132,18 @@ export default function RegisterPage(): ReactElement {
           )}
         </div>
         <label className="block">
+          <span className="mb-1 block text-sm font-medium text-gray-700">Confirm password</span>
+          <input
+            className={`${inputClassName} ${confirmPasswordInvalid ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : "border-gray-300"}`}
+            type="password"
+            name="confirmPassword"
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={(event) => setConfirmPassword(event.target.value)}
+            required
+          />
+        </label>
+        <label className="block">
           <span className="mb-1 block text-sm font-medium text-gray-700">Restaurant name</span>
           <input
             className={`${inputClassName} ${restaurantNameInvalid ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : "border-gray-300"}`}
@@ -121,20 +155,18 @@ export default function RegisterPage(): ReactElement {
             required
           />
         </label>
-        <label
-          className={`flex items-start gap-3 rounded-lg border px-3 py-2 text-sm ${
-            termsInvalid ? "border-red-500 text-red-600" : "border-transparent text-gray-700"
-          }`}
-        >
+        <label className="flex w-full items-start gap-3 px-3 py-2 text-sm text-gray-700">
           <input
-            className="mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900/30"
+            className={`mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900/30 ${
+              termsInvalid ? "ring-2 ring-red-500/30" : ""
+            }`}
             type="checkbox"
             name="acceptTerms"
             checked={acceptTerms}
             onChange={(event) => setAcceptTerms(event.target.checked)}
             required
           />
-          <span>I accept the terms and conditions</span>
+          <span className={termsInvalid ? "text-red-600" : ""}>I accept the terms and conditions</span>
         </label>
         <button className="w-full rounded-lg bg-gray-900 px-4 py-2.5 text-white transition hover:bg-black" type="submit">
           Register
