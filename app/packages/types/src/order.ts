@@ -49,3 +49,24 @@ export interface SelectedModifier {
   name: string;
   priceAdjustment: number;
 }
+
+export type KitchenOrderStatus = "new" | "preparing" | "ready";
+
+export interface KitchenOrder {
+  id: string;
+  status: KitchenOrderStatus;
+  table: string;
+  time: string;
+  items: readonly string[];
+  notes?: string;
+}
+
+export type KitchenStatusIconKey = "add" | "clock" | "check";
+
+export interface KitchenStatusConfig {
+  label: string;
+  ariaLabel: string;
+  indicatorClassName: string;
+  iconClassName: string;
+  iconKey: KitchenStatusIconKey;
+}
