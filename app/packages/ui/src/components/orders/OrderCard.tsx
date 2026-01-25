@@ -8,21 +8,35 @@ import { Icon } from "../primitives/Icon";
 import { Stack } from "../primitives/Stack";
 
 export interface OrderCardProps extends React.HTMLAttributes<HTMLDivElement> {
+  id: string;
   summary: ReactNode;
   details?: ReactNode;
   footer?: ReactNode;
   statusIndicator?: ReactNode;
   toggleLabel: string;
   dragHandleLabel: string;
-  dragHandleProps?: React.ButtonHTMLAttributes<HTMLButtonElement>;
+  dragHandleProps?: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    onPointerDown?: (event: React.PointerEvent<HTMLButtonElement>) => void;
+    onPointerMove?: (event: React.PointerEvent<HTMLButtonElement>) => void;
+    onPointerUp?: (event: React.PointerEvent<HTMLButtonElement>) => void;
+    onPointerCancel?: (event: React.PointerEvent<HTMLButtonElement>) => void;
+  };
   isExpanded?: boolean;
   defaultExpanded?: boolean;
   onExpandedChange?: (expanded: boolean) => void;
   isDragging?: boolean;
   isDisabled?: boolean;
+  showReorderButtons?: boolean;
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+  moveUpLabel?: string;
+  moveDownLabel?: string;
 }
 
 export const OrderCard = ({
+  id,
   summary,
   details,
   footer,
@@ -35,6 +49,13 @@ export const OrderCard = ({
   onExpandedChange,
   isDragging = false,
   isDisabled = false,
+  showReorderButtons = false,
+  canMoveUp = false,
+  canMoveDown = false,
+  onMoveUp,
+  onMoveDown,
+  moveUpLabel = "Move up",
+  moveDownLabel = "Move down",
   className,
   tabIndex,
   ...props
@@ -50,6 +71,11 @@ export const OrderCard = ({
   const {
     className: dragHandleClassName,
     disabled: dragHandleDisabled,
+    style: dragHandleStyle,
+    onPointerDown,
+    onPointerMove,
+    onPointerUp,
+    onPointerCancel,
     ...restDragHandleProps
   } = dragHandleProps ?? {};
   const isDragHandleDisabled = isDisabled || Boolean(dragHandleDisabled);
@@ -75,10 +101,11 @@ export const OrderCard = ({
       aria-disabled={isDisabled || undefined}
       data-expanded={expanded}
       data-dragging={isDragging}
+      data-order-id={id}
       className={cn(
         "w-full rounded-card border border-border-strong bg-surface-primary shadow-card focus-visible-ring",
         "outline-none focus-visible:ring-offset-background-primary",
-        isDragging && "ring-2 ring-border-focus shadow-lg",
+        isDragging && "pointer-events-none opacity-40",
         isDisabled && "opacity-60",
         className,
       )}
@@ -118,17 +145,69 @@ export const OrderCard = ({
               </Icon>
             </Stack>
           </Button>
+          {showReorderButtons && (
+            <Stack direction="row" spacing="xs" className="flex-shrink-0">
+              <Button
+                variant="secondary"
+                size="sm"
+                className={cn(
+                  "min-h-10 min-w-10 border border-border-strong bg-surface-tertiary text-text-secondary",
+                  "hover:bg-surface-secondary active:bg-surface-tertiary disabled:opacity-30",
+                )}
+                aria-label={moveUpLabel}
+                disabled={isDisabled || !canMoveUp}
+                onClick={onMoveUp}
+              >
+                <Icon size="md" aria-hidden="true" viewBox="0 0 24 24">
+                  <path
+                    d="M7 14l5-5 5 5"
+                    strokeWidth="2"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </Icon>
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                className={cn(
+                  "min-h-10 min-w-10 border border-border-strong bg-surface-tertiary text-text-secondary",
+                  "hover:bg-surface-secondary active:bg-surface-tertiary disabled:opacity-30",
+                )}
+                aria-label={moveDownLabel}
+                disabled={isDisabled || !canMoveDown}
+                onClick={onMoveDown}
+              >
+                <Icon size="md" aria-hidden="true" viewBox="0 0 24 24">
+                  <path
+                    d="M7 10l5 5 5-5"
+                    strokeWidth="2"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </Icon>
+              </Button>
+            </Stack>
+          )}
           <Button
             variant="secondary"
             size="sm"
             className={cn(
               "min-h-10 min-w-10 flex-shrink-0 border border-border-strong bg-surface-tertiary text-text-secondary",
               "hover:bg-surface-secondary active:bg-surface-tertiary",
-              "touch-none",
               dragHandleClassName,
             )}
+            style={dragHandleStyle}
             aria-label={dragHandleLabel}
             disabled={isDragHandleDisabled}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerCancel}
             {...restDragHandleProps}
           >
             <Icon size="lg" aria-hidden="true" viewBox="0 0 24 24">

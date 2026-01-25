@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import { AppLayout } from "./layouts/AppLayout";
-import { KitchenPanelView } from "./views/KitchenPanelView";
+import { KitchenView } from "./views/KitchenView";
 import { LoginView } from "./views/LoginView";
 
 export const App = (): ReactElement => {
@@ -16,7 +16,7 @@ export const App = (): ReactElement => {
           path="/:tenantId"
           element={
             <AuthGuard strategy="code" loginPath="/login">
-              <KitchenPanelView />
+              <KitchenView />
             </AuthGuard>
           }
         />

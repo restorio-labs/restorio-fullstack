@@ -1,4 +1,5 @@
 export enum OrderStatus {
+  NEW = "new",
   PENDING = "pending",
   CONFIRMED = "confirmed",
   PREPARING = "preparing",
@@ -27,6 +28,8 @@ export interface Order {
   subtotal: number;
   tax: number;
   total: number;
+  table: string;
+  time: string;
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -50,11 +53,9 @@ export interface SelectedModifier {
   priceAdjustment: number;
 }
 
-export type KitchenOrderStatus = "new" | "preparing" | "ready";
-
 export interface KitchenOrder {
   id: string;
-  status: KitchenOrderStatus;
+  status: OrderStatus;
   table: string;
   time: string;
   items: readonly string[];

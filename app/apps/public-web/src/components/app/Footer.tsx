@@ -4,6 +4,7 @@ import type { ReactElement } from "react";
 
 export const Footer = (): ReactElement => {
   const currentYear = new Date().getFullYear();
+  const listLinkClassName = "text-sm text-text-secondary transition-colors hover:text-interactive-primary";
 
   return (
     <footer className="border-t border-border-default bg-surface-secondary py-12">
@@ -27,26 +28,17 @@ export const Footer = (): ReactElement => {
               </Text>
               <ul className="space-y-2">
                 <li>
-                  <Link
-                    href="#"
-                    className="text-sm text-text-secondary transition-colors hover:text-interactive-primary"
-                  >
+                  <Link href="#" className={listLinkClassName}>
                     Features
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="#"
-                    className="text-sm text-text-secondary transition-colors hover:text-interactive-primary"
-                  >
+                  <Link href="#" className={listLinkClassName}>
                     Pricing
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="#"
-                    className="text-sm text-text-secondary transition-colors hover:text-interactive-primary"
-                  >
+                  <Link href="#" className={listLinkClassName}>
                     Demo
                   </Link>
                 </li>
@@ -59,26 +51,17 @@ export const Footer = (): ReactElement => {
               </Text>
               <ul className="space-y-2">
                 <li>
-                  <Link
-                    href="/about"
-                    className="text-sm text-text-secondary transition-colors hover:text-interactive-primary"
-                  >
+                  <Link href="/about" className={listLinkClassName}>
                     About
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="#"
-                    className="text-sm text-text-secondary transition-colors hover:text-interactive-primary"
-                  >
+                  <Link href="#" className={listLinkClassName}>
                     Privacy
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="#"
-                    className="text-sm text-text-secondary transition-colors hover:text-interactive-primary"
-                  >
+                  <Link href="#" className={listLinkClassName}>
                     Terms
                   </Link>
                 </li>

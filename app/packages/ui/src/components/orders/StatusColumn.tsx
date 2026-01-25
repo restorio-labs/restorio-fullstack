@@ -13,6 +13,10 @@ export interface StatusColumnProps extends React.HTMLAttributes<HTMLDivElement> 
   footer?: ReactNode;
   stickyHeader?: boolean;
   ordersClassName?: string;
+  enableSnapScroll?: boolean;
+  minWidth?: string;
+  zoneId?: string;
+  isActive?: boolean;
 }
 
 export const StatusColumn = forwardRef<HTMLDivElement, StatusColumnProps>(
@@ -25,6 +29,10 @@ export const StatusColumn = forwardRef<HTMLDivElement, StatusColumnProps>(
       footer,
       stickyHeader = true,
       ordersClassName,
+      enableSnapScroll = false,
+      minWidth,
+      zoneId,
+      isActive = false,
       className,
       children,
       ...props
@@ -38,8 +46,14 @@ export const StatusColumn = forwardRef<HTMLDivElement, StatusColumnProps>(
         role="listitem"
         aria-label={ariaLabel ?? label}
         data-snap-zone="true"
+        data-zone-id={zoneId}
+        style={minWidth ? { minWidth } : undefined}
         className={cn(
-          "flex w-full min-w-0 flex-shrink-0 flex-col gap-3 rounded-card border border-border-strong bg-surface-secondary shadow-card",
+          "flex w-full min-w-0 flex-shrink-0 flex-col gap-3 rounded-card border shadow-card transition-all duration-200",
+          isActive
+            ? "border-2 border-border-focus bg-surface-tertiary ring-2 ring-border-focus ring-opacity-50"
+            : "border border-border-strong bg-surface-secondary",
+          enableSnapScroll && "snap-start snap-always",
           className,
         )}
         {...props}
