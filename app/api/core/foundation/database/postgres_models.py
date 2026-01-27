@@ -51,6 +51,7 @@ class TenantCreate(BaseModel):
 class User(BaseModel):
     id: UUID
     email: EmailStr
+    display_name: str | None = None
     is_active: bool = True
     created_at: datetime
 
@@ -61,6 +62,7 @@ class User(BaseModel):
 class UserCreate(BaseModel):
     email: EmailStr
     password_hash: str
+    display_name: str | None = None
     is_active: bool = True
 
 
