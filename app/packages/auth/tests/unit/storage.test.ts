@@ -9,7 +9,16 @@ describe("TokenStorage", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    Object.defineProperty(window, "localStorage", {
+
+    if (typeof globalThis.window === "undefined") {
+      Object.defineProperty(globalThis, "window", {
+        value: {},
+        writable: true,
+        configurable: true,
+      });
+    }
+
+    Object.defineProperty(globalThis.window, "localStorage", {
       value: {
         getItem: mockGetItem,
         setItem: mockSetItem,
@@ -46,7 +55,7 @@ describe("TokenStorage", () => {
   });
 
   it("should return null if storage is undefined", () => {
-    Object.defineProperty(window, "localStorage", {
+    Object.defineProperty(globalThis.window, "localStorage", {
       value: undefined,
       configurable: true,
     });
@@ -64,7 +73,7 @@ describe("TokenStorage", () => {
   });
 
   it("should not clear tokens if storage is undefined", () => {
-    Object.defineProperty(window, "localStorage", {
+    Object.defineProperty(globalThis.window, "localStorage", {
       value: undefined,
       configurable: true,
     });
@@ -110,8 +119,10 @@ describe("TokenStorage", () => {
   });
 
   it("setRefreshToken does nothing when localStorage is undefined", () => {
-    // @ts-expect-error – intentional for test
-    delete window.localStorage;
+    Object.defineProperty(globalThis.window, "localStorage", {
+      value: undefined,
+      configurable: true,
+    });
 
     TokenStorage.setRefreshToken("refresh-token");
 
@@ -119,8 +130,10 @@ describe("TokenStorage", () => {
   });
 
   it("getRefreshToken returns null when localStorage is undefined", () => {
-    // @ts-expect-error – intentional for test
-    delete window.localStorage;
+    Object.defineProperty(globalThis.window, "localStorage", {
+      value: undefined,
+      configurable: true,
+    });
 
     const result = TokenStorage.getRefreshToken();
 
@@ -134,5 +147,40 @@ describe("TokenStorage", () => {
 
     expect(mockGetItem).toHaveBeenCalledTimes(1);
     expect(result).toBe("refresh-token-value");
+  });
+
+  it("setRefreshToken sets value in localStorage", () => {
+    TokenStorage.setRefreshToken("new-refresh-token");
+
+    expect(mockSetItem).toHaveBeenCalledWith("restorio_refresh_token", "new-refresh-token");
+  });
+
+  it("isTokenExpired returns true when token has no exp field", () => {
+    const tokenWithoutExp = "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0=.eyJzdWIiOiJ0ZXN0In0=.test-signature";
+
+    expect(TokenStorage.isTokenExpired(tokenWithoutExp)).toBe(true);
+  });
+
+  it("isTokenExpired returns true for invalid token", () => {
+    const invalidToken = "invalid.token.here";
+
+    expect(TokenStorage.isTokenExpired(invalidToken)).toBe(true);
+  });
+
+  it("isAccessTokenValid returns true for code pattern", () => {
+    expect(TokenStorage.isAccessTokenValid("123-456")).toBe(true);
+  });
+
+  it("isAccessTokenValid returns false for expired JWT", () => {
+    const expiredToken =
+      "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0LXVzZXItaWQiLCJuYW1lIjoiUmFueSIsImlhdCI6MTUxNjIzOTAyMn0.cxeoyZKNyqrTMbGCDKrT8_1qWdO3BHI5iK8YR4CLvCM";
+
+    expect(TokenStorage.isAccessTokenValid(expiredToken)).toBe(false);
+  });
+
+  it("isAccessTokenValid returns true for valid JWT", () => {
+    const validToken = "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0=.eyJleHAiOjQxMDI0NDQ4MDB9.test-signature-ignored";
+
+    expect(TokenStorage.isAccessTokenValid(validToken)).toBe(true);
   });
 });
