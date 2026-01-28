@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from fastapi import HTTPException, status
+from sqlalchemy import select
 from core.foundation.security import hash_password
 from core.models.enums import AccountType, TenantStatus
 from core.models.tenant import Tenant
@@ -24,6 +25,19 @@ async def create_user(
         slug=slug,
         status=TenantStatus.INACTIVE,
     )
+    existing_user = await session.scalar(select(User).where(User.email == email))
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Email already registered",
+        )
+
+    existing_tenant = await session.scalar(select(Tenant).where(Tenant.slug == slug))
+    if existing_tenant:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Restaurant slug already exists",
+        )
     session.add_all([user, tenant])
     await session.flush()
     await session.refresh(user)

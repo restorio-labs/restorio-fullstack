@@ -16,7 +16,7 @@ async def login() -> dict[str, str]:
     return {"message": "Login endpoint - to be implemented"}
 
 
-@router.post("/register")
+@router.post("/register", status_code=200)
 async def register(data: registerDetails, session: PostgresSession):
     user, tenant = await create_user(
         session=session,
@@ -25,10 +25,10 @@ async def register(data: registerDetails, session: PostgresSession):
         restaurant_name=data.restaurantName,
     )
     return {
+        "message": "Account created succesfully, you should receive email shortly",
         "id": str(user.id),
         "email": user.email,
         "account_type": user.account_type,
-        "is_active": user.is_active,
         "tenant": {
             "id": str(tenant.id),
             "name": tenant.name,
