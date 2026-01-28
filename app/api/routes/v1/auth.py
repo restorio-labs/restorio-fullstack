@@ -18,17 +18,22 @@ async def login() -> dict[str, str]:
 
 @router.post("/register")
 async def register(data: registerDetails, session: PostgresSession):
-    user = await create_user(
+    user, tenant = await create_user(
         session=session,
         email=data.email,
         password=data.password,
-        display_name=data.restaurantName,
+        restaurant_name=data.restaurantName,
     )
     return {
         "id": str(user.id),
         "email": user.email,
-        "display_name": user.display_name,
+        "account_type": user.account_type,
         "is_active": user.is_active,
+        "tenant": {
+            "id": str(tenant.id),
+            "name": tenant.name,
+            "slug": tenant.slug,
+        },
     }
 
 
