@@ -34,6 +34,13 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
+    # Przelewy24 (wartości z .env)
+    PRZELEWY24_MERCHANT_ID: int = 0
+    PRZELEWY24_POS_ID: int = 0
+    PRZELEWY24_CRC: str = ""
+    PRZELEWY24_API_KEY: str = ""
+    PRZELEWY24_API_URL: str = "https://sandbox.przelewy24.pl/api/v1"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
