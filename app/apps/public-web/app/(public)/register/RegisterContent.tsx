@@ -65,7 +65,7 @@ export const RegisterContent = (): ReactElement => {
         body: JSON.stringify({
           email,
           password,
-          restaurant_name: restaurantName,
+          restaurantName: restaurantName,
         }),
       });
 
