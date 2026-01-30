@@ -13,8 +13,10 @@
     "noEmit": true,
     "strict": true,
 
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@restorio/types": ["../../packages/types/src"]
     }
   },
   "include": ["src", "tests", "vitest.config.ts", "vite.config.ts"],

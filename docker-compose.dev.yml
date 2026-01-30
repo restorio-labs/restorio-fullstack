@@ -4,7 +4,7 @@ services:
       context: ./apps/api
       dockerfile: Dockerfile
     volumes:
-      - ./apps/api:/app
+      - ./app/api
     environment:
       - PYTHONUNBUFFERED=1
       - DATABASE_URL=${DATABASE_URL:-mongodb://mongo:27017/restorio}

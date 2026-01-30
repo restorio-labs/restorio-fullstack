@@ -1,7 +1,16 @@
-// Browser-only code - localStorage API is safe to use
+interface EnvSource {
+  env?: Record<string, string | undefined>;
+}
 
-const ACCESS_TOKEN_KEY = process.env.ACCESS_TOKEN_KEY ?? "restorio_access_token";
-const REFRESH_TOKEN_KEY = process.env.REFRESH_TOKEN_KEY ?? "restorio_refresh_token";
+const getEnvVar = (key: string): string | undefined => {
+  const processEnv = (globalThis as { process?: EnvSource }).process?.env;
+  const viteEnv = (import.meta as EnvSource).env;
+
+  return processEnv?.[key] ?? viteEnv?.[key];
+};
+
+const ACCESS_TOKEN_KEY = getEnvVar("ACCESS_TOKEN_KEY") ?? "restorio_access_token";
+const REFRESH_TOKEN_KEY = getEnvVar("REFRESH_TOKEN_KEY") ?? "restorio_refresh_token";
 
 const getLocalStorage = (): Storage | undefined => {
   if (typeof window === "undefined") {
@@ -93,5 +102,15 @@ export class TokenStorage {
     }
 
     return Date.now() >= Number(decoded.exp) * 1000;
+  }
+
+  static isAccessTokenValid(token: string): boolean {
+    const codePattern = /^\d{3}-\d{3}$/;
+
+    if (codePattern.test(token)) {
+      return true;
+    }
+
+    return !this.isTokenExpired(token);
   }
 }
