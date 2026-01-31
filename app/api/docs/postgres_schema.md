@@ -179,7 +179,7 @@ Payment records for orders.
 | ------------------ | ------------------------ | --------------------------- | ----------------------------------------------------- |
 | id                 | UUID                     | PRIMARY KEY                 | Unique identifier                                     |
 | order_id           | UUID                     | NOT NULL, FK -> orders(id)  | Associated order                                      |
-| provider           | payment_provider         | NOT NULL                    | Payment provider (PRZELEWY24, STRIPE, CASH)           |
+| provider           | payment_provider         | NOT NULL                    | Payment provider (PRZELEWY24, OTHER, CASH)            |
 | status             | payment_status           | NOT NULL, DEFAULT 'PENDING' | Payment status (PENDING, COMPLETED, FAILED, REFUNDED) |
 | amount             | DECIMAL(10, 2)           | NOT NULL, CHECK >= 0        | Payment amount                                        |
 | external_reference | VARCHAR(255)             | NULL                        | External payment gateway reference                    |
@@ -235,7 +235,6 @@ Comprehensive audit trail for tenant actions.
 ### payment_provider
 
 - `PRZELEWY24`: Przelewy24 payment gateway
-- `STRIPE`: Stripe payment gateway
 - `CASH`: Cash payment
 
 ### payment_status
