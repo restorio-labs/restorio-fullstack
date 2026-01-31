@@ -27,3 +27,9 @@ class PaymentStatus(PyEnum):
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
     REFUNDED = "REFUNDED"
+
+
+class AccountType(str, PyEnum):
+    OWNER = "owner"
+    WAITER = "waiter"
+    KITCHEN = "kitchen"

@@ -25,7 +25,7 @@ class Tenant(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     slug: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
     status: Mapped[TenantStatus] = mapped_column(
-        Enum("TenantStatus", name="tenant_status", create_constraint=True),
+        Enum(TenantStatus, name="tenant_status", create_constraint=True),
         nullable=False,
         default=TenantStatus.ACTIVE,
     )
