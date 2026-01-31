@@ -1,14 +1,16 @@
 from fastapi import APIRouter
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
 from core.foundation.dependencies import PostgresSession
 from modules.auth.database import create_user
 
 router = APIRouter()
 
-class registerDetails(BaseModel):
+
+class RegisterDetails(BaseModel):
     email: str
     password: str
-    restaurantName: str
+    restaurant_name: str = Field(alias="restaurantName")
 
 
 @router.post("/login")
