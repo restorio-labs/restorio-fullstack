@@ -19,12 +19,12 @@ async def login() -> dict[str, str]:
 
 
 @router.post("/register", status_code=200)
-async def register(data: registerDetails, session: PostgresSession):
+async def register(data: RegisterDetails, session: PostgresSession):
     user, tenant = await create_user(
         session=session,
         email=data.email,
         password=data.password,
-        restaurant_name=data.restaurantName,
+        restaurant_name=data.restaurant_name,
     )
     return {
         "message": "Account created succesfully, you should receive email shortly",
