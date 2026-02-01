@@ -31,12 +31,16 @@ async def get_restaurant_table(table_id: UUID) -> SuccessResponse[RestaurantTabl
 
 
 @router.post("/tables", status_code=status.HTTP_201_CREATED)
-async def create_restaurant_table(request: CreateRestaurantTableDTO) -> CreatedResponse[RestaurantTableResponseDTO]:
+async def create_restaurant_table(
+    request: CreateRestaurantTableDTO,
+) -> CreatedResponse[RestaurantTableResponseDTO]:
     raise NotImplementedError("Endpoint to be implemented")
 
 
 @router.put("/tables/{table_id}", status_code=status.HTTP_200_OK)
-async def update_restaurant_table(table_id: UUID, request: UpdateRestaurantTableDTO) -> UpdatedResponse[RestaurantTableResponseDTO]:
+async def update_restaurant_table(
+    table_id: UUID, request: UpdateRestaurantTableDTO
+) -> UpdatedResponse[RestaurantTableResponseDTO]:
     raise NotImplementedError("Endpoint to be implemented")
 
 

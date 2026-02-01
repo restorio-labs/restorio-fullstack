@@ -32,7 +32,9 @@ async def create_tenant(request: CreateTenantDTO) -> CreatedResponse[TenantRespo
 
 
 @router.put("/{tenant_id}", status_code=status.HTTP_200_OK)
-async def update_tenant(tenant_id: UUID, request: UpdateTenantDTO) -> UpdatedResponse[TenantResponseDTO]:
+async def update_tenant(
+    tenant_id: UUID, request: UpdateTenantDTO
+) -> UpdatedResponse[TenantResponseDTO]:
     raise NotImplementedError("Endpoint to be implemented")
 
 

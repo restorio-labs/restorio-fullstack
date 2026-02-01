@@ -20,7 +20,7 @@ class OrderStatus(str, Enum):
 
 class PaymentProvider(str, Enum):
     PRZELEWY24 = "PRZELEWY24"
-    STRIPE = "STRIPE"
+    TERMINAL = "TERMINAL"
     CASH = "CASH"
 
 

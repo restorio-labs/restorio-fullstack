@@ -1,6 +1,12 @@
 from enum import Enum
 
 
+class AccountType(str, Enum):
+    OWNER = "OWNER"
+    WAITER = "WAITER"
+    KITCHEN = "KITCHEN"
+
+
 class TenantStatus(str, Enum):
     ACTIVE = "ACTIVE"
     PENDING = "PENDING"

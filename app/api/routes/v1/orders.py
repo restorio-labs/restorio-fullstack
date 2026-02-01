@@ -32,7 +32,9 @@ async def create_order(request: CreateOrderDTO) -> CreatedResponse[OrderResponse
 
 
 @router.put("/{order_id}", status_code=status.HTTP_200_OK)
-async def update_order(order_id: UUID, request: UpdateOrderDTO) -> UpdatedResponse[OrderResponseDTO]:
+async def update_order(
+    order_id: UUID, request: UpdateOrderDTO
+) -> UpdatedResponse[OrderResponseDTO]:
     raise NotImplementedError("Endpoint to be implemented")
 
 
