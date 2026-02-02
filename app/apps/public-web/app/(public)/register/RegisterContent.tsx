@@ -10,6 +10,8 @@ export const RegisterContent = (): ReactElement => {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [showPasswordRules, setShowPasswordRules] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [feedbackStatus, setFeedbackStatus] = useState<"success" | "error" | null>(null);
+  const [feedbackMessage, setFeedbackMessage] = useState("");
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
   const passwordChecks = useMemo(
     () => ({
@@ -40,6 +42,8 @@ export const RegisterContent = (): ReactElement => {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSubmitted(true);
+    setFeedbackStatus(null);
+    setFeedbackMessage("");
     if (
       !email.trim() ||
       !password.trim() ||
@@ -69,13 +73,37 @@ export const RegisterContent = (): ReactElement => {
         }),
       });
 
-      if (!response.ok) {
+      if (response.ok) {
+        setFeedbackStatus("success");
+        setFeedbackMessage(
+          "Account has been created, you should receive activation email shortly.",
+        );
+        setSubmitted(false);
         return;
       }
 
-      setSubmitted(false);
+      let apiMessage = "Unable to create account. Please try again.";
+      try {
+        const data = (await response.json()) as { message?: string; detail?: string };
+        if (typeof data?.detail === "string" && data.detail.trim().length > 0) {
+          apiMessage = data.detail;
+        } else if (typeof data?.message === "string" && data.message.trim().length > 0) {
+          apiMessage = data.message;
+        }
+      } catch {
+      }
+
+      if (response.status === 409) {
+        setFeedbackStatus("error");
+        setFeedbackMessage(apiMessage);
+        return;
+      }
+
+      setFeedbackStatus("error");
+      setFeedbackMessage(apiMessage);
     } catch {
-      return;
+      setFeedbackStatus("error");
+      setFeedbackMessage("Unable to create account. Please try again.");
     }
   };
 
@@ -83,6 +111,18 @@ export const RegisterContent = (): ReactElement => {
     <div className="mx-auto max-w-2xl px-4 py-16">
       <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
         <h1 className="mb-6 text-3xl font-bold">Register your account</h1>
+        {feedbackStatus && (
+          <div
+            className={`mb-6 rounded-lg border px-4 py-3 text-sm ${
+              feedbackStatus === "success"
+                ? "border-green-200 bg-green-50 text-green-800"
+                : "border-red-200 bg-red-50 text-red-800"
+            }`}
+            role="status"
+          >
+            {feedbackMessage}
+          </div>
+        )}
         <form className="space-y-4" onSubmit={handleSubmit} noValidate>
           <label className="block">
             <span className="mb-1 block text-sm font-medium text-gray-700">Email</span>
