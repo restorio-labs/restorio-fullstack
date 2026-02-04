@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field
 
 from core.foundation.dependencies import PostgresSession
 from modules.auth.database import create_user
+from modules.email.service import send_activation_email
 
 router = APIRouter()
 
@@ -25,6 +26,13 @@ async def register(data: RegisterDetails, session: PostgresSession):
         email=data.email,
         password=data.password,
         restaurant_name=data.restaurant_name,
+    )
+    # activation_link = f"{settings.FRONTEND_URL}/activate?token={token}"
+    activation_link = f"http://restorio.com/activate"
+    await send_activation_email(
+        to_email=user.email,
+        restaurant_name=tenant.name,
+        activation_link=activation_link,
     )
     return {
         "message": "Account created succesfully, you should receive email shortly",
