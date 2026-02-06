@@ -1,34 +1,15 @@
-from enum import Enum
+from core.models.enums import (
+    AccountType,
+    OrderStatus,
+    PaymentProvider,
+    PaymentStatus,
+    TenantStatus,
+)
 
-
-class AccountType(str, Enum):
-    OWNER = "OWNER"
-    WAITER = "WAITER"
-    KITCHEN = "KITCHEN"
-
-
-class TenantStatus(str, Enum):
-    ACTIVE = "ACTIVE"
-    PENDING = "PENDING"
-    SUSPENDED = "SUSPENDED"
-    INACTIVE = "INACTIVE"
-
-
-class OrderStatus(str, Enum):
-    PLACED = "PLACED"
-    PAID = "PAID"
-    CANCELLED = "CANCELLED"
-
-
-class PaymentProvider(str, Enum):
-    PRZELEWY24 = "PRZELEWY24"
-    TERMINAL = "TERMINAL"
-    CASH = "CASH"
-    OTHER = "OTHER"
-
-
-class PaymentStatus(str, Enum):
-    PENDING = "PENDING"
-    COMPLETED = "COMPLETED"
-    FAILED = "FAILED"
-    REFUNDED = "REFUNDED"
+__all__ = [
+    "AccountType",
+    "OrderStatus",
+    "PaymentProvider",
+    "PaymentStatus",
+    "TenantStatus",
+]

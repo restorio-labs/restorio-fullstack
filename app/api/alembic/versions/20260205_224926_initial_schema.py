@@ -1,8 +1,8 @@
-"""Oskar
+"""initial_schema
 
-Revision ID: 8185d8cff9d0
+Revision ID: 165824d5181d
 Revises:
-Create Date: 2025-12-30 23:07:51.526889
+Create Date: 2026-02-05 22:49:26.786483
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = "8185d8cff9d0"
+revision: str = "165824d5181d"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -28,7 +28,9 @@ def upgrade() -> None:
         sa.Column("slug", sa.String(length=100), nullable=False),
         sa.Column(
             "status",
-            sa.Enum("TenantStatus", name="tenant_status", create_constraint=True),
+            sa.Enum(
+                "ACTIVE", "SUSPENDED", "INACTIVE", name="tenant_status", create_constraint=True
+            ),
             nullable=False,
         ),
         sa.Column(
@@ -45,6 +47,13 @@ def upgrade() -> None:
         sa.Column("id", sa.UUID(), nullable=False),
         sa.Column("email", sa.String(length=255), nullable=False),
         sa.Column("password_hash", sa.String(length=255), nullable=False),
+        sa.Column(
+            "account_type",
+            sa.Enum(
+                "owner", "waiter", "kitchen", "manager", name="account_type", create_constraint=True
+            ),
+            nullable=False,
+        ),
         sa.Column("is_active", sa.Boolean(), nullable=False),
         sa.Column(
             "created_at",

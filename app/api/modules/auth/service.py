@@ -48,7 +48,7 @@ async def create_user_with_tenant(
     user_tenant = UserTenant(
         user_id=user.id,
         tenant_id=tenant.id,
-        role="owner",
+        role=AccountType.OWNER,
     )
     session.add(user_tenant)
     await session.flush()

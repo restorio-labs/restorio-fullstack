@@ -1,6 +1,11 @@
 from datetime import timedelta
 
-from core.foundation.security import create_access_token, decode_access_token
+from core.foundation.security import (
+    create_access_token,
+    decode_access_token,
+    hash_password,
+    verify_password,
+)
 
 
 class TestCreateAccessToken:
@@ -59,3 +64,56 @@ class TestDecodeAccessToken:
         malformed_token = "not.a.valid.jwt.token"
         decoded = decode_access_token(malformed_token)
         assert decoded is None
+
+
+class TestHashPassword:
+    def test_hash_password_returns_different_hash(self) -> None:
+        password = "test_password_123"
+        hashed = hash_password(password)
+
+        assert hashed != password
+        assert len(hashed) > 0
+        assert hashed.startswith("$2b$")
+
+    def test_hash_password_same_password_different_hashes(self) -> None:
+        password = "test_password_123"
+        hashed1 = hash_password(password)
+        hashed2 = hash_password(password)
+
+        assert hashed1 != hashed2
+
+    def test_hash_password_empty_string(self) -> None:
+        password = ""
+        hashed = hash_password(password)
+
+        assert len(hashed) > 0
+        assert hashed.startswith("$2b$")
+
+
+class TestVerifyPassword:
+    def test_verify_password_correct(self) -> None:
+        password = "test_password_123"
+        hashed = hash_password(password)
+
+        assert verify_password(password, hashed) is True
+
+    def test_verify_password_incorrect(self) -> None:
+        password = "test_password_123"
+        hashed = hash_password(password)
+
+        assert verify_password("wrong_password", hashed) is False
+
+    def test_verify_password_empty_password(self) -> None:
+        password = ""
+        hashed = hash_password(password)
+
+        assert verify_password("", hashed) is True
+        assert verify_password("not_empty", hashed) is False
+
+    def test_verify_password_case_sensitive(self) -> None:
+        password = "TestPassword"
+        hashed = hash_password(password)
+
+        assert verify_password("TestPassword", hashed) is True
+        assert verify_password("testpassword", hashed) is False
+        assert verify_password("TESTPASSWORD", hashed) is False
