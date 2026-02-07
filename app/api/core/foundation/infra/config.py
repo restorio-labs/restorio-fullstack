@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
-    # Przelewy24 (wartości z .env)
+    # Przelewy24 (values from .env)
     PRZELEWY24_MERCHANT_ID: int = 0
     PRZELEWY24_POS_ID: int = 0
     PRZELEWY24_CRC: str = ""
