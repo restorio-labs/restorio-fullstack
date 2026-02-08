@@ -1,44 +1,36 @@
-from fastapi import APIRouter
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, status
 
+from api.v1.dto.auth import RegisterDTO, RegisterResponseDTO
+from api.v1.dto.users import UserLoginDTO
 from core.foundation.dependencies import PostgresSession
-from modules.auth.database import create_user
+from modules.auth.service import create_user_with_tenant
 
 router = APIRouter()
 
 
-class RegisterDetails(BaseModel):
-    email: str
-    password: str
-    restaurant_name: str = Field(alias="restaurantName")
-
-
-@router.post("/login")
-async def login() -> dict[str, str]:
+@router.post("/login", status_code=status.HTTP_200_OK)
+async def login(credentials: UserLoginDTO) -> dict[str, str]:  # noqa: ARG001
     return {"message": "Login endpoint - to be implemented"}
 
 
-@router.post("/register", status_code=200)
-async def register(data: RegisterDetails, session: PostgresSession):
-    user, tenant = await create_user(
+@router.post("/register", status_code=status.HTTP_201_CREATED)
+async def register(data: RegisterDTO, session: PostgresSession) -> RegisterResponseDTO:
+    user, tenant = await create_user_with_tenant(
         session=session,
         email=data.email,
         password=data.password,
         restaurant_name=data.restaurant_name,
     )
-    return {
-        "message": "Account created succesfully, you should receive email shortly",
-        "id": str(user.id),
-        "email": user.email,
-        "account_type": user.account_type,
-        "tenant": {
-            "id": str(tenant.id),
-            "name": tenant.name,
-            "slug": tenant.slug,
-        },
-    }
+    return RegisterResponseDTO(
+        user_id=str(user.id),
+        email=user.email,
+        account_type=user.account_type.value,
+        tenant_id=str(tenant.id),
+        tenant_name=tenant.name,
+        tenant_slug=tenant.slug,
+    )
 
 
-@router.post("/refresh")
+@router.post("/refresh", status_code=status.HTTP_200_OK)
 async def refresh_token() -> dict[str, str]:
     return {"message": "Refresh token endpoint - to be implemented"}

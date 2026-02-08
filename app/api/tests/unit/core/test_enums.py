@@ -8,9 +8,9 @@ from core.models.enums import (
 
 class TestTenantStatus:
     def test_tenant_status_values(self) -> None:
-        assert TenantStatus.ACTIVE.value == "ACTIVE"
-        assert TenantStatus.SUSPENDED.value == "SUSPENDED"
-        assert TenantStatus.INACTIVE.value == "INACTIVE"
+        assert TenantStatus.ACTIVE.value == "active"
+        assert TenantStatus.SUSPENDED.value == "suspended"
+        assert TenantStatus.INACTIVE.value == "inactive"
 
     def test_tenant_status_enum_membership(self) -> None:
         assert TenantStatus.ACTIVE in TenantStatus
@@ -20,9 +20,9 @@ class TestTenantStatus:
 
 class TestOrderStatus:
     def test_order_status_values(self) -> None:
-        assert OrderStatus.PLACED.value == "PLACED"
-        assert OrderStatus.PAID.value == "PAID"
-        assert OrderStatus.CANCELLED.value == "CANCELLED"
+        assert OrderStatus.PLACED.value == "placed"
+        assert OrderStatus.PAID.value == "paid"
+        assert OrderStatus.CANCELLED.value == "cancelled"
 
     def test_order_status_enum_membership(self) -> None:
         assert OrderStatus.PLACED in OrderStatus
@@ -32,10 +32,10 @@ class TestOrderStatus:
 
 class TestPaymentProvider:
     def test_payment_provider_values(self) -> None:
-        assert PaymentProvider.PRZELEWY24.value == "PRZELEWY24"
-        assert PaymentProvider.CASH.value == "CASH"
-        assert PaymentProvider.TERMINAL.value == "TERMINAL"
-        assert PaymentProvider.OTHER.value == "OTHER"
+        assert PaymentProvider.PRZELEWY24.value == "przelewy24"
+        assert PaymentProvider.CASH.value == "cash"
+        assert PaymentProvider.TERMINAL.value == "terminal"
+        assert PaymentProvider.OTHER.value == "other"
 
     def test_payment_provider_enum_membership(self) -> None:
         assert PaymentProvider.PRZELEWY24 in PaymentProvider
@@ -46,10 +46,10 @@ class TestPaymentProvider:
 
 class TestPaymentStatus:
     def test_payment_status_values(self) -> None:
-        assert PaymentStatus.PENDING.value == "PENDING"
-        assert PaymentStatus.COMPLETED.value == "COMPLETED"
-        assert PaymentStatus.FAILED.value == "FAILED"
-        assert PaymentStatus.REFUNDED.value == "REFUNDED"
+        assert PaymentStatus.PENDING.value == "pending"
+        assert PaymentStatus.COMPLETED.value == "completed"
+        assert PaymentStatus.FAILED.value == "failed"
+        assert PaymentStatus.REFUNDED.value == "refunded"
 
     def test_payment_status_enum_membership(self) -> None:
         assert PaymentStatus.PENDING in PaymentStatus

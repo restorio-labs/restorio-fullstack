@@ -1,35 +1,36 @@
 from __future__ import annotations
 
-from enum import Enum as PyEnum
+from enum import Enum
 
 
-class TenantStatus(PyEnum):
-    ACTIVE = "ACTIVE"
-    SUSPENDED = "SUSPENDED"
-    INACTIVE = "INACTIVE"
+class TenantStatus(str, Enum):
+    ACTIVE = "active"
+    SUSPENDED = "suspended"
+    INACTIVE = "inactive"
 
 
-class OrderStatus(PyEnum):
-    PLACED = "PLACED"
-    PAID = "PAID"
-    CANCELLED = "CANCELLED"
+class OrderStatus(str, Enum):
+    PLACED = "placed"
+    PAID = "paid"
+    CANCELLED = "cancelled"
 
 
-class PaymentProvider(PyEnum):
-    PRZELEWY24 = "PRZELEWY24"
-    CASH = "CASH"
-    TERMINAL = "TERMINAL"
-    OTHER = "OTHER"
+class PaymentProvider(str, Enum):
+    PRZELEWY24 = "przelewy24"
+    CASH = "cash"
+    TERMINAL = "terminal"
+    OTHER = "other"
 
 
-class PaymentStatus(PyEnum):
-    PENDING = "PENDING"
-    COMPLETED = "COMPLETED"
-    FAILED = "FAILED"
-    REFUNDED = "REFUNDED"
+class PaymentStatus(str, Enum):
+    PENDING = "pending"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    REFUNDED = "refunded"
 
 
-class AccountType(str, PyEnum):
+class AccountType(str, Enum):
     OWNER = "owner"
     WAITER = "waiter"
     KITCHEN = "kitchen"
+    MANAGER = "manager"
