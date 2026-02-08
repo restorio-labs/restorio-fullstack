@@ -8,6 +8,7 @@ from core.models.enums import (
 from core.models.order import Order
 from core.models.order_item import OrderItem
 from core.models.payment import Payment
+from core.models.payment_request import CreatePaymentRequest, Przelewy24RegisterRequest
 from core.models.restaurant_table import RestaurantTable
 from core.models.tenant import Tenant
 from core.models.user import User
@@ -15,12 +16,14 @@ from core.models.user_tenant import UserTenant
 
 __all__ = [
     "AuditLog",
+    "CreatePaymentRequest",
     "Order",
     "OrderItem",
     "OrderStatus",
     "Payment",
     "PaymentProvider",
     "PaymentStatus",
+    "Przelewy24RegisterRequest",
     "RestaurantTable",
     "Tenant",
     "TenantStatus",
