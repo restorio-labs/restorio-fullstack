@@ -30,6 +30,8 @@ runs:
 
     - name: Format check in all packages and apps
       shell: bash
+      env:
+        NODE_OPTIONS: --max-old-space-size=4096
       run: |
         bun run check
 

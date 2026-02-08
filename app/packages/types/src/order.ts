@@ -1,4 +1,5 @@
 export enum OrderStatus {
+  NEW = "new",
   PENDING = "pending",
   CONFIRMED = "confirmed",
   PREPARING = "preparing",
@@ -27,6 +28,8 @@ export interface Order {
   subtotal: number;
   tax: number;
   total: number;
+  table: string;
+  time: string;
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -48,4 +51,23 @@ export interface SelectedModifier {
   optionId: string;
   name: string;
   priceAdjustment: number;
+}
+
+export interface KitchenOrder {
+  id: string;
+  status: OrderStatus;
+  table: string;
+  time: string;
+  items: readonly string[];
+  notes?: string;
+}
+
+export type KitchenStatusIconKey = "add" | "clock" | "check";
+
+export interface KitchenStatusConfig {
+  label: string;
+  ariaLabel: string;
+  indicatorClassName: string;
+  iconClassName: string;
+  iconKey: KitchenStatusIconKey;
 }

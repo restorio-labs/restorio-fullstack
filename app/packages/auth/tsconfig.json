@@ -2,6 +2,7 @@
   "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2020", "DOM"],
+    "jsx": "react-jsx",
 
     "rootDir": "src",
     "outDir": "dist",
@@ -16,7 +17,7 @@
     "stripInternal": true,
     "strict": true
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["node_modules", "dist"],
   "references": [{ "path": "../types" }]
 }

@@ -31,6 +31,12 @@ class PaymentStatus(str, Enum):
     REFUNDED = "REFUNDED"
 
 
+class AccountType(str, Enum):
+    OWNER = "owner"
+    WAITER = "waiter"
+    KITCHEN = "kitchen"
+
+
 class Tenant(BaseModel):
     id: UUID
     name: str = Field(..., max_length=255)
@@ -51,6 +57,7 @@ class TenantCreate(BaseModel):
 class User(BaseModel):
     id: UUID
     email: EmailStr
+    account_type: AccountType = AccountType.OWNER
     is_active: bool = True
     created_at: datetime
 
@@ -61,6 +68,7 @@ class User(BaseModel):
 class UserCreate(BaseModel):
     email: EmailStr
     password_hash: str
+    account_type: AccountType = AccountType.OWNER
     is_active: bool = True
 
 
