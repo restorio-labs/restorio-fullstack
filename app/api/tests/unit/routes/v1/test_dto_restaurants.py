@@ -12,46 +12,57 @@ from api.v1.dto.restaurants import (
 
 
 class TestCreateRestaurantTableDTO:
+    CAPACITY_STANDARD = 4
+
     def test_valid_creation(self) -> None:
         dto = CreateRestaurantTableDTO(
             label="Table 1",
-            capacity=4,
+            capacity=self.CAPACITY_STANDARD,
         )
         assert dto.label == "Table 1"
-        assert dto.capacity == 4
+        assert dto.capacity == self.CAPACITY_STANDARD
         assert dto.is_active is True
+
+    CAPACITY_MEDIUM = 6
 
     def test_inactive_table(self) -> None:
         dto = CreateRestaurantTableDTO(
             label="Table 2",
-            capacity=6,
+            capacity=self.CAPACITY_MEDIUM,
             is_active=False,
         )
         assert dto.is_active is False
+
+    CAPACITY_ZERO = 0
+    CAPACITY_NEGATIVE = -1
+    MAX_LABEL_LENGTH = 51
 
     def test_invalid_capacity_zero(self) -> None:
         with pytest.raises(ValidationError):
             CreateRestaurantTableDTO(
                 label="Table 1",
-                capacity=0,
+                capacity=self.CAPACITY_ZERO,
             )
 
     def test_invalid_capacity_negative(self) -> None:
         with pytest.raises(ValidationError):
             CreateRestaurantTableDTO(
                 label="Table 1",
-                capacity=-1,
+                capacity=self.CAPACITY_NEGATIVE,
             )
 
     def test_label_too_long(self) -> None:
         with pytest.raises(ValidationError):
             CreateRestaurantTableDTO(
-                label="x" * 51,
-                capacity=4,
+                label="x" * self.MAX_LABEL_LENGTH,
+                capacity=self.CAPACITY_STANDARD,
             )
 
 
 class TestUpdateRestaurantTableDTO:
+    CAPACITY_LARGE = 8
+    CAPACITY_XLARGE = 10
+
     def test_update_label_only(self) -> None:
         dto = UpdateRestaurantTableDTO(label="Updated Table")
         assert dto.label == "Updated Table"
@@ -59,9 +70,9 @@ class TestUpdateRestaurantTableDTO:
         assert dto.is_active is None
 
     def test_update_capacity_only(self) -> None:
-        dto = UpdateRestaurantTableDTO(capacity=8)
+        dto = UpdateRestaurantTableDTO(capacity=self.CAPACITY_LARGE)
         assert dto.label is None
-        assert dto.capacity == 8
+        assert dto.capacity == self.CAPACITY_LARGE
         assert dto.is_active is None
 
     def test_update_is_active_only(self) -> None:
@@ -73,15 +84,18 @@ class TestUpdateRestaurantTableDTO:
     def test_full_update(self) -> None:
         dto = UpdateRestaurantTableDTO(
             label="VIP Table",
-            capacity=10,
+            capacity=self.CAPACITY_XLARGE,
             is_active=True,
         )
         assert dto.label == "VIP Table"
-        assert dto.capacity == 10
+        assert dto.capacity == self.CAPACITY_XLARGE
         assert dto.is_active is True
 
 
 class TestRestaurantTableResponseDTO:
+    CAPACITY_STANDARD = 4
+    CAPACITY_SMALL = 2
+
     def test_valid_response(self) -> None:
         table_id = uuid4()
         tenant_id = uuid4()
@@ -91,7 +105,7 @@ class TestRestaurantTableResponseDTO:
             id=table_id,
             tenant_id=tenant_id,
             label="Table 5",
-            capacity=4,
+            capacity=self.CAPACITY_STANDARD,
             is_active=True,
             created_at=now,
         )
@@ -99,7 +113,7 @@ class TestRestaurantTableResponseDTO:
         assert dto.id == table_id
         assert dto.tenant_id == tenant_id
         assert dto.label == "Table 5"
-        assert dto.capacity == 4
+        assert dto.capacity == self.CAPACITY_STANDARD
         assert dto.is_active is True
         assert dto.created_at == now
 
@@ -112,7 +126,7 @@ class TestRestaurantTableResponseDTO:
             id=table_id,
             tenant_id=tenant_id,
             label="Table 99",
-            capacity=2,
+            capacity=self.CAPACITY_SMALL,
             is_active=False,
             created_at=now,
         )

@@ -78,6 +78,8 @@ class TestModifierDTO:
 
 
 class TestMenuItemDTO:
+    MODIFIERS_COUNT = 2
+
     def test_minimal_item(self) -> None:
         dto = MenuItemDTO(
             id="item-456",
@@ -108,6 +110,6 @@ class TestMenuItemDTO:
         )
         assert dto.id == "item-789"
         assert dto.name == "Custom Pizza"
-        assert len(dto.modifiers) == 2
+        assert len(dto.modifiers) == self.MODIFIERS_COUNT
         assert dto.modifiers[0].name == "Extra Cheese"
         assert dto.modifiers[1].price == Decimal("3.00")

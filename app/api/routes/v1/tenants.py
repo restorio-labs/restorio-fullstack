@@ -3,6 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, status
 
 from api.v1.dto.tenants import CreateTenantDTO, TenantResponseDTO, UpdateTenantDTO
+from core.foundation.http import MSG_NOT_IMPLEMENTED
 from core.foundation.http.schemas import (
     CreatedResponse,
     DeletedResponse,
@@ -23,19 +24,19 @@ async def list_tenants() -> SuccessResponse[list[TenantResponseDTO]]:
 
 @router.get("/{tenant_id}", status_code=status.HTTP_200_OK)
 async def get_tenant(tenant_id: UUID) -> SuccessResponse[TenantResponseDTO]:
-    raise NotImplementedError("Endpoint to be implemented")
+    raise NotImplementedError(MSG_NOT_IMPLEMENTED)
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def create_tenant(request: CreateTenantDTO) -> CreatedResponse[TenantResponseDTO]:
-    raise NotImplementedError("Endpoint to be implemented")
+    raise NotImplementedError(MSG_NOT_IMPLEMENTED)
 
 
 @router.put("/{tenant_id}", status_code=status.HTTP_200_OK)
 async def update_tenant(
     tenant_id: UUID, request: UpdateTenantDTO
 ) -> UpdatedResponse[TenantResponseDTO]:
-    raise NotImplementedError("Endpoint to be implemented")
+    raise NotImplementedError(MSG_NOT_IMPLEMENTED)
 
 
 @router.delete("/{tenant_id}", status_code=status.HTTP_200_OK)

@@ -3,6 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, status
 
 from api.v1.dto.orders import CreateOrderDTO, OrderResponseDTO, UpdateOrderDTO
+from core.foundation.http import MSG_NOT_IMPLEMENTED
 from core.foundation.http.schemas import (
     CreatedResponse,
     DeletedResponse,
@@ -23,19 +24,19 @@ async def list_orders() -> SuccessResponse[list[OrderResponseDTO]]:
 
 @router.get("/{order_id}", status_code=status.HTTP_200_OK)
 async def get_order(order_id: UUID) -> SuccessResponse[OrderResponseDTO]:
-    raise NotImplementedError("Endpoint to be implemented")
+    raise NotImplementedError(MSG_NOT_IMPLEMENTED)
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def create_order(request: CreateOrderDTO) -> CreatedResponse[OrderResponseDTO]:
-    raise NotImplementedError("Endpoint to be implemented")
+    raise NotImplementedError(MSG_NOT_IMPLEMENTED)
 
 
 @router.put("/{order_id}", status_code=status.HTTP_200_OK)
 async def update_order(
     order_id: UUID, request: UpdateOrderDTO
 ) -> UpdatedResponse[OrderResponseDTO]:
-    raise NotImplementedError("Endpoint to be implemented")
+    raise NotImplementedError(MSG_NOT_IMPLEMENTED)
 
 
 @router.delete("/{order_id}", status_code=status.HTTP_200_OK)

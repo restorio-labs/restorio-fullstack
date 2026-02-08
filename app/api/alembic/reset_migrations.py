@@ -14,11 +14,11 @@ from core.foundation.database.database import engine
 
 
 async def reset_database() -> None:
-    print("🗄️  Dropping all tables and recreating schema...")
+    print("🗄️  Dropping all tables and recreating schema...")  # noqa: T201
     async with engine.begin() as conn:
         await conn.execute(text("DROP SCHEMA public CASCADE"))
         await conn.execute(text("CREATE SCHEMA public"))
-    print("✅ Database reset complete")
+    print("✅ Database reset complete")  # noqa: T201
 
 
 if __name__ == "__main__":

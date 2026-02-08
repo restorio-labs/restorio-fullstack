@@ -1,8 +1,6 @@
 from uuid import uuid4
 
 import pytest
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.exceptions import ConflictError
 from core.models.enums import AccountType, TenantStatus
@@ -10,6 +8,8 @@ from core.models.tenant import Tenant
 from core.models.user import User
 from core.models.user_tenant import UserTenant
 from modules.auth.service import create_user_with_tenant
+
+PASSWORD_HASH_MIN_LENGTH = 50
 
 
 class FakeAsyncSession:
@@ -165,7 +165,7 @@ async def test_create_user_with_tenant_password_is_hashed() -> None:
 
     assert user.password_hash != plain_password
     assert user.password_hash.startswith("$2b$")
-    assert len(user.password_hash) > 50
+    assert len(user.password_hash) > PASSWORD_HASH_MIN_LENGTH
 
 
 @pytest.mark.asyncio

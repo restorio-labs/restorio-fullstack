@@ -7,6 +7,7 @@ from api.v1.dto.restaurants import (
     RestaurantTableResponseDTO,
     UpdateRestaurantTableDTO,
 )
+from core.foundation.http import MSG_NOT_IMPLEMENTED
 from core.foundation.http.schemas import (
     CreatedResponse,
     DeletedResponse,
@@ -27,21 +28,21 @@ async def list_restaurant_tables() -> SuccessResponse[list[RestaurantTableRespon
 
 @router.get("/tables/{table_id}", status_code=status.HTTP_200_OK)
 async def get_restaurant_table(table_id: UUID) -> SuccessResponse[RestaurantTableResponseDTO]:
-    raise NotImplementedError("Endpoint to be implemented")
+    raise NotImplementedError(MSG_NOT_IMPLEMENTED)
 
 
 @router.post("/tables", status_code=status.HTTP_201_CREATED)
 async def create_restaurant_table(
     request: CreateRestaurantTableDTO,
 ) -> CreatedResponse[RestaurantTableResponseDTO]:
-    raise NotImplementedError("Endpoint to be implemented")
+    raise NotImplementedError(MSG_NOT_IMPLEMENTED)
 
 
 @router.put("/tables/{table_id}", status_code=status.HTTP_200_OK)
 async def update_restaurant_table(
     table_id: UUID, request: UpdateRestaurantTableDTO
 ) -> UpdatedResponse[RestaurantTableResponseDTO]:
-    raise NotImplementedError("Endpoint to be implemented")
+    raise NotImplementedError(MSG_NOT_IMPLEMENTED)
 
 
 @router.delete("/tables/{table_id}", status_code=status.HTTP_200_OK)

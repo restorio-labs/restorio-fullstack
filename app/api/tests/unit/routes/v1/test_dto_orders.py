@@ -16,13 +16,15 @@ from api.v1.dto.orders import (
 
 
 class TestCreateOrderItemDTO:
+    QUANTITY = 2
+
     def test_valid_creation(self) -> None:
         dto = CreateOrderItemDTO(
             product_id="prod-123",
             quantity=2,
         )
         assert dto.product_id == "prod-123"
-        assert dto.quantity == 2
+        assert dto.quantity == self.QUANTITY
         assert dto.modifiers == []
 
     def test_with_modifiers(self) -> None:
@@ -51,6 +53,8 @@ class TestCreateOrderItemDTO:
 
 
 class TestCreateOrderDTO:
+    ITEMS_COUNT = 2
+
     def test_valid_creation(self) -> None:
         table_id = uuid4()
         dto = CreateOrderDTO(
@@ -61,7 +65,7 @@ class TestCreateOrderDTO:
             ],
         )
         assert dto.table_id == table_id
-        assert len(dto.items) == 2
+        assert len(dto.items) == self.ITEMS_COUNT
 
     def test_empty_items_list(self) -> None:
         table_id = uuid4()
@@ -102,6 +106,8 @@ class TestUpdateOrderDTO:
 
 
 class TestOrderItemResponseDTO:
+    QUANTITY = 2
+
     def test_valid_response(self) -> None:
         item_id = uuid4()
         dto = OrderItemResponseDTO(
@@ -114,7 +120,7 @@ class TestOrderItemResponseDTO:
         assert dto.id == item_id
         assert dto.product_id == "prod-123"
         assert dto.name == "Burger"
-        assert dto.quantity == 2
+        assert dto.quantity == self.QUANTITY
         assert dto.unit_price == Decimal("15.99")
 
 
