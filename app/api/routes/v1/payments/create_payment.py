@@ -3,8 +3,8 @@ import hashlib
 import json
 from typing import Any
 
-import httpx
 from fastapi import APIRouter, HTTPException, status
+import httpx
 
 from core.foundation.http.schemas import CreatedResponse
 from core.foundation.infra.config import settings

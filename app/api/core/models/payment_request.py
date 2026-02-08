@@ -13,8 +13,12 @@ class CreatePaymentRequest(BaseModel):
     language: str = Field(default="pl", description="Language code")
     url_return: str = Field(..., alias="urlReturn", description="Return URL after payment")
     url_status: str = Field(..., alias="urlStatus", description="Callback URL for payment status")
-    wait_for_result: bool = Field(default=True, alias="waitForResult", description="Wait for payment result")
-    regulation_accept: bool = Field(default=False, alias="regulationAccept", description="Terms and conditions acceptance")
+    wait_for_result: bool = Field(
+        default=True, alias="waitForResult", description="Wait for payment result"
+    )
+    regulation_accept: bool = Field(
+        default=False, alias="regulationAccept", description="Terms and conditions acceptance"
+    )
 
 
 class Przelewy24RegisterRequest(BaseModel):
