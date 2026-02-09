@@ -22,7 +22,7 @@ interface ThemeProviderProps {
   initialOverride?: ThemeOverride;
 }
 
-const getSystemTheme = (): "light" | "dark" => {
+export const getSystemTheme = (): "light" | "dark" => {
   if (typeof window === "undefined") {
     return "light";
   }
@@ -75,10 +75,6 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   }, [mode, systemTheme]);
 
   useEffect(() => {
-    if (typeof document === "undefined") {
-      return;
-    }
-
     try {
       const root = document.documentElement;
 
@@ -89,9 +85,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
         const cssVars = generateCSSVariables(override);
 
         for (const [key, value] of Object.entries(cssVars)) {
-          if (typeof value === "string") {
-            root.style.setProperty(key, value);
-          }
+          root.style.setProperty(key, value);
         }
       }
     } catch {

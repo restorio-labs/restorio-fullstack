@@ -156,4 +156,86 @@ describe("Tooltip", () => {
 
     vi.useRealTimers();
   });
+
+  it("closes tooltip when Escape key is pressed", () => {
+    render(
+      <Tooltip content="Tooltip text">
+        <button>Hover me</button>
+      </Tooltip>,
+    );
+
+    const trigger = screen.getByText("Hover me");
+
+    fireEvent.mouseEnter(trigger);
+
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    // @ts-expect-error - test purposes
+    expect(screen.getByRole("tooltip")).toBeInTheDocument();
+
+    fireEvent.keyDown(document, { key: "Escape" });
+
+    // @ts-expect-error - test purposes
+    expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
+  });
+
+  it("has aria-describedby attribute when tooltip is visible", () => {
+    render(
+      <Tooltip content="Tooltip text">
+        <button>Hover me</button>
+      </Tooltip>,
+    );
+
+    const container = screen.getByText("Hover me").parentElement;
+
+    expect(container?.getAttribute("aria-describedby")).toBeNull();
+
+    fireEvent.mouseEnter(screen.getByText("Hover me"));
+
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    expect(container?.getAttribute("aria-describedby")).toBeTruthy();
+  });
+
+  it("does not add Escape key listener when tooltip is not visible", () => {
+    const addEventListenerSpy = vi.spyOn(document, "addEventListener");
+
+    render(
+      <Tooltip content="Tooltip text">
+        <button>Hover me</button>
+      </Tooltip>,
+    );
+
+    const initialCallCount = addEventListenerSpy.mock.calls.filter((call) => call[0] === "keydown").length;
+
+    expect(initialCallCount).toBe(0);
+  });
+
+  it("does not close tooltip when non-Escape key is pressed", () => {
+    render(
+      <Tooltip content="Tooltip text">
+        <button>Hover me</button>
+      </Tooltip>,
+    );
+
+    const trigger = screen.getByText("Hover me");
+
+    fireEvent.mouseEnter(trigger);
+
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    // @ts-expect-error - test purposes
+    expect(screen.getByRole("tooltip")).toBeInTheDocument();
+
+    fireEvent.keyDown(document, { key: "Enter" });
+
+    // @ts-expect-error - test purposes
+    expect(screen.getByRole("tooltip")).toBeInTheDocument();
+  });
 });

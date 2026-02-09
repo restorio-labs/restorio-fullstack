@@ -1,5 +1,5 @@
 import { TokenStorage } from "@restorio/auth";
-import { Button, Input, Stack, Text } from "@restorio/ui";
+import { Button, Form, FormActions, FormField, Input, Text } from "@restorio/ui";
 import { useEffect, useMemo, useState, type ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -26,7 +26,9 @@ export const LoginView = (): ReactElement => {
     }
   }, [navigate]);
 
-  const handleLogin = (): void => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
+    event.preventDefault();
+
     if (!isCodeValid) {
       return;
     }
@@ -38,25 +40,29 @@ export const LoginView = (): ReactElement => {
   return (
     <div className="flex min-h-full items-center justify-center bg-background-primary px-6 py-10">
       <div className="w-full max-w-md rounded-card border border-border-default bg-surface-primary p-6 shadow-card">
-        <Stack spacing="md">
-          <Text as="h1" variant="h3" weight="semibold">
-            Kitchen Login
-          </Text>
-          <Text as="p" variant="body-sm" className="text-text-secondary">
-            Enter your 6-digit access code to continue.
-          </Text>
-          <Input
-            label="Access code"
-            value={token}
-            onChange={(event) => setToken(formatCode(event.target.value))}
-            placeholder="123-456"
-            inputMode="numeric"
-            maxLength={7}
-          />
-          <Button size="lg" variant="primary" fullWidth onClick={handleLogin} disabled={!isCodeValid}>
-            Sign in
-          </Button>
-        </Stack>
+        <Text as="h1" variant="h3" weight="semibold" className="mb-2">
+          Kitchen Login
+        </Text>
+        <Text as="p" variant="body-sm" className="text-text-secondary mb-6">
+          Enter your 6-digit access code to continue.
+        </Text>
+        <Form onSubmit={handleSubmit}>
+          <FormField>
+            <Input
+              label="Access code"
+              value={token}
+              onChange={(event) => setToken(formatCode(event.target.value))}
+              placeholder="123-456"
+              inputMode="numeric"
+              maxLength={7}
+            />
+          </FormField>
+          <FormActions align="stretch">
+            <Button type="submit" size="lg" variant="primary" fullWidth disabled={!isCodeValid}>
+              Sign in
+            </Button>
+          </FormActions>
+        </Form>
       </div>
     </div>
   );

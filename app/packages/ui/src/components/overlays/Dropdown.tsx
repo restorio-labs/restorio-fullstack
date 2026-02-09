@@ -76,10 +76,18 @@ export const Dropdown = ({
     "top-end": "bottom-full mb-1 right-0",
   };
 
+  const handleTriggerKeyDown = (e: React.KeyboardEvent<HTMLDivElement>): void => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setIsOpen(!isOpen);
+    }
+  };
+
   return (
     <div className="relative inline-block" ref={triggerRef}>
       <div
         onClick={(): void => setIsOpen(!isOpen)}
+        onKeyDown={handleTriggerKeyDown}
         role="button"
         tabIndex={0}
         aria-haspopup="true"

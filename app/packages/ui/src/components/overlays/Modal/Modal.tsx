@@ -34,6 +34,7 @@ export const Modal = ({
   className,
 }: ModalProps): ReactElement | null => {
   const modalRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -52,11 +53,7 @@ export const Modal = ({
     document.addEventListener("keydown", handleEscape);
     document.body.style.overflow = "hidden";
 
-    const firstFocusable = modalRef.current?.querySelector<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-    );
-
-    firstFocusable?.focus();
+    closeButtonRef.current?.focus();
 
     return () => {
       document.removeEventListener("keydown", handleEscape);
@@ -98,6 +95,7 @@ export const Modal = ({
             {title}
           </h2>
           <button
+            ref={closeButtonRef}
             type="button"
             onClick={onClose}
             className="p-1 text-text-secondary hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus rounded-sm"

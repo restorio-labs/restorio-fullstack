@@ -176,6 +176,48 @@ describe("Dropdown", () => {
     expect(trigger?.getAttribute("aria-expanded")).toBe("true");
   });
 
+  it("should open dropdown with Enter key", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Dropdown trigger={<button type="button">Open</button>}>
+        <div>Menu Item</div>
+      </Dropdown>,
+    );
+
+    const trigger = screen.getByText("Open").closest("div");
+
+    expect(screen.queryByRole("menu")).toBeNull();
+
+    if (trigger) {
+      trigger.focus();
+      await user.keyboard("{Enter}");
+    }
+
+    expect(screen.getByRole("menu")).toBeDefined();
+  });
+
+  it("should open dropdown with Space key", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Dropdown trigger={<button type="button">Open</button>}>
+        <div>Menu Item</div>
+      </Dropdown>,
+    );
+
+    const trigger = screen.getByText("Open").closest("div");
+
+    expect(screen.queryByRole("menu")).toBeNull();
+
+    if (trigger) {
+      trigger.focus();
+      await user.keyboard(" ");
+    }
+
+    expect(screen.getByRole("menu")).toBeDefined();
+  });
+
   it("should call onOpenChange and not update internal state when controlled", async () => {
     const user = userEvent.setup();
     const onOpenChange = vi.fn();

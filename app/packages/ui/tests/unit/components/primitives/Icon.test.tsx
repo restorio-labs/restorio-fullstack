@@ -77,7 +77,7 @@ describe("Icon", () => {
 
   it("should render custom component via 'as' prop", () => {
     const CustomComponent = forwardRef<SVGSVGElement, SVGProps<SVGSVGElement>>((props, ref) => (
-      <g ref={ref} data-testid="custom-as" {...props} />
+      <svg ref={ref} data-testid="custom-as" {...props} />
     ));
 
     render(<Icon as={CustomComponent} size="lg" className="test-class" />);

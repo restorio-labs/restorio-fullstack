@@ -103,8 +103,8 @@ export const OrderCard = ({
       data-dragging={isDragging}
       data-order-id={id}
       className={cn(
-        "w-full rounded-card border border-border-strong bg-surface-primary shadow-card focus-visible-ring",
-        "outline-none focus-visible:ring-offset-background-primary",
+        "w-full rounded-card border border-border-strong bg-surface-primary shadow-card",
+        "outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-4 focus-visible:ring-offset-background-secondary",
         isDragging && "pointer-events-none opacity-40",
         isDisabled && "opacity-60",
         className,

@@ -1,4 +1,4 @@
-import { useState, type ReactNode, type ReactElement, useRef } from "react";
+import { useState, type ReactNode, type ReactElement, useRef, useId, useEffect } from "react";
 
 import { cn } from "../../utils";
 
@@ -21,6 +21,7 @@ export const Tooltip = ({
 }: TooltipProps): ReactElement => {
   const [isVisible, setIsVisible] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const tooltipId = useId();
 
   const handleMouseEnter = (): void => {
     timeoutRef.current = setTimeout(() => {
@@ -35,6 +36,24 @@ export const Tooltip = ({
     }
     setIsVisible(false);
   };
+
+  useEffect(() => {
+    if (!isVisible) {
+      return;
+    }
+
+    const handleEscape = (e: KeyboardEvent): void => {
+      if (e.key === "Escape") {
+        setIsVisible(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [isVisible]);
 
   const placementStyles: Record<TooltipPlacement, string> = {
     top: "bottom-full left-1/2 -translate-x-1/2 mb-2",
@@ -57,10 +76,12 @@ export const Tooltip = ({
       onMouseLeave={handleMouseLeave}
       onFocus={handleMouseEnter}
       onBlur={handleMouseLeave}
+      aria-describedby={isVisible ? tooltipId : undefined}
     >
       {children}
       {isVisible && (
         <div
+          id={tooltipId}
           className={cn(
             "absolute z-tooltip px-2 py-1 text-sm text-text-inverse bg-surface-overlay rounded-tooltip whitespace-nowrap",
             placementStyles[placement],
