@@ -16,7 +16,7 @@ describe("FormActions", () => {
     expect(actions.tagName).toBe("DIV");
   });
 
-  it("applies default right alignment", () => {
+  it("applies default end alignment", () => {
     render(<FormActions data-testid="test-actions">Actions</FormActions>);
 
     const actions = screen.getByTestId("test-actions");
@@ -25,9 +25,9 @@ describe("FormActions", () => {
     expect(actions).toHaveClass("justify-end");
   });
 
-  it("applies left alignment when specified", () => {
+  it("applies start alignment when specified", () => {
     render(
-      <FormActions align="left" data-testid="test-actions">
+      <FormActions align="start" data-testid="test-actions">
         Actions
       </FormActions>,
     );

@@ -10,9 +10,20 @@ import { Icon } from "./primitives/Icon";
 export interface ThemeSwitcherProps {
   className?: string;
   showLabel?: boolean;
+  lightLabel?: string;
+  darkLabel?: string;
+  systemLabel?: string;
+  ariaLabelTemplate?: (currentTheme: string) => string;
 }
 
-export const ThemeSwitcher = ({ className, showLabel = false }: ThemeSwitcherProps): ReactElement => {
+export const ThemeSwitcher = ({
+  className,
+  showLabel = false,
+  lightLabel = "Light",
+  darkLabel = "Dark",
+  systemLabel = "System",
+  ariaLabelTemplate,
+}: ThemeSwitcherProps): ReactElement => {
   const { mode, setMode } = useTheme();
 
   const cycleTheme = (): void => {
@@ -44,10 +55,13 @@ export const ThemeSwitcher = ({ className, showLabel = false }: ThemeSwitcherPro
   };
 
   const labels: Record<ThemeMode, string> = {
-    light: "Light",
-    dark: "Dark",
-    system: "System",
+    light: lightLabel,
+    dark: darkLabel,
+    system: systemLabel,
   };
+
+  const defaultAriaLabel = `Current theme: ${labels[mode]}. Click to cycle theme.`;
+  const ariaLabel = ariaLabelTemplate ? ariaLabelTemplate(labels[mode]) : defaultAriaLabel;
 
   return (
     <Button
@@ -55,7 +69,7 @@ export const ThemeSwitcher = ({ className, showLabel = false }: ThemeSwitcherPro
       size="md"
       onClick={cycleTheme}
       className={cn("flex items-center gap-2", className)}
-      aria-label={`Current theme: ${labels[mode]}. Click to cycle theme.`}
+      aria-label={ariaLabel}
     >
       {icons[mode]}
       {showLabel && <span className="text-sm font-medium">{labels[mode]}</span>}

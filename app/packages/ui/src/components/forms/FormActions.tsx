@@ -3,15 +3,15 @@ import { forwardRef } from "react";
 import { cn } from "../../utils";
 
 export interface FormActionsProps extends React.HTMLAttributes<HTMLDivElement> {
-  align?: "left" | "right" | "center" | "stretch";
+  align?: "start" | "end" | "center" | "stretch";
   spacing?: "sm" | "md" | "lg";
 }
 
 export const FormActions = forwardRef<HTMLDivElement, FormActionsProps>(
-  ({ align = "right", spacing = "md", className, children, ...props }, ref) => {
+  ({ align = "end", spacing = "md", className, children, ...props }, ref) => {
     const alignClasses = {
-      left: "justify-start",
-      right: "justify-end",
+      start: "justify-start",
+      end: "justify-end",
       center: "justify-center",
       stretch: "justify-stretch",
     };

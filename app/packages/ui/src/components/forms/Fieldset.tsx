@@ -27,7 +27,7 @@ export const Fieldset = forwardRef<HTMLFieldSetElement, FieldsetProps>(
         )}
         {...props}
       >
-        {legend && <legend className="text-base font-semibold text-text-primary px-2 -ml-2">{legend}</legend>}
+        {legend && <legend className="text-base font-semibold text-text-primary px-2 -ms-2">{legend}</legend>}
         {description && <p className="text-sm text-text-secondary mb-4">{description}</p>}
         <div className={spacingClasses[spacing]}>{children}</div>
       </fieldset>

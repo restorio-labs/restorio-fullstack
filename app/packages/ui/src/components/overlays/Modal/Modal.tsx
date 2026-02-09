@@ -13,6 +13,7 @@ export interface ModalProps {
   closeOnOverlayClick?: boolean;
   closeOnEscape?: boolean;
   className?: string;
+  closeButtonAriaLabel?: string;
 }
 
 const sizeStyles: Record<ModalSize, string> = {
@@ -32,6 +33,7 @@ export const Modal = ({
   closeOnOverlayClick = true,
   closeOnEscape = true,
   className,
+  closeButtonAriaLabel = "Close modal",
 }: ModalProps): ReactElement | null => {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -99,7 +101,7 @@ export const Modal = ({
             type="button"
             onClick={onClose}
             className="p-1 text-text-secondary hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus rounded-sm"
-            aria-label="Close modal"
+            aria-label={closeButtonAriaLabel}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

@@ -136,7 +136,7 @@ describe("Tooltip", () => {
 
     const tooltip = screen.getByRole("tooltip");
 
-    expect(tooltip.className).toContain("left-full");
+    expect(tooltip.className).toContain("start-full");
   });
 
   it("does not call clearTimeout when mouse leaves without active timeout (covers false branch)", () => {

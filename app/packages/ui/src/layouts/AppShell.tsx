@@ -9,6 +9,7 @@ export interface AppShellProps {
   sidebar?: ReactNode;
   sidebarPosition?: "left" | "right";
   className?: string;
+  sidebarAriaLabel?: string;
 }
 
 export const AppShell = ({
@@ -18,6 +19,7 @@ export const AppShell = ({
   sidebar,
   sidebarPosition = "left",
   className,
+  sidebarAriaLabel = "Sidebar",
 }: AppShellProps): ReactElement => {
   return (
     <div className={cn("flex flex-col min-h-screen bg-background-primary", className)}>
@@ -29,9 +31,9 @@ export const AppShell = ({
       <div className="flex flex-1 overflow-hidden">
         {sidebar && sidebarPosition === "left" && (
           <aside
-            className="flex-shrink-0 border-r border-border-default bg-surface-secondary"
+            className="flex-shrink-0 border-e border-border-default bg-surface-secondary"
             role="complementary"
-            aria-label="Sidebar"
+            aria-label={sidebarAriaLabel}
           >
             {sidebar}
           </aside>
@@ -41,9 +43,9 @@ export const AppShell = ({
         </main>
         {sidebar && sidebarPosition === "right" && (
           <aside
-            className="flex-shrink-0 border-l border-border-default bg-surface-secondary"
+            className="flex-shrink-0 border-s border-border-default bg-surface-secondary"
             role="complementary"
-            aria-label="Sidebar"
+            aria-label={sidebarAriaLabel}
           >
             {sidebar}
           </aside>

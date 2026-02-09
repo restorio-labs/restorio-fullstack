@@ -32,7 +32,7 @@ describe("AppShell", () => {
     render(<AppShell sidebar={<div>Sidebar</div>}>Content</AppShell>);
     const sidebar = screen.getByText("Sidebar").parentElement;
 
-    expect(sidebar?.className).toContain("border-r");
+    expect(sidebar?.className).toContain("border-e");
   });
 
   it("should render sidebar on right when specified", () => {
@@ -43,7 +43,7 @@ describe("AppShell", () => {
     );
     const sidebar = screen.getByText("Sidebar").parentElement;
 
-    expect(sidebar?.className).toContain("border-l");
+    expect(sidebar?.className).toContain("border-s");
   });
 
   it("should render all sections together", () => {

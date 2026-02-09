@@ -1,0 +1,177 @@
+{
+  "common": {
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "close": "Cerrar",
+    "open": "Abrir",
+    "loading": "Cargando..."
+  },
+  "app": {
+    "title": "Demo de UI",
+    "description": "Explora ejemplos de componentes e interactúa con el sistema de diseño"
+  },
+  "theme": {
+    "current": "Tema: {{current}} → {{next}}"
+  },
+  "navigation": {
+    "overview": "Resumen",
+    "primitives": "Primitivos",
+    "inputs": "Entradas",
+    "forms": "Formularios",
+    "overlays": "Superposiciones",
+    "feedback": "Retroalimentación",
+    "layouts": "Diseños",
+    "domain": "Dominio"
+  },
+  "components": {
+    "box": "Caja",
+    "stack": "Pila",
+    "text": "Texto",
+    "button": "Botón",
+    "icon": "Icono",
+    "card": "Tarjeta",
+    "input": "Entrada",
+    "select": "Seleccionar",
+    "checkbox": "Casilla",
+    "switch": "Interruptor",
+    "textarea": "Área de texto",
+    "emptyState": "Estado vacío",
+    "loader": "Cargador",
+    "skeleton": "Esqueleto",
+    "dropdown": "Desplegable",
+    "tooltip": "Descripción",
+    "modal": "Modal",
+    "toast": "Notificación"
+  },
+  "overview": {
+    "title": "Demo de UI Restorio",
+    "subtitle": "Explora ejemplos de componentes e interactúa con el sistema de diseño.",
+    "quickLinks": "Enlaces rápidos",
+    "links": {
+      "buttons": "Botones",
+      "inputs": "Entradas",
+      "overlays": "Superposiciones",
+      "feedback": "Retroalimentación"
+    },
+    "included": "Qué está incluido",
+    "description": "Un sistema de diseño completo con primitivos, entradas, superposiciones, componentes de retroalimentación y componentes específicos de dominio para gestión de restaurantes."
+  },
+  "button": {
+    "title": "Botón",
+    "description": "Variantes, tamaños, estados deshabilitados y opciones de ancho completo.",
+    "variants": "Variantes",
+    "sizes": "Tamaños",
+    "fullWidth": "Ancho completo",
+    "fullWidthDescription": "Expandir al contenedor",
+    "labels": {
+      "primary": "Primario",
+      "secondary": "Secundario",
+      "danger": "Peligro",
+      "disabled": "Deshabilitado",
+      "small": "PEQ",
+      "medium": "MED",
+      "large": "GRA"
+    }
+  },
+  "input": {
+    "title": "Entrada",
+    "description": "Entradas de texto con etiquetas, marcadores, texto de ayuda y estados de error.",
+    "controlled": "Controlado",
+    "states": "Estados",
+    "labels": {
+      "name": "Nombre",
+      "email": "Correo",
+      "disabled": "Deshabilitado",
+      "error": "Con error"
+    },
+    "placeholders": {
+      "name": "Jane Doe",
+      "email": "nombre@ejemplo.com",
+      "disabled": "Entrada deshabilitada",
+      "error": "Valor inválido"
+    },
+    "helperText": "Nunca compartiremos tu correo.",
+    "errorText": "Este campo es obligatorio"
+  },
+  "modal": {
+    "title": "Modal",
+    "description": "Componente de diálogo con opciones de tamaño y fondo superpuesto.",
+    "openButton": "Abrir {{size}}",
+    "modalTitle": "Tamaño modal: {{size}}",
+    "modalDescription": "Usa modales para flujos críticos que requieren atención y confirmación del usuario.",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar"
+  },
+  "toast": {
+    "title": "Notificación",
+    "description": "Notificaciones en línea con variantes y acciones desechables.",
+    "showButton": "Mostrar {{variant}}",
+    "toastTitle": "Notificación {{variant}}",
+    "toastMessage": "Cambios guardados exitosamente.",
+    "toastDescription": "Mensaje detallado para esta notificación.",
+    "dismiss": "Descartar"
+  },
+  "select": {
+    "title": "Seleccionar",
+    "description": "Selección desplegable con opciones, etiquetas y estados de error.",
+    "placeholder": "Selecciona una opción",
+    "options": {
+      "option1": "Opción 1",
+      "option2": "Opción 2",
+      "option3": "Opción 3"
+    }
+  },
+  "checkbox": {
+    "title": "Casilla",
+    "description": "Entradas de casilla con etiquetas y estados.",
+    "labels": {
+      "agree": "Acepto los términos",
+      "subscribe": "Suscribirse al boletín",
+      "disabled": "Opción deshabilitada"
+    }
+  },
+  "switch": {
+    "title": "Interruptor",
+    "description": "Interruptor de alternancia para configuraciones booleanas.",
+    "labels": {
+      "notifications": "Habilitar notificaciones",
+      "darkMode": "Modo oscuro",
+      "disabled": "Deshabilitado"
+    }
+  },
+  "dropdown": {
+    "title": "Desplegable",
+    "description": "Menú contextual con elementos y acciones.",
+    "trigger": "Abrir menú",
+    "items": {
+      "edit": "Editar",
+      "duplicate": "Duplicar",
+      "archive": "Archivar",
+      "delete": "Eliminar"
+    }
+  },
+  "tooltip": {
+    "title": "Descripción",
+    "description": "Sugerencias contextuales al pasar el cursor o enfocar.",
+    "content": "Esta es una descripción útil",
+    "trigger": "Pasa el cursor"
+  },
+  "loader": {
+    "title": "Cargador",
+    "description": "Indicadores de carga en varios tamaños.",
+    "sizes": {
+      "small": "Pequeño",
+      "medium": "Mediano",
+      "large": "Grande"
+    }
+  },
+  "emptyState": {
+    "title": "Estado vacío",
+    "description": "Marcador para estados de datos vacíos.",
+    "exampleTitle": "No se encontraron elementos",
+    "exampleDescription": "Comienza creando tu primer elemento.",
+    "exampleAction": "Crear elemento"
+  }
+}

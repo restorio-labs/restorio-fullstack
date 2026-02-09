@@ -73,4 +73,26 @@ describe("ThemeSwitcher", () => {
 
     expect(button.className).toContain("custom-class");
   });
+
+  it("uses custom labels", () => {
+    render(
+      <ThemeProvider defaultMode="light">
+        <ThemeSwitcher showLabel lightLabel="Claro" darkLabel="Oscuro" systemLabel="Sistema" />
+      </ThemeProvider>,
+    );
+
+    expect(screen.getByText("Claro")).toBeDefined();
+  });
+
+  it("uses custom aria-label template", () => {
+    render(
+      <ThemeProvider defaultMode="dark">
+        <ThemeSwitcher ariaLabelTemplate={(theme) => `Cambiar tema: ${theme}`} />
+      </ThemeProvider>,
+    );
+
+    const button = screen.getByRole("button");
+
+    expect(button.getAttribute("aria-label")).toContain("Cambiar tema:");
+  });
 });

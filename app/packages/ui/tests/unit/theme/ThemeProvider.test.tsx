@@ -5,7 +5,7 @@ import { act, render, renderHook, screen, waitFor } from "@testing-library/react
 import React from "react";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 
-import { ThemeProvider, useTheme, getSystemTheme } from "../../../src/theme/ThemeProvider";
+import { ThemeProvider, useTheme, getSystemTheme, getSystemDirection } from "../../../src/theme/ThemeProvider";
 import type { ThemeOverride } from "../../../src/tokens/types";
 
 describe("ThemeProvider", () => {
@@ -13,6 +13,7 @@ describe("ThemeProvider", () => {
     document.documentElement.removeAttribute("data-theme");
     document.documentElement.classList.remove("dark");
     document.documentElement.removeAttribute("style");
+    document.documentElement.removeAttribute("dir");
   });
 
   afterEach(() => {
@@ -545,6 +546,8 @@ describe("useTheme", () => {
     expect(result.current).toHaveProperty("override");
     expect(result.current).toHaveProperty("setOverride");
     expect(result.current).toHaveProperty("colors");
+    expect(result.current).toHaveProperty("direction");
+    expect(result.current).toHaveProperty("setDirection");
   });
 
   it("should have correct types for setMode", () => {
@@ -573,6 +576,78 @@ describe("useTheme", () => {
       result.current.setOverride({ colors: { background: { primary: "#test" } } });
       result.current.setOverride(null);
     });
+  });
+
+  it("should default to auto direction", () => {
+    const { result } = renderHook(() => useTheme(), {
+      wrapper: ({ children }) => <ThemeProvider>{children}</ThemeProvider>,
+    });
+
+    expect(result.current.direction).toBe("ltr");
+  });
+
+  it("should use provided defaultDirection", () => {
+    const { result } = renderHook(() => useTheme(), {
+      wrapper: ({ children }) => <ThemeProvider defaultDirection="rtl">{children}</ThemeProvider>,
+    });
+
+    expect(result.current.direction).toBe("rtl");
+  });
+
+  it("should allow changing direction", () => {
+    const { result } = renderHook(() => useTheme(), {
+      wrapper: ({ children }) => <ThemeProvider defaultDirection="ltr">{children}</ThemeProvider>,
+    });
+
+    expect(result.current.direction).toBe("ltr");
+
+    act(() => {
+      result.current.setDirection("rtl");
+    });
+
+    expect(result.current.direction).toBe("rtl");
+  });
+
+  it("should set dir attribute on documentElement", async () => {
+    renderHook(() => useTheme(), {
+      wrapper: ({ children }) => <ThemeProvider defaultDirection="rtl">{children}</ThemeProvider>,
+    });
+
+    await waitFor(() => {
+      expect(document.documentElement.getAttribute("dir")).toBe("rtl");
+    });
+  });
+
+  it("should detect RTL from Arabic language", () => {
+    document.documentElement.removeAttribute("dir");
+    document.documentElement.setAttribute("lang", "ar");
+    expect(getSystemDirection()).toBe("rtl");
+  });
+
+  it("should detect RTL from Hebrew language", () => {
+    document.documentElement.removeAttribute("dir");
+    document.documentElement.setAttribute("lang", "he");
+    expect(getSystemDirection()).toBe("rtl");
+  });
+
+  it("should detect LTR from English language", () => {
+    document.documentElement.removeAttribute("dir");
+    document.documentElement.setAttribute("lang", "en");
+    expect(getSystemDirection()).toBe("ltr");
+  });
+
+  it("should detect direction from dir attribute", () => {
+    document.documentElement.setAttribute("dir", "rtl");
+    expect(getSystemDirection()).toBe("rtl");
+  });
+
+  it("should handle auto direction detection", () => {
+    const { result } = renderHook(() => useTheme(), {
+      wrapper: ({ children }) => <ThemeProvider defaultDirection="auto">{children}</ThemeProvider>,
+    });
+
+    expect(result.current.direction).toBeDefined();
+    expect(["ltr", "rtl"]).toContain(result.current.direction);
   });
 });
 

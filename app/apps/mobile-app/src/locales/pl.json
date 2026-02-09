@@ -1,0 +1,15 @@
+{
+  "common": {
+    "skipToContent": "Przejdź do głównej treści",
+    "loading": "Ładowanie...",
+    "error": "Błąd"
+  },
+  "app": {
+    "title": "Aplikacja Tabletowa Restorio",
+    "comingSoon": "Interfejs tabletu/kiosku wkrótce...",
+    "description": "Samoobsługowe zamawianie dla klientów"
+  },
+  "errors": {
+    "rootElementNotFound": "Nie znaleziono elementu głównego"
+  }
+}

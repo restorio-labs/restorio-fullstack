@@ -5,10 +5,11 @@ import { cn } from "../../utils";
 export interface FormLabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
   required?: boolean;
   disabled?: boolean;
+  requiredAriaLabel?: string;
 }
 
 export const FormLabel = forwardRef<HTMLLabelElement, FormLabelProps>(
-  ({ required, disabled, className, children, ...props }, ref) => {
+  ({ required, disabled, className, children, requiredAriaLabel = "required", ...props }, ref) => {
     return (
       <label
         ref={ref}
@@ -21,7 +22,7 @@ export const FormLabel = forwardRef<HTMLLabelElement, FormLabelProps>(
       >
         {children}
         {required && (
-          <span className="ml-1 text-status-error-text" aria-label="required">
+          <span className="ms-1 text-status-error-text" aria-label={requiredAriaLabel}>
             *
           </span>
         )}

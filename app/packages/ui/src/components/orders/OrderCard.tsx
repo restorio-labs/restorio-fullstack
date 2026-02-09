@@ -119,7 +119,7 @@ export const OrderCard = ({
             className={cn(
               "flex-1 justify-between border border-border-strong bg-surface-secondary text-text-primary",
               "hover:bg-surface-tertiary active:bg-surface-secondary",
-              "min-h-14 px-5 py-4 pr-6",
+              "min-h-14 px-5 py-4 pe-6",
             )}
             onClick={handleToggle}
             aria-expanded={canExpand ? expanded : undefined}

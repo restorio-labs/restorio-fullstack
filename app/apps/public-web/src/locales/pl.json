@@ -1,0 +1,120 @@
+{
+  "common": {
+    "skipToContent": "Przejdź do głównej treści",
+    "loading": "Ładowanie...",
+    "error": "Błąd",
+    "learnMore": "Dowiedz się więcej"
+  },
+  "metadata": {
+    "title": "Platforma Restorio",
+    "description": "Platforma Zarządzania Restauracją"
+  },
+  "navigation": {
+    "home": "Start",
+    "about": "O nas",
+    "features": "Funkcje",
+    "pricing": "Cennik",
+    "demo": "Demo",
+    "privacy": "Prywatność",
+    "terms": "Warunki",
+    "getStarted": "Rozpocznij"
+  },
+  "hero": {
+    "title": "Przyszłość Zarządzania Restauracją",
+    "subtitle": "Wielodostępna platforma SaaS wspierająca restauracje w zamawianiu przez kod QR, zarządzaniu kuchnią w czasie rzeczywistym i kompleksowej analityce.",
+    "cta": {
+      "trial": "Rozpocznij Darmowy Okres Próbny",
+      "demo": "Zobacz Demo"
+    },
+    "preview": {
+      "title": "Podgląd Panelu",
+      "comingSoon": "Interaktywne demo wkrótce"
+    }
+  },
+  "features": {
+    "title": "Wszystko, czego potrzebujesz do prowadzenia restauracji",
+    "subtitle": "Od zamawiania przez kod QR po zarządzanie kuchnią, Restorio zapewnia kompletne rozwiązanie dla nowoczesnych restauracji.",
+    "waiterless": {
+      "title": "Zamawianie Bez Kelnera",
+      "description": "Klienci skanują kody QR, aby przeglądać menu i składać zamówienia bezpośrednio ze swoich telefonów."
+    },
+    "kitchen": {
+      "title": "Kuchnia w Czasie Rzeczywistym",
+      "description": "Aktualizacje zamówień na żywo i system wyświetlania kuchni usprawniający przygotowywanie potraw."
+    },
+    "multiLocation": {
+      "title": "Wiele Lokalizacji",
+      "description": "Zarządzaj wieloma lokalizacjami restauracji z jednego zunifikowanego panelu."
+    }
+  },
+  "cta": {
+    "title": "Gotowy na unowocześnienie swojej restauracji?",
+    "subtitle": "Dołącz do setek restauracji już korzystających z Restorio, aby usprawnić swoje operacje.",
+    "button": "Dowiedz Się Więcej O Nas"
+  },
+  "about": {
+    "mission": {
+      "title": "Nasza Misja",
+      "subtitle": "Wspieranie małych restauracji narzędziami klasy korporacyjnej.",
+      "description": "Restorio to platforma zarządzania restauracją o otwartym kodzie źródłowym stworzona w celu demokratyzacji dostępu do potężnych narzędzi SaaS. Wierzymy, że każda restauracja, niezależnie od wielkości, zasługuje na nowoczesną technologię, aby konkurować i prosperować."
+    },
+    "goals": {
+      "title": "Cele Projektu",
+      "waiterless": {
+        "title": "Zamawianie Bez Kelnera",
+        "description": "Umożliwienie klientom skanowania kodów QR i składania zamówień bez pomocy kelnera."
+      },
+      "multiLocation": {
+        "title": "Wsparcie Wielu Lokalizacji",
+        "description": "Zarządzanie wieloma restauracjami pod jednym najemcą z ustawieniami specyficznymi dla lokalizacji."
+      },
+      "secure": {
+        "title": "Bezpieczne i Skalowalne",
+        "description": "Zbudowane na nowoczesnej infrastrukturze z uwierzytelnianiem JWT i backendem FastAPI."
+      },
+      "costEfficient": {
+        "title": "Ekonomiczne",
+        "description": "Open source i możliwe do samodzielnego hostowania, aby zminimalizować koszty cykliczne dla małych firm."
+      }
+    },
+    "openSource": {
+      "title": "Open Source",
+      "description": "Ten projekt powstał jako akademicki projekt inżynierski na NTNU. Kod źródłowy jest otwarty i zachęcamy do wkładu społeczności. Udostępniając technologię restauracyjną, dążymy do wspierania małych firm w ich transformacji cyfrowej."
+    },
+    "problem": {
+      "title": "Problem",
+      "description": "Tradycyjne operacje restauracyjne są pracochłonne i podatne na nieefektywność. Małe i średnie restauracje często nie mają zasobów, aby przyjąć technologię na poziomie korporacyjnym, co prowadzi do ręcznego przyjmowania zamówień, błędów komunikacji w kuchni i ograniczonej skalowalności. Istniejące rozwiązania SaaS są drogie i nie są dostosowane do mniejszych lokali."
+    },
+    "users": {
+      "title": "Docelowi Użytkownicy",
+      "owners": {
+        "title": "Właściciele Restauracji",
+        "description": "Zarządzaj operacjami, przeglądaj analitykę i konfiguruj menu w wielu lokalizacjach."
+      },
+      "staff": {
+        "title": "Personel i Kuchnia",
+        "description": "Otrzymuj zamówienia w czasie rzeczywistym i efektywnie zarządzaj przepływem pracy w kuchni."
+      },
+      "customers": {
+        "title": "Klienci Końcowi",
+        "description": "Przeglądaj menu, składaj zamówienia i śledź status zamówienia bez interakcji z kelnerem."
+      }
+    },
+    "engineering": {
+      "title": "Fokus Inżynieryjny",
+      "frontend": "Nowoczesne frontendy React z TypeScript, Vite i Tailwind CSS.",
+      "backend": "FastAPI (Python) z uwierzytelnianiem JWT i bazą danych PostgreSQL.",
+      "realtime": "Wsparcie WebSocket dla aktualizacji zamówień na żywo i wyświetlaczy kuchni.",
+      "deployment": "Dockeryzowane mikroserwisy gotowe do wdrożenia w chmurze."
+    }
+  },
+  "footer": {
+    "brand": "Restorio",
+    "description": "Nowoczesna, wielodostępna platforma zarządzania restauracją zaprojektowana dla przyszłości gastronomii.",
+    "sections": {
+      "product": "Produkt",
+      "company": "Firma"
+    },
+    "copyright": "© {{year}} Platforma Restorio. Akademicki Projekt Open Source."
+  }
+}
