@@ -1,16 +1,11 @@
-<<<<<<< HEAD
 from uuid import UUID
 
-from fastapi import APIRouter
-from pydantic import BaseModel, Field
-=======
 from fastapi import APIRouter, status
->>>>>>> main
+from pydantic import BaseModel, Field
 
 from api.v1.dto.auth import RegisterDTO, RegisterResponseDTO
 from api.v1.dto.users import UserLoginDTO
 from core.foundation.dependencies import PostgresSession
-<<<<<<< HEAD
 from core.foundation.infra.config import settings
 from modules.auth.database import (
     activate_account,
@@ -19,9 +14,7 @@ from modules.auth.database import (
     resend_activation_link,
 )
 from modules.email.service import send_activation_email
-=======
 from modules.auth.service import create_user_with_tenant
->>>>>>> main
 
 router = APIRouter()
 

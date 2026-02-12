@@ -15,6 +15,7 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ["@restorio/ui", "react-icons"],
   },
+  turbopack: {},
   webpack: (config, { dev }) => {
     if (dev && config.watchOptions) {
       config.watchOptions = {
