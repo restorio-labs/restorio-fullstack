@@ -32,6 +32,7 @@ class Settings(BaseSettings):
 
     RESEND_API_KEY: str = ""
     RESEND_FROM_EMAIL: str = ""
+    FRONTEND_URL: str = "http://localhost:3000"
 
     SECRET_KEY: str = "change-me-in-production"
     ALGORITHM: str = "HS256"

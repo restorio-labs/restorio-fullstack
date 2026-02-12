@@ -1,3 +1,4 @@
+from core.models.activation_link import ActivationLink
 from core.models.audit_log import AuditLog
 from core.models.enums import (
     OrderStatus,
@@ -14,6 +15,7 @@ from core.models.user import User
 from core.models.user_tenant import UserTenant
 
 __all__ = [
+    "ActivationLink",
     "AuditLog",
     "Order",
     "OrderItem",
