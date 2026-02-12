@@ -7,14 +7,13 @@ from api.v1.dto.auth import RegisterDTO, RegisterResponseDTO
 from api.v1.dto.users import UserLoginDTO
 from core.foundation.dependencies import PostgresSession
 from core.foundation.infra.config import settings
-from modules.auth.database import (
+from modules.auth.service import (
     activate_account,
     create_activation_link,
-    create_user,
+    create_user_with_tenant,
     resend_activation_link,
 )
 from modules.email.service import send_activation_email
-from modules.auth.service import create_user_with_tenant
 
 router = APIRouter()
 
@@ -84,17 +83,6 @@ async def resend_activation(activation_id: UUID, session: PostgresSession):
         activation_link=activation_url,
     )
     return {"message": "Activation email sent", "tenant_slug": tenant.slug}
-
-
-@router.post("/refresh")
-    return RegisterResponseDTO(
-        user_id=str(user.id),
-        email=user.email,
-        account_type=user.account_type.value,
-        tenant_id=str(tenant.id),
-        tenant_name=tenant.name,
-        tenant_slug=tenant.slug,
-    )
 
 
 @router.post("/refresh", status_code=status.HTTP_200_OK)

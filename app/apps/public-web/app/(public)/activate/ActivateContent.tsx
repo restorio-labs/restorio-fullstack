@@ -47,10 +47,7 @@ export function ActivateContent(): ReactElement {
     }
 
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
-    fetch(
-      `${apiBaseUrl}/api/v1/auth/activate?activation_id=${encodeURIComponent(id)}`,
-      { method: "POST" }
-    )
+    fetch(`${apiBaseUrl}/api/v1/auth/activate?activation_id=${encodeURIComponent(id)}`, { method: "POST" })
       .then(async (res) => {
         const data = (await res.json().catch(() => null)) as {
           detail?: string;
@@ -68,9 +65,7 @@ export function ActivateContent(): ReactElement {
           return;
         }
         setTenantSlug(data?.tenant_slug ?? "");
-        setResult(
-          data?.message === "Account already activated" ? "already_activated" : "success"
-        );
+        setResult(data?.message === "Account already activated" ? "already_activated" : "success");
       })
       .catch(() => {
         setErrorMessage("Activation failed. Please try again later.");
@@ -82,10 +77,9 @@ export function ActivateContent(): ReactElement {
     if (!activationId || resendLoading) return;
     setResendLoading(true);
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
-    fetch(
-      `${apiBaseUrl}/api/v1/auth/resend-activation?activation_id=${encodeURIComponent(activationId)}`,
-      { method: "POST" }
-    )
+    fetch(`${apiBaseUrl}/api/v1/auth/resend-activation?activation_id=${encodeURIComponent(activationId)}`, {
+      method: "POST",
+    })
       .then(async (res) => {
         const data = (await res.json().catch(() => null)) as { detail?: string } | null;
         if (!res.ok) {
@@ -168,11 +162,7 @@ export function ActivateContent(): ReactElement {
               <Text variant="body-lg" className="mb-6 text-text-secondary">
                 {errorMessage}
               </Text>
-              <Button
-                variant="primary"
-                onClick={handleResend}
-                disabled={resendLoading || resendOnCooldown}
-              >
+              <Button variant="primary" onClick={handleResend} disabled={resendLoading || resendOnCooldown}>
                 {resendLoading
                   ? "Sending…"
                   : resendOnCooldown
