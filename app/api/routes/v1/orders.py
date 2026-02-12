@@ -1,28 +1,46 @@
-from fastapi import APIRouter
+from uuid import UUID
+
+from fastapi import APIRouter, status
+
+from api.v1.dto.orders import CreateOrderDTO, OrderResponseDTO, UpdateOrderDTO
+from core.foundation.http import MSG_NOT_IMPLEMENTED
+from core.foundation.http.schemas import (
+    CreatedResponse,
+    DeletedResponse,
+    SuccessResponse,
+    UpdatedResponse,
+)
 
 router = APIRouter()
 
 
-@router.get("")
-async def list_orders() -> dict[str, str]:
-    return {"message": "List orders endpoint - to be implemented"}
+@router.get("", status_code=status.HTTP_200_OK)
+async def list_orders() -> SuccessResponse[list[OrderResponseDTO]]:
+    return SuccessResponse[list[OrderResponseDTO]](
+        message="Orders retrieved successfully",
+        data=[],
+    )
 
 
-@router.get("/{order_id}")
-async def get_order(order_id: str) -> dict[str, str]:
-    return {"message": f"Get order {order_id} endpoint - to be implemented"}
+@router.get("/{order_id}", status_code=status.HTTP_200_OK)
+async def get_order(order_id: UUID) -> SuccessResponse[OrderResponseDTO]:
+    raise NotImplementedError(MSG_NOT_IMPLEMENTED)
 
 
-@router.post("")
-async def create_order() -> dict[str, str]:
-    return {"message": "Create order endpoint - to be implemented"}
+@router.post("", status_code=status.HTTP_201_CREATED)
+async def create_order(request: CreateOrderDTO) -> CreatedResponse[OrderResponseDTO]:
+    raise NotImplementedError(MSG_NOT_IMPLEMENTED)
 
 
-@router.put("/{order_id}")
-async def update_order(order_id: str) -> dict[str, str]:
-    return {"message": f"Update order {order_id} endpoint - to be implemented"}
+@router.put("/{order_id}", status_code=status.HTTP_200_OK)
+async def update_order(
+    order_id: UUID, request: UpdateOrderDTO
+) -> UpdatedResponse[OrderResponseDTO]:
+    raise NotImplementedError(MSG_NOT_IMPLEMENTED)
 
 
-@router.delete("/{order_id}")
-async def delete_order(order_id: str) -> dict[str, str]:
-    return {"message": f"Delete order {order_id} endpoint - to be implemented"}
+@router.delete("/{order_id}", status_code=status.HTTP_200_OK)
+async def delete_order(order_id: UUID) -> DeletedResponse:
+    return DeletedResponse(
+        message=f"Order {order_id} deleted successfully",
+    )

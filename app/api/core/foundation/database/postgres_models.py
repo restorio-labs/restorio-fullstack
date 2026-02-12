@@ -1,40 +1,16 @@
 from datetime import datetime
 from decimal import Decimal
-from enum import Enum
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
 
-
-class TenantStatus(str, Enum):
-    ACTIVE = "ACTIVE"
-    SUSPENDED = "SUSPENDED"
-    INACTIVE = "INACTIVE"
-
-
-class OrderStatus(str, Enum):
-    PLACED = "PLACED"
-    PAID = "PAID"
-    CANCELLED = "CANCELLED"
-
-
-class PaymentProvider(str, Enum):
-    PRZELEWY24 = "PRZELEWY24"
-    STRIPE = "STRIPE"
-    CASH = "CASH"
-
-
-class PaymentStatus(str, Enum):
-    PENDING = "PENDING"
-    COMPLETED = "COMPLETED"
-    FAILED = "FAILED"
-    REFUNDED = "REFUNDED"
-
-
-class AccountType(str, Enum):
-    OWNER = "owner"
-    WAITER = "waiter"
-    KITCHEN = "kitchen"
+from core.models.enums import (
+    AccountType,
+    OrderStatus,
+    PaymentProvider,
+    PaymentStatus,
+    TenantStatus,
+)
 
 
 class Tenant(BaseModel):
