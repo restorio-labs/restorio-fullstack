@@ -30,6 +30,10 @@ class Settings(BaseSettings):
 
     REDIS_URL: str = "redis://localhost:6379/0"
 
+    RESEND_API_KEY: str = ""
+    RESEND_FROM_EMAIL: str = ""
+    FRONTEND_URL: str = "http://localhost:3000"
+
     SECRET_KEY: str = "change-me-in-production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30

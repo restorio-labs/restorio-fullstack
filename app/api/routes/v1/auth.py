@@ -1,9 +1,19 @@
+from uuid import UUID
+
 from fastapi import APIRouter, status
+from pydantic import BaseModel, Field
 
 from api.v1.dto.auth import RegisterDTO, RegisterResponseDTO
 from api.v1.dto.users import UserLoginDTO
 from core.foundation.dependencies import PostgresSession
-from modules.auth.service import create_user_with_tenant
+from core.foundation.infra.config import settings
+from modules.auth.service import (
+    activate_account,
+    create_activation_link,
+    create_user_with_tenant,
+    resend_activation_link,
+)
+from modules.email.service import send_activation_email
 
 router = APIRouter()
 
@@ -21,14 +31,58 @@ async def register(data: RegisterDTO, session: PostgresSession) -> RegisterRespo
         password=data.password,
         restaurant_name=data.restaurant_name,
     )
-    return RegisterResponseDTO(
-        user_id=str(user.id),
+    activation = await create_activation_link(
+        session=session,
         email=user.email,
-        account_type=user.account_type.value,
-        tenant_id=str(tenant.id),
-        tenant_name=tenant.name,
-        tenant_slug=tenant.slug,
+        user_id=user.id,
+        tenant_id=tenant.id,
     )
+    activation_link = f"{settings.FRONTEND_URL}/activate?activation_id={activation.id}"
+    await send_activation_email(
+        to_email=user.email,
+        restaurant_name=tenant.name,
+        activation_link=activation_link,
+    )
+    return {
+        "message": "Account created succesfully, you should receive email shortly",
+        "id": str(user.id),
+        "email": user.email,
+        "account_type": user.account_type,
+        "tenant": {
+            "id": str(tenant.id),
+            "name": tenant.name,
+            "slug": tenant.slug,
+        },
+    }
+
+
+@router.post("/activate", status_code=200)
+async def activate(activation_id: UUID, session: PostgresSession):
+    tenant, already_activated = await activate_account(
+        session=session, activation_id=activation_id
+    )
+    return {
+        "message": (
+            "Account already activated"
+            if already_activated
+            else "Account activated successfully"
+        ),
+        "tenant_slug": tenant.slug,
+    }
+
+
+@router.post("/resend-activation", status_code=200)
+async def resend_activation(activation_id: UUID, session: PostgresSession):
+    new_link, tenant = await resend_activation_link(
+        session=session, activation_id=activation_id
+    )
+    activation_url = f"{settings.FRONTEND_URL}/activate?activation_id={new_link.id}"
+    await send_activation_email(
+        to_email=new_link.email,
+        restaurant_name=tenant.name,
+        activation_link=activation_url,
+    )
+    return {"message": "Activation email sent", "tenant_slug": tenant.slug}
 
 
 @router.post("/refresh", status_code=status.HTTP_200_OK)

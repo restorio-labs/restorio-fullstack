@@ -18,6 +18,8 @@ services:
       - PRZELEWY24_POS_ID=${PRZELEWY24_POS_ID:-}
       - PRZELEWY24_CRC=${PRZELEWY24_CRC:-}
       - PRZELEWY24_API_KEY=${PRZELEWY24_API_KEY:-}
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-}
     volumes:
       - ./app/api:/app
     depends_on:
