@@ -18,6 +18,6 @@ export default defineConfig({
     exclude: ["@restorio/types", "@restorio/ui", "@restorio/auth", "@restorio/api-client"],
   },
   server: {
-    port: 3004,
+    port: 6767,
   },
 });

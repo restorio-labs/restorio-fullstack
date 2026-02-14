@@ -1,0 +1,30 @@
+{
+  "name": "@restorio/utils",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "prepare": "bun run build",
+    "clean": "rm -rf dist",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" && eslint . --fix",
+    "check": "prettier --check \"**/*.{ts,tsx,json,md}\" && eslint . --ext ts,tsx"
+  },
+  "dependencies": {
+    "@restorio/types": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.0"
+  }
+}

@@ -1,3 +1,4 @@
+export * from "./canvas";
 export * from "./components";
 export * from "./hooks";
 export * from "./layouts";

@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 import { colorTokens } from "../tokens/colors";
+import { motionTokens } from "../tokens/motion";
 import { radiusTokens, radiusSemantic } from "../tokens/radius";
 import { shadowTokens, shadowSemantic } from "../tokens/shadows";
 import { spacingScale, spacingTokens } from "../tokens/spacing";
@@ -74,6 +75,7 @@ export const createTailwindThemeConfig = (): Config["theme"] => {
         ...shadowSemantic,
       },
       zIndex,
+      transitionDuration: motionTokens.duration,
     },
   };
 };

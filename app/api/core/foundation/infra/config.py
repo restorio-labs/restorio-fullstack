@@ -37,6 +37,16 @@ class Settings(BaseSettings):
     # Przelewy24 (values from .env)
     PRZELEWY24_MERCHANT_ID: int = 0
     PRZELEWY24_POS_ID: int = 0
+
+    @field_validator("PRZELEWY24_MERCHANT_ID", "PRZELEWY24_POS_ID", mode="before")
+    @classmethod
+    def parse_przelewy24_int(cls, v: str | int) -> int:
+        if isinstance(v, int):
+            return v
+        try:
+            return int(v)
+        except (ValueError, TypeError):
+            return 0
     PRZELEWY24_CRC: str = ""
     PRZELEWY24_API_KEY: str = ""
     PRZELEWY24_API_URL: str = "https://sandbox.przelewy24.pl/api/v1"

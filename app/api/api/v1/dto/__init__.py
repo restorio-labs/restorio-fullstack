@@ -1,4 +1,4 @@
-from api.v1.dto import auth, common, menus, orders, payments, restaurants, tenants, users
+from api.v1.dto import auth, common, menus, orders, payments, restaurants, tenants, users, venues
 
 __all__ = [
     "auth",
@@ -9,4 +9,5 @@ __all__ = [
     "restaurants",
     "tenants",
     "users",
+    "venues",
 ]
