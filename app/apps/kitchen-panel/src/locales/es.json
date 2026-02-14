@@ -1,0 +1,76 @@
+{
+  "common": {
+    "skipToContent": "Saltar al contenido principal",
+    "loading": "Cargando...",
+    "error": "Error",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "save": "Guardar",
+    "close": "Cerrar"
+  },
+  "auth": {
+    "title": "Inicio de Sesión de Cocina",
+    "description": "Ingrese su código de acceso de 6 dígitos para continuar.",
+    "accessCode": "Código de acceso",
+    "accessCodePlaceholder": "123-456",
+    "signIn": "Iniciar sesión"
+  },
+  "kitchen": {
+    "title": "Pedidos de Cocina",
+    "activeRestaurant": "Restaurante activo: {{name}}",
+    "selectRestaurant": "Seleccione un restaurante para comenzar.",
+    "restaurant": "Restaurante",
+    "items": "Artículos",
+    "notes": "Notas:",
+    "orderSummary": "{{table}} · {{count}} artículos",
+    "itemQuantity": "{{quantity}}x {{name}}",
+    "viewMode": {
+      "all": "Vista Completa",
+      "sliding": "Deslizante"
+    }
+  },
+  "orders": {
+    "status": {
+      "new": "Nuevo",
+      "preparing": "Preparando",
+      "ready": "Listo"
+    }
+  },
+  "aria": {
+    "kitchenControls": "Controles del panel de cocina",
+    "switchViewMode": "Cambiar a vista {{mode}}",
+    "ordersBoard": "Tablero de pedidos de cocina",
+    "toggleOrderDetails": "Alternar detalles del pedido {{id}}",
+    "dragOrder": "Arrastrar pedido {{id}}",
+    "moveOrderUp": "Mover {{id}} arriba",
+    "moveOrderDown": "Mover {{id}} abajo",
+    "newOrders": "Pedidos nuevos",
+    "preparingOrders": "Pedidos en preparación",
+    "readyOrders": "Listos para recoger"
+  },
+  "restaurants": {
+    "demo": {
+      "north": {
+        "name": "Restorio Norte",
+        "description": "Ubicación Salón Norte",
+        "city": "Ciudad Demo",
+        "country": "País Demo"
+      },
+      "east": {
+        "name": "Restorio Este",
+        "description": "Ubicación Ala Este",
+        "city": "Ciudad Demo",
+        "country": "País Demo"
+      },
+      "main": {
+        "name": "Restorio Principal",
+        "description": "Ubicación Principal",
+        "city": "Ciudad Demo",
+        "country": "País Demo"
+      }
+    }
+  },
+  "errors": {
+    "rootElementNotFound": "Elemento raíz no encontrado"
+  }
+}

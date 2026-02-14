@@ -1,0 +1,120 @@
+{
+  "common": {
+    "skipToContent": "Skip to main content",
+    "loading": "Loading...",
+    "error": "Error",
+    "learnMore": "Learn More"
+  },
+  "metadata": {
+    "title": "Restorio Platform",
+    "description": "Restaurant Management Platform"
+  },
+  "navigation": {
+    "home": "Home",
+    "about": "About",
+    "features": "Features",
+    "pricing": "Pricing",
+    "demo": "Demo",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "getStarted": "Get Started"
+  },
+  "hero": {
+    "title": "The Future of Restaurant Management",
+    "subtitle": "A multi-tenant SaaS platform empowering restaurants with QR code ordering, real-time kitchen management, and comprehensive analytics.",
+    "cta": {
+      "trial": "Start Free Trial",
+      "demo": "View Demo"
+    },
+    "preview": {
+      "title": "Dashboard Preview",
+      "comingSoon": "Interactive demo coming soon"
+    }
+  },
+  "features": {
+    "title": "Everything you need to run your restaurant",
+    "subtitle": "From QR code ordering to kitchen management, Restorio provides a complete solution for modern restaurants.",
+    "waiterless": {
+      "title": "Waiterless Ordering",
+      "description": "Customers scan QR codes to browse menus and place orders directly from their phones."
+    },
+    "kitchen": {
+      "title": "Real-time Kitchen",
+      "description": "Live order updates and kitchen display system to streamline food preparation."
+    },
+    "multiLocation": {
+      "title": "Multi-Location",
+      "description": "Manage multiple restaurant locations from a single unified dashboard."
+    }
+  },
+  "cta": {
+    "title": "Ready to modernize your restaurant?",
+    "subtitle": "Join hundreds of restaurants already using Restorio to streamline their operations.",
+    "button": "Learn More About Us"
+  },
+  "about": {
+    "mission": {
+      "title": "Our Mission",
+      "subtitle": "Empowering small restaurants with enterprise-grade tools.",
+      "description": "Restorio is an open-source restaurant management platform built to democratize access to powerful SaaS tools. We believe every restaurant, regardless of size, deserves modern technology to compete and thrive."
+    },
+    "goals": {
+      "title": "Project Goals",
+      "waiterless": {
+        "title": "Waiterless Ordering",
+        "description": "Enable customers to scan QR codes and place orders without waiter assistance."
+      },
+      "multiLocation": {
+        "title": "Multi-location Support",
+        "description": "Manage multiple restaurants under one tenant with location-specific settings."
+      },
+      "secure": {
+        "title": "Secure & Scalable",
+        "description": "Built on modern infrastructure with JWT authentication and FastAPI backend."
+      },
+      "costEfficient": {
+        "title": "Cost Efficient",
+        "description": "Open source and self-hostable to minimize recurring costs for small businesses."
+      }
+    },
+    "openSource": {
+      "title": "Open Source",
+      "description": "This project is built as an academic engineer-degree project at NTNU. The codebase is open-source, and we encourage contributions from the community. By making restaurant technology accessible, we aim to support small businesses in their digital transformation."
+    },
+    "problem": {
+      "title": "The Problem",
+      "description": "Traditional restaurant operations are labor-intensive and prone to inefficiencies. Small to medium-sized restaurants often lack the resources to adopt enterprise-level technology, leading to manual order-taking, kitchen miscommunication, and limited scalability. Existing SaaS solutions are expensive and not tailored for smaller establishments."
+    },
+    "users": {
+      "title": "Target Users",
+      "owners": {
+        "title": "Restaurant Owners",
+        "description": "Manage operations, view analytics, and configure menus across multiple locations."
+      },
+      "staff": {
+        "title": "Staff & Kitchen",
+        "description": "Receive orders in real-time and manage kitchen workflows efficiently."
+      },
+      "customers": {
+        "title": "End Customers",
+        "description": "Browse menus, place orders, and track order status without waiter interaction."
+      }
+    },
+    "engineering": {
+      "title": "Engineering Focus",
+      "frontend": "Modern React frontends with TypeScript, Vite, and Tailwind CSS.",
+      "backend": "FastAPI (Python) with JWT authentication and PostgreSQL database.",
+      "realtime": "WebSocket support for live order updates and kitchen displays.",
+      "deployment": "Dockerized microservices ready for cloud deployment."
+    }
+  },
+  "footer": {
+    "brand": "Restorio",
+    "description": "A modern, multi-tenant restaurant management platform designed for the future of dining.",
+    "sections": {
+      "product": "Product",
+      "company": "Company"
+    },
+    "copyright": "© {{year}} Restorio Platform. Open Source Academic Project."
+  }
+}
