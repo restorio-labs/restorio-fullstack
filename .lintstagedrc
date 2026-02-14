@@ -3,8 +3,7 @@
     "bun run format",
     "bun run test:unit"
   ],
-  "app/api/**/*.py": [
-    "cd app/api",
-    "make format"
+  "app/api/**/*.{py,toml,}": [
+    "bash -lc 'cd app/api && make format'"
   ]
 }

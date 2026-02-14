@@ -15,7 +15,6 @@
   },
   "scripts": {
     "build": "tsup",
-    "prepare": "bun run build",
     "clean": "rm -rf dist",
     "test": "vitest run",
     "test:unit": "vitest run --coverage",

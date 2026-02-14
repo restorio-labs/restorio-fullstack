@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import Field
+from pydantic import ConfigDict, Field
 
 from api.v1.dto.common import BaseDTO, EntityId
 
@@ -17,7 +17,7 @@ class FloorElementBaseResponseDTO(BaseDTO):
         None, alias="zoneId", serialization_alias="zoneId", description="Associated zone id"
     )
 
-    model_config = {"populate_by_name": True}
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class FloorTableElementResponseDTO(FloorElementBaseResponseDTO):
@@ -77,7 +77,7 @@ class FloorCanvasResponseDTO(BaseDTO):
     created_at: datetime = Field(..., alias="createdAt", serialization_alias="createdAt")
     updated_at: datetime = Field(..., alias="updatedAt", serialization_alias="updatedAt")
 
-    model_config = {"populate_by_name": True}
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class VenueResponseDTO(BaseDTO):
@@ -95,7 +95,7 @@ class VenueResponseDTO(BaseDTO):
     created_at: datetime = Field(..., alias="createdAt", serialization_alias="createdAt")
     updated_at: datetime = Field(..., alias="updatedAt", serialization_alias="updatedAt")
 
-    model_config = {"populate_by_name": True}
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class VenueSummaryResponseDTO(BaseDTO):
@@ -113,4 +113,4 @@ class VenueSummaryResponseDTO(BaseDTO):
     created_at: datetime = Field(..., alias="createdAt", serialization_alias="createdAt")
     updated_at: datetime = Field(..., alias="updatedAt", serialization_alias="updatedAt")
 
-    model_config = {"populate_by_name": True}
+    model_config = ConfigDict(populate_by_name=True)
