@@ -1,0 +1,15 @@
+{
+  "common": {
+    "skipToContent": "Przejdź do głównej treści",
+    "loading": "Ładowanie...",
+    "error": "Błąd"
+  },
+  "app": {
+    "title": "Panel Administracyjny Restorio",
+    "comingSoon": "Panel administracyjny wkrótce...",
+    "description": "Zarządzaj operacjami swojej restauracji"
+  },
+  "errors": {
+    "rootElementNotFound": "Nie znaleziono elementu głównego"
+  }
+}

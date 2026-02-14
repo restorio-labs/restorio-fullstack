@@ -1,0 +1,15 @@
+{
+  "common": {
+    "skipToContent": "Skip to main content",
+    "loading": "Loading...",
+    "error": "Error"
+  },
+  "app": {
+    "title": "Restorio Admin Panel",
+    "comingSoon": "Admin dashboard coming soon...",
+    "description": "Manage your restaurant operations"
+  },
+  "errors": {
+    "rootElementNotFound": "Root element not found"
+  }
+}

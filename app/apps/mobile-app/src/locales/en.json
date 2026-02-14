@@ -1,0 +1,15 @@
+{
+  "common": {
+    "skipToContent": "Skip to main content",
+    "loading": "Loading...",
+    "error": "Error"
+  },
+  "app": {
+    "title": "Restorio Tablet App",
+    "comingSoon": "Tablet/kiosk interface coming soon...",
+    "description": "Customer self-service ordering"
+  },
+  "errors": {
+    "rootElementNotFound": "Root element not found"
+  }
+}

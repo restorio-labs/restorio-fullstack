@@ -1,0 +1,76 @@
+{
+  "common": {
+    "skipToContent": "Przejdź do głównej treści",
+    "loading": "Ładowanie...",
+    "error": "Błąd",
+    "cancel": "Anuluj",
+    "confirm": "Potwierdź",
+    "save": "Zapisz",
+    "close": "Zamknij"
+  },
+  "auth": {
+    "title": "Logowanie do Kuchni",
+    "description": "Wprowadź swój 6-cyfrowy kod dostępu, aby kontynuować.",
+    "accessCode": "Kod dostępu",
+    "accessCodePlaceholder": "123-456",
+    "signIn": "Zaloguj się"
+  },
+  "kitchen": {
+    "title": "Zamówienia Kuchni",
+    "activeRestaurant": "Aktywna restauracja: {{name}}",
+    "selectRestaurant": "Wybierz restaurację, aby rozpocząć.",
+    "restaurant": "Restauracja",
+    "items": "Pozycje",
+    "notes": "Notatki:",
+    "orderSummary": "{{table}} · {{count}} pozycji",
+    "itemQuantity": "{{quantity}}x {{name}}",
+    "viewMode": {
+      "all": "Widok Wszystkich",
+      "sliding": "Przesuwany"
+    }
+  },
+  "orders": {
+    "status": {
+      "new": "Nowe",
+      "preparing": "W przygotowaniu",
+      "ready": "Gotowe"
+    }
+  },
+  "aria": {
+    "kitchenControls": "Elementy sterowania panelem kuchni",
+    "switchViewMode": "Przełącz na widok {{mode}}",
+    "ordersBoard": "Tablica zamówień kuchni",
+    "toggleOrderDetails": "Przełącz szczegóły zamówienia {{id}}",
+    "dragOrder": "Przeciągnij zamówienie {{id}}",
+    "moveOrderUp": "Przesuń {{id}} w górę",
+    "moveOrderDown": "Przesuń {{id}} w dół",
+    "newOrders": "Nowe zamówienia",
+    "preparingOrders": "Zamówienia w przygotowaniu",
+    "readyOrders": "Gotowe do odbioru"
+  },
+  "restaurants": {
+    "demo": {
+      "north": {
+        "name": "Restorio Północ",
+        "description": "Lokalizacja Hala Północna",
+        "city": "Miasto Demo",
+        "country": "Kraj Demo"
+      },
+      "east": {
+        "name": "Restorio Wschód",
+        "description": "Lokalizacja Skrzydło Wschodnie",
+        "city": "Miasto Demo",
+        "country": "Kraj Demo"
+      },
+      "main": {
+        "name": "Restorio Główna",
+        "description": "Lokalizacja Główna",
+        "city": "Miasto Demo",
+        "country": "Kraj Demo"
+      }
+    }
+  },
+  "errors": {
+    "rootElementNotFound": "Nie znaleziono elementu głównego"
+  }
+}

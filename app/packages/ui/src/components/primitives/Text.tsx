@@ -10,7 +10,7 @@ export interface TextProps extends React.HTMLAttributes<HTMLElement> {
   as?: React.ElementType;
   variant?: TextVariant;
   weight?: TextWeight;
-  align?: "left" | "center" | "right";
+  align?: "start" | "center" | "end";
 }
 
 const variantStyles: Record<TextVariant, string> = {
@@ -32,9 +32,9 @@ const weightStyles: Record<TextWeight, string> = {
 };
 
 const alignStyles = {
-  left: "text-left",
+  start: "text-start",
   center: "text-center",
-  right: "text-right",
+  end: "text-end",
 };
 
 export const Text = forwardRef<HTMLElement, TextProps>(
@@ -44,7 +44,7 @@ export const Text = forwardRef<HTMLElement, TextProps>(
       as = "div" as React.ElementType,
       variant = "body-md",
       weight = "regular",
-      align = "left",
+      align = "start",
       children,
       ...props
     },

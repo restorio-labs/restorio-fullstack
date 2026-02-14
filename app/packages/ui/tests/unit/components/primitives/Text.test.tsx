@@ -44,15 +44,15 @@ describe("Text", () => {
   });
 
   it("should apply alignment styles", () => {
-    const { rerender } = render(<Text align="left">Left</Text>);
+    const { rerender } = render(<Text align="start">Start</Text>);
 
-    expect(screen.getByText("Left").className).toContain("text-left");
+    expect(screen.getByText("Start").className).toContain("text-start");
 
     rerender(<Text align="center">Center</Text>);
     expect(screen.getByText("Center").className).toContain("text-center");
 
-    rerender(<Text align="right">Right</Text>);
-    expect(screen.getByText("Right").className).toContain("text-right");
+    rerender(<Text align="end">End</Text>);
+    expect(screen.getByText("End").className).toContain("text-end");
   });
 
   it("should forward ref", () => {

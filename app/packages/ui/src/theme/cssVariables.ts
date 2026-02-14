@@ -1,6 +1,6 @@
 import type { ThemeOverride } from "../tokens/types";
 
-const flattenToCSSVariables = (
+export const flattenToCSSVariables = (
   obj: Record<string, unknown>,
   prefix = "",
   result: Record<string, string> = {},

@@ -1,0 +1,177 @@
+{
+  "common": {
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "save": "حفظ",
+    "delete": "حذف",
+    "close": "إغلاق",
+    "open": "فتح",
+    "loading": "جار التحميل..."
+  },
+  "app": {
+    "title": "عرض توضيحي للواجهة",
+    "description": "تصفح أمثلة المكونات وتفاعل مع نظام التصميم"
+  },
+  "theme": {
+    "current": "السمة: {{current}} ← {{next}}"
+  },
+  "navigation": {
+    "overview": "نظرة عامة",
+    "primitives": "البدائيات",
+    "inputs": "المدخلات",
+    "forms": "النماذج",
+    "overlays": "التراكبات",
+    "feedback": "الملاحظات",
+    "layouts": "التخطيطات",
+    "domain": "النطاق"
+  },
+  "components": {
+    "box": "صندوق",
+    "stack": "مكدس",
+    "text": "نص",
+    "button": "زر",
+    "icon": "أيقونة",
+    "card": "بطاقة",
+    "input": "إدخال",
+    "select": "اختيار",
+    "checkbox": "خانة اختيار",
+    "switch": "مفتاح",
+    "textarea": "منطقة نص",
+    "emptyState": "حالة فارغة",
+    "loader": "محمل",
+    "skeleton": "هيكل",
+    "dropdown": "قائمة منسدلة",
+    "tooltip": "تلميح",
+    "modal": "نافذة منبثقة",
+    "toast": "إشعار"
+  },
+  "overview": {
+    "title": "عرض توضيحي لواجهة Restorio",
+    "subtitle": "تصفح أمثلة المكونات وتفاعل مع نظام التصميم.",
+    "quickLinks": "روابط سريعة",
+    "links": {
+      "buttons": "أزرار",
+      "inputs": "مدخلات",
+      "overlays": "تراكبات",
+      "feedback": "ملاحظات"
+    },
+    "included": "ما هو مضمن",
+    "description": "نظام تصميم شامل مع البدائيات والمدخلات والتراكبات ومكونات الملاحظات ومكونات خاصة بالمجال لإدارة المطاعم."
+  },
+  "button": {
+    "title": "زر",
+    "description": "متغيرات وأحجام وحالات معطلة وخيارات عرض كامل.",
+    "variants": "متغيرات",
+    "sizes": "أحجام",
+    "fullWidth": "عرض كامل",
+    "fullWidthDescription": "توسيع إلى الحاوية",
+    "labels": {
+      "primary": "أساسي",
+      "secondary": "ثانوي",
+      "danger": "خطر",
+      "disabled": "معطل",
+      "small": "صغير",
+      "medium": "متوسط",
+      "large": "كبير"
+    }
+  },
+  "input": {
+    "title": "إدخال",
+    "description": "مدخلات نصية مع تسميات وعناصر نائبة ونص مساعد وحالات خطأ.",
+    "controlled": "محكوم",
+    "states": "حالات",
+    "labels": {
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "disabled": "معطل",
+      "error": "مع خطأ"
+    },
+    "placeholders": {
+      "name": "جين دو",
+      "email": "الاسم@example.com",
+      "disabled": "إدخال معطل",
+      "error": "قيمة غير صالحة"
+    },
+    "helperText": "لن نشارك بريدك الإلكتروني أبدًا.",
+    "errorText": "هذا الحقل مطلوب"
+  },
+  "modal": {
+    "title": "نافذة منبثقة",
+    "description": "مكون حوار مع خيارات حجم وخلفية تراكب.",
+    "openButton": "فتح {{size}}",
+    "modalTitle": "حجم النافذة: {{size}}",
+    "modalDescription": "استخدم النوافذ المنبثقة للتدفقات الحرجة التي تتطلب انتباه وتأكيد المستخدم.",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد"
+  },
+  "toast": {
+    "title": "إشعار",
+    "description": "إشعارات مضمنة مع متغيرات وإجراءات قابلة للرفض.",
+    "showButton": "عرض {{variant}}",
+    "toastTitle": "إشعار {{variant}}",
+    "toastMessage": "تم حفظ التغييرات بنجاح.",
+    "toastDescription": "رسالة تفصيلية لهذا الإشعار.",
+    "dismiss": "رفض"
+  },
+  "select": {
+    "title": "اختيار",
+    "description": "اختيار منسدل مع خيارات وتسميات وحالات خطأ.",
+    "placeholder": "اختر خيارًا",
+    "options": {
+      "option1": "خيار 1",
+      "option2": "خيار 2",
+      "option3": "خيار 3"
+    }
+  },
+  "checkbox": {
+    "title": "خانة اختيار",
+    "description": "مدخلات خانة اختيار مع تسميات وحالات.",
+    "labels": {
+      "agree": "أوافق على الشروط",
+      "subscribe": "اشترك في النشرة الإخبارية",
+      "disabled": "خيار معطل"
+    }
+  },
+  "switch": {
+    "title": "مفتاح",
+    "description": "مفتاح تبديل للإعدادات المنطقية.",
+    "labels": {
+      "notifications": "تمكين الإشعارات",
+      "darkMode": "الوضع الداكن",
+      "disabled": "معطل"
+    }
+  },
+  "dropdown": {
+    "title": "قائمة منسدلة",
+    "description": "قائمة سياقية مع عناصر وإجراءات.",
+    "trigger": "فتح القائمة",
+    "items": {
+      "edit": "تحرير",
+      "duplicate": "تكرار",
+      "archive": "أرشفة",
+      "delete": "حذف"
+    }
+  },
+  "tooltip": {
+    "title": "تلميح",
+    "description": "تلميحات سياقية عند التحويم أو التركيز.",
+    "content": "هذا تلميح مفيد",
+    "trigger": "مرر الماوس"
+  },
+  "loader": {
+    "title": "محمل",
+    "description": "مؤشرات تحميل بأحجام مختلفة.",
+    "sizes": {
+      "small": "صغير",
+      "medium": "متوسط",
+      "large": "كبير"
+    }
+  },
+  "emptyState": {
+    "title": "حالة فارغة",
+    "description": "عنصر نائب لحالات البيانات الفارغة.",
+    "exampleTitle": "لم يتم العثور على عناصر",
+    "exampleDescription": "ابدأ بإنشاء العنصر الأول الخاص بك.",
+    "exampleAction": "إنشاء عنصر"
+  }
+}
