@@ -642,6 +642,14 @@ describe("useTheme", () => {
     expect(getSystemDirection()).toBe("ltr");
   });
 
+  it("should fall back to navigator.language when html lang is missing", () => {
+    document.documentElement.removeAttribute("lang");
+    document.documentElement.setAttribute("dir", "ltr");
+    vi.spyOn(window.navigator, "language", "get").mockReturnValue("ar-SA");
+
+    expect(getSystemDirection()).toBe("rtl");
+  });
+
   it("should handle auto direction detection", () => {
     const { result } = renderHook(() => useTheme(), {
       wrapper: ({ children }) => <ThemeProvider defaultDirection="auto">{children}</ThemeProvider>,
@@ -726,5 +734,19 @@ describe("ThemeProvider - Hard Coverage Gaps", () => {
     vi.stubGlobal("matchMedia", undefined);
     expect(getSystemTheme()).toBe("light");
     vi.unstubAllGlobals();
+  });
+
+  it("should return ltr direction when window is undefined (Line 44)", () => {
+    vi.stubGlobal("window", undefined);
+    expect(getSystemDirection()).toBe("ltr");
+    vi.unstubAllGlobals();
+  });
+
+  it("should return ltr direction when locale detection throws (Line 54)", () => {
+    vi.spyOn(document.documentElement, "lang", "get").mockImplementation(() => {
+      throw new Error("lang lookup failed");
+    });
+
+    expect(getSystemDirection()).toBe("ltr");
   });
 });
