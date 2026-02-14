@@ -85,12 +85,41 @@ export interface VenueSummary extends Omit<Venue, "floorCanvases"> {
   floorCanvasCount: number;
 }
 
-export const createInitialLayout = (venueId: string, name: string, width: number, height: number): FloorCanvas => ({
-  id: `canvas-${venueId}-1`,
-  venueId,
-  name,
-  width,
-  height,
-  elements: [],
-  version: 1,
-});
+export interface FloorLayoutEditorState {
+  layout: FloorCanvas;
+  history: FloorCanvas[];
+  historyIndex: number;
+}
+
+export interface VenueOption {
+  venue: Venue;
+  activeCanvas: FloorCanvas | null;
+}
+
+export type ElementToAdd =
+  | { type: "table"; tableNumber: string; seats: number }
+  | { type: "tableGroup"; tableNumbers: string[]; seats: number }
+  | { type: "bar"; label?: string }
+  | { type: "zone"; name: string; color?: string }
+  | { type: "wall" }
+  | { type: "entrance"; label?: string };
+
+export type LayoutHistoryAction =
+  | { type: "SET_LAYOUT"; payload: FloorCanvas }
+  | {
+      type: "UPDATE_ELEMENT";
+      payload: {
+        id: string;
+        bounds?: { x: number; y: number; w: number; h: number; rotation?: number };
+        color?: string;
+        name?: string;
+        tableNumber?: string;
+        tableNumbers?: string[];
+        seats?: number;
+        label?: string;
+      };
+    }
+  | { type: "ADD_ELEMENT"; payload: { element: FloorElement; x: number; y: number } }
+  | { type: "REMOVE_ELEMENT"; payload: { id: string } }
+  | { type: "UNDO" }
+  | { type: "REDO" };

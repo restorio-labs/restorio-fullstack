@@ -88,11 +88,7 @@ async def get_venue(
     venue_id: UUID,
     session: PostgresSession,
 ) -> SuccessResponse[VenueResponseDTO]:
-    query = (
-        select(Venue)
-        .options(selectinload(Venue.floor_canvases))
-        .where(Venue.id == venue_id)
-    )
+    query = select(Venue).options(selectinload(Venue.floor_canvases)).where(Venue.id == venue_id)
     result = await session.execute(query)
     venue = result.scalar_one_or_none()
 
@@ -105,11 +101,11 @@ async def get_venue(
     )
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post("/{tenant_id}", status_code=status.HTTP_201_CREATED)
 async def create_venue(
+    tenant_id: UUID,
     request: CreateVenueDTO,
     session: PostgresSession,
-    tenant_id: UUID,
 ) -> CreatedResponse[VenueResponseDTO]:
     venue = Venue(
         tenant_id=tenant_id,
@@ -131,11 +127,7 @@ async def update_venue(
     request: UpdateVenueDTO,
     session: PostgresSession,
 ) -> UpdatedResponse[VenueResponseDTO]:
-    query = (
-        select(Venue)
-        .options(selectinload(Venue.floor_canvases))
-        .where(Venue.id == venue_id)
-    )
+    query = select(Venue).options(selectinload(Venue.floor_canvases)).where(Venue.id == venue_id)
     result = await session.execute(query)
     venue = result.scalar_one_or_none()
 
@@ -274,7 +266,9 @@ async def update_floor_canvas(
     if request.height is not None:
         canvas.height = request.height
     if request.elements is not None:
-        canvas.elements = [el.model_dump(by_alias=True, exclude_none=True) for el in request.elements]
+        canvas.elements = [
+            el.model_dump(by_alias=True, exclude_none=True) for el in request.elements
+        ]
         canvas.version += 1
 
     await session.commit()

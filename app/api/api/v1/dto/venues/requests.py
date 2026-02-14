@@ -26,7 +26,9 @@ class FloorTableGroupElementDTO(FloorElementBaseDTO):
     type: Literal["tableGroup"] = "tableGroup"
     table_numbers: list[str] = Field(..., alias="tableNumbers", description="Table display numbers")
     seats: int = Field(..., gt=0, description="Total seats")
-    table_ids: list[str] | None = Field(None, alias="tableIds", description="References to RestaurantTables")
+    table_ids: list[str] | None = Field(
+        None, alias="tableIds", description="References to RestaurantTables"
+    )
 
 
 class FloorBarElementDTO(FloorElementBaseDTO):

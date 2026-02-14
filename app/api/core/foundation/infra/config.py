@@ -47,6 +47,7 @@ class Settings(BaseSettings):
             return int(v)
         except (ValueError, TypeError):
             return 0
+
     PRZELEWY24_CRC: str = ""
     PRZELEWY24_API_KEY: str = ""
     PRZELEWY24_API_URL: str = "https://sandbox.przelewy24.pl/api/v1"

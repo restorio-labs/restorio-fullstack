@@ -54,6 +54,8 @@ export const FloorEditorPage = (): ReactElement => {
         }
       }
     };
+
+    void fetchVenue();
   }, [venueId]);
 
   const headerActions = (

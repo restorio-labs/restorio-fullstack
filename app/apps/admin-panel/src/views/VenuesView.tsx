@@ -1,4 +1,4 @@
-import type { VenueSummary } from "@restorio/api-client";
+import type { VenueSummary } from "@restorio/types";
 import { Button } from "@restorio/ui";
 import type { ReactElement } from "react";
 

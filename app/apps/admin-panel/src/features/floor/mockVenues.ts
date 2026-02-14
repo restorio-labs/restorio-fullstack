@@ -1,6 +1,5 @@
 import type { FloorCanvas, Venue } from "@restorio/types";
-
-import { createInitialLayout } from "./types";
+import { createInitialLayout } from "@restorio/utils";
 
 export const getVenueById = (id: string | undefined): Venue | undefined => mockVenues.find((v) => v.id === id);
 

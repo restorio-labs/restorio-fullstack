@@ -5,7 +5,11 @@ import { TokenStorage } from "./storage";
 
 const isAuthenticated = (): boolean => {
   const token = TokenStorage.getAccessToken();
-  if (!token) return false;
+
+  if (!token) {
+    return false;
+  }
+
   return TokenStorage.isAccessTokenValid(token);
 };
 
@@ -18,7 +22,6 @@ export const RedirectAuthGuard = ({ children, redirectTo }: RedirectAuthGuardPro
   const [allowed, setAllowed] = useState<boolean>(false);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
     if (isAuthenticated()) {
       setAllowed(true);
     } else {

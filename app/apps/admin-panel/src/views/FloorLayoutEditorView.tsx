@@ -1,14 +1,9 @@
-import type { FloorCanvas as FloorCanvasType } from "@restorio/types";
+import type { ElementToAdd, FloorCanvas as FloorCanvasType, FloorLayoutEditorState } from "@restorio/types";
 import { Button, FloorCanvas, useDragResize, type DragResizeMode, useSnapToGrid } from "@restorio/ui";
 import type { ReactElement } from "react";
 import { useCallback, useEffect, useReducer, useState } from "react";
 
-import {
-  createElementFromToAdd,
-  layoutHistoryReducer,
-  type ElementToAdd,
-  type FloorLayoutEditorState,
-} from "../features/floor/types";
+import { createElementFromToAdd, layoutHistoryReducer } from "../features/floor/types";
 
 const GRID_CELL = 20;
 const HANDLE_SIZE = 12;
@@ -118,7 +113,16 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
   const canUndo = state.historyIndex > 0;
   const canRedo = state.historyIndex < state.history.length - 1;
 
-  const ZONE_COLORS = ["#e0f2fe", "#fce7f3", "#d1fae5", "#fef3c7", "#e9d5ff", "#fed7aa"];
+  // prettier-ignore
+  const ZONE_COLORS = [
+    "#FF6B6B", "#FF8E53", "#FFB703", "#FFD166", "#F4E409", "#C9F31D",
+    "#90EE02", "#4CD137", "#2ECC71", "#1ABC9C", "#00B894", "#00CEC9",
+    "#00A8FF", "#0984E3", "#3C40C6", "#5352ED", "#7D5FFF", "#A55EEA",
+    "#C56CF0", "#D980FA", "#E84393", "#FD79A8", "#FF7675", "#E17055",
+    "#D35400", "#E67E22", "#F39C12", "#B7950B", "#6AB04C", "#27AE60",
+    "#16A085", "#2980B9", "#3742FA", "#6C5CE7", "#8E44AD", "#9B59B6",
+    "#C0392B", "#E74C3C", "#FF4757", "#FF6348", "#FFA502", "#2ED573",
+  ];
 
   return (
     <div className="flex h-full flex-col gap-4 p-4">

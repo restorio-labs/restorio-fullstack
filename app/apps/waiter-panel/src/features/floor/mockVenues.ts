@@ -1,5 +1,5 @@
-import { createInitialLayout } from "@restorio/types";
 import type { Venue } from "@restorio/types";
+import { createInitialLayout } from "@restorio/utils";
 
 export const mockVenues: Venue[] = [
   {

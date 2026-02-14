@@ -13,7 +13,9 @@ class FloorElementBaseResponseDTO(BaseDTO):
     w: float = Field(..., description="Width")
     h: float = Field(..., description="Height")
     rotation: float | None = Field(None, description="Rotation in degrees")
-    zone_id: str | None = Field(None, alias="zoneId", serialization_alias="zoneId", description="Associated zone id")
+    zone_id: str | None = Field(
+        None, alias="zoneId", serialization_alias="zoneId", description="Associated zone id"
+    )
 
     model_config = {"populate_by_name": True}
 
@@ -64,7 +66,9 @@ FloorElementResponseDTO = (
 
 class FloorCanvasResponseDTO(BaseDTO):
     id: EntityId = Field(..., description="Canvas identifier")
-    venue_id: EntityId = Field(..., alias="venueId", serialization_alias="venueId", description="Venue identifier")
+    venue_id: EntityId = Field(
+        ..., alias="venueId", serialization_alias="venueId", description="Venue identifier"
+    )
     name: str = Field(..., description="Canvas name")
     width: int = Field(..., description="Canvas width in pixels")
     height: int = Field(..., description="Canvas height in pixels")
@@ -78,7 +82,9 @@ class FloorCanvasResponseDTO(BaseDTO):
 
 class VenueResponseDTO(BaseDTO):
     id: EntityId = Field(..., description="Venue identifier")
-    tenant_id: EntityId = Field(..., alias="tenantId", serialization_alias="tenantId", description="Tenant identifier")
+    tenant_id: EntityId = Field(
+        ..., alias="tenantId", serialization_alias="tenantId", description="Tenant identifier"
+    )
     name: str = Field(..., description="Venue name")
     active_layout_version_id: EntityId | None = Field(
         None, alias="activeLayoutVersionId", serialization_alias="activeLayoutVersionId"
@@ -94,12 +100,16 @@ class VenueResponseDTO(BaseDTO):
 
 class VenueSummaryResponseDTO(BaseDTO):
     id: EntityId = Field(..., description="Venue identifier")
-    tenant_id: EntityId = Field(..., alias="tenantId", serialization_alias="tenantId", description="Tenant identifier")
+    tenant_id: EntityId = Field(
+        ..., alias="tenantId", serialization_alias="tenantId", description="Tenant identifier"
+    )
     name: str = Field(..., description="Venue name")
     active_layout_version_id: EntityId | None = Field(
         None, alias="activeLayoutVersionId", serialization_alias="activeLayoutVersionId"
     )
-    floor_canvas_count: int = Field(..., alias="floorCanvasCount", serialization_alias="floorCanvasCount")
+    floor_canvas_count: int = Field(
+        ..., alias="floorCanvasCount", serialization_alias="floorCanvasCount"
+    )
     created_at: datetime = Field(..., alias="createdAt", serialization_alias="createdAt")
     updated_at: datetime = Field(..., alias="updatedAt", serialization_alias="updatedAt")
 

@@ -39,9 +39,10 @@ class Venue(Base):
 
     tenant: Mapped[Tenant] = relationship("Tenant", back_populates="venues")
     floor_canvases: Mapped[list[FloorCanvas]] = relationship(
-        "FloorCanvas", back_populates="venue", cascade="all, delete-orphan", foreign_keys="FloorCanvas.venue_id"
+        "FloorCanvas",
+        back_populates="venue",
+        cascade="all, delete-orphan",
+        foreign_keys="FloorCanvas.venue_id",
     )
 
-    __table_args__ = (
-        Index("idx_venues_tenant_id", "tenant_id"),
-    )
+    __table_args__ = (Index("idx_venues_tenant_id", "tenant_id"),)

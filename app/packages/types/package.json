@@ -21,7 +21,6 @@
     "check": "prettier --check \"**/*.{ts,tsx,json,md}\" && eslint . --ext ts,tsx"
   },
   "devDependencies": {
-    "tsup": "^8.5.1",
-    "typescript": "^5.9.0"
+    "tsup": "^8.5.1"
   }
 }

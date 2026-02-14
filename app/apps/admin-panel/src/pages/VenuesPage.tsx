@@ -1,4 +1,4 @@
-import type { VenueSummary } from "@restorio/api-client";
+import type { VenueSummary } from "@restorio/types";
 import { useEffect, useState, type ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
 

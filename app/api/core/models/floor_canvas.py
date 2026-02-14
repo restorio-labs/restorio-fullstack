@@ -36,8 +36,8 @@ class FloorCanvas(Base):
         DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()
     )
 
-    venue: Mapped[Venue] = relationship("Venue", back_populates="floor_canvases", foreign_keys=[venue_id])
-
-    __table_args__ = (
-        Index("idx_floor_canvases_venue_id", "venue_id"),
+    venue: Mapped[Venue] = relationship(
+        "Venue", back_populates="floor_canvases", foreign_keys=[venue_id]
     )
+
+    __table_args__ = (Index("idx_floor_canvases_venue_id", "venue_id"),)
