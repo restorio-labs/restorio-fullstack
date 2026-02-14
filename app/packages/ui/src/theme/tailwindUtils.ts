@@ -14,9 +14,10 @@ export const flattenColorVars = (obj: Record<string, unknown>, prefix = ""): Rec
 
   for (const [key, value] of Object.entries(obj)) {
     const path = prefix ? `${prefix}-${key}` : key;
+    const cssVarPath = path.replace(/([A-Z])/g, "-$1").toLowerCase();
 
     if (typeof value === "string") {
-      result[path] = `var(--color-${path})`;
+      result[path] = `var(--color-${cssVarPath})`;
     } else if (typeof value === "object" && value !== null) {
       Object.assign(result, flattenColorVars(value as Record<string, unknown>, path));
     }

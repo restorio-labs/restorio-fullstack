@@ -636,9 +636,10 @@ describe("useTheme", () => {
     expect(getSystemDirection()).toBe("ltr");
   });
 
-  it("should detect direction from dir attribute", () => {
+  it("should ignore dir attribute when language is LTR", () => {
+    document.documentElement.setAttribute("lang", "en");
     document.documentElement.setAttribute("dir", "rtl");
-    expect(getSystemDirection()).toBe("rtl");
+    expect(getSystemDirection()).toBe("ltr");
   });
 
   it("should handle auto direction detection", () => {
@@ -648,6 +649,24 @@ describe("useTheme", () => {
 
     expect(result.current.direction).toBeDefined();
     expect(["ltr", "rtl"]).toContain(result.current.direction);
+  });
+
+  it("should recompute direction from locale when switching back to auto", () => {
+    document.documentElement.setAttribute("lang", "en");
+
+    const { result } = renderHook(() => useTheme(), {
+      wrapper: ({ children }) => <ThemeProvider defaultDirection="auto">{children}</ThemeProvider>,
+    });
+
+    act(() => {
+      result.current.setDirection("rtl");
+    });
+    expect(result.current.direction).toBe("rtl");
+
+    act(() => {
+      result.current.setDirection("auto");
+    });
+    expect(result.current.direction).toBe("ltr");
   });
 });
 

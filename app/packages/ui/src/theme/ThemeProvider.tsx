@@ -45,12 +45,6 @@ export const getSystemDirection = (): "ltr" | "rtl" => {
   }
 
   try {
-    const htmlDir = document.documentElement.getAttribute("dir");
-
-    if (htmlDir === "rtl" || htmlDir === "ltr") {
-      return htmlDir;
-    }
-
     const lang = document.documentElement.lang || navigator.language;
     const rtlLanguages = ["ar", "he", "fa", "ur", "yi"];
     const langCode = lang.split("-")[0].toLowerCase();
