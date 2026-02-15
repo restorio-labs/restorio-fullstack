@@ -3,7 +3,9 @@ from core.exceptions.http import (
     BaseHTTPException,
     ConflictError,
     ForbiddenError,
+    GoneError,
     NotFoundError,
+    TooManyRequestsError,
     UnauthorizedError,
     ValidationError,
 )
@@ -13,7 +15,9 @@ __all__ = [
     "BaseHTTPException",
     "ConflictError",
     "ForbiddenError",
+    "GoneError",
     "NotFoundError",
+    "TooManyRequestsError",
     "UnauthorizedError",
     "ValidationError",
 ]

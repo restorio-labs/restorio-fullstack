@@ -1,3 +1,4 @@
+from core.models.activation_link import ActivationLink
 from core.models.audit_log import AuditLog
 from core.models.enums import (
     OrderStatus,
@@ -17,6 +18,7 @@ from core.models.user_tenant import UserTenant
 from core.models.venue import Venue
 
 __all__ = [
+    "ActivationLink",
     "AuditLog",
     "CreatePaymentRequest",
     "FloorCanvas",

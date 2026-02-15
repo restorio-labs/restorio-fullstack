@@ -86,3 +86,21 @@ class BadRequestError(BaseHTTPException):
             message=message,
             error_code="BAD_REQUEST",
         )
+
+
+class GoneError(BaseHTTPException):
+    def __init__(self, message: str = "Resource no longer available") -> None:
+        super().__init__(
+            status_code=status.HTTP_410_GONE,
+            message=message,
+            error_code="GONE",
+        )
+
+
+class TooManyRequestsError(BaseHTTPException):
+    def __init__(self, message: str = "Too many requests") -> None:
+        super().__init__(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            message=message,
+            error_code="TOO_MANY_REQUESTS",
+        )
