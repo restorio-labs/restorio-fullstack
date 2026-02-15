@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import resend
+
 from core.foundation.infra.config import settings
 
 resend.api_key = settings.RESEND_API_KEY
+
 
 async def send_activation_email(
     *,
