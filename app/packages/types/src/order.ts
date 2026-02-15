@@ -35,6 +35,12 @@ export interface Order {
   updatedAt: Date;
 }
 
+export interface OrderFilters {
+  status?: OrderStatus;
+  dateFrom?: Date;
+  dateTo?: Date;
+}
+
 export interface OrderItem {
   id: string;
   menuItemId: string;

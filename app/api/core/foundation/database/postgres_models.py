@@ -2,7 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from core.models.enums import (
     AccountType,
@@ -20,8 +20,7 @@ class Tenant(BaseModel):
     status: TenantStatus = TenantStatus.ACTIVE
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TenantCreate(BaseModel):
@@ -37,8 +36,7 @@ class User(BaseModel):
     is_active: bool = True
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserCreate(BaseModel):
@@ -54,8 +52,7 @@ class UserTenant(BaseModel):
     role: str = Field(..., max_length=50)
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserTenantCreate(BaseModel):
@@ -72,8 +69,7 @@ class RestaurantTable(BaseModel):
     is_active: bool = True
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class RestaurantTableCreate(BaseModel):
@@ -93,8 +89,7 @@ class Order(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OrderCreate(BaseModel):
@@ -114,8 +109,7 @@ class OrderItem(BaseModel):
     unit_price: Decimal = Field(..., ge=0, decimal_places=2)
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OrderItemCreate(BaseModel):
@@ -136,8 +130,7 @@ class Payment(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PaymentCreate(BaseModel):
@@ -158,8 +151,7 @@ class AuditLog(BaseModel):
     metadata: dict | None = None
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AuditLogCreate(BaseModel):

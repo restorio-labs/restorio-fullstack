@@ -1,10 +1,15 @@
 import { ThemeProvider } from "@restorio/ui";
 import type { ReactNode } from "react";
+import { BrowserRouter } from "react-router-dom";
 
 interface AppProvidersProps {
   children: ReactNode;
 }
 
 export const AppProviders = ({ children }: AppProvidersProps): ReactNode => {
-  return <ThemeProvider defaultMode="system">{children}</ThemeProvider>;
+  return (
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <ThemeProvider defaultMode="system">{children}</ThemeProvider>
+    </BrowserRouter>
+  );
 };

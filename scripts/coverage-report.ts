@@ -54,11 +54,12 @@ function readCoverage(): CoverageSummary {
 }
 
 function extractGroup(filePath: string): { type: "apps" | "packages"; name: string } | null {
-  const match = filePath.match(/\/(apps|packages)\/([^/]+)\//);
+  const normalizedPath = filePath.replaceAll("\\", "/");
+  const match = normalizedPath.match(/(?:^|\/)(apps|packages|package)\/([^/]+)\//);
   if (!match) return null;
 
   return {
-    type: match[1] as "apps" | "packages",
+    type: match[1] === "apps" ? "apps" : "packages",
     name: match[2],
   };
 }

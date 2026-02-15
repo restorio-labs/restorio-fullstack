@@ -94,7 +94,7 @@ async def create_payment(request: CreatePaymentRequest) -> CreatedResponse[dict[
         except httpx.RequestError as e:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail=f"Failed to connect to Przelewy24: {str(e)}",
+                detail=f"Failed to connect to Przelewy24: {e!s}",
             ) from e
 
     return CreatedResponse[dict[str, Any]](

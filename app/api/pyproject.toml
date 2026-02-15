@@ -102,6 +102,9 @@ python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 asyncio_mode = "auto"
+filterwarnings = [
+    "ignore:datetime.datetime.utcnow\\(\\) is deprecated.*:DeprecationWarning:jose\\.jwt",
+]
 addopts = [
     "--strict-markers",
     "--cov=core",
@@ -111,7 +114,9 @@ addopts = [
     "--cov-report=term",
     "--cov-report=html:coverage/html",
 ]
-cov_fail_under = 0
 
 [tool.coverage.run]
 data_file = "coverage/.coverage"
+
+[tool.coverage.report]
+fail_under = 0
