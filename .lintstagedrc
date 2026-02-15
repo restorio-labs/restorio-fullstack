@@ -1,10 +1,1 @@
-{
-  "app/(apps|packages)/**/*.{ts,tsx}": [
-    "bun run format",
-    "bun run test:unit"
-  ],
-  "app/api/**/*.py": [
-    "cd app/api",
-    "make format"
-  ]
-}
+{"app/(apps|packages)/**/*.{ts,tsx}":["bun run format","bun run test:unit"],"app/api/**/*.py":["bash -lc 'cd app/api && make format'"]}
