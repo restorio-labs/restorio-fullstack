@@ -145,9 +145,7 @@ describe("Icon", () => {
   });
 
   it("should render the Restorio logo with computed dimensions for fixed sizes", () => {
-    const { container } = render(
-      <Icon isLogo size="lg" logoBackground="#111111" logoColor="#22ccff" />,
-    );
+    const { container } = render(<Icon isLogo size="lg" logoBackground="#111111" logoColor="#22ccff" />);
 
     const wrapper = container.querySelector("span");
     const logo = container.querySelector("svg");
@@ -187,6 +185,7 @@ describe("Icon", () => {
     const { container, rerender } = render(<Icon isLogo wink />);
 
     let winkNode = container.querySelector(".restorio-wink-base");
+
     // @ts-expect-error - test purposes
     expect(winkNode).toBeInTheDocument();
     // @ts-expect-error - test purposes

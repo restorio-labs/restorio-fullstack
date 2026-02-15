@@ -1,4 +1,5 @@
 import { render } from "@testing-library/react";
+import React from "react";
 import { describe, it, expect } from "vitest";
 
 import { RestorioLogo, RestorioLogoPin, RestorioLogoText } from "../../../../src/components/marketing/restorioLogo";
@@ -20,9 +21,7 @@ describe("RestorioLogo", () => {
   });
 
   it("applies custom width, height, background and color", () => {
-    const { container } = render(
-      <RestorioLogo width={360} height={90} background="#101010" color="#00ffaa" />,
-    );
+    const { container } = render(<RestorioLogo width={360} height={90} background="#101010" color="#00ffaa" />);
 
     const svg = container.querySelector("svg");
     const rect = container.querySelector("rect");
@@ -49,8 +48,8 @@ describe("RestorioLogo", () => {
     const { container, rerender } = render(<RestorioLogo wink />);
 
     let winkNode = container.querySelector(".restorio-wink-base");
-    const getClassName = (node: Element | null): string =>
-      node ? ((node as SVGElement).className.baseVal ?? "") : "";
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
+    const getClassName = (node: Element | null): string => (node ? ((node as SVGElement).className.baseVal ?? "") : "");
 
     expect(getClassName(winkNode)).toContain("restorio-wink-once");
 
@@ -86,6 +85,7 @@ describe("RestorioLogoText", () => {
     );
 
     const textGroup = container.querySelector("g[fill='#ff6600']");
+
     expect(textGroup).not.toBeNull();
   });
 });
