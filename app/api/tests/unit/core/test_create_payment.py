@@ -11,6 +11,7 @@ from routes.v1.payments.create_payment import calculate_przelewy24_sign, create_
 
 class TestCalculatePrzelewy24Sign:
     result_len = 96
+
     def test_returns_96_char_hex_string(self) -> None:
         result = calculate_przelewy24_sign(
             session_id="s1",
