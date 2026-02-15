@@ -20,52 +20,67 @@ export function ActivateContent(): ReactElement {
   useEffect(() => {
     if (resendCooldownUntil <= 0) {
       setCooldownSeconds(0);
+
       return;
     }
     const tick = (): void => {
       const left = Math.ceil((resendCooldownUntil - Date.now()) / 1000);
+
       setCooldownSeconds(Math.max(0, left));
-      if (left <= 0) setResendCooldownUntil(0);
+
+      if (left <= 0) {
+        setResendCooldownUntil(0);
+      }
     };
+
     tick();
     const id = setInterval(tick, 1000);
+
     return () => clearInterval(id);
   }, [resendCooldownUntil]);
 
   useEffect(() => {
-    if (didRun.current) return;
+    if (didRun.current) {
+      return;
+    }
     didRun.current = true;
 
     const params = new URLSearchParams(window.location.search);
     const id = params.get("activation_id")?.trim() ?? "";
+
     setActivationId(id);
 
     if (!id) {
       setErrorMessage("Activation link is missing or invalid.");
       setResult("error");
+
       return;
     }
 
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+
     fetch(`${apiBaseUrl}/api/v1/auth/activate?activation_id=${encodeURIComponent(id)}`, { method: "POST" })
       .then(async (res) => {
-        const data = (await res.json().catch(() => null)) as {
+        const body = (await res.json().catch(() => null)) as {
           detail?: string;
           message?: string;
-          tenant_slug?: string;
+          data?: { tenant_slug?: string };
         } | null;
+        const errorMessage = body?.message ?? body?.detail;
+
         if (!res.ok) {
           if (res.status === 410) {
-            setErrorMessage(data?.detail ?? "Activation link has expired.");
+            setErrorMessage(errorMessage ?? "Activation link has expired.");
             setResult("expired");
           } else {
-            setErrorMessage(data?.detail ?? "Activation failed. Please request a new link.");
+            setErrorMessage(errorMessage ?? "Activation failed. Please request a new link.");
             setResult("error");
           }
+
           return;
         }
-        setTenantSlug(data?.tenant_slug ?? "");
-        setResult(data?.message === "Account already activated" ? "already_activated" : "success");
+        setTenantSlug(body?.data?.tenant_slug ?? "");
+        setResult(body?.message === "Account already activated" ? "already_activated" : "success");
       })
       .catch(() => {
         setErrorMessage("Activation failed. Please try again later.");
@@ -74,20 +89,29 @@ export function ActivateContent(): ReactElement {
   }, []);
 
   const handleResend = (): void => {
-    if (!activationId || resendLoading) return;
+    if (!activationId || resendLoading) {
+      return;
+    }
     setResendLoading(true);
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+
     fetch(`${apiBaseUrl}/api/v1/auth/resend-activation?activation_id=${encodeURIComponent(activationId)}`, {
       method: "POST",
     })
       .then(async (res) => {
-        const data = (await res.json().catch(() => null)) as { detail?: string } | null;
+        const data = (await res.json().catch(() => null)) as {
+          detail?: string;
+          message?: string;
+        } | null;
+
         if (!res.ok) {
-          setErrorMessage(data?.detail ?? "Failed to resend activation email.");
+          setErrorMessage(data?.message ?? data?.detail ?? "Failed to resend activation email.");
+
           if (res.status === 429) {
             setResendCooldownUntil(Date.now() + 300_000);
           }
           setResendLoading(false);
+
           return;
         }
         setResult("resend_sent");

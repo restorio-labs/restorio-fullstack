@@ -9,6 +9,15 @@ class RegisterDTO(BaseDTO):
     restaurant_name: str = Field(..., min_length=1, max_length=255, description="Restaurant name")
 
 
+class RegisterCreatedData(BaseDTO):
+    user_id: str = Field(..., description="Created user ID")
+    email: EmailStr = Field(..., description="User email")
+    account_type: str = Field(..., description="Account type")
+    tenant_id: str = Field(..., description="Created tenant ID")
+    tenant_name: str = Field(..., description="Tenant name")
+    tenant_slug: str = Field(..., description="Tenant slug")
+
+
 class RegisterResponseDTO(BaseDTO):
     user_id: str = Field(..., description="Created user ID")
     email: EmailStr = Field(..., description="User email")
@@ -20,3 +29,7 @@ class RegisterResponseDTO(BaseDTO):
         default="Account created successfully, you should receive email shortly",
         description="Success message",
     )
+
+
+class TenantSlugData(BaseDTO):
+    tenant_slug: str = Field(..., description="Tenant slug")

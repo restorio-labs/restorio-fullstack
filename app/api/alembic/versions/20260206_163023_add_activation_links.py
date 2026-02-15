@@ -1,8 +1,8 @@
 """Add activation links
 
 Revision ID: 5d1f9a2c7b4e
-Revises: 7c8f2c7b2c9a
-Create Date: 2026-02-04 00:00:00.000000
+Revises: 165824d5181d
+Create Date: 2026-02-06 00:00:00.000000
 
 """
 
@@ -14,7 +14,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision: str = "5d1f9a2c7b4e"
-down_revision: Union[str, None] = "7c8f2c7b2c9a"
+down_revision: Union[str, None] = "165824d5181d"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

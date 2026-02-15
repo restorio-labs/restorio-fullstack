@@ -1,14 +1,19 @@
-from fastapi import HTTPException, status
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.exceptions import ConflictError
+from core.exceptions import (
+    BadRequestError,
+    ConflictError,
+    GoneError,
+    NotFoundError,
+    TooManyRequestsError,
+)
 from core.foundation.security import hash_password
-from core.models.enums import AccountType, TenantStatus
 from core.models.activation_link import ActivationLink
+from core.models.enums import AccountType, TenantStatus
 from core.models.tenant import Tenant
 from core.models.user import User
 from core.models.user_tenant import UserTenant
@@ -72,7 +77,7 @@ async def create_activation_link(
         email=email,
         user_id=user_id,
         tenant_id=tenant_id,
-        expires_at=datetime.now(tz=timezone.utc) + timedelta(hours=24),
+        expires_at=datetime.now(tz=UTC) + timedelta(hours=24),
     )
     session.add(activation_link)
     await session.flush()
@@ -85,36 +90,29 @@ async def activate_account(
     session: AsyncSession,
     activation_id: UUID,
 ) -> tuple[Tenant, bool]:
+    """Returns (tenant, already_activated). Commits only when performing activation."""
     activation_link = await session.get(ActivationLink, activation_id)
     if activation_link is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Activation link not found",
-        )
+        msg = "Activation link not found"
+        raise NotFoundError(msg, str(activation_id))
 
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=UTC)
     if activation_link.expires_at < now:
-        raise HTTPException(
-            status_code=status.HTTP_410_GONE,
-            detail="Activation link has expired",
-        )
+        msg = "Activation link has expired"
+        raise GoneError(msg)
 
     tenant = await session.get(Tenant, activation_link.tenant_id)
     if tenant is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Account not found for activation link",
-        )
+        msg = "Account"
+        raise NotFoundError(msg, "activation link")
 
     if activation_link.used_at is not None:
         return tenant, True
 
     user = await session.get(User, activation_link.user_id)
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Account not found for activation link",
-        )
+        msg = "Account"
+        raise NotFoundError(msg, "activation link")
     user.is_active = True
     tenant.status = TenantStatus.ACTIVE
     activation_link.used_at = now
@@ -130,40 +128,31 @@ async def resend_activation_link(
     session: AsyncSession,
     activation_id: UUID,
 ) -> tuple[ActivationLink, Tenant]:
+    """Resend only when link is expired. Cooldown is per activation link (last_resend_at). Creates new link and commits."""
     activation_link = await session.get(ActivationLink, activation_id)
     if activation_link is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Activation link not found",
-        )
+        msg = "Activation link"
+        raise NotFoundError(msg, str(activation_id))
 
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=UTC)
     if activation_link.used_at is not None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Account already activated",
-        )
+        msg = "Account already activated"
+        raise BadRequestError(msg)
     if activation_link.expires_at >= now:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Activation link has not expired yet",
-        )
+        msg = "Activation link has not expired yet"
+        raise BadRequestError(msg)
 
     if activation_link.last_resend_at is not None:
         elapsed = (now - activation_link.last_resend_at).total_seconds()
         if elapsed < RESEND_COOLDOWN_SECONDS:
-            raise HTTPException(
-                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail="Please wait before requesting another activation email.",
-            )
+            msg = "Please wait before requesting another activation email."
+            raise TooManyRequestsError(msg)
 
     activation_link.last_resend_at = now
     tenant = await session.get(Tenant, activation_link.tenant_id)
     if tenant is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Account not found",
-        )
+        msg = "Account"
+        raise NotFoundError(msg, "activation link")
 
     new_link = ActivationLink(
         email=activation_link.email,
