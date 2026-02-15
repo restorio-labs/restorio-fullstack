@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-empty-function  */
 import { act, render, renderHook, screen, waitFor } from "@testing-library/react";
 import React from "react";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
@@ -48,9 +49,7 @@ describe("ThemeProvider", () => {
   });
 
   it("should initialize mode from stored light value", () => {
-    vi.spyOn(Storage.prototype, "getItem").mockImplementation((key: string) =>
-      key === "theme-key" ? "light" : null,
-    );
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation((key: string) => (key === "theme-key" ? "light" : null));
     const setItemSpy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {});
 
     const { result } = renderHook(() => useTheme(), {
@@ -75,9 +74,7 @@ describe("ThemeProvider", () => {
         removeEventListener: vi.fn(),
       })),
     );
-    vi.spyOn(Storage.prototype, "getItem").mockImplementation((key: string) =>
-      key === "theme-key" ? "system" : null,
-    );
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation((key: string) => (key === "theme-key" ? "system" : null));
     const setItemSpy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {});
 
     const { result } = renderHook(() => useTheme(), {
@@ -163,9 +160,7 @@ describe("ThemeProvider", () => {
         removeEventListener: vi.fn(),
       })),
     );
-    vi.spyOn(Storage.prototype, "getItem").mockImplementation((key: string) =>
-      key === "theme-key" ? "light" : null,
-    );
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation((key: string) => (key === "theme-key" ? "light" : null));
     const setItemSpy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {});
 
     const { result } = renderHook(() => useTheme(), {

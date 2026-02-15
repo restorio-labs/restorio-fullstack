@@ -48,13 +48,9 @@ export const SidebarSection = ({
         onClick={handleToggle}
         aria-expanded={!collapsed}
         aria-controls={`sidebar-section-${title.replace(/\s+/g, "-").toLowerCase()}`}
-        className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-text-tertiary hover:bg-surface-tertiary hover:text-text-secondary rounded-button focus-visible-ring outline-none transition-colors duration-fast"
+        className="flex w-full items-center gap-3 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-text-tertiary hover:bg-surface-tertiary hover:text-text-secondary rounded-button focus-visible-ring outline-none transition-colors duration-fast"
       >
-        <Icon
-          size="sm"
-          className={cn("flex-shrink-0 transition-transform duration-normal", collapsed ? "" : "rotate-90")}
-          style={reducedMotion ? { transition: "none" } : undefined}
-        >
+        <Icon size="sm" className="flex-shrink-0 min-w-[1.25rem]">
           {collapsed ? chevronRight : chevronDown}
         </Icon>
         <span className="truncate">{title}</span>
