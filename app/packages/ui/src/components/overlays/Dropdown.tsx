@@ -70,16 +70,24 @@ export const Dropdown = ({
   }, [isOpen, setIsOpen]);
 
   const placementStyles: Record<DropdownPlacement, string> = {
-    "bottom-start": "top-full mt-1",
-    "bottom-end": "top-full mt-1 right-0",
-    "top-start": "bottom-full mb-1",
-    "top-end": "bottom-full mb-1 right-0",
+    "bottom-start": "top-full mt-1 start-0",
+    "bottom-end": "top-full mt-1 end-0",
+    "top-start": "bottom-full mb-1 start-0",
+    "top-end": "bottom-full mb-1 end-0",
+  };
+
+  const handleTriggerKeyDown = (e: React.KeyboardEvent<HTMLDivElement>): void => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setIsOpen(!isOpen);
+    }
   };
 
   return (
     <div className="relative inline-block" ref={triggerRef}>
       <div
         onClick={(): void => setIsOpen(!isOpen)}
+        onKeyDown={handleTriggerKeyDown}
         role="button"
         tabIndex={0}
         aria-haspopup="true"

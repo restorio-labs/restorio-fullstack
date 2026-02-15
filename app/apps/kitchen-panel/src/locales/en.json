@@ -1,0 +1,76 @@
+{
+  "common": {
+    "skipToContent": "Skip to main content",
+    "loading": "Loading...",
+    "error": "Error",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "close": "Close"
+  },
+  "auth": {
+    "title": "Kitchen Login",
+    "description": "Enter your 6-digit access code to continue.",
+    "accessCode": "Access code",
+    "accessCodePlaceholder": "123-456",
+    "signIn": "Sign in"
+  },
+  "kitchen": {
+    "title": "Kitchen Orders",
+    "activeRestaurant": "Active restaurant: {{name}}",
+    "selectRestaurant": "Select a restaurant to begin.",
+    "restaurant": "Restaurant",
+    "items": "Items",
+    "notes": "Notes:",
+    "orderSummary": "{{table}} · {{count}} items",
+    "itemQuantity": "{{quantity}}x {{name}}",
+    "viewMode": {
+      "all": "All View",
+      "sliding": "Sliding"
+    }
+  },
+  "orders": {
+    "status": {
+      "new": "New",
+      "preparing": "Preparing",
+      "ready": "Ready"
+    }
+  },
+  "aria": {
+    "kitchenControls": "Kitchen panel controls",
+    "switchViewMode": "Switch to {{mode}} view",
+    "ordersBoard": "Kitchen orders board",
+    "toggleOrderDetails": "Toggle details for order {{id}}",
+    "dragOrder": "Drag order {{id}}",
+    "moveOrderUp": "Move {{id}} up",
+    "moveOrderDown": "Move {{id}} down",
+    "newOrders": "New orders",
+    "preparingOrders": "Preparing orders",
+    "readyOrders": "Ready for pickup"
+  },
+  "restaurants": {
+    "demo": {
+      "north": {
+        "name": "Restorio North",
+        "description": "North Hall Location",
+        "city": "Demo City",
+        "country": "Demo Country"
+      },
+      "east": {
+        "name": "Restorio East",
+        "description": "East Wing Location",
+        "city": "Demo City",
+        "country": "Demo Country"
+      },
+      "main": {
+        "name": "Restorio Main",
+        "description": "Main Location",
+        "city": "Demo City",
+        "country": "Demo Country"
+      }
+    }
+  },
+  "errors": {
+    "rootElementNotFound": "Root element not found"
+  }
+}

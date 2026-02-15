@@ -114,36 +114,38 @@ export const KitchenView = (): ReactElement => {
               {headerDescription}
             </Text>
           </div>
-          <Stack direction="row" spacing="md" align="center">
-            <Button
-              variant="secondary"
-              size="md"
-              onClick={toggleViewMode}
-              className="flex items-center gap-2"
-              aria-label={`Switch to ${viewMode === "sliding" ? "all orders" : "sliding"} view`}
-            >
-              <Icon size="md" viewBox="0 0 24 24">
-                {viewMode === "sliding" ? (
-                  <path d="M3 3h7v7H3V3zm11 0h7v7h-7V3zM3 14h7v7H3v-7zm11 0h7v7h-7v-7z" />
-                ) : (
-                  <path d="M3 3h18v5H3V3zm0 7h18v5H3v-5zm0 7h18v5H3v-5z" />
-                )}
-              </Icon>
-              <Text as="span" variant="body-sm" weight="medium">
-                {viewMode === "sliding" ? "All View" : "Sliding"}
-              </Text>
-            </Button>
-            {showRestaurantSelect && (
-              <div className="min-w-56">
-                <Select
-                  label="Restaurant"
-                  value={selectedRestaurantId ?? ""}
-                  onChange={(event) => setSelectedRestaurantId(event.target.value)}
-                  options={restaurantOptions}
-                />
-              </div>
-            )}
-          </Stack>
+          <nav aria-label="Kitchen panel controls">
+            <Stack direction="row" spacing="md" align="center">
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={toggleViewMode}
+                className="flex items-center gap-2"
+                aria-label={`Switch to ${viewMode === "sliding" ? "all orders" : "sliding"} view`}
+              >
+                <Icon size="md" viewBox="0 0 24 24">
+                  {viewMode === "sliding" ? (
+                    <path d="M3 3h7v7H3V3zm11 0h7v7h-7V3zM3 14h7v7H3v-7zm11 0h7v7h-7v-7z" />
+                  ) : (
+                    <path d="M3 3h18v5H3V3zm0 7h18v5H3v-5zm0 7h18v5H3v-5z" />
+                  )}
+                </Icon>
+                <Text as="span" variant="body-sm" weight="medium">
+                  {viewMode === "sliding" ? "All View" : "Sliding"}
+                </Text>
+              </Button>
+              {showRestaurantSelect && (
+                <div className="min-w-56">
+                  <Select
+                    label="Restaurant"
+                    value={selectedRestaurantId ?? ""}
+                    onChange={(event) => setSelectedRestaurantId(event.target.value)}
+                    options={restaurantOptions}
+                  />
+                </div>
+              )}
+            </Stack>
+          </nav>
         </div>
       </div>
 

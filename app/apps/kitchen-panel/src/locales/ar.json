@@ -1,0 +1,76 @@
+{
+  "common": {
+    "skipToContent": "انتقل إلى المحتوى الرئيسي",
+    "loading": "جار التحميل...",
+    "error": "خطأ",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "save": "حفظ",
+    "close": "إغلاق"
+  },
+  "auth": {
+    "title": "تسجيل دخول المطبخ",
+    "description": "أدخل رمز الوصول المكون من 6 أرقام للمتابعة.",
+    "accessCode": "رمز الوصول",
+    "accessCodePlaceholder": "123-456",
+    "signIn": "تسجيل الدخول"
+  },
+  "kitchen": {
+    "title": "طلبات المطبخ",
+    "activeRestaurant": "المطعم النشط: {{name}}",
+    "selectRestaurant": "اختر مطعمًا للبدء.",
+    "restaurant": "مطعم",
+    "items": "العناصر",
+    "notes": "ملاحظات:",
+    "orderSummary": "{{table}} · {{count}} عنصر",
+    "itemQuantity": "{{quantity}}x {{name}}",
+    "viewMode": {
+      "all": "عرض الكل",
+      "sliding": "منزلق"
+    }
+  },
+  "orders": {
+    "status": {
+      "new": "جديد",
+      "preparing": "قيد التحضير",
+      "ready": "جاهز"
+    }
+  },
+  "aria": {
+    "kitchenControls": "عناصر التحكم في لوحة المطبخ",
+    "switchViewMode": "التبديل إلى عرض {{mode}}",
+    "ordersBoard": "لوحة طلبات المطبخ",
+    "toggleOrderDetails": "تبديل تفاصيل الطلب {{id}}",
+    "dragOrder": "سحب الطلب {{id}}",
+    "moveOrderUp": "نقل {{id}} لأعلى",
+    "moveOrderDown": "نقل {{id}} لأسفل",
+    "newOrders": "طلبات جديدة",
+    "preparingOrders": "طلبات قيد التحضير",
+    "readyOrders": "جاهز للاستلام"
+  },
+  "restaurants": {
+    "demo": {
+      "north": {
+        "name": "ريستوريو الشمالي",
+        "description": "موقع القاعة الشمالية",
+        "city": "مدينة تجريبية",
+        "country": "بلد تجريبي"
+      },
+      "east": {
+        "name": "ريستوريو الشرقي",
+        "description": "موقع الجناح الشرقي",
+        "city": "مدينة تجريبية",
+        "country": "بلد تجريبي"
+      },
+      "main": {
+        "name": "ريستوريو الرئيسي",
+        "description": "الموقع الرئيسي",
+        "city": "مدينة تجريبية",
+        "country": "بلد تجريبي"
+      }
+    }
+  },
+  "errors": {
+    "rootElementNotFound": "لم يتم العثور على العنصر الجذري"
+  }
+}

@@ -7,6 +7,8 @@ import type { zIndexTokens } from "./zIndex";
 
 export type ThemeMode = "light" | "dark" | "system";
 
+export type Direction = "ltr" | "rtl" | "auto";
+
 export interface ThemeOverride {
   colors?: Partial<{
     [K in keyof typeof colorTokens.light]: Partial<(typeof colorTokens.light)[K]>;
