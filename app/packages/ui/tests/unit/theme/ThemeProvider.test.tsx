@@ -47,6 +47,147 @@ describe("ThemeProvider", () => {
     expect(result.current.mode).toBe("dark");
   });
 
+  it("should initialize mode from stored light value", () => {
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation((key: string) =>
+      key === "theme-key" ? "light" : null,
+    );
+    const setItemSpy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {});
+
+    const { result } = renderHook(() => useTheme(), {
+      wrapper: ({ children }) => (
+        <ThemeProvider defaultMode="dark" storageKey="theme-key">
+          {children}
+        </ThemeProvider>
+      ),
+    });
+
+    expect(result.current.mode).toBe("light");
+    expect(setItemSpy).toHaveBeenCalledWith("theme-key", "light");
+  });
+
+  it("should replace stored system mode with the fallback mode", () => {
+    vi.stubGlobal(
+      "matchMedia",
+      vi.fn().mockImplementation((query: string) => ({
+        matches: true,
+        media: query,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      })),
+    );
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation((key: string) =>
+      key === "theme-key" ? "system" : null,
+    );
+    const setItemSpy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {});
+
+    const { result } = renderHook(() => useTheme(), {
+      wrapper: ({ children }) => (
+        <ThemeProvider defaultMode="system" storageKey="theme-key">
+          {children}
+        </ThemeProvider>
+      ),
+    });
+
+    expect(result.current.mode).toBe("dark");
+    expect(setItemSpy).toHaveBeenCalledWith("theme-key", "dark");
+    vi.unstubAllGlobals();
+  });
+
+  it("should fallback and persist default mode when stored mode is invalid", () => {
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation((key: string) =>
+      key === "theme-key" ? "invalid-mode" : null,
+    );
+    const setItemSpy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {});
+
+    const { result } = renderHook(() => useTheme(), {
+      wrapper: ({ children }) => (
+        <ThemeProvider defaultMode="light" storageKey="theme-key">
+          {children}
+        </ThemeProvider>
+      ),
+    });
+
+    expect(result.current.mode).toBe("light");
+    expect(setItemSpy).toHaveBeenCalledWith("theme-key", "light");
+  });
+
+  it("should fallback to system theme when localStorage access throws", () => {
+    vi.stubGlobal(
+      "matchMedia",
+      vi.fn().mockImplementation((query: string) => ({
+        matches: true,
+        media: query,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      })),
+    );
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new Error("storage get failed");
+    });
+
+    const { result } = renderHook(() => useTheme(), {
+      wrapper: ({ children }) => (
+        <ThemeProvider defaultMode="system" storageKey="theme-key">
+          {children}
+        </ThemeProvider>
+      ),
+    });
+
+    expect(result.current.mode).toBe("dark");
+    vi.unstubAllGlobals();
+  });
+
+  it("should fallback to default mode when localStorage access throws", () => {
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new Error("storage get failed");
+    });
+
+    const { result } = renderHook(() => useTheme(), {
+      wrapper: ({ children }) => (
+        <ThemeProvider defaultMode="light" storageKey="theme-key">
+          {children}
+        </ThemeProvider>
+      ),
+    });
+
+    expect(result.current.mode).toBe("light");
+  });
+
+  it("should persist resolved system theme when switching mode to system", async () => {
+    vi.stubGlobal(
+      "matchMedia",
+      vi.fn().mockImplementation((query: string) => ({
+        matches: true,
+        media: query,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      })),
+    );
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation((key: string) =>
+      key === "theme-key" ? "light" : null,
+    );
+    const setItemSpy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {});
+
+    const { result } = renderHook(() => useTheme(), {
+      wrapper: ({ children }) => (
+        <ThemeProvider defaultMode="light" storageKey="theme-key">
+          {children}
+        </ThemeProvider>
+      ),
+    });
+
+    setItemSpy.mockClear();
+
+    act(() => {
+      result.current.setMode("system");
+    });
+
+    await waitFor(() => {
+      expect(setItemSpy).toHaveBeenCalledWith("theme-key", "dark");
+    });
+    vi.unstubAllGlobals();
+  });
+
   it("should resolve light mode correctly", () => {
     const { result } = renderHook(() => useTheme(), {
       wrapper: ({ children }) => <ThemeProvider defaultMode="light">{children}</ThemeProvider>,
