@@ -90,7 +90,7 @@ async def activate_account(
     session: AsyncSession,
     activation_id: UUID,
 ) -> tuple[Tenant, bool]:
-    """Returns (tenant, already_activated). Commits only when performing activation."""
+    """Returns (tenant, already_activated)."""
     activation_link = await session.get(ActivationLink, activation_id)
     if activation_link is None:
         msg = "Activation link not found"
@@ -116,7 +116,6 @@ async def activate_account(
     user.is_active = True
     tenant.status = TenantStatus.ACTIVE
     activation_link.used_at = now
-    await session.commit()
     return tenant, False
 
 
@@ -128,7 +127,7 @@ async def resend_activation_link(
     session: AsyncSession,
     activation_id: UUID,
 ) -> tuple[ActivationLink, Tenant]:
-    """Resend only when link is expired. Cooldown is per activation link (last_resend_at). Creates new link and commits."""
+    """Resend only when link is expired. Cooldown is per activation link (last_resend_at)."""
     activation_link = await session.get(ActivationLink, activation_id)
     if activation_link is None:
         msg = "Activation link"
@@ -163,5 +162,4 @@ async def resend_activation_link(
     session.add(new_link)
     await session.flush()
     await session.refresh(new_link)
-    await session.commit()
     return new_link, tenant
