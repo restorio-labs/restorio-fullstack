@@ -1,4 +1,3 @@
-import { createTailwindConfig } from "../../packages/ui/src/theme/tailwindUtils";
 import type { Config } from "tailwindcss";
 
 import { createTailwindConfig } from "../../packages/ui/src/theme/tailwindUtils";

@@ -1,10 +1,6 @@
-import { API_BASE_URL } from "@/lib/env";
+import { ApiClient, RestorioApi, type RegisterPayload } from "@restorio/api-client";
 
-export interface RegisterPayload {
-  email: string;
-  password: string;
-  restaurantName: string;
-}
+import { API_BASE_URL } from "@/lib/env";
 
 export interface RegisterResult {
   ok: boolean;
@@ -12,51 +8,56 @@ export interface RegisterResult {
   status?: number;
 }
 
-export const registerAccount = async ({
-  email,
-  password,
-  restaurantName,
-}: RegisterPayload): Promise<RegisterResult> => {
+const api = new RestorioApi(
+  new ApiClient({
+    baseURL: API_BASE_URL,
+  }),
+);
+
+const fallbackMessage = "Unable to create account. Please try again.";
+
+const parseError = (error: unknown): { message: string; status?: number } => {
+  if (!error || typeof error !== "object") {
+    return { message: fallbackMessage };
+  }
+
+  const response = "response" in error ? error.response : undefined;
+
+  if (!response || typeof response !== "object") {
+    return { message: fallbackMessage };
+  }
+
+  const status = "status" in response && typeof response.status === "number" ? response.status : undefined;
+  const data = "data" in response ? response.data : undefined;
+
+  if (data && typeof data === "object") {
+    if ("detail" in data && typeof data.detail === "string" && data.detail.trim().length > 0) {
+      return { message: data.detail, status };
+    }
+
+    if ("message" in data && typeof data.message === "string" && data.message.trim().length > 0) {
+      return { message: data.message, status };
+    }
+  }
+
+  return { message: fallbackMessage, status };
+};
+
+export const registerAccount = async (data: RegisterPayload): Promise<RegisterResult> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email,
-        password,
-        restaurantName,
-      }),
-    });
-
-    if (response.ok) {
-      return {
-        ok: true,
-        message: "Account has been created, you should receive activation email shortly.",
-      };
-    }
-
-    let apiMessage = "Unable to create account. Please try again.";
-    try {
-      const data = (await response.json()) as { message?: string; detail?: string };
-      if (typeof data?.detail === "string" && data.detail.trim().length > 0) {
-        apiMessage = data.detail;
-      } else if (typeof data?.message === "string" && data.message.trim().length > 0) {
-        apiMessage = data.message;
-      }
-    } catch {
-    }
+    const response = await api.auth.register(data);
 
     return {
-      ok: false,
-      message: apiMessage,
-      status: response.status,
+      ok: true,
+      message: response.message || "Account has been created, you should receive activation email shortly.",
     };
-  } catch {
+  } catch (error: unknown) {
+    const parsedError = parseError(error);
+
     return {
       ok: false,
-      message: "Unable to create account. Please try again.",
+      message: parsedError.message,
+      status: parsedError.status,
     };
   }
 };
