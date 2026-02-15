@@ -1,47 +1,61 @@
 "use client";
 
-import { Button, ContentContainer, Icon, Text } from "@restorio/ui";
+import { Button, Icon, NavItem, Text, ThemeSwitcher, Topbar } from "@restorio/ui";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { type ReactElement } from "react";
+import { type ReactElement, useEffect, useState } from "react";
+
+const navItems = [
+  { label: "Home", href: "/" },
+  { label: "About", href: "/about" },
+];
 
 export const Header = (): ReactElement => {
   const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navItems = [
-    { label: "Home", href: "/" },
-    { label: "About", href: "/about" },
-  ];
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border-default bg-surface-primary/80 backdrop-blur-md">
-      <ContentContainer maxWidth="2xl" padding className="flex h-16 items-center justify-between">
-        <Link href="/" className="flex h-16 items-center gap-2 transition-opacity hover:opacity-80">
+    <Topbar
+      aria-label="Main navigation"
+      sticky
+      contentMaxWidth="2xl"
+      mobileMenuOpen={mobileMenuOpen}
+      onMobileMenuOpenChange={setMobileMenuOpen}
+      brandSlot={
+        <Link href="/" className="flex h-16 items-center gap-2 transition-opacity hover:opacity-90">
           <Icon isLogo size="full" logoBackground="transparent" wink />
           <Text variant="h4" weight="bold" className="hidden sm:block">
             Restorio
           </Text>
         </Link>
-
-        <nav className="flex items-center gap-6">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`text-sm font-medium transition-colors hover:text-interactive-primary ${
-                pathname === item.href ? "text-interactive-primary" : "text-text-secondary"
-              }`}
-            >
-              {item.label}
-            </Link>
-          ))}
-          <div className="ml-2 hidden sm:block">
+      }
+      ctaSlot={
+        <div className="flex items-center gap-2">
+          <ThemeSwitcher className="h-9 px-3" />
+          <span className="hidden sm:inline-block">
             <Button size="sm" variant="primary">
               Get Started
             </Button>
-          </div>
-        </nav>
-      </ContentContainer>
-    </header>
+          </span>
+        </div>
+      }
+    >
+      {navItems.map((item) => (
+        <NavItem
+          key={item.href}
+          as={Link}
+          href={item.href}
+          active={pathname === item.href}
+          variant="link"
+          className="text-sm md:py-2 md:px-0"
+        >
+          {item.label}
+        </NavItem>
+      ))}
+    </Topbar>
   );
 };

@@ -23,7 +23,35 @@ interface ThemeProviderProps {
   defaultMode?: ThemeMode;
   initialOverride?: ThemeOverride;
   defaultDirection?: Direction;
+  storageKey?: string;
 }
+
+const isStoredMode = (value: string | null): value is ThemeMode =>
+  value === "light" || value === "dark" || value === "system";
+
+const getInitialMode = (defaultMode: ThemeMode, storageKey: string): ThemeMode => {
+  if (typeof window === "undefined" || storageKey.trim() === "") {
+    return defaultMode;
+  }
+
+  try {
+    const storedMode = window.localStorage.getItem(storageKey);
+
+    if (storedMode === "light" || storedMode === "dark") {
+      return storedMode;
+    }
+
+    const fallbackMode = defaultMode === "system" ? getSystemTheme() : defaultMode;
+
+    if (!isStoredMode(storedMode) || storedMode === "system") {
+      window.localStorage.setItem(storageKey, fallbackMode);
+    }
+
+    return fallbackMode;
+  } catch {
+    return defaultMode === "system" ? getSystemTheme() : defaultMode;
+  }
+};
 
 export const getSystemTheme = (): "light" | "dark" => {
   if (typeof window === "undefined") {
@@ -60,8 +88,9 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   defaultMode = "system",
   initialOverride = null,
   defaultDirection = "auto",
+  storageKey = "",
 }) => {
-  const [mode, setModeState] = useState<ThemeMode>(defaultMode);
+  const [mode, setModeState] = useState<ThemeMode>(() => getInitialMode(defaultMode, storageKey));
   const [override, setOverrideState] = useState<ThemeOverride | null>(initialOverride);
   const [systemTheme, setSystemTheme] = useState<"light" | "dark">(getSystemTheme());
   const [directionState, setDirectionState] = useState<Direction>(defaultDirection);
@@ -87,6 +116,20 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
       // Ignore errors in SSR or unsupported environments
     }
   }, [mode]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || storageKey.trim() === "") {
+      return;
+    }
+
+    try {
+      const storedMode = mode === "system" ? getSystemTheme() : mode;
+
+      window.localStorage.setItem(storageKey, storedMode);
+    } catch {
+      // Ignore storage errors in unsupported environments
+    }
+  }, [mode, storageKey]);
 
   const resolvedMode = useMemo(() => {
     if (mode === "system") {

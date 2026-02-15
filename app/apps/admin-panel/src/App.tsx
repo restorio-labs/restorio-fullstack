@@ -3,6 +3,7 @@ import { getAppUrl, getEnvironmentFromEnv } from "@restorio/utils";
 import type { ReactElement } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
+import { AdminSidebar } from "./components/AdminSidebar";
 import { AppLayout } from "./layouts/AppLayout";
 import { VenuesPage, FloorEditorPage } from "./pages";
 
@@ -12,7 +13,7 @@ const PUBLIC_WEB_URL: string =
 export const App = (): ReactElement => {
   return (
     <RedirectAuthGuard redirectTo={PUBLIC_WEB_URL}>
-      <AppLayout>
+      <AppLayout sidebar={<AdminSidebar />}>
         <Routes>
           <Route path="/" element={<VenuesPage />} />
           <Route path="/venues/:venueId/floor" element={<FloorEditorPage />} />

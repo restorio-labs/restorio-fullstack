@@ -1,7 +1,6 @@
-import type { ReactElement } from "react";
+import { useEffect, useState, type ReactElement } from "react";
 
 import { useTheme } from "../theme/ThemeProvider";
-import type { ThemeMode } from "../tokens/types";
 import { cn } from "../utils";
 
 import { Button } from "./primitives/Button";
@@ -12,7 +11,6 @@ export interface ThemeSwitcherProps {
   showLabel?: boolean;
   lightLabel?: string;
   darkLabel?: string;
-  systemLabel?: string;
   ariaLabelTemplate?: (currentTheme: string) => string;
 }
 
@@ -21,20 +19,22 @@ export const ThemeSwitcher = ({
   showLabel = false,
   lightLabel = "Light",
   darkLabel = "Dark",
-  systemLabel = "System",
   ariaLabelTemplate,
 }: ThemeSwitcherProps): ReactElement => {
-  const { mode, setMode } = useTheme();
+  const { mode, resolvedMode, setMode } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const activeMode = mode === "system" ? resolvedMode : mode;
+  const visibleMode = mounted ? activeMode : "light";
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const cycleTheme = (): void => {
-    const modes: ThemeMode[] = ["light", "dark", "system"];
-    const currentIndex = modes.indexOf(mode);
-    const nextIndex = (currentIndex + 1) % modes.length;
-
-    setMode(modes[nextIndex]);
+    setMode(activeMode === "light" ? "dark" : "light");
   };
 
-  const icons: Record<ThemeMode, ReactElement> = {
+  const icons: Record<"light" | "dark", ReactElement> = {
     light: (
       <Icon size="md" viewBox="0 0 24 24" aria-hidden="true">
         <circle cx="12" cy="12" r="4" />
@@ -46,22 +46,15 @@ export const ThemeSwitcher = ({
         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
       </Icon>
     ),
-    system: (
-      <Icon size="md" viewBox="0 0 24 24" aria-hidden="true">
-        <rect x="2" y="3" width="20" height="14" rx="2" />
-        <path d="M8 21h8M12 17v4" />
-      </Icon>
-    ),
   };
 
-  const labels: Record<ThemeMode, string> = {
+  const labels: Record<"light" | "dark", string> = {
     light: lightLabel,
     dark: darkLabel,
-    system: systemLabel,
   };
 
-  const defaultAriaLabel = `Current theme: ${labels[mode]}. Click to cycle theme.`;
-  const ariaLabel = ariaLabelTemplate ? ariaLabelTemplate(labels[mode]) : defaultAriaLabel;
+  const defaultAriaLabel = `Current theme: ${labels[visibleMode]}. Click to cycle theme.`;
+  const ariaLabel = ariaLabelTemplate ? ariaLabelTemplate(labels[visibleMode]) : defaultAriaLabel;
 
   return (
     <Button
@@ -71,8 +64,8 @@ export const ThemeSwitcher = ({
       className={cn("flex items-center gap-2", className)}
       aria-label={ariaLabel}
     >
-      {icons[mode]}
-      {showLabel && <span className="text-sm font-medium">{labels[mode]}</span>}
+      {icons[visibleMode]}
+      {showLabel && <span className="text-sm font-medium">{labels[visibleMode]}</span>}
     </Button>
   );
 };
