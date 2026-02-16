@@ -4,6 +4,7 @@ from fastapi import HTTPException
 import httpx
 import pytest
 
+from core.exceptions.http import BadRequestError
 from core.foundation.http.schemas import CreatedResponse
 from core.models import CreatePaymentRequest
 from routes.v1.payments.create_payment import calculate_przelewy24_sign, create_payment
@@ -114,6 +115,7 @@ async def test_create_payment_http_status_error(
         patch("routes.v1.payments.create_payment.settings") as mock_settings,
         patch("routes.v1.payments.create_payment.httpx.AsyncClient") as mock_client_cls,
     ):
+        status_code = 400
         mock_settings.PRZELEWY24_MERCHANT_ID = 12345
         mock_settings.PRZELEWY24_POS_ID = 12345
         mock_settings.PRZELEWY24_CRC = "crc"
@@ -147,6 +149,7 @@ async def test_create_payment_request_error(
         patch("routes.v1.payments.create_payment.settings") as mock_settings,
         patch("routes.v1.payments.create_payment.httpx.AsyncClient") as mock_client_cls,
     ):
+        status_code = 503
         mock_settings.PRZELEWY24_MERCHANT_ID = 12345
         mock_settings.PRZELEWY24_POS_ID = 12345
         mock_settings.PRZELEWY24_CRC = "crc"
