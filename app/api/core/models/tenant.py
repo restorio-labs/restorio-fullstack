@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
-from sqlalchemy import DateTime, Enum, String, func
+from sqlalchemy import DateTime, Enum, Integer, String, func
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -33,6 +33,9 @@ class Tenant(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
+    p24_merchantid: Mapped[int | None] = mapped_column(Integer(), nullable=True)
+    p24_api: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    p24_crc: Mapped[str | None] = mapped_column(String(16), nullable=True)
 
     user_tenants: Mapped[list[UserTenant]] = relationship(
         "UserTenant", back_populates="tenant", cascade="all, delete-orphan"
