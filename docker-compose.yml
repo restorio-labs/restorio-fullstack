@@ -122,4 +122,3 @@ volumes:
 networks:
   restorio-network:
     driver: bridge
-
