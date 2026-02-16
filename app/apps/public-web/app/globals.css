@@ -7,6 +7,14 @@
     color-scheme: light dark;
   }
 
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) {
+      color-scheme: dark;
+      --color-background-primary: #1a1a1a;
+      --color-text-primary: #ffffff;
+    }
+  }
+
   [data-theme="light"] {
     color-scheme: light;
   }
@@ -29,4 +37,29 @@
   .focus-visible-ring {
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2;
   }
+}
+
+@keyframes restorio-wink {
+  0%   { transform: scaleY(1) translateZ(0); }
+  35%  { transform: scaleY(1) translateZ(0); }
+  45%  { transform: scaleY(0.05) translateZ(0); }
+  55%  { transform: scaleY(0.05) translateZ(0); }
+  70%  { transform: scaleY(1.05) translateZ(0); }
+  100% { transform: scaleY(1) translateZ(0); }
+}
+
+.restorio-wink-base {
+  transform-box: fill-box;
+  transform-origin: center top;
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: perspective(1000px) translateZ(0.001px);
+}
+
+.restorio-wink-once {
+  animation: restorio-wink 1.4s cubic-bezier(0.22, 0.72, 0.28, 1) forwards;
+}
+
+.restorio-winking {
+  animation: restorio-wink 2.5s cubic-bezier(0.22, 0.72, 0.28, 1) infinite;
 }

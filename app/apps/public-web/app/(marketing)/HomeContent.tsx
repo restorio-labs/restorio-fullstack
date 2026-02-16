@@ -17,8 +17,12 @@ export const HomeContent = (): ReactElement => {
 
         <ContentContainer maxWidth="xl" padding>
           <div className="flex flex-col items-center text-center">
-            <Text variant="h1" className="mb-6 max-w-4xl text-5xl font-extrabold tracking-tight sm:text-7xl">
-              The Future of <span className="text-interactive-primary">Restaurant Management</span>
+            <Text
+              variant="h1"
+              className="mb-6 max-w-4xl text-5xl font-extrabold tracking-tight sm:text-7xl flex flex-col items-center"
+            >
+              <span>The Future of</span>
+              <span className="text-interactive-primary">Restaurant Management</span>
             </Text>
 
             <Text variant="body-lg" className="mb-10 max-w-2xl text-text-secondary">

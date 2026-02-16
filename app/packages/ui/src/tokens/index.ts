@@ -4,4 +4,5 @@ export * from "./radius";
 export * from "./typography";
 export * from "./shadows";
 export * from "./zIndex";
+export * from "./motion";
 export * from "./types";

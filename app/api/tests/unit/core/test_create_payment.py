@@ -1,5 +1,6 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
+from fastapi import HTTPException
 import httpx
 import pytest
 
@@ -10,7 +11,7 @@ from routes.v1.payments.create_payment import calculate_przelewy24_sign, create_
 
 
 class TestCalculatePrzelewy24Sign:
-    result_len = 96
+    EXPECTED_SIGN_LENGTH = 96
 
     def test_returns_96_char_hex_string(self) -> None:
         result = calculate_przelewy24_sign(
@@ -20,7 +21,7 @@ class TestCalculatePrzelewy24Sign:
             currency="PLN",
             crc="crc",
         )
-        assert len(result) == self.result_len
+        assert len(result) == self.EXPECTED_SIGN_LENGTH
         assert all(c in "0123456789abcdef" for c in result)
 
     def test_deterministic_for_same_inputs(self) -> None:
@@ -102,6 +103,7 @@ async def test_create_payment_success(
 async def test_create_payment_http_status_error(
     create_payment_request: CreatePaymentRequest,
 ) -> None:
+    http_status_error_status_code = 400
     error_response = MagicMock()
     error_response.status_code = 400
     error_response.json.return_value = {
@@ -130,10 +132,10 @@ async def test_create_payment_http_status_error(
         mock_client_cls.return_value.__aenter__.return_value.post = mock_post
         mock_client_cls.return_value.__aexit__ = AsyncMock(return_value=None)
 
-        with pytest.raises(BadRequestError) as exc_info:
+        with pytest.raises(HTTPException) as exc_info:
             await create_payment(create_payment_request)
 
-        assert exc_info.value.status_code == status_code
+        assert exc_info.value.status_code == http_status_error_status_code
         assert "Przelewy24 API error" in exc_info.value.detail
         assert "Invalid merchant configuration" in exc_info.value.detail
 
@@ -142,6 +144,7 @@ async def test_create_payment_http_status_error(
 async def test_create_payment_request_error(
     create_payment_request: CreatePaymentRequest,
 ) -> None:
+    connect_error_status_code = 503
     with (
         patch("routes.v1.payments.create_payment.settings") as mock_settings,
         patch("routes.v1.payments.create_payment.httpx.AsyncClient") as mock_client_cls,
@@ -157,9 +160,9 @@ async def test_create_payment_request_error(
         mock_client_cls.return_value.__aenter__.return_value.post = mock_post
         mock_client_cls.return_value.__aexit__ = AsyncMock(return_value=None)
 
-        with pytest.raises(BadRequestError) as exc_info:
+        with pytest.raises(HTTPException) as exc_info:
             await create_payment(create_payment_request)
 
-        assert exc_info.value.status_code == status_code
+        assert exc_info.value.status_code == connect_error_status_code
         assert "Failed to connect to Przelewy24" in exc_info.value.detail
         assert "Connection refused" in exc_info.value.detail

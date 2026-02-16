@@ -43,6 +43,7 @@
         "@restorio/auth": "workspace:*",
         "@restorio/types": "workspace:*",
         "@restorio/ui": "workspace:*",
+        "@restorio/utils": "workspace:*",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-router-dom": "^6.21.1",
@@ -172,6 +173,35 @@
         "vite": "^5.4.0",
       },
     },
+    "app/apps/waiter-panel": {
+      "name": "@restorio/waiter-panel",
+      "version": "1.0.0",
+      "dependencies": {
+        "@restorio/api-client": "workspace:*",
+        "@restorio/auth": "workspace:*",
+        "@restorio/types": "workspace:*",
+        "@restorio/ui": "workspace:*",
+        "@types/node": "^22",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "react-router-dom": "^6.21.1",
+      },
+      "devDependencies": {
+        "@testing-library/jest-dom": "^6.1.5",
+        "@testing-library/react": "^14.1.2",
+        "@types/react": "^18.2.45",
+        "@types/react-dom": "^18.2.18",
+        "@vitejs/plugin-react": "^4.2.1",
+        "autoprefixer": "^10.4.17",
+        "eslint": "^8.56.0",
+        "jsdom": "^23.0.1",
+        "postcss": "^8.4.35",
+        "tailwindcss": "^3.4.1",
+        "typescript": "^5.9",
+        "vite": "^5.4.0",
+        "vitest": "^4.0.16",
+      },
+    },
     "app/packages/api-client": {
       "name": "@restorio/api-client",
       "version": "1.0.0",
@@ -212,7 +242,6 @@
       "version": "1.0.0",
       "devDependencies": {
         "tsup": "^8.5.1",
-        "typescript": "^5.9.0",
       },
     },
     "app/packages/ui": {
@@ -245,6 +274,19 @@
       "peerDependencies": {
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
+      },
+    },
+    "app/packages/utils": {
+      "name": "@restorio/utils",
+      "version": "1.0.0",
+      "dependencies": {
+        "@restorio/types": "workspace:*",
+      },
+      "devDependencies": {
+        "@vitest/coverage-v8": "^4.0.16",
+        "tsup": "^8.5.1",
+        "typescript": "^5.9.0",
+        "vitest": "^4.0.16",
       },
     },
   },
@@ -508,6 +550,10 @@
     "@restorio/ui": ["@restorio/ui@workspace:app/packages/ui"],
 
     "@restorio/ui-demo": ["@restorio/ui-demo@workspace:app/apps/ui-demo"],
+
+    "@restorio/utils": ["@restorio/utils@workspace:app/packages/utils"],
+
+    "@restorio/waiter-panel": ["@restorio/waiter-panel@workspace:app/apps/waiter-panel"],
 
     "@rolldown/pluginutils": ["@rolldown/pluginutils@1.0.0-beta.27", "", {}, "sha512-+d0F4MKMCbeVUJwG96uQ4SgAznZNSq93I3V+9NHA4OpvqG8mRCpGdKmK8l/dl02h2CCDHwW2FqilnTyDcAnqjA=="],
 
