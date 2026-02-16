@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import type { ReactElement, ReactNode } from "react";
 
 import { AppProviders } from "../src/wrappers/AppProviders";
+
+import { getThemeBootScript } from "@/theme/themeMode";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -32,8 +34,15 @@ interface RootLayoutProps {
 }
 
 export default function RootLayout({ children }: RootLayoutProps): ReactElement {
+  const themeBootScript = getThemeBootScript();
+
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Theme boot script must run before hydration - no user input */}
+        {/* eslint-disable-next-line react/no-danger */}
+        <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
+      </head>
       <body>
         <a
           href="#main-content"

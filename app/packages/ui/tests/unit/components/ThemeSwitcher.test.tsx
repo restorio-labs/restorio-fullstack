@@ -16,7 +16,7 @@ describe("ThemeSwitcher", () => {
     expect(screen.getByRole("button")).toBeDefined();
   });
 
-  it("cycles through theme modes", async () => {
+  it("toggles between light and dark modes", async () => {
     const user = userEvent.setup();
 
     render(
@@ -32,10 +32,6 @@ describe("ThemeSwitcher", () => {
     await user.click(button);
 
     expect(button.getAttribute("aria-label")).toContain("Dark");
-
-    await user.click(button);
-
-    expect(button.getAttribute("aria-label")).toContain("System");
 
     await user.click(button);
 
@@ -77,7 +73,7 @@ describe("ThemeSwitcher", () => {
   it("uses custom labels", () => {
     render(
       <ThemeProvider defaultMode="light">
-        <ThemeSwitcher showLabel lightLabel="Claro" darkLabel="Oscuro" systemLabel="Sistema" />
+        <ThemeSwitcher showLabel lightLabel="Claro" darkLabel="Oscuro" />
       </ThemeProvider>,
     );
 

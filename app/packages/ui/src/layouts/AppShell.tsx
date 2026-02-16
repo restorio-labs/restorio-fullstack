@@ -31,7 +31,7 @@ export const AppShell = ({
       <div className="flex flex-1 overflow-hidden">
         {sidebar && sidebarPosition === "left" && (
           <aside
-            className="flex-shrink-0 border-e border-border-default bg-surface-secondary"
+            className="flex min-h-0 flex-shrink-0 flex-col border-e border-border-default bg-surface-secondary"
             role="complementary"
             aria-label={sidebarAriaLabel}
           >
@@ -43,7 +43,7 @@ export const AppShell = ({
         </main>
         {sidebar && sidebarPosition === "right" && (
           <aside
-            className="flex-shrink-0 border-s border-border-default bg-surface-secondary"
+            className="flex min-h-0 flex-shrink-0 flex-col border-s border-border-default bg-surface-secondary"
             role="complementary"
             aria-label={sidebarAriaLabel}
           >

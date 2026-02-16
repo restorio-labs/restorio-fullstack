@@ -5,9 +5,10 @@ interface AppLayoutProps {
   children: ReactNode;
   header?: ReactNode;
   footer?: ReactNode;
+  sidebar?: ReactNode;
 }
 
-export const AppLayout = ({ children, header, footer }: AppLayoutProps): ReactNode => {
+export const AppLayout = ({ children, header, footer, sidebar }: AppLayoutProps): ReactNode => {
   return (
     <>
       <a
@@ -16,7 +17,7 @@ export const AppLayout = ({ children, header, footer }: AppLayoutProps): ReactNo
       >
         Skip to main content
       </a>
-      <AppShell header={header} footer={footer}>
+      <AppShell header={header} footer={footer} sidebar={sidebar}>
         <main id="main-content">{children}</main>
       </AppShell>
     </>
