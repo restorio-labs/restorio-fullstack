@@ -3,7 +3,7 @@ import { getAppUrl, getEnvironmentFromEnv } from "@restorio/utils";
 import type { ReactElement } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
-import { AdminSidebar } from "./components/AdminSidebar";
+import { AdminSidebar } from "./features/sidebar/AdminSidebar";
 import { AppLayout } from "./layouts/AppLayout";
 import {
   FloorEditorPage,
