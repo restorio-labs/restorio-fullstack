@@ -99,6 +99,7 @@ async def test_create_payment_success(
 async def test_create_payment_http_status_error(
     create_payment_request: CreatePaymentRequest,
 ) -> None:
+    status_code = 400
     with (
         patch("routes.v1.payments.create_payment.settings") as mock_settings,
         patch(
@@ -119,7 +120,7 @@ async def test_create_payment_http_status_error(
         with pytest.raises(ExternalAPIError) as exc_info:
             await create_payment(create_payment_request)
 
-        assert exc_info.value.status_code == 400
+        assert exc_info.value.status_code == status_code
         assert "Przelewy24" in exc_info.value.detail
         assert "Invalid merchant configuration" in exc_info.value.detail
 
@@ -128,6 +129,7 @@ async def test_create_payment_http_status_error(
 async def test_create_payment_request_error(
     create_payment_request: CreatePaymentRequest,
 ) -> None:
+    status_code = 503
     with (
         patch("routes.v1.payments.create_payment.settings") as mock_settings,
         patch(
@@ -147,6 +149,6 @@ async def test_create_payment_request_error(
         with pytest.raises(ServiceUnavailableError) as exc_info:
             await create_payment(create_payment_request)
 
-        assert exc_info.value.status_code == 503
+        assert exc_info.value.status_code == status_code
         assert "Przelewy24" in exc_info.value.detail
         assert "Connection refused" in exc_info.value.detail

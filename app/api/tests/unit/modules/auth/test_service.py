@@ -23,6 +23,7 @@ from modules.auth.service import (
 )
 
 PASSWORD_HASH_MIN_LENGTH = 50
+EXPECTED_NEW_LINK_COUNT = 2
 
 
 class FakeAsyncSession:
@@ -511,5 +512,5 @@ async def test_resend_activation_link_success_creates_new_link() -> None:
     assert new_link.user_id == link.user_id
     assert new_link.tenant_id == link.tenant_id
     assert result_tenant.id == tenant.id
-    assert len(session.activation_links) == 2
+    assert len(session.activation_links) == EXPECTED_NEW_LINK_COUNT
     assert link.last_resend_at is not None
