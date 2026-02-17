@@ -15,6 +15,7 @@ from core.foundation.security import hash_password
 from core.models.activation_link import ActivationLink
 from core.models.enums import AccountType, TenantStatus
 from core.models.tenant import Tenant
+from core.models.tenant_role import TenantRole
 from core.models.user import User
 from core.models.user_tenant import UserTenant
 
@@ -25,7 +26,7 @@ async def create_user_with_tenant(
     email: str,
     password: str,
     restaurant_name: str,
-) -> tuple[User, Tenant]:
+) -> tuple[User, Tenant, TenantRole]:
     slug = "".join(restaurant_name.split()).lower()
 
     existing_user = await session.scalar(select(User).where(User.email == email))
@@ -41,7 +42,6 @@ async def create_user_with_tenant(
     user = User(
         email=email,
         password_hash=hash_password(password),
-        account_type=AccountType.OWNER,
         is_active=False,
     )
     tenant = Tenant(
@@ -63,10 +63,15 @@ async def create_user_with_tenant(
         tenant_id=tenant.id,
         role=AccountType.OWNER,
     )
-    session.add(user_tenant)
+    tenant_role = TenantRole(
+        account_id=user.id,
+        tenant_id=tenant.id,
+        account_type=AccountType.OWNER,
+    )
+    session.add_all([user_tenant, tenant_role])
     await session.flush()
 
-    return user, tenant
+    return user, tenant, tenant_role
 
 
 async def create_activation_link(
