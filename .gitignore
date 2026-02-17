@@ -56,3 +56,6 @@ ENV/
 # Misc
 *.tsbuildinfo
 .cache/
+
+# Nginx
+nginx/certificate/

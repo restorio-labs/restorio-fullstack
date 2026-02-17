@@ -99,9 +99,10 @@ services:
     image: nginx:alpine
     container_name: restorio-nginx
     ports:
-      - "80:80"
+      - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certificate:/etc/nginx/ssl:ro
     depends_on:
       api:
         condition: service_healthy
