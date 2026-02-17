@@ -104,3 +104,21 @@ class TooManyRequestsError(BaseHTTPException):
             message=message,
             error_code="TOO_MANY_REQUESTS",
         )
+
+
+class ServiceUnavailableError(BaseHTTPException):
+    def __init__(self, message: str = "Service unavailable") -> None:
+        super().__init__(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            message=message,
+            error_code="SERVICE_UNAVAILABLE",
+        )
+
+
+class ExternalAPIError(BaseHTTPException):
+    def __init__(self, status_code: int, message: str) -> None:
+        super().__init__(
+            status_code=status_code,
+            message=message,
+            error_code="EXTERNAL_API_ERROR",
+        )

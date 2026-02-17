@@ -5,7 +5,9 @@ from core.exceptions import (
     BaseHTTPException,
     ConflictError,
     ForbiddenError,
+    GoneError,
     NotFoundError,
+    TooManyRequestsError,
     UnauthorizedError,
     ValidationError,
 )
@@ -144,3 +146,35 @@ class TestBadRequestError:
         assert exception.status_code == status.HTTP_400_BAD_REQUEST
         assert exception.detail == "Invalid input"
         assert exception.error_code == "BAD_REQUEST"
+
+
+class TestGoneError:
+    def test_gone_error_default_message(self) -> None:
+        exception = GoneError()
+
+        assert exception.status_code == status.HTTP_410_GONE
+        assert exception.detail == "Resource no longer available"
+        assert exception.error_code == "GONE"
+
+    def test_gone_error_custom_message(self) -> None:
+        exception = GoneError("Activation link has expired")
+
+        assert exception.status_code == status.HTTP_410_GONE
+        assert exception.detail == "Activation link has expired"
+        assert exception.error_code == "GONE"
+
+
+class TestTooManyRequestsError:
+    def test_too_many_requests_error_default_message(self) -> None:
+        exception = TooManyRequestsError()
+
+        assert exception.status_code == status.HTTP_429_TOO_MANY_REQUESTS
+        assert exception.detail == "Too many requests"
+        assert exception.error_code == "TOO_MANY_REQUESTS"
+
+    def test_too_many_requests_error_custom_message(self) -> None:
+        exception = TooManyRequestsError("Please wait before requesting another email.")
+
+        assert exception.status_code == status.HTTP_429_TOO_MANY_REQUESTS
+        assert exception.detail == "Please wait before requesting another email."
+        assert exception.error_code == "TOO_MANY_REQUESTS"

@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from core.models.restaurant_table import RestaurantTable
     from core.models.tenant_role import TenantRole
     from core.models.user_tenant import UserTenant
+    from core.models.venue import Venue
 
 
 class Tenant(Base):
@@ -53,4 +54,7 @@ class Tenant(Base):
     )
     audit_logs: Mapped[list[AuditLog]] = relationship(
         "AuditLog", back_populates="tenant", cascade="all, delete-orphan"
+    )
+    venues: Mapped[list[Venue]] = relationship(
+        "Venue", back_populates="tenant", cascade="all, delete-orphan"
     )
