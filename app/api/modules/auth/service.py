@@ -52,6 +52,9 @@ async def create_user_with_tenant(
 
     session.add_all([user, tenant])
     await session.flush()
+    user.tenant_id = tenant.id
+    tenant.owner_id = user.id
+    await session.flush()
     await session.refresh(user)
     await session.refresh(tenant)
 

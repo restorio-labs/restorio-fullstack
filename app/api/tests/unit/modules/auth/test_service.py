@@ -72,6 +72,8 @@ async def test_create_user_with_tenant_success() -> None:
     assert tenant.name == "My Restaurant"
     assert tenant.slug == "myrestaurant"
     assert tenant.status == TenantStatus.INACTIVE
+    assert tenant.owner_id == user.id
+    assert user.tenant_id == tenant.id
 
     assert len(session.user_tenants) == 1
     user_tenant = session.user_tenants[0]
@@ -185,3 +187,5 @@ async def test_create_user_with_tenant_user_tenant_relationship() -> None:
     assert user_tenant.user_id == user.id
     assert user_tenant.tenant_id == tenant.id
     assert user_tenant.role == AccountType.OWNER
+    assert tenant.owner_id == user.id
+    assert user.tenant_id == tenant.id
