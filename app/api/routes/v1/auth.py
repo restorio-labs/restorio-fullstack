@@ -26,7 +26,7 @@ async def login(credentials: UserLoginDTO) -> dict[str, str]:  # noqa: ARG001
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(data: RegisterDTO, session: PostgresSession) -> JSONResponse:
-    user, tenant = await create_user_with_tenant(
+    user, tenant, tenant_role = await create_user_with_tenant(
         session=session,
         email=data.email,
         password=data.password,
@@ -48,7 +48,7 @@ async def register(data: RegisterDTO, session: PostgresSession) -> JSONResponse:
         data=RegisterCreatedData(
             user_id=str(user.id),
             email=user.email,
-            account_type=user.account_type.value,
+            account_type=tenant_role.account_type.value,
             tenant_id=str(tenant.id),
             tenant_name=tenant.name,
             tenant_slug=tenant.slug,
