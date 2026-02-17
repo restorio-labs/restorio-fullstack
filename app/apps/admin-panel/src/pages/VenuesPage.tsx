@@ -16,9 +16,10 @@ export const VenuesPage = (): ReactElement => {
   useEffect(() => {
     const fetchVenues = async (): Promise<void> => {
       try {
-        const data = await api.venues.list();
+        const response = await api.venues.list();
+        const list = Array.isArray(response) ? response : ((response as { data: VenueSummary[] }).data ?? []);
 
-        setVenues(data);
+        setVenues(list);
         setLoadingState("loaded");
       } catch {
         setLoadingState("error");
