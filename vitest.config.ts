@@ -16,7 +16,7 @@ export default defineConfig({
     reporters: isCI ? ["default", "github-actions"] : ["default"],
 
     coverage: {
-      enabled: true,
+      enabled: isCI,
       provider: "v8",
       reportsDirectory: "./coverage",
 
