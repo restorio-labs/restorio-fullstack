@@ -9,7 +9,10 @@ from core.exceptions import (
     GoneError,
     NotFoundError,
     TooManyRequestsError,
+    UnauthorizedError,
 )
+from core.foundation.infra.config import settings
+from core.foundation.security import decode_access_token, hash_password
 from core.models.activation_link import ActivationLink
 from core.models.enums import AccountType, TenantStatus
 from core.models.tenant import Tenant
@@ -20,6 +23,7 @@ from modules.auth.service import (
     activate_account,
     create_activation_link,
     create_user_with_tenant,
+    login_user,
     resend_activation_link,
 )
 
@@ -38,10 +42,16 @@ class FakeAsyncSession:
 
     async def scalar(self, query: object) -> User | Tenant | None:
         query_str = str(query)
+        query_params: dict[str, object] = {}
+        if hasattr(query, "compile"):
+            query_params = query.compile().params
+
         if "users.email" in query_str:
-            return next((u for u in self.users), None)
+            email = next(iter(query_params.values()), None)
+            return next((u for u in self.users if u.email == email), None)
         if "tenants.slug" in query_str:
-            return next((t for t in self.tenants), None)
+            slug = next(iter(query_params.values()), None)
+            return next((t for t in self.tenants if t.slug == slug), None)
         return None
 
     def add_all(self, objects: list[object]) -> None:
@@ -521,3 +531,87 @@ async def test_resend_activation_link_success_creates_new_link() -> None:
     assert result_tenant.id == tenant.id
     assert len(session.activation_links) == EXPECTED_NEW_LINK_COUNT
     assert link.last_resend_at is not None
+
+
+@pytest.mark.asyncio
+async def test_login_user_success_returns_jwt_with_claims() -> None:
+    session = FakeAsyncSession()
+    tenant_id = uuid4()
+    user = User(
+        id=uuid4(),
+        email="owner@example.com",
+        password_hash=hash_password("my_password_123"),
+        tenant_id=tenant_id,
+        is_active=True,
+    )
+    session.users.append(user)
+
+    access_token, expires_in = await login_user(
+        session=session,
+        email="owner@example.com",
+        password="my_password_123",
+    )
+
+    assert isinstance(access_token, str)
+    assert expires_in == settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    decoded = decode_access_token(access_token)
+    assert decoded is not None
+    assert decoded["sub"] == str(user.id)
+    assert decoded["email"] == user.email
+    assert decoded["tenant_id"] == str(tenant_id)
+
+
+@pytest.mark.asyncio
+async def test_login_user_invalid_credentials() -> None:
+    session = FakeAsyncSession()
+    user = User(
+        id=uuid4(),
+        email="owner@example.com",
+        password_hash=hash_password("my_password_123"),
+        is_active=True,
+    )
+    session.users.append(user)
+
+    with pytest.raises(UnauthorizedError) as exc_info:
+        await login_user(
+            session=session,
+            email="owner@example.com",
+            password="wrong-password",
+        )
+
+    assert "invalid credentials" in exc_info.value.detail.lower()
+
+
+@pytest.mark.asyncio
+async def test_login_user_inactive_account() -> None:
+    session = FakeAsyncSession()
+    user = User(
+        id=uuid4(),
+        email="owner@example.com",
+        password_hash=hash_password("my_password_123"),
+        is_active=False,
+    )
+    session.users.append(user)
+
+    with pytest.raises(UnauthorizedError) as exc_info:
+        await login_user(
+            session=session,
+            email="owner@example.com",
+            password="my_password_123",
+        )
+
+    assert "not active" in exc_info.value.detail.lower()
+
+
+@pytest.mark.asyncio
+async def test_login_user_user_not_found() -> None:
+    session = FakeAsyncSession()
+
+    with pytest.raises(UnauthorizedError) as exc_info:
+        await login_user(
+            session=session,
+            email="missing@example.com",
+            password="my_password_123",
+        )
+
+    assert "invalid credentials" in exc_info.value.detail.lower()

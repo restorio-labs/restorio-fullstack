@@ -3,7 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
 
-from api.v1.dto.auth import RegisterCreatedData, RegisterDTO, TenantSlugData
+from api.v1.dto.auth import LoginResponseData, RegisterCreatedData, RegisterDTO, TenantSlugData
 from api.v1.dto.users import UserLoginDTO
 from core.foundation.dependencies import PostgresSession
 from core.foundation.http.responses import created_response, success_response
@@ -12,6 +12,7 @@ from modules.auth.service import (
     activate_account,
     create_activation_link,
     create_user_with_tenant,
+    login_user,
     resend_activation_link,
 )
 from modules.email.service import send_activation_email
@@ -20,8 +21,20 @@ router = APIRouter()
 
 
 @router.post("/login", status_code=status.HTTP_200_OK)
-async def login(credentials: UserLoginDTO) -> dict[str, str]:  # noqa: ARG001
-    return {"message": "Login endpoint - to be implemented"}
+async def login(credentials: UserLoginDTO, session: PostgresSession) -> JSONResponse:
+    access_token, expires_in = await login_user(
+        session=session,
+        email=credentials.email,
+        password=credentials.password,
+    )
+    return success_response(
+        data=LoginResponseData(
+            access_token=access_token,
+            token_type="bearer",
+            expires_in=expires_in,
+        ),
+        message="Login successful",
+    )
 
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)

@@ -33,3 +33,9 @@ class RegisterResponseDTO(BaseDTO):
 
 class TenantSlugData(BaseDTO):
     tenant_slug: str = Field(..., description="Tenant slug")
+
+
+class LoginResponseData(BaseDTO):
+    access_token: str = Field(..., description="JWT access token")
+    token_type: str = Field(default="bearer", description="Access token type")
+    expires_in: int = Field(..., description="Token expiry in seconds")
