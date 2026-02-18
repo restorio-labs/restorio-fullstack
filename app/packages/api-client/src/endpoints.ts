@@ -7,6 +7,7 @@ import {
   MenusResource,
   OrdersResource,
   AuthResource,
+  PaymentsResource,
 } from "./resources";
 
 /**
@@ -15,6 +16,7 @@ import {
  */
 export class RestorioApi {
   public readonly auth: AuthResource;
+  public readonly payments: PaymentsResource;
   public readonly restaurants: RestaurantsResource;
   public readonly menus: MenusResource;
   public readonly orders: OrdersResource;
@@ -24,6 +26,7 @@ export class RestorioApi {
 
   constructor(private client: ApiClient) {
     this.auth = new AuthResource(this.client);
+    this.payments = new PaymentsResource(this.client);
     this.restaurants = new RestaurantsResource(this.client);
     this.floorCanvases = new FloorCanvasesResource(this.client);
     this.menus = new MenusResource(this.client);
