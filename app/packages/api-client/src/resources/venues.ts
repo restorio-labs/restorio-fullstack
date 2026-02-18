@@ -8,11 +8,13 @@ export class VenuesResource extends BaseResource {
    * @param tenantId - The ID of the tenant to list venues for.
    * @returns A promise that resolves when the venues are listed.
    */
-  list(tenantId?: string, signal?: AbortSignal): Promise<VenueSummary[]> {
-    return this.client.get("/venues", {
+  async list(tenantId?: string, signal?: AbortSignal): Promise<VenueSummary[]> {
+    const response = await this.client.get<{ message: string; data: VenueSummary[] }>("/venues", {
       params: tenantId ? { tenant_id: tenantId } : undefined,
       signal,
     });
+
+    return response.data;
   }
 
   /**
