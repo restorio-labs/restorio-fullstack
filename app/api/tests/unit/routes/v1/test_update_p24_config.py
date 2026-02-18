@@ -1,8 +1,9 @@
 from datetime import UTC, datetime
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
 from fastapi import HTTPException
+from pydantic import ValidationError
 import pytest
 
 from api.v1.dto.payments import UpdateP24ConfigDTO
@@ -41,25 +42,35 @@ def _make_session(tenant=None):
 
 
 class TestUpdateP24Config:
+    EXAMPLE_MERCHANT_ID = 123456
+    EXAMPLE_API_KEY = "api-key-abc"
+    EXAMPLE_CRC_KEY = "crc-key-xyz"
+
     @pytest.mark.asyncio
     async def test_updates_tenant_p24_fields(self) -> None:
         tenant = _make_tenant()
         session = _make_session(tenant)
         request = UpdateP24ConfigDTO(
-            p24_merchantid=123456, p24_api="api-key-abc", p24_crc="crc-key-xyz"
+            p24_merchantid=self.EXAMPLE_MERCHANT_ID,
+            p24_api=self.EXAMPLE_API_KEY,
+            p24_crc=self.EXAMPLE_CRC_KEY,
         )
 
-        result = await update_p24_config(tenant.id, request, session)
+        await update_p24_config(tenant.id, request, session)
 
-        assert tenant.p24_merchantid == 123456
-        assert tenant.p24_api == "api-key-abc"
-        assert tenant.p24_crc == "crc-key-xyz"
+        assert tenant.p24_merchantid == self.EXAMPLE_MERCHANT_ID
+        assert tenant.p24_api == self.EXAMPLE_API_KEY
+        assert tenant.p24_crc == self.EXAMPLE_CRC_KEY
 
     @pytest.mark.asyncio
     async def test_commits_and_refreshes_session(self) -> None:
         tenant = _make_tenant()
         session = _make_session(tenant)
-        request = UpdateP24ConfigDTO(p24_merchantid=1, p24_api="key", p24_crc="crc")
+        request = UpdateP24ConfigDTO(
+            p24_merchantid=self.EXAMPLE_MERCHANT_ID,
+            p24_api=self.EXAMPLE_API_KEY,
+            p24_crc=self.EXAMPLE_CRC_KEY,
+        )
 
         await update_p24_config(tenant.id, request, session)
 
@@ -83,6 +94,7 @@ class TestUpdateP24Config:
 
     @pytest.mark.asyncio
     async def test_raises_404_when_tenant_not_found(self) -> None:
+        status_code = 404
         session = _make_session(tenant=None)
         tenant_id = uuid4()
         request = UpdateP24ConfigDTO(p24_merchantid=1, p24_api="key", p24_crc="crc")
@@ -90,7 +102,7 @@ class TestUpdateP24Config:
         with pytest.raises(HTTPException) as exc_info:
             await update_p24_config(tenant_id, request, session)
 
-        assert exc_info.value.status_code == 404
+        assert exc_info.value.status_code == status_code
         assert str(tenant_id) in exc_info.value.detail
 
     @pytest.mark.asyncio
@@ -101,47 +113,55 @@ class TestUpdateP24Config:
 
         await update_p24_config(tenant.id, request, session)
 
-        assert tenant.p24_merchantid == 222
-        assert tenant.p24_api == "new-api"
-        assert tenant.p24_crc == "new-crc"
+        assert tenant.p24_merchantid == self.EXAMPLE_MERCHANT_ID
+        assert tenant.p24_api == self.EXAMPLE_API_KEY
+        assert tenant.p24_crc == self.EXAMPLE_CRC_KEY
 
 
 class TestUpdateP24ConfigDTOValidation:
+    MAX_MERCHANT_ID = 999_999
+    MAX_API_KEY_LENGTH = 32
+    MAX_CRC_KEY_LENGTH = 16
+
+    EXAMPLE_MERCHANT_ID = 123456
+    EXAMPLE_API_KEY = "api-key"
+    EXAMPLE_CRC_KEY = "crc-key"
+
     def test_valid_dto(self) -> None:
-        dto = UpdateP24ConfigDTO(p24_merchantid=123456, p24_api="api-key", p24_crc="crc-key")
-        assert dto.p24_merchantid == 123456
-        assert dto.p24_api == "api-key"
-        assert dto.p24_crc == "crc-key"
+        dto = UpdateP24ConfigDTO(
+            p24_merchantid=self.EXAMPLE_MERCHANT_ID,
+            p24_api=self.EXAMPLE_API_KEY,
+            p24_crc=self.EXAMPLE_CRC_KEY,
+        )
+        assert dto.p24_merchantid == self.EXAMPLE_MERCHANT_ID
+        assert dto.p24_api == self.EXAMPLE_API_KEY
+        assert dto.p24_crc == self.EXAMPLE_CRC_KEY
 
     def test_merchant_id_max_6_digits(self) -> None:
-        from pydantic import ValidationError
-
         with pytest.raises(ValidationError):
             UpdateP24ConfigDTO(p24_merchantid=1_000_000, p24_api="key", p24_crc="crc")
 
     def test_merchant_id_cannot_be_negative(self) -> None:
-        from pydantic import ValidationError
-
         with pytest.raises(ValidationError):
             UpdateP24ConfigDTO(p24_merchantid=-1, p24_api="key", p24_crc="crc")
 
     def test_api_key_max_length_32(self) -> None:
-        from pydantic import ValidationError
-
         with pytest.raises(ValidationError):
             UpdateP24ConfigDTO(p24_merchantid=1, p24_api="a" * 33, p24_crc="crc")
 
     def test_crc_key_max_length_16(self) -> None:
-        from pydantic import ValidationError
-
         with pytest.raises(ValidationError):
             UpdateP24ConfigDTO(p24_merchantid=1, p24_api="key", p24_crc="a" * 17)
 
     def test_boundary_values_accepted(self) -> None:
-        dto = UpdateP24ConfigDTO(p24_merchantid=999_999, p24_api="a" * 32, p24_crc="b" * 16)
-        assert dto.p24_merchantid == 999_999
-        assert len(dto.p24_api) == 32
-        assert len(dto.p24_crc) == 16
+        dto = UpdateP24ConfigDTO(
+            p24_merchantid=self.MAX_MERCHANT_ID,
+            p24_api="a" * self.MAX_API_KEY_LENGTH,
+            p24_crc="b" * self.MAX_CRC_KEY_LENGTH,
+        )
+        assert dto.p24_merchantid == self.MAX_MERCHANT_ID
+        assert len(dto.p24_api) == self.MAX_API_KEY_LENGTH
+        assert len(dto.p24_crc) == self.MAX_CRC_KEY_LENGTH
 
     def test_zero_merchant_id_accepted(self) -> None:
         dto = UpdateP24ConfigDTO(p24_merchantid=0, p24_api="key", p24_crc="crc")
