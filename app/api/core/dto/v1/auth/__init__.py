@@ -12,7 +12,6 @@ class RegisterDTO(BaseDTO):
 class RegisterCreatedData(BaseDTO):
     user_id: str = Field(..., description="Created user ID")
     email: EmailStr = Field(..., description="User email")
-    account_type: str = Field(..., description="Account type")
     tenant_id: str = Field(..., description="Created tenant ID")
     tenant_name: str = Field(..., description="Tenant name")
     tenant_slug: str = Field(..., description="Tenant slug")

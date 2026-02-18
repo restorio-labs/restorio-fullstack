@@ -14,6 +14,11 @@ from services.external_client_service import ExternalClient
 from services.floor_canvas_service import FloorCanvasService
 from services.payment_service import P24Service
 from services.tenant_service import TenantService
+from services.user_service import UserService
+
+
+def get_user_service() -> UserService:
+    return UserService(security=security_service)
 
 
 async def get_mongo_database() -> AsyncIOMotorDatabase:
@@ -61,6 +66,7 @@ TenantServiceDep = Annotated[TenantService, Depends(get_tenant_service)]
 FloorCanvasServiceDep = Annotated[FloorCanvasService, Depends(get_floor_canvas_service)]
 P24ServiceDep = Annotated[P24Service, Depends(get_p24_service)]
 ExternalClientDep = Annotated[ExternalClient, Depends(get_external_client)]
+UserServiceDep = Annotated[UserService, Depends(get_user_service)]
 
 MongoDB = Annotated[AsyncIOMotorDatabase, Depends(get_mongo_database)]
 PostgresPool = Annotated[Pool, Depends(get_postgres_connection_pool)]

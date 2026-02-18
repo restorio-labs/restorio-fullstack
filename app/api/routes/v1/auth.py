@@ -4,7 +4,11 @@ from fastapi import APIRouter, status
 
 from core.dto.v1.auth import RegisterCreatedData, RegisterDTO, TenantSlugData
 from core.dto.v1.users import UserLoginDTO
-from core.foundation.dependencies import AuthServiceDep, EmailServiceDep, PostgresSession
+from core.foundation.dependencies import (
+    EmailServiceDep,
+    PostgresSession,
+    UserServiceDep,
+)
 from core.foundation.http.responses import CreatedResponse, SuccessResponse
 from core.foundation.infra.config import settings
 
@@ -27,16 +31,16 @@ async def login(credentials: UserLoginDTO) -> dict[str, str]:  # noqa: ARG001
 async def register(
     data: RegisterDTO,
     session: PostgresSession,
-    service: AuthServiceDep,
+    user_service: UserServiceDep,
     email_service: EmailServiceDep,
 ) -> CreatedResponse[RegisterCreatedData]:
-    user, tenant = await service.create_user_with_tenant(
+    user, tenant, _ = await user_service.create_user_with_tenant(
         session=session,
         email=data.email,
         password=data.password,
         restaurant_name=data.restaurant_name,
     )
-    activation = await service.create_activation_link(
+    activation = await email_service.create_activation_link(
         session=session,
         email=user.email,
         user_id=user.id,
@@ -70,9 +74,9 @@ async def register(
     response_description="Tenant activated successfully",
 )
 async def activate(
-    activation_id: UUID, session: PostgresSession, service: AuthServiceDep
+    activation_id: UUID, session: PostgresSession, email_service: EmailServiceDep
 ) -> SuccessResponse[TenantSlugData]:
-    tenant, already_activated = await service.activate_account(
+    tenant, already_activated = await email_service.activate_account(
         session=session, activation_id=activation_id
     )
     return SuccessResponse(
@@ -94,10 +98,9 @@ async def activate(
 async def resend_activation(
     activation_id: UUID,
     session: PostgresSession,
-    service: AuthServiceDep,
     email_service: EmailServiceDep,
 ) -> SuccessResponse[TenantSlugData]:
-    new_link, tenant = await service.resend_activation_link(
+    new_link, tenant = await email_service.resend_activation_link(
         session=session, activation_id=activation_id
     )
     activation_url = f"{settings.FRONTEND_URL}/activate?activation_id={new_link.id}"
