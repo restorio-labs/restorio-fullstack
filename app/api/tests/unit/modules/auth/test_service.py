@@ -13,6 +13,7 @@ from core.exceptions import (
 from core.models.activation_link import ActivationLink
 from core.models.enums import AccountType, TenantStatus
 from core.models.tenant import Tenant
+from core.models.tenant_role import TenantRole
 from core.models.user import User
 from core.models.user_tenant import UserTenant
 from modules.auth.service import (
@@ -31,6 +32,7 @@ class FakeAsyncSession:
         self.users: list[User] = []
         self.tenants: list[Tenant] = []
         self.user_tenants: list[UserTenant] = []
+        self.tenant_roles: list[TenantRole] = []
         self.activation_links: list[ActivationLink] = []
         self.added_objects: list[object] = []
 
@@ -69,12 +71,12 @@ class FakeAsyncSession:
                 self.tenants.append(obj)
             elif isinstance(obj, UserTenant):
                 self.user_tenants.append(obj)
+            elif isinstance(obj, TenantRole):
+                self.tenant_roles.append(obj)
             elif isinstance(obj, ActivationLink):
                 if not hasattr(obj, "id") or obj.id is None:
                     obj.id = uuid4()
                 self.activation_links.append(obj)
-            elif isinstance(obj, UserTenant):
-                self.user_tenants.append(obj)
         self.added_objects.clear()
 
     async def refresh(self, obj: object) -> None:
@@ -85,7 +87,7 @@ class FakeAsyncSession:
 async def test_create_user_with_tenant_success() -> None:
     session = FakeAsyncSession()
 
-    user, tenant = await create_user_with_tenant(
+    user, tenant, tenant_role = await create_user_with_tenant(
         session=session,
         email="owner@example.com",
         password="secure_password",
@@ -94,7 +96,6 @@ async def test_create_user_with_tenant_success() -> None:
 
     assert user is not None
     assert user.email == "owner@example.com"
-    assert user.account_type == AccountType.OWNER
     assert user.is_active is False
     assert user.password_hash != "secure_password"
     assert len(user.password_hash) > 0
@@ -103,12 +104,19 @@ async def test_create_user_with_tenant_success() -> None:
     assert tenant.name == "My Restaurant"
     assert tenant.slug == "myrestaurant"
     assert tenant.status == TenantStatus.INACTIVE
+    assert tenant.owner_id == user.id
+    assert user.tenant_id == tenant.id
 
     assert len(session.user_tenants) == 1
     user_tenant = session.user_tenants[0]
     assert user_tenant.user_id == user.id
     assert user_tenant.tenant_id == tenant.id
     assert user_tenant.role == AccountType.OWNER
+    assert len(session.tenant_roles) == 1
+    assert session.tenant_roles[0] is tenant_role
+    assert tenant_role.account_id == user.id
+    assert tenant_role.tenant_id == tenant.id
+    assert tenant_role.account_type == AccountType.OWNER
 
 
 @pytest.mark.asyncio
@@ -125,7 +133,7 @@ async def test_create_user_with_tenant_slug_generation() -> None:
 
     for restaurant_name, expected_slug in test_cases:
         session = FakeAsyncSession()
-        _, tenant = await create_user_with_tenant(
+        _, tenant, _ = await create_user_with_tenant(
             session=session,
             email=f"owner{expected_slug}@example.com",
             password="password",
@@ -142,7 +150,6 @@ async def test_create_user_with_tenant_duplicate_email() -> None:
         id=uuid4(),
         email="existing@example.com",
         password_hash="hashed",
-        account_type=AccountType.OWNER,
         is_active=True,
     )
     session.users.append(existing_user)
@@ -187,7 +194,7 @@ async def test_create_user_with_tenant_password_is_hashed() -> None:
 
     plain_password = "my_secure_password_123"
 
-    user, _ = await create_user_with_tenant(
+    user, _, _ = await create_user_with_tenant(
         session=session,
         email="test@example.com",
         password=plain_password,
@@ -203,7 +210,7 @@ async def test_create_user_with_tenant_password_is_hashed() -> None:
 async def test_create_user_with_tenant_user_tenant_relationship() -> None:
     session = FakeAsyncSession()
 
-    user, tenant = await create_user_with_tenant(
+    user, tenant, tenant_role = await create_user_with_tenant(
         session=session,
         email="owner@example.com",
         password="password",
@@ -216,6 +223,13 @@ async def test_create_user_with_tenant_user_tenant_relationship() -> None:
     assert user_tenant.user_id == user.id
     assert user_tenant.tenant_id == tenant.id
     assert user_tenant.role == AccountType.OWNER
+    assert len(session.tenant_roles) == 1
+    assert session.tenant_roles[0] is tenant_role
+    assert tenant_role.account_id == user.id
+    assert tenant_role.tenant_id == tenant.id
+    assert tenant_role.account_type == AccountType.OWNER
+    assert tenant.owner_id == user.id
+    assert user.tenant_id == tenant.id
 
 
 @pytest.mark.asyncio

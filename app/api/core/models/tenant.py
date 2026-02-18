@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
-from sqlalchemy import DateTime, Enum, Integer, String, func
+from sqlalchemy import DateTime, Enum, Integer, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from core.models.audit_log import AuditLog
     from core.models.order import Order
     from core.models.restaurant_table import RestaurantTable
+    from core.models.tenant_role import TenantRole
     from core.models.user_tenant import UserTenant
     from core.models.venue import Venue
 
@@ -25,6 +26,11 @@ class Tenant(Base):
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     slug: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+    owner_id: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
     status: Mapped[TenantStatus] = mapped_column(
         Enum(TenantStatus, name="tenant_status", create_constraint=True),
         nullable=False,
@@ -39,6 +45,9 @@ class Tenant(Base):
 
     user_tenants: Mapped[list[UserTenant]] = relationship(
         "UserTenant", back_populates="tenant", cascade="all, delete-orphan"
+    )
+    tenant_roles: Mapped[list[TenantRole]] = relationship(
+        "TenantRole", back_populates="tenant", cascade="all, delete-orphan"
     )
     restaurant_tables: Mapped[list[RestaurantTable]] = relationship(
         "RestaurantTable", back_populates="tenant", cascade="all, delete-orphan"
