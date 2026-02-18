@@ -3,7 +3,7 @@ import { Button, FloorCanvas, useDragResize, type DragResizeMode, useSnapToGrid 
 import type { ReactElement } from "react";
 import { useCallback, useEffect, useReducer, useState } from "react";
 
-import { createElementFromToAdd, layoutHistoryReducer } from "../features/floor/types";
+import { createElementFromToAdd, layoutHistoryReducer } from "../features/floor/floorLayoutState";
 
 const GRID_CELL = 20;
 const HANDLE_SIZE = 12;
@@ -88,13 +88,13 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
 
   const addElement = useCallback(
     (toAdd: ElementToAdd) => {
-      const el = createElementFromToAdd(toAdd, state.layout.venueId);
+      const el = createElementFromToAdd(toAdd, state.layout.tenantId);
       const x = 80 + (state.layout.elements.length % 5) * 100;
       const y = 80 + Math.floor(state.layout.elements.length / 5) * 100;
 
       dispatch({ type: "ADD_ELEMENT", payload: { element: el, x, y } });
     },
-    [state.layout.venueId, state.layout.elements.length],
+    [state.layout.tenantId, state.layout.elements.length],
   );
 
   const handleAddTable = useCallback(() => {

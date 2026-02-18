@@ -2,17 +2,18 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from modules.email.service import send_activation_email
+from services.email_service import EmailService
 
 
 @pytest.mark.asyncio
 async def test_send_activation_email_raises_when_resend_api_key_missing() -> None:
-    with patch("modules.email.service.settings") as mock_settings:
+    with patch("services.email_service.settings") as mock_settings:
         mock_settings.RESEND_API_KEY = ""
         mock_settings.RESEND_FROM_EMAIL = "from@example.com"
+        email_service = EmailService()
 
         with pytest.raises(RuntimeError) as exc_info:
-            await send_activation_email(
+            await email_service.send_activation_email(
                 to_email="user@example.com",
                 restaurant_name="My Restaurant",
                 activation_link="https://example.com/activate?id=1",
@@ -23,12 +24,13 @@ async def test_send_activation_email_raises_when_resend_api_key_missing() -> Non
 
 @pytest.mark.asyncio
 async def test_send_activation_email_raises_when_resend_from_email_missing() -> None:
-    with patch("modules.email.service.settings") as mock_settings:
+    with patch("services.email_service.settings") as mock_settings:
         mock_settings.RESEND_API_KEY = "api-key"
         mock_settings.RESEND_FROM_EMAIL = ""
+        email_service = EmailService()
 
         with pytest.raises(RuntimeError) as exc_info:
-            await send_activation_email(
+            await email_service.send_activation_email(
                 to_email="user@example.com",
                 restaurant_name="My Restaurant",
                 activation_link="https://example.com/activate?id=1",
@@ -40,14 +42,15 @@ async def test_send_activation_email_raises_when_resend_from_email_missing() -> 
 @pytest.mark.asyncio
 async def test_send_activation_email_calls_resend_with_correct_payload() -> None:
     with (
-        patch("modules.email.service.settings") as mock_settings,
-        patch("modules.email.service.asyncio.to_thread", new_callable=AsyncMock) as mock_to_thread,
+        patch("services.email_service.settings") as mock_settings,
+        patch("services.email_service.asyncio.to_thread", new_callable=AsyncMock) as mock_to_thread,
     ):
         mock_settings.RESEND_API_KEY = "test-key"
         mock_settings.RESEND_FROM_EMAIL = "noreply@restorio.com"
         mock_to_thread.return_value = None
+        email_service = EmailService()
 
-        await send_activation_email(
+        await email_service.send_activation_email(
             to_email="user@example.com",
             restaurant_name="My Restaurant",
             activation_link="https://example.com/activate?id=abc",

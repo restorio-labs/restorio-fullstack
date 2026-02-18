@@ -12,7 +12,13 @@ class Settings(BaseSettings):
 
     API_V1_PREFIX: str = "/api/v1"
 
-    CORS_ORIGINS: list[str] = ["*"]
+    CORS_ORIGINS: list[str] = [
+        "localhost:3000",
+        "localhost:3001",
+        "localhost:3002",
+        "localhost:3003",
+        "localhost:3004",
+    ]
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod

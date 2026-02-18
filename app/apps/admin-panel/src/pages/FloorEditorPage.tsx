@@ -1,4 +1,4 @@
-import type { FloorCanvas as FloorCanvasType, Venue } from "@restorio/types";
+import type { FloorCanvas as FloorCanvasType, Tenant } from "@restorio/types";
 import { useEffect, useState, type ReactElement } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 
@@ -8,14 +8,14 @@ import { FloorLayoutEditorView } from "../views/FloorLayoutEditorView";
 
 type LoadingState = "loading" | "loaded" | "error" | "not-found";
 
-const getActiveCanvas = (venue: Venue): FloorCanvasType | undefined => {
-  const canvases = venue.floorCanvases;
+const getActiveCanvas = (tenant: Tenant): FloorCanvasType | undefined => {
+  const canvases = tenant.floorCanvases;
 
   if (canvases.length === 0) {
     return undefined;
   }
 
-  return canvases.find((c) => c.id === venue.activeLayoutVersionId) ?? canvases[0];
+  return canvases.find((c) => c.id === tenant.activeLayoutVersionId) ?? canvases[0];
 };
 
 export const FloorEditorPage = (): ReactElement => {
@@ -23,7 +23,7 @@ export const FloorEditorPage = (): ReactElement => {
   const navigate = useNavigate();
 
   const [loadingState, setLoadingState] = useState<LoadingState>("loading");
-  const [venue, setVenue] = useState<Venue | null>(null);
+  const [tenant, setTenant] = useState<Tenant | null>(null);
 
   useEffect(() => {
     if (!venueId) {
@@ -32,7 +32,7 @@ export const FloorEditorPage = (): ReactElement => {
       return;
     }
 
-    const fetchVenue = async (): Promise<void> => {
+    const fetchTenant = async (): Promise<void> => {
       if (!venueId) {
         setLoadingState("not-found");
 
@@ -40,9 +40,9 @@ export const FloorEditorPage = (): ReactElement => {
       }
 
       try {
-        const data = await api.venues.get(venueId);
+        const data = await api.tenants.get(venueId);
 
-        setVenue(data);
+        setTenant(data);
         setLoadingState("loaded");
       } catch (error) {
         const httpError = error as { response?: { status?: number } };
@@ -55,7 +55,7 @@ export const FloorEditorPage = (): ReactElement => {
       }
     };
 
-    void fetchVenue();
+    void fetchTenant();
   }, [venueId]);
 
   const headerActions = (
@@ -78,7 +78,7 @@ export const FloorEditorPage = (): ReactElement => {
     );
   }
 
-  if (loadingState === "not-found" || !venue) {
+  if (loadingState === "not-found" || !tenant) {
     return <Navigate to="/" replace />;
   }
 
@@ -92,12 +92,12 @@ export const FloorEditorPage = (): ReactElement => {
     );
   }
 
-  const hasCanvases = venue.floorCanvases.length > 0;
-  const activeCanvas = hasCanvases ? getActiveCanvas(venue) : undefined;
+  const hasCanvases = tenant.floorCanvases.length > 0;
+  const activeCanvas = hasCanvases ? getActiveCanvas(tenant) : undefined;
 
   if (!hasCanvases || activeCanvas === undefined) {
     return (
-      <PageLayout title="Floor layout" description={venue.name} headerActions={headerActions}>
+      <PageLayout title="Floor layout" description={tenant.name} headerActions={headerActions}>
         <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-text-tertiary">
           No saved floor layouts exist for this venue yet. Add one from the venues list or contact support if you
           believe this is an error.
@@ -108,7 +108,7 @@ export const FloorEditorPage = (): ReactElement => {
 
   const handleSave = async (layout: FloorCanvasType): Promise<void> => {
     try {
-      await api.floorCanvases.update(venue.id, activeCanvas.id, {
+      await api.floorCanvases.update(tenant.id, activeCanvas.id, {
         name: layout.name,
         width: layout.width,
         height: layout.height,
@@ -120,7 +120,7 @@ export const FloorEditorPage = (): ReactElement => {
   };
 
   return (
-    <PageLayout title={`Floor: ${activeCanvas.name}`} description={venue.name} headerActions={headerActions}>
+    <PageLayout title={`Floor: ${activeCanvas.name}`} description={tenant.name} headerActions={headerActions}>
       <FloorLayoutEditorView initialLayout={activeCanvas} onSave={handleSave} />
     </PageLayout>
   );

@@ -1,81 +1,61 @@
-from fastapi import status
-from fastapi.responses import JSONResponse
+from typing import TypeVar
 
-from core.foundation.http.schemas import (
-    CreatedResponse,
-    DeletedResponse,
-    ErrorResponse,
-    PaginatedResponse,
-    SuccessResponse,
-    UpdatedResponse,
-)
+from pydantic import BaseModel
+
+T = TypeVar("T")
 
 
-def success_response[T](
-    data: T,
-    message: str | None = None,
-    status_code: int = status.HTTP_200_OK,
-) -> JSONResponse:
-    response = SuccessResponse[T](message=message, data=data)
-    return JSONResponse(
-        status_code=status_code,
-        content=response.model_dump(exclude_none=True),
-    )
+class SuccessResponse[T](BaseModel):
+    message: str | None = None
+    data: T
 
 
-def created_response[T](
-    data: T,
-    message: str = "Resource created successfully",
-) -> JSONResponse:
-    response = CreatedResponse[T](message=message, data=data)
-    return JSONResponse(
-        status_code=status.HTTP_201_CREATED,
-        content=response.model_dump(),
-    )
+class CreatedResponse[T](BaseModel):
+    message: str = "Resource created successfully"
+    data: T
 
 
-def updated_response[T](
-    data: T,
-    message: str = "Resource updated successfully",
-) -> JSONResponse:
-    response = UpdatedResponse[T](message=message, data=data)
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content=response.model_dump(),
-    )
+class UpdatedResponse[T](BaseModel):
+    message: str = "Resource updated successfully"
+    data: T
 
 
-def deleted_response(
-    message: str = "Resource deleted successfully",
-) -> JSONResponse:
-    response = DeletedResponse(message=message)
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content=response.model_dump(),
-    )
+class DeletedResponse(BaseModel):
+    message: str = "Resource deleted successfully"
 
 
-def paginated_response[T](
-    paginated_data: PaginatedResponse[T],
-) -> JSONResponse:
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content=paginated_data.model_dump(),
-    )
+class ErrorResponse(BaseModel):
+    error_code: str
+    message: str
+    details: dict | None = None
 
 
-def error_response(
-    error_code: str,
-    message: str,
-    status_code: int = status.HTTP_400_BAD_REQUEST,
-    details: dict | None = None,
-) -> JSONResponse:
-    response = ErrorResponse(
-        error_code=error_code,
-        message=message,
-        details=details,
-    )
-    return JSONResponse(
-        status_code=status_code,
-        content=response.model_dump(exclude_none=True),
-    )
+class ValidationErrorResponse(BaseModel):
+    error_code: str = "VALIDATION_ERROR"
+    message: str = "Validation failed"
+    errors: list[dict[str, str]]
+
+
+class PaginatedResponse[T](BaseModel):
+    items: list[T]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
+    @classmethod
+    def create(
+        cls,
+        items: list[T],
+        total: int,
+        page: int,
+        page_size: int,
+    ) -> "PaginatedResponse[T]":
+        total_pages = (total + page_size - 1) // page_size if page_size > 0 else 0
+        return cls(
+            items=items,
+            total=total,
+            page=page,
+            page_size=page_size,
+            total_pages=total_pages,
+        )

@@ -2,7 +2,7 @@ import type { ApiClient } from "./client";
 import {
   RestaurantsResource,
   TablesResource,
-  VenuesResource,
+  TenantsResource,
   FloorCanvasesResource,
   MenusResource,
   OrdersResource,
@@ -21,7 +21,7 @@ export class RestorioApi {
   public readonly menus: MenusResource;
   public readonly orders: OrdersResource;
   public readonly tables: TablesResource;
-  public readonly venues: VenuesResource;
+  public readonly tenants: TenantsResource;
   public readonly floorCanvases: FloorCanvasesResource;
 
   constructor(private client: ApiClient) {
@@ -32,6 +32,6 @@ export class RestorioApi {
     this.menus = new MenusResource(this.client);
     this.orders = new OrdersResource(this.client);
     this.tables = new TablesResource(this.client);
-    this.venues = new VenuesResource(this.client);
+    this.tenants = new TenantsResource(this.client);
   }
 }

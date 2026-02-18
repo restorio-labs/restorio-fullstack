@@ -1,7 +1,7 @@
 from pydantic import ValidationError
 import pytest
 
-from api.v1.dto.common import (
+from core.dto.v1.common import (
     BaseDTO,
     CurrencyCode,
     OrderStatus,

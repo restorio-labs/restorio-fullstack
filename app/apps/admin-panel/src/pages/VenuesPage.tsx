@@ -1,4 +1,4 @@
-import type { VenueSummary } from "@restorio/types";
+import type { FloorCanvas, Tenant, TenantSummary } from "@restorio/types";
 import { useEffect, useState, type ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -8,24 +8,48 @@ import { VenuesView } from "../views/VenuesView";
 
 type LoadingState = "loading" | "loaded" | "error";
 
+const getActiveCanvas = (tenant: Tenant): FloorCanvas | null => {
+  if (tenant.floorCanvases.length === 0) {
+    return null;
+  }
+
+  return tenant.floorCanvases.find((canvas) => canvas.id === tenant.activeLayoutVersionId) ?? tenant.floorCanvases[0];
+};
+
 export const VenuesPage = (): ReactElement => {
   const navigate = useNavigate();
   const [loadingState, setLoadingState] = useState<LoadingState>("loading");
-  const [venues, setVenues] = useState<VenueSummary[]>([]);
+  const [tenants, setTenants] = useState<TenantSummary[]>([]);
+  const [activeCanvasesByTenantId, setActiveCanvasesByTenantId] = useState<Record<string, FloorCanvas | null>>({});
 
   useEffect(() => {
-    const fetchVenues = async (): Promise<void> => {
+    const fetchTenants = async (): Promise<void> => {
       try {
-        const data = await api.venues.list();
+        const data = await api.tenants.list();
+        const tenantsWithCanvases = data.filter((tenant) => tenant.floorCanvasCount > 0);
+        const tenantDetails = await Promise.allSettled(tenantsWithCanvases.map((tenant) => api.tenants.get(tenant.id)));
+        const nextActiveCanvasesByTenantId: Record<string, FloorCanvas | null> = {};
 
-        setVenues(data);
+        tenantDetails.forEach((result, index) => {
+          if (result.status !== "fulfilled") {
+            return;
+          }
+
+          const tenantSummary = tenantsWithCanvases[index];
+          const activeCanvas = getActiveCanvas(result.value);
+
+          nextActiveCanvasesByTenantId[tenantSummary.id] = activeCanvas;
+        });
+
+        setTenants(data);
+        setActiveCanvasesByTenantId(nextActiveCanvasesByTenantId);
         setLoadingState("loaded");
       } catch {
         setLoadingState("error");
       }
     };
 
-    void fetchVenues();
+    void fetchTenants();
   }, []);
 
   if (loadingState === "loading") {
@@ -50,7 +74,12 @@ export const VenuesPage = (): ReactElement => {
 
   return (
     <PageLayout title="Venues" description="Manage venue floor layouts">
-      <VenuesView venues={venues} onSelectVenue={(venue) => navigate(`/venues/${venue.id}/floor`)} />
+      <VenuesView
+        venues={tenants}
+        activeCanvasesByVenueId={activeCanvasesByTenantId}
+        onSelectVenue={(tenant) => navigate(`/venues/${tenant.id}/floor`)}
+        onAddVenue={() => navigate("/venue-creator")}
+      />
     </PageLayout>
   );
 };

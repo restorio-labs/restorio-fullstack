@@ -3,11 +3,11 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
 
-from api.v1.dto.payments import UpdateP24ConfigDTO
-from api.v1.dto.tenants import TenantResponseDTO
+from core.dto.v1.payments import UpdateP24ConfigDTO
+from core.dto.v1.tenants import TenantResponseDTO
 from core.foundation.dependencies import PostgresSession
-from core.foundation.http.schemas import UpdatedResponse
-from core.models import Tenant
+from core.foundation.http.responses import UpdatedResponse
+from core.models.tenant import Tenant
 
 router = APIRouter()
 

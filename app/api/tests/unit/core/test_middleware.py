@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 import pytest
@@ -49,9 +51,51 @@ async def test_unauthorized_middleware_passes_other_status() -> None:
         return Response(status_code=200)
 
     middleware = UnauthorizedMiddleware(call_next)
-    scope = {"type": "http", "method": "GET", "path": "/", "headers": []}
+    scope = {
+        "type": "http",
+        "method": "GET",
+        "path": "/",
+        "headers": [(b"authorization", b"Bearer valid-token")],
+    }
+    request = Request(scope)
+
+    with patch.object(middleware._security, "decode_access_token", return_value={"sub": "user-1"}):
+        response = await middleware.dispatch(request, call_next)
+
+    assert response.status_code == 200  # noqa: PLR2004
+
+
+@pytest.mark.asyncio
+async def test_unauthorized_middleware_allows_public_routes() -> None:
+    async def call_next(_: Request) -> Response:
+        return Response(status_code=204)
+
+    middleware = UnauthorizedMiddleware(call_next)
+    scope = {"type": "http", "method": "GET", "path": "/docs", "headers": []}
     request = Request(scope)
 
     response = await middleware.dispatch(request, call_next)
 
-    assert response.status_code == 200  # noqa: PLR2004
+    assert response.status_code == 204  # noqa: PLR2004
+
+
+@pytest.mark.asyncio
+async def test_unauthorized_middleware_returns_401_on_invalid_token() -> None:
+    async def call_next(_: Request) -> Response:
+        return Response(status_code=200)
+
+    middleware = UnauthorizedMiddleware(call_next)
+    scope = {
+        "type": "http",
+        "method": "GET",
+        "path": "/",
+        "headers": [(b"authorization", b"Bearer invalid-token")],
+    }
+    request = Request(scope)
+
+    with patch.object(
+        middleware._security, "decode_access_token", side_effect=Exception("bad token")
+    ):
+        response = await middleware.dispatch(request, call_next)
+
+    assert response.status_code == 401  # noqa: PLR2004

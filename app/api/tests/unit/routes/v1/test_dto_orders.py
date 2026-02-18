@@ -5,8 +5,8 @@ from uuid import uuid4
 from pydantic import ValidationError
 import pytest
 
-from api.v1.dto.common import OrderStatus
-from api.v1.dto.orders import (
+from core.dto.v1.common import OrderStatus
+from core.dto.v1.orders import (
     CreateOrderDTO,
     CreateOrderItemDTO,
     OrderItemResponseDTO,

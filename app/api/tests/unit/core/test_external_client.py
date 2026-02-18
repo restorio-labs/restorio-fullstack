@@ -4,7 +4,7 @@ import httpx
 import pytest
 
 from core.exceptions import ExternalAPIError, ServiceUnavailableError
-from core.foundation.http.external_client import external_post_json
+from services.external_client_service import ExternalClient
 
 
 @pytest.mark.asyncio
@@ -13,12 +13,12 @@ async def test_external_post_json_success_returns_json() -> None:
     mock_response.raise_for_status = MagicMock()
     mock_response.json.return_value = {"token": "abc123", "status": "ok"}
 
-    with patch("core.foundation.http.external_client.httpx.AsyncClient") as mock_client_cls:
+    with patch("services.external_client_service.httpx.AsyncClient") as mock_client_cls:
         mock_post = AsyncMock(return_value=mock_response)
         mock_client_cls.return_value.__aenter__.return_value.post = mock_post
         mock_client_cls.return_value.__aexit__ = AsyncMock(return_value=None)
 
-        result = await external_post_json(
+        result = await ExternalClient().external_post_json(
             "https://api.example.com/register",
             json={"key": "value"},
             headers={"Authorization": "Bearer x"},
@@ -45,7 +45,7 @@ async def test_external_post_json_http_status_error_raises_external_api_error() 
     mock_response.json.return_value = {"error": {"message": "Invalid request"}}
     mock_response.text = "Bad Request"
 
-    with patch("core.foundation.http.external_client.httpx.AsyncClient") as mock_client_cls:
+    with patch("services.external_client_service.httpx.AsyncClient") as mock_client_cls:
         mock_post = AsyncMock(
             side_effect=httpx.HTTPStatusError(
                 "Bad Request",
@@ -57,7 +57,7 @@ async def test_external_post_json_http_status_error_raises_external_api_error() 
         mock_client_cls.return_value.__aexit__ = AsyncMock(return_value=None)
 
         with pytest.raises(ExternalAPIError) as exc_info:
-            await external_post_json(
+            await ExternalClient().external_post_json(
                 "https://api.example.com/endpoint",
                 json={},
                 service_name="Example API",
@@ -71,13 +71,13 @@ async def test_external_post_json_http_status_error_raises_external_api_error() 
 @pytest.mark.asyncio
 async def test_external_post_json_request_error_raises_service_unavailable() -> None:
     status_code = 503
-    with patch("core.foundation.http.external_client.httpx.AsyncClient") as mock_client_cls:
+    with patch("services.external_client_service.httpx.AsyncClient") as mock_client_cls:
         mock_post = AsyncMock(side_effect=httpx.ConnectError("Connection refused"))
         mock_client_cls.return_value.__aenter__.return_value.post = mock_post
         mock_client_cls.return_value.__aexit__ = AsyncMock(return_value=None)
 
         with pytest.raises(ServiceUnavailableError) as exc_info:
-            await external_post_json(
+            await ExternalClient().external_post_json(
                 "https://api.example.com/endpoint",
                 json={},
                 service_name="Example API",
@@ -95,7 +95,7 @@ async def test_external_post_json_extract_error_from_body_errors_key() -> None:
     mock_response.json.return_value = {"errors": "Validation failed"}
     mock_response.text = "Unprocessable Entity"
 
-    with patch("core.foundation.http.external_client.httpx.AsyncClient") as mock_client_cls:
+    with patch("services.external_client_service.httpx.AsyncClient") as mock_client_cls:
         mock_post = AsyncMock(
             side_effect=httpx.HTTPStatusError(
                 "Unprocessable",
@@ -107,7 +107,7 @@ async def test_external_post_json_extract_error_from_body_errors_key() -> None:
         mock_client_cls.return_value.__aexit__ = AsyncMock(return_value=None)
 
         with pytest.raises(ExternalAPIError) as exc_info:
-            await external_post_json("https://api.example.com", json={})
+            await ExternalClient().external_post_json("https://api.example.com", json={})
 
         assert "Validation failed" in exc_info.value.detail
 
@@ -119,7 +119,7 @@ async def test_external_post_json_extract_error_fallback_to_response_text() -> N
     mock_response.json.side_effect = ValueError("not json")
     mock_response.text = "Internal Server Error"
 
-    with patch("core.foundation.http.external_client.httpx.AsyncClient") as mock_client_cls:
+    with patch("services.external_client_service.httpx.AsyncClient") as mock_client_cls:
         mock_post = AsyncMock(
             side_effect=httpx.HTTPStatusError(
                 "Server Error",
@@ -131,7 +131,7 @@ async def test_external_post_json_extract_error_fallback_to_response_text() -> N
         mock_client_cls.return_value.__aexit__ = AsyncMock(return_value=None)
 
         with pytest.raises(ExternalAPIError) as exc_info:
-            await external_post_json("https://api.example.com", json={})
+            await ExternalClient().external_post_json("https://api.example.com", json={})
 
         assert exc_info.value.status_code == mock_response.status_code
         assert "Internal Server Error" in exc_info.value.detail
@@ -145,7 +145,7 @@ async def test_external_post_json_extract_error_fallback_inside_try_block() -> N
     mock_response.json.return_value = ["unexpected", "format"]
     mock_response.text = "I'm a teapot"
 
-    with patch("core.foundation.http.external_client.httpx.AsyncClient") as mock_client_cls:
+    with patch("services.external_client_service.httpx.AsyncClient") as mock_client_cls:
         mock_post = AsyncMock(
             side_effect=httpx.HTTPStatusError(
                 "Teapot Error",
@@ -157,7 +157,7 @@ async def test_external_post_json_extract_error_fallback_inside_try_block() -> N
         mock_client_cls.return_value.__aexit__ = AsyncMock(return_value=None)
 
         with pytest.raises(ExternalAPIError) as exc_info:
-            await external_post_json(
+            await ExternalClient().external_post_json(
                 "https://api.example.com/endpoint",
                 json={},
                 service_name="Example API",

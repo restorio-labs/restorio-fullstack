@@ -1,11 +1,11 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, status
 
 from core.foundation.database.connection import get_mongo_db, get_postgres_pool
 
 router = APIRouter()
 
 
-@router.get("")
+@router.get("", status_code=status.HTTP_200_OK)
 async def health_check() -> dict[str, str]:
     status = "healthy"
     mongodb_status = "up"
