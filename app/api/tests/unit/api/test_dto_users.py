@@ -4,8 +4,8 @@ from uuid import uuid4
 from pydantic import ValidationError
 import pytest
 
-from api.v1.dto.common import AccountType
-from api.v1.dto.users import (
+from core.dto.v1.common import AccountType
+from core.dto.v1.users import (
     CreateUserDTO,
     CreateUserTenantDTO,
     UpdateUserDTO,

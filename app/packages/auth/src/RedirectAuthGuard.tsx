@@ -25,7 +25,7 @@ export const RedirectAuthGuard = ({ children, redirectTo }: RedirectAuthGuardPro
     if (isAuthenticated()) {
       setAllowed(true);
     } else {
-      window.location.href = redirectTo;
+      // window.location.href = redirectTo;
     }
   }, [redirectTo]);
 

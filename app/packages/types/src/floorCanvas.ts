@@ -65,7 +65,7 @@ export type FloorElement =
 
 export interface FloorCanvas {
   id: string;
-  venueId: string;
+  tenantId: string;
   name: string;
   width: number;
   height: number;
@@ -73,27 +73,10 @@ export interface FloorCanvas {
   version: number;
 }
 
-export interface Venue {
-  id: string;
-  tenantId: string;
-  name: string;
-  floorCanvases: FloorCanvas[];
-  activeLayoutVersionId: string | null;
-}
-
-export interface VenueSummary extends Omit<Venue, "floorCanvases"> {
-  floorCanvasCount: number;
-}
-
 export interface FloorLayoutEditorState {
   layout: FloorCanvas;
   history: FloorCanvas[];
   historyIndex: number;
-}
-
-export interface VenueOption {
-  venue: Venue;
-  activeCanvas: FloorCanvas | null;
 }
 
 export type ElementToAdd =

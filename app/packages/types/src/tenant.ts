@@ -1,13 +1,19 @@
+import type { FloorCanvas } from "./floorCanvas";
+
+export type TenantStatus = "ACTIVE" | "SUSPENDED" | "INACTIVE";
+
 export interface Tenant {
   id: string;
   name: string;
-  subdomain: string;
-  customDomain?: string;
-  ownerId: string;
+  slug: string;
+  status: TenantStatus;
+  activeLayoutVersionId: string | null;
+  floorCanvases: FloorCanvas[];
   createdAt: Date;
-  updatedAt: Date;
-  isActive: boolean;
-  trialEndsAt?: Date;
+}
+
+export interface TenantSummary extends Omit<Tenant, "floorCanvases"> {
+  floorCanvasCount: number;
 }
 
 export interface TenantSettings {

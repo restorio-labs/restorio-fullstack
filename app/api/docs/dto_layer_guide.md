@@ -63,7 +63,7 @@ api/v1/dto/
 All DTOs inherit from `BaseDTO`:
 
 ```python
-from api.v1.dto.common import BaseDTO
+from core.dto.v1.common import BaseDTO
 
 class MyDTO(BaseDTO):
     field: str
@@ -130,7 +130,7 @@ class TenantResponseDTO(BaseDTO):
 ### In Route Handlers
 
 ```python
-from api.v1.dto.tenants import CreateTenantDTO, TenantResponseDTO
+from core.dto.v1.tenants import CreateTenantDTO, TenantResponseDTO
 
 @router.post("")
 async def create_tenant(
@@ -266,7 +266,7 @@ Path-based versioning:
 The legacy `postgres_models.py` file has been deprecated. Use:
 
 - **For ORM operations**: `core.models.*`
-- **For API endpoints**: `api.v1.dto.*`
+- **For API endpoints**: `core.dto.v1.*`
 
 See deprecation notice in `core/foundation/database/postgres_models.py`.
 

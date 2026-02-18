@@ -2,9 +2,9 @@ from uuid import UUID
 
 from fastapi import APIRouter, status
 
-from api.v1.dto.orders import CreateOrderDTO, OrderResponseDTO, UpdateOrderDTO
-from core.foundation.http import MSG_NOT_IMPLEMENTED
-from core.foundation.http.schemas import (
+from core.dto.v1.orders import CreateOrderDTO, OrderResponseDTO, UpdateOrderDTO
+from core.foundation.http.consts import MSG_NOT_IMPLEMENTED
+from core.foundation.http.responses import (
     CreatedResponse,
     DeletedResponse,
     SuccessResponse,
@@ -14,7 +14,9 @@ from core.foundation.http.schemas import (
 router = APIRouter()
 
 
-@router.get("", status_code=status.HTTP_200_OK)
+@router.get(
+    "", status_code=status.HTTP_200_OK, response_model=SuccessResponse[list[OrderResponseDTO]]
+)
 async def list_orders() -> SuccessResponse[list[OrderResponseDTO]]:
     return SuccessResponse[list[OrderResponseDTO]](
         message="Orders retrieved successfully",

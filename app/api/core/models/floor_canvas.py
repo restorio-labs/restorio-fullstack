@@ -12,16 +12,16 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from core.foundation.database.database import Base
 
 if TYPE_CHECKING:
-    from core.models.venue import Venue
+    from core.models.tenant import Tenant
 
 
 class FloorCanvas(Base):
     __tablename__ = "floor_canvases"
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
-    venue_id: Mapped[UUID] = mapped_column(
+    tenant_id: Mapped[UUID] = mapped_column(
         PGUUID(as_uuid=True),
-        ForeignKey("venues.id", ondelete="CASCADE"),
+        ForeignKey("tenants.id", ondelete="CASCADE"),
         nullable=False,
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -36,8 +36,8 @@ class FloorCanvas(Base):
         DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()
     )
 
-    venue: Mapped[Venue] = relationship(
-        "Venue", back_populates="floor_canvases", foreign_keys=[venue_id]
+    tenant: Mapped[Tenant] = relationship(
+        "Tenant", back_populates="floor_canvases", foreign_keys=[tenant_id]
     )
 
-    __table_args__ = (Index("idx_floor_canvases_venue_id", "venue_id"),)
+    __table_args__ = (Index("idx_floor_canvases_tenant_id", "tenant_id"),)

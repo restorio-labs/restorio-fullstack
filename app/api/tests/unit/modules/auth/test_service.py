@@ -10,17 +10,15 @@ from core.exceptions import (
     NotFoundError,
     TooManyRequestsError,
 )
+from core.foundation.security import SecurityService
 from core.models.activation_link import ActivationLink
 from core.models.enums import AccountType, TenantStatus
 from core.models.tenant import Tenant
 from core.models.user import User
 from core.models.user_tenant import UserTenant
-from modules.auth.service import (
-    activate_account,
-    create_activation_link,
-    create_user_with_tenant,
-    resend_activation_link,
-)
+from services.auth_service import AuthService
+
+auth_service = AuthService(security=SecurityService())
 
 PASSWORD_HASH_MIN_LENGTH = 50
 EXPECTED_NEW_LINK_COUNT = 2
@@ -85,7 +83,7 @@ class FakeAsyncSession:
 async def test_create_user_with_tenant_success() -> None:
     session = FakeAsyncSession()
 
-    user, tenant = await create_user_with_tenant(
+    user, tenant = await auth_service.create_user_with_tenant(
         session=session,
         email="owner@example.com",
         password="secure_password",
@@ -125,7 +123,7 @@ async def test_create_user_with_tenant_slug_generation() -> None:
 
     for restaurant_name, expected_slug in test_cases:
         session = FakeAsyncSession()
-        _, tenant = await create_user_with_tenant(
+        _, tenant = await auth_service.create_user_with_tenant(
             session=session,
             email=f"owner{expected_slug}@example.com",
             password="password",
@@ -148,7 +146,7 @@ async def test_create_user_with_tenant_duplicate_email() -> None:
     session.users.append(existing_user)
 
     with pytest.raises(ConflictError) as exc_info:
-        await create_user_with_tenant(
+        await auth_service.create_user_with_tenant(
             session=session,
             email="existing@example.com",
             password="password",
@@ -171,7 +169,7 @@ async def test_create_user_with_tenant_duplicate_slug() -> None:
     session.tenants.append(existing_tenant)
 
     with pytest.raises(ConflictError) as exc_info:
-        await create_user_with_tenant(
+        await auth_service.create_user_with_tenant(
             session=session,
             email="newowner@example.com",
             password="password",
@@ -187,7 +185,7 @@ async def test_create_user_with_tenant_password_is_hashed() -> None:
 
     plain_password = "my_secure_password_123"
 
-    user, _ = await create_user_with_tenant(
+    user, _ = await auth_service.create_user_with_tenant(
         session=session,
         email="test@example.com",
         password=plain_password,
@@ -203,7 +201,7 @@ async def test_create_user_with_tenant_password_is_hashed() -> None:
 async def test_create_user_with_tenant_user_tenant_relationship() -> None:
     session = FakeAsyncSession()
 
-    user, tenant = await create_user_with_tenant(
+    user, tenant = await auth_service.create_user_with_tenant(
         session=session,
         email="owner@example.com",
         password="password",
@@ -237,7 +235,7 @@ async def test_create_activation_link_success() -> None:
     session.users.append(user)
     session.tenants.append(tenant)
 
-    link = await create_activation_link(
+    link = await auth_service.create_activation_link(
         session=session,
         email=user.email,
         user_id=user.id,
@@ -260,7 +258,7 @@ async def test_activate_account_link_not_found() -> None:
     unknown_id = uuid4()
 
     with pytest.raises(NotFoundError) as exc_info:
-        await activate_account(session=session, activation_id=unknown_id)
+        await auth_service.activate_account(session=session, activation_id=unknown_id)
 
     assert str(unknown_id) in exc_info.value.detail
 
@@ -288,7 +286,7 @@ async def test_activate_account_link_expired() -> None:
     session.activation_links.append(link)
 
     with pytest.raises(GoneError) as exc_info:
-        await activate_account(session=session, activation_id=link.id)
+        await auth_service.activate_account(session=session, activation_id=link.id)
 
     assert "expired" in exc_info.value.detail.lower()
 
@@ -314,7 +312,7 @@ async def test_activate_account_tenant_not_found() -> None:
     session.activation_links.append(link)
 
     with pytest.raises(NotFoundError) as exc_info:
-        await activate_account(session=session, activation_id=link.id)
+        await auth_service.activate_account(session=session, activation_id=link.id)
 
     assert "Account" in exc_info.value.detail
 
@@ -342,7 +340,9 @@ async def test_activate_account_already_activated_returns_tenant_true() -> None:
     )
     session.activation_links.append(link)
 
-    result_tenant, already = await activate_account(session=session, activation_id=link.id)
+    result_tenant, already = await auth_service.activate_account(
+        session=session, activation_id=link.id
+    )
 
     assert result_tenant.id == tenant.id
     assert already is True
@@ -370,7 +370,9 @@ async def test_activate_account_success_activates_user_and_tenant() -> None:
     )
     session.activation_links.append(link)
 
-    result_tenant, already = await activate_account(session=session, activation_id=link.id)
+    result_tenant, already = await auth_service.activate_account(
+        session=session, activation_id=link.id
+    )
 
     assert result_tenant.id == tenant.id
     assert already is False
@@ -394,7 +396,7 @@ async def test_activate_account_user_not_found() -> None:
     session.activation_links.append(link)
 
     with pytest.raises(NotFoundError) as exc_info:
-        await activate_account(session=session, activation_id=link.id)
+        await auth_service.activate_account(session=session, activation_id=link.id)
 
     assert "Account" in exc_info.value.detail
 
@@ -405,7 +407,7 @@ async def test_resend_activation_link_not_found() -> None:
     unknown_id = uuid4()
 
     with pytest.raises(NotFoundError) as exc_info:
-        await resend_activation_link(session=session, activation_id=unknown_id)
+        await auth_service.resend_activation_link(session=session, activation_id=unknown_id)
 
     assert str(unknown_id) in exc_info.value.detail
 
@@ -426,7 +428,7 @@ async def test_resend_activation_link_already_activated() -> None:
     session.activation_links.append(link)
 
     with pytest.raises(BadRequestError) as exc_info:
-        await resend_activation_link(session=session, activation_id=link.id)
+        await auth_service.resend_activation_link(session=session, activation_id=link.id)
 
     assert "already activated" in exc_info.value.detail.lower()
 
@@ -446,7 +448,7 @@ async def test_resend_activation_link_not_expired_yet() -> None:
     session.activation_links.append(link)
 
     with pytest.raises(BadRequestError) as exc_info:
-        await resend_activation_link(session=session, activation_id=link.id)
+        await auth_service.resend_activation_link(session=session, activation_id=link.id)
 
     assert "not expired" in exc_info.value.detail.lower()
 
@@ -467,7 +469,7 @@ async def test_resend_activation_link_cooldown() -> None:
     session.activation_links.append(link)
 
     with pytest.raises(TooManyRequestsError) as exc_info:
-        await resend_activation_link(session=session, activation_id=link.id)
+        await auth_service.resend_activation_link(session=session, activation_id=link.id)
 
     assert "wait" in exc_info.value.detail.lower() or "email" in exc_info.value.detail.lower()
 
@@ -485,7 +487,7 @@ async def test_resend_activation_link_tenant_not_found() -> None:
     session.activation_links.append(link)
 
     with pytest.raises(NotFoundError) as exc_info:
-        await resend_activation_link(session=session, activation_id=link.id)
+        await auth_service.resend_activation_link(session=session, activation_id=link.id)
 
     assert "Account" in exc_info.value.detail
 
@@ -504,7 +506,9 @@ async def test_resend_activation_link_success_creates_new_link() -> None:
     )
     session.activation_links.append(link)
 
-    new_link, result_tenant = await resend_activation_link(session=session, activation_id=link.id)
+    new_link, result_tenant = await auth_service.resend_activation_link(
+        session=session, activation_id=link.id
+    )
 
     assert new_link.id is not None
     assert new_link.id != link.id
