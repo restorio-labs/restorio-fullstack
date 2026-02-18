@@ -116,7 +116,6 @@ async def test_create_user_with_tenant_success() -> None:
     assert session.tenant_roles[0] is tenant_role
     assert tenant_role.account_id == user.id
     assert tenant_role.tenant_id == tenant.id
-    assert tenant_role.account_type == AccountType.OWNER
 
 
 @pytest.mark.asyncio
@@ -227,7 +226,6 @@ async def test_create_user_with_tenant_user_tenant_relationship() -> None:
     assert session.tenant_roles[0] is tenant_role
     assert tenant_role.account_id == user.id
     assert tenant_role.tenant_id == tenant.id
-    assert tenant_role.account_type == AccountType.OWNER
     assert tenant.owner_id == user.id
     assert user.tenant_id == tenant.id
 
@@ -239,7 +237,6 @@ async def test_create_activation_link_success() -> None:
         id=uuid4(),
         email="u@example.com",
         password_hash="hash",
-        account_type=AccountType.OWNER,
         is_active=False,
     )
     tenant = Tenant(
@@ -286,7 +283,6 @@ async def test_activate_account_link_expired() -> None:
         id=uuid4(),
         email="u@example.com",
         password_hash="h",
-        account_type=AccountType.OWNER,
         is_active=False,
     )
     tenant = Tenant(id=uuid4(), name="T", slug="t", status=TenantStatus.INACTIVE)
@@ -314,7 +310,6 @@ async def test_activate_account_tenant_not_found() -> None:
         id=uuid4(),
         email="u@example.com",
         password_hash="h",
-        account_type=AccountType.OWNER,
         is_active=False,
     )
     link = ActivationLink(
@@ -340,7 +335,6 @@ async def test_activate_account_already_activated_returns_tenant_true() -> None:
         id=uuid4(),
         email="u@example.com",
         password_hash="h",
-        account_type=AccountType.OWNER,
         is_active=False,
     )
     tenant = Tenant(id=uuid4(), name="T", slug="t", status=TenantStatus.ACTIVE)
@@ -369,7 +363,6 @@ async def test_activate_account_success_activates_user_and_tenant() -> None:
         id=uuid4(),
         email="u@example.com",
         password_hash="h",
-        account_type=AccountType.OWNER,
         is_active=False,
     )
     tenant = Tenant(id=uuid4(), name="T", slug="t", status=TenantStatus.INACTIVE)

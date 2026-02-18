@@ -113,9 +113,9 @@ class TestUpdateP24Config:
 
         await update_p24_config(tenant.id, request, session)
 
-        assert tenant.p24_merchantid == self.EXAMPLE_MERCHANT_ID
-        assert tenant.p24_api == self.EXAMPLE_API_KEY
-        assert tenant.p24_crc == self.EXAMPLE_CRC_KEY
+        assert tenant.p24_merchantid == request.p24_merchantid
+        assert tenant.p24_api == request.p24_api
+        assert tenant.p24_crc == request.p24_crc
 
 
 class TestUpdateP24ConfigDTOValidation:
