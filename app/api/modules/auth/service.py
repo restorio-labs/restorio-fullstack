@@ -10,8 +10,10 @@ from core.exceptions import (
     GoneError,
     NotFoundError,
     TooManyRequestsError,
+    UnauthorizedError,
 )
-from core.foundation.security import hash_password
+from core.foundation.infra.config import settings
+from core.foundation.security import create_access_token, hash_password, verify_password
 from core.models.activation_link import ActivationLink
 from core.models.enums import AccountType, TenantStatus
 from core.models.tenant import Tenant
@@ -171,3 +173,29 @@ async def resend_activation_link(
     await session.flush()
     await session.refresh(new_link)
     return new_link, tenant
+
+
+async def login_user(
+    *,
+    session: AsyncSession,
+    email: str,
+    password: str,
+) -> tuple[str, int]:
+    user = await session.scalar(select(User).where(User.email == email))
+    if user is None or not verify_password(password, user.password_hash):
+        msg = "Invalid credentials"
+        raise UnauthorizedError(msg)
+
+    if not user.is_active:
+        msg = "Account is not active"
+        raise UnauthorizedError(msg)
+
+    expires_in_seconds = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    access_token = create_access_token(
+        data={
+            "sub": str(user.id),
+            "email": user.email,
+            "tenant_id": str(user.tenant_id) if user.tenant_id else None,
+        }
+    )
+    return access_token, expires_in_seconds
