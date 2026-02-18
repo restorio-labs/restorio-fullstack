@@ -14,6 +14,7 @@ from core.foundation.security import SecurityService
 from core.models.activation_link import ActivationLink
 from core.models.enums import AccountType, TenantStatus
 from core.models.tenant import Tenant
+from core.models.tenant_role import TenantRole
 from core.models.user import User
 from core.models.user_tenant import UserTenant
 from services.auth_service import AuthService
@@ -29,6 +30,7 @@ class FakeAsyncSession:
         self.users: list[User] = []
         self.tenants: list[Tenant] = []
         self.user_tenants: list[UserTenant] = []
+        self.tenant_roles: list[TenantRole] = []
         self.activation_links: list[ActivationLink] = []
         self.added_objects: list[object] = []
 
@@ -67,12 +69,12 @@ class FakeAsyncSession:
                 self.tenants.append(obj)
             elif isinstance(obj, UserTenant):
                 self.user_tenants.append(obj)
+            elif isinstance(obj, TenantRole):
+                self.tenant_roles.append(obj)
             elif isinstance(obj, ActivationLink):
                 if not hasattr(obj, "id") or obj.id is None:
                     obj.id = uuid4()
                 self.activation_links.append(obj)
-            elif isinstance(obj, UserTenant):
-                self.user_tenants.append(obj)
         self.added_objects.clear()
 
     async def refresh(self, obj: object) -> None:
@@ -92,7 +94,6 @@ async def test_create_user_with_tenant_success() -> None:
 
     assert user is not None
     assert user.email == "owner@example.com"
-    assert user.account_type == AccountType.OWNER
     assert user.is_active is False
     assert user.password_hash != "secure_password"
     assert len(user.password_hash) > 0
@@ -101,12 +102,15 @@ async def test_create_user_with_tenant_success() -> None:
     assert tenant.name == "My Restaurant"
     assert tenant.slug == "myrestaurant"
     assert tenant.status == TenantStatus.INACTIVE
+    assert tenant.owner_id == user.id
+    assert user.tenant_id == tenant.id
 
     assert len(session.user_tenants) == 1
     user_tenant = session.user_tenants[0]
     assert user_tenant.user_id == user.id
     assert user_tenant.tenant_id == tenant.id
     assert user_tenant.role == AccountType.OWNER
+    assert len(session.tenant_roles) == 1
 
 
 @pytest.mark.asyncio
@@ -140,7 +144,6 @@ async def test_create_user_with_tenant_duplicate_email() -> None:
         id=uuid4(),
         email="existing@example.com",
         password_hash="hashed",
-        account_type=AccountType.OWNER,
         is_active=True,
     )
     session.users.append(existing_user)
@@ -214,6 +217,9 @@ async def test_create_user_with_tenant_user_tenant_relationship() -> None:
     assert user_tenant.user_id == user.id
     assert user_tenant.tenant_id == tenant.id
     assert user_tenant.role == AccountType.OWNER
+    assert len(session.tenant_roles) == 1
+    assert tenant.owner_id == user.id
+    assert user.tenant_id == tenant.id
 
 
 @pytest.mark.asyncio
@@ -223,7 +229,6 @@ async def test_create_activation_link_success() -> None:
         id=uuid4(),
         email="u@example.com",
         password_hash="hash",
-        account_type=AccountType.OWNER,
         is_active=False,
     )
     tenant = Tenant(
@@ -270,7 +275,6 @@ async def test_activate_account_link_expired() -> None:
         id=uuid4(),
         email="u@example.com",
         password_hash="h",
-        account_type=AccountType.OWNER,
         is_active=False,
     )
     tenant = Tenant(id=uuid4(), name="T", slug="t", status=TenantStatus.INACTIVE)
@@ -298,7 +302,6 @@ async def test_activate_account_tenant_not_found() -> None:
         id=uuid4(),
         email="u@example.com",
         password_hash="h",
-        account_type=AccountType.OWNER,
         is_active=False,
     )
     link = ActivationLink(
@@ -324,7 +327,6 @@ async def test_activate_account_already_activated_returns_tenant_true() -> None:
         id=uuid4(),
         email="u@example.com",
         password_hash="h",
-        account_type=AccountType.OWNER,
         is_active=False,
     )
     tenant = Tenant(id=uuid4(), name="T", slug="t", status=TenantStatus.ACTIVE)
@@ -355,7 +357,6 @@ async def test_activate_account_success_activates_user_and_tenant() -> None:
         id=uuid4(),
         email="u@example.com",
         password_hash="h",
-        account_type=AccountType.OWNER,
         is_active=False,
     )
     tenant = Tenant(id=uuid4(), name="T", slug="t", status=TenantStatus.INACTIVE)

@@ -48,11 +48,11 @@ async def register(
         restaurant_name=tenant.name,
         activation_link=activation_link,
     )
+
     return CreatedResponse(
         data=RegisterCreatedData(
             user_id=str(user.id),
             email=user.email,
-            account_type=user.account_type.value,
             tenant_id=str(tenant.id),
             tenant_name=tenant.name,
             tenant_slug=tenant.slug,
