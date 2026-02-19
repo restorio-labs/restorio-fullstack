@@ -7,11 +7,9 @@ import pytest
 from core.dto.v1.common import AccountType
 from core.dto.v1.users import (
     CreateUserDTO,
-    CreateUserTenantDTO,
     UpdateUserDTO,
     UserLoginDTO,
     UserResponseDTO,
-    UserTenantResponseDTO,
 )
 
 
@@ -155,53 +153,3 @@ class TestUserResponseDTO:
             )
             assert dto.account_type == account_type
 
-
-class TestCreateUserTenantDTO:
-    def test_valid_creation(self) -> None:
-        user_id = uuid4()
-        tenant_id = uuid4()
-        dto = CreateUserTenantDTO(
-            user_id=user_id,
-            tenant_id=tenant_id,
-            role="manager",
-        )
-        assert dto.user_id == user_id
-        assert dto.tenant_id == tenant_id
-        assert dto.role == "manager"
-
-    def test_role_too_long(self) -> None:
-        user_id = uuid4()
-        tenant_id = uuid4()
-        with pytest.raises(ValidationError):
-            CreateUserTenantDTO(
-                user_id=user_id,
-                tenant_id=tenant_id,
-                role="x" * 51,
-            )
-
-    def test_empty_role(self) -> None:
-        user_id = uuid4()
-        tenant_id = uuid4()
-        with pytest.raises(ValidationError):
-            CreateUserTenantDTO(
-                user_id=user_id,
-                tenant_id=tenant_id,
-                role="",
-            )
-
-
-class TestUserTenantResponseDTO:
-    def test_valid_response(self) -> None:
-        user_id = uuid4()
-        tenant_id = uuid4()
-        now = datetime.now(UTC)
-        dto = UserTenantResponseDTO(
-            user_id=user_id,
-            tenant_id=tenant_id,
-            role="admin",
-            created_at=now,
-        )
-        assert dto.user_id == user_id
-        assert dto.tenant_id == tenant_id
-        assert dto.role == "admin"
-        assert dto.created_at == now

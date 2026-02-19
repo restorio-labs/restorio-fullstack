@@ -17,7 +17,6 @@ if TYPE_CHECKING:
     from core.models.order import Order
     from core.models.restaurant_table import RestaurantTable
     from core.models.tenant_role import TenantRole
-    from core.models.user_tenant import UserTenant
 
 
 class Tenant(Base):
@@ -48,9 +47,6 @@ class Tenant(Base):
     p24_api: Mapped[str | None] = mapped_column(String(32), nullable=True)
     p24_crc: Mapped[str | None] = mapped_column(String(16), nullable=True)
 
-    user_tenants: Mapped[list[UserTenant]] = relationship(
-        "UserTenant", back_populates="tenant", cascade="all, delete-orphan"
-    )
     tenant_roles: Mapped[list[TenantRole]] = relationship(
         "TenantRole", back_populates="tenant", cascade="all, delete-orphan"
     )

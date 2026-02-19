@@ -7,7 +7,6 @@ from core.models.enums import AccountType, TenantStatus
 from core.models.tenant import Tenant
 from core.models.tenant_role import TenantRole
 from core.models.user import User
-from core.models.user_tenant import UserTenant
 
 
 class UserService:
@@ -53,16 +52,12 @@ class UserService:
         await session.refresh(user)
         await session.refresh(tenant)
 
-        user_tenant = UserTenant(
-            user_id=user.id,
-            tenant_id=tenant.id,
-            role=AccountType.OWNER,
-        )
         tenant_role = TenantRole(
             account_id=user.id,
             tenant_id=tenant.id,
+            account_type=AccountType.OWNER,
         )
-        session.add_all([user_tenant, tenant_role])
+        session.add(tenant_role)
         await session.flush()
 
         return user, tenant, tenant_role

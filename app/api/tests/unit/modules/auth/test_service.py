@@ -16,7 +16,6 @@ from core.models.enums import AccountType, TenantStatus
 from core.models.tenant import Tenant
 from core.models.tenant_role import TenantRole
 from core.models.user import User
-from core.models.user_tenant import UserTenant
 from services.auth_service import AuthService
 
 auth_service = AuthService(security=SecurityService())
@@ -29,7 +28,6 @@ class FakeAsyncSession:
     def __init__(self) -> None:
         self.users: list[User] = []
         self.tenants: list[Tenant] = []
-        self.user_tenants: list[UserTenant] = []
         self.tenant_roles: list[TenantRole] = []
         self.activation_links: list[ActivationLink] = []
         self.added_objects: list[object] = []
@@ -67,8 +65,6 @@ class FakeAsyncSession:
                 if not hasattr(obj, "id") or obj.id is None:
                     obj.id = uuid4()
                 self.tenants.append(obj)
-            elif isinstance(obj, UserTenant):
-                self.user_tenants.append(obj)
             elif isinstance(obj, TenantRole):
                 self.tenant_roles.append(obj)
             elif isinstance(obj, ActivationLink):
@@ -105,12 +101,11 @@ async def test_create_user_with_tenant_success() -> None:
     assert tenant.owner_id == user.id
     assert user.tenant_id == tenant.id
 
-    assert len(session.user_tenants) == 1
-    user_tenant = session.user_tenants[0]
-    assert user_tenant.user_id == user.id
-    assert user_tenant.tenant_id == tenant.id
-    assert user_tenant.role == AccountType.OWNER
     assert len(session.tenant_roles) == 1
+    tenant_role = session.tenant_roles[0]
+    assert tenant_role.account_id == user.id
+    assert tenant_role.tenant_id == tenant.id
+    assert tenant_role.account_type == AccountType.OWNER
 
 
 @pytest.mark.asyncio
@@ -201,7 +196,7 @@ async def test_create_user_with_tenant_password_is_hashed() -> None:
 
 
 @pytest.mark.asyncio
-async def test_create_user_with_tenant_user_tenant_relationship() -> None:
+async def test_create_user_with_tenant_role_relationship() -> None:
     session = FakeAsyncSession()
 
     user, tenant = await auth_service.create_user_with_tenant(
@@ -211,12 +206,11 @@ async def test_create_user_with_tenant_user_tenant_relationship() -> None:
         restaurant_name="Test Restaurant",
     )
 
-    assert len(session.user_tenants) == 1
-
-    user_tenant = session.user_tenants[0]
-    assert user_tenant.user_id == user.id
-    assert user_tenant.tenant_id == tenant.id
-    assert user_tenant.role == AccountType.OWNER
+    assert len(session.tenant_roles) == 1
+    tenant_role = session.tenant_roles[0]
+    assert tenant_role.account_id == user.id
+    assert tenant_role.tenant_id == tenant.id
+    assert tenant_role.account_type == AccountType.OWNER
     assert len(session.tenant_roles) == 1
     assert tenant.owner_id == user.id
     assert user.tenant_id == tenant.id

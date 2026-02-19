@@ -1,6 +1,6 @@
 from pydantic import EmailStr, Field
 
-from core.dto.v1.common import AccountType, BaseDTO, EntityId
+from core.dto.v1.common import AccountType, BaseDTO
 
 
 class CreateUserDTO(BaseDTO):
@@ -22,9 +22,3 @@ class UpdateUserDTO(BaseDTO):
 class UserLoginDTO(BaseDTO):
     email: EmailStr = Field(..., description="User email address")
     password: str = Field(..., description="User password")
-
-
-class CreateUserTenantDTO(BaseDTO):
-    user_id: EntityId = Field(..., description="User identifier")
-    tenant_id: EntityId = Field(..., description="Tenant identifier")
-    role: str = Field(..., min_length=1, max_length=50, description="User role in tenant")

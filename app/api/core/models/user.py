@@ -13,7 +13,6 @@ from core.foundation.database.database import Base
 if TYPE_CHECKING:
     from core.models.audit_log import AuditLog
     from core.models.tenant_role import TenantRole
-    from core.models.user_tenant import UserTenant
 
 
 class User(Base):
@@ -32,9 +31,6 @@ class User(Base):
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
 
-    user_tenants: Mapped[list[UserTenant]] = relationship(
-        "UserTenant", back_populates="user", cascade="all, delete-orphan"
-    )
     tenant_roles: Mapped[list[TenantRole]] = relationship(
         "TenantRole", back_populates="account", cascade="all, delete-orphan"
     )

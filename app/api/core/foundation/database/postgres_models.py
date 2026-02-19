@@ -46,21 +46,6 @@ class UserCreate(BaseModel):
     is_active: bool = True
 
 
-class UserTenant(BaseModel):
-    user_id: UUID
-    tenant_id: UUID
-    role: str = Field(..., max_length=50)
-    created_at: datetime
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class UserTenantCreate(BaseModel):
-    user_id: UUID
-    tenant_id: UUID
-    role: str = Field(..., max_length=50)
-
-
 class RestaurantTable(BaseModel):
     id: UUID
     tenant_id: UUID

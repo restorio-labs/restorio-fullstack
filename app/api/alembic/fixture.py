@@ -244,66 +244,6 @@ USERS = [
     },
 ]
 
-USER_TENANTS = [
-    # Bistro
-    {
-        "user_id": U_BISTRO_OWNER,
-        "tenant_id": TENANT_BISTRO,
-        "role": "owner",
-        "created_at": now(offset_days=-60),
-    },
-    {
-        "user_id": U_BISTRO_MANAGER,
-        "tenant_id": TENANT_BISTRO,
-        "role": "manager",
-        "created_at": now(offset_days=-58),
-    },
-    {
-        "user_id": U_BISTRO_WAITER1,
-        "tenant_id": TENANT_BISTRO,
-        "role": "waiter",
-        "created_at": now(offset_days=-55),
-    },
-    {
-        "user_id": U_BISTRO_WAITER2,
-        "tenant_id": TENANT_BISTRO,
-        "role": "waiter",
-        "created_at": now(offset_days=-50),
-    },
-    {
-        "user_id": U_BISTRO_KITCHEN,
-        "tenant_id": TENANT_BISTRO,
-        "role": "kitchen",
-        "created_at": now(offset_days=-55),
-    },
-    # Pizza Palace
-    {
-        "user_id": U_PIZZA_OWNER,
-        "tenant_id": TENANT_PIZZA,
-        "role": "owner",
-        "created_at": now(offset_days=-30),
-    },
-    {
-        "user_id": U_PIZZA_WAITER,
-        "tenant_id": TENANT_PIZZA,
-        "role": "waiter",
-        "created_at": now(offset_days=-28),
-    },
-    {
-        "user_id": U_PIZZA_KITCHEN,
-        "tenant_id": TENANT_PIZZA,
-        "role": "kitchen",
-        "created_at": now(offset_days=-28),
-    },
-    # Café
-    {
-        "user_id": U_CAFE_OWNER,
-        "tenant_id": TENANT_CAFE,
-        "role": "owner",
-        "created_at": now(offset_days=-10),
-    },
-]
-
 VENUES = [
     {
         "id": V_BISTRO_MAIN,
@@ -758,7 +698,7 @@ def insert(conn, table: str, rows: list[dict]) -> None:
 
 
 def insert_no_id(conn, table: str, rows: list[dict]) -> None:
-    """For tables without a simple 'id' PK (e.g. user_tenants composite PK)."""
+    """For tables without a simple single-column 'id' primary key."""
     if not rows:
         return
     for row in rows:
@@ -787,7 +727,6 @@ def seed() -> None:
         try:
             insert(conn, "tenants", TENANTS)
             insert(conn, "users", USERS)
-            insert_no_id(conn, "user_tenants", USER_TENANTS)
 
             # Venues inserted before canvases; active_layout_version_id set after
             # Insert venues with NULL active layout first to avoid FK chicken-and-egg
