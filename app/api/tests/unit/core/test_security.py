@@ -1,8 +1,8 @@
 from datetime import timedelta
 from unittest.mock import Mock, patch
 
-from fastapi import Request
-import pytest
+from fastapi import Request  # pyright: ignore[reportMissingImports]
+import pytest  # pyright: ignore[reportMissingImports]
 
 from core.exceptions import UnauthorizedError
 from core.foundation.security import (
@@ -73,9 +73,11 @@ class TestDecodeAccessToken:
 
     def test_decode_access_token_handles_unexpected_exception(self) -> None:
         service = SecurityService()
-        with patch("core.foundation.security.jwt.decode", side_effect=RuntimeError("boom")):
-            with pytest.raises(UnauthorizedError):
-                service.decode_access_token("any-token")
+        with (
+            patch("core.foundation.security.jwt.decode", side_effect=RuntimeError("boom")),
+            pytest.raises(UnauthorizedError),
+        ):
+            service.decode_access_token("any-token")
 
 
 class TestHashPassword:

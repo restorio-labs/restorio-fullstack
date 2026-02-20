@@ -2,8 +2,8 @@ import type { FloorCanvas as FloorCanvasType, TenantSummary } from "@restorio/ty
 import { Button, FloorCanvas } from "@restorio/ui";
 import type { ReactElement } from "react";
 
-interface VenuesViewProps {
-  venues: TenantSummary[];
+interface RestaurantsViewProps {
+  restaurants: TenantSummary[];
   activeCanvasesByVenueId?: Record<string, FloorCanvasType | null>;
   onSelectVenue: (venue: TenantSummary) => void;
   onAddVenue?: () => void;
@@ -20,24 +20,24 @@ const getPreviewTransform = (layout: FloorCanvasType): string => {
   return `scale(${scale})`;
 };
 
-export const VenuesView = ({
-  venues,
+export const RestaurantsView = ({
+  restaurants,
   activeCanvasesByVenueId = {},
   onSelectVenue,
   onAddVenue,
-}: VenuesViewProps): ReactElement => {
+}: RestaurantsViewProps): ReactElement => {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between gap-4 pb-4">
         <Button variant="primary" size="sm" onClick={onAddVenue}>
-          Add venue
+          Add restaurant
         </Button>
       </div>
-      {venues.length === 0 ? (
-        <div className="text-center text-sm text-text-tertiary py-8">No venues found.</div>
+      {restaurants.length === 0 ? (
+        <div className="text-center text-sm text-text-tertiary py-8">No restaurants found.</div>
       ) : (
         <ul className="flex flex-col gap-2">
-          {venues.map((venue) => {
+          {restaurants.map((venue) => {
             const activeCanvas = activeCanvasesByVenueId[venue.id];
 
             return (

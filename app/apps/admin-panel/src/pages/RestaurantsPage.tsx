@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import { api } from "../api/client";
 import { PageLayout } from "../layouts/PageLayout";
-import { VenuesView } from "../views/VenuesView";
+import { RestaurantsView } from "../views/RestaurantsView";
 
 type LoadingState = "loading" | "loaded" | "error";
 
@@ -16,7 +16,7 @@ const getActiveCanvas = (tenant: Tenant): FloorCanvas | null => {
   return tenant.floorCanvases.find((canvas) => canvas.id === tenant.activeLayoutVersionId) ?? tenant.floorCanvases[0];
 };
 
-export const VenuesPage = (): ReactElement => {
+export const RestaurantsPage = (): ReactElement => {
   const navigate = useNavigate();
   const [loadingState, setLoadingState] = useState<LoadingState>("loading");
   const [tenants, setTenants] = useState<TenantSummary[]>([]);
@@ -54,9 +54,9 @@ export const VenuesPage = (): ReactElement => {
 
   if (loadingState === "loading") {
     return (
-      <PageLayout title="Venues" description="Manage venue floor layouts">
+      <PageLayout title="Restaurants" description="Manage restaurant floor layouts">
         <div className="flex flex-1 items-center justify-center p-8">
-          <div className="text-sm text-text-tertiary">Loading venues...</div>
+          <div className="text-sm text-text-tertiary">Loading restaurants...</div>
         </div>
       </PageLayout>
     );
@@ -64,21 +64,21 @@ export const VenuesPage = (): ReactElement => {
 
   if (loadingState === "error") {
     return (
-      <PageLayout title="Venues" description="Manage venue floor layouts">
+      <PageLayout title="Restaurants" description="Manage restaurant floor layouts">
         <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-text-tertiary">
-          Failed to load venues. Please try again later.
+          Failed to load restaurants. Please try again later.
         </div>
       </PageLayout>
     );
   }
 
   return (
-    <PageLayout title="Venues" description="Manage venue floor layouts">
-      <VenuesView
-        venues={tenants}
+    <PageLayout title="Restaurants" description="Manage restaurant floor layouts">
+      <RestaurantsView
+        restaurants={tenants}
         activeCanvasesByVenueId={activeCanvasesByTenantId}
-        onSelectVenue={(tenant) => navigate(`/venues/${tenant.id}/floor`)}
-        onAddVenue={() => navigate("/venue-creator")}
+        onSelectVenue={(tenant) => navigate(`/restaurants/${tenant.id}/floor`)}
+        onAddVenue={() => navigate("/restaurant-creator")}
       />
     </PageLayout>
   );

@@ -1,5 +1,6 @@
+import type { TenantSummary } from "@restorio/types";
 import { Button, Form, FormActions, Input } from "@restorio/ui";
-import { type FormEvent, type ReactElement, useState } from "react";
+import { type FormEvent, type ReactElement, useEffect, useMemo, useState } from "react";
 
 import { api } from "../api/client";
 import { PageLayout } from "../layouts/PageLayout";
@@ -8,14 +9,63 @@ type SubmitState = "idle" | "submitting" | "success" | "error";
 
 export const PaymentConfigPage = (): ReactElement => {
   const [tenantId, setTenantId] = useState("");
+  const [tenantQuery, setTenantQuery] = useState("");
+  const [tenants, setTenants] = useState<TenantSummary[]>([]);
+  const [tenantLoadError, setTenantLoadError] = useState("");
   const [merchantId, setMerchantId] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [crcKey, setCrcKey] = useState("");
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [tenantOptionsLoaded, setTenantOptionsLoaded] = useState(false);
 
   const isFormValid =
     tenantId.trim() !== "" && merchantId.trim() !== "" && apiKey.trim() !== "" && crcKey.trim() !== "";
+
+  const tenantOptions = useMemo(
+    () =>
+      tenants.map((tenant) => ({
+        id: tenant.id,
+        display: `${tenant.name} (${tenant.slug}) - ${tenant.id}`,
+      })),
+    [tenants],
+  );
+
+  useEffect(() => {
+    const loadTenants = async (): Promise<void> => {
+      try {
+        const data = await api.tenants.list();
+
+        setTenants(data);
+        setTenantLoadError("");
+      } catch {
+        setTenantLoadError("Failed to load restaurants. You can still paste a tenant ID.");
+      } finally {
+        setTenantOptionsLoaded(true);
+      }
+    };
+
+    void loadTenants();
+  }, []);
+
+  const resetSubmitState = (): void => {
+    if (submitState !== "idle") {
+      setSubmitState("idle");
+    }
+  };
+
+  const handleTenantChange = (value: string): void => {
+    setTenantQuery(value);
+    const matchedOption = tenantOptions.find((option) => option.display === value);
+
+    if (matchedOption) {
+      setTenantId(matchedOption.id);
+    } else {
+      setTenantId(value);
+    }
+
+    resetSubmitState();
+  };
 
   const handleSubmit = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
@@ -23,15 +73,17 @@ export const PaymentConfigPage = (): ReactElement => {
     setErrorMessage("");
 
     try {
-      await api.payments.updateP24Config(tenantId.trim(), {
+      const response = await api.payments.updateP24Config(tenantId.trim(), {
         p24_merchantid: Number(merchantId),
         p24_api: apiKey.trim(),
         p24_crc: crcKey.trim(),
       });
+
+      console.log(response);
       setSubmitState("success");
     } catch {
       setSubmitState("error");
-      setErrorMessage("Failed to update P24 configuration. Please verify the Venue ID and try again.");
+      setErrorMessage("Failed to update P24 configuration. Please verify the restaurant tenant ID and try again.");
     }
   };
 
@@ -40,19 +92,21 @@ export const PaymentConfigPage = (): ReactElement => {
       <div className="mx-auto max-w-lg p-6">
         <Form onSubmit={(e) => void handleSubmit(e)}>
           <Input
-            label="Venue ID"
-            placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000"
-            value={tenantId}
-            onChange={(e) => {
-              setTenantId(e.target.value);
-
-              if (submitState !== "idle") {
-                setSubmitState("idle");
-              }
-            }}
-            helperText="UUID of the venue in the database"
+            label="Restaurant Tenant"
+            placeholder="Search by restaurant name or paste tenant ID"
+            value={tenantQuery}
+            onChange={(e) => handleTenantChange(e.target.value)}
+            list="tenant-options"
+            helperText="Select from dropdown or paste a tenant UUID"
             required
           />
+          <datalist id="tenant-options">
+            {tenantOptions.map((option) => (
+              <option key={option.id} value={option.display} />
+            ))}
+          </datalist>
+          {!tenantOptionsLoaded && <div className="text-xs text-text-tertiary">Loading restaurants...</div>}
+          {tenantLoadError && <div className="text-xs text-status-error-text">{tenantLoadError}</div>}
 
           <Input
             label="Merchant ID"
@@ -61,10 +115,7 @@ export const PaymentConfigPage = (): ReactElement => {
             value={merchantId}
             onChange={(e) => {
               setMerchantId(e.target.value);
-
-              if (submitState !== "idle") {
-                setSubmitState("idle");
-              }
+              resetSubmitState();
             }}
             min={0}
             max={999999}
@@ -78,10 +129,7 @@ export const PaymentConfigPage = (): ReactElement => {
             value={apiKey}
             onChange={(e) => {
               setApiKey(e.target.value);
-
-              if (submitState !== "idle") {
-                setSubmitState("idle");
-              }
+              resetSubmitState();
             }}
             maxLength={32}
             helperText="Max 32 characters"
@@ -94,10 +142,7 @@ export const PaymentConfigPage = (): ReactElement => {
             value={crcKey}
             onChange={(e) => {
               setCrcKey(e.target.value);
-
-              if (submitState !== "idle") {
-                setSubmitState("idle");
-              }
+              resetSubmitState();
             }}
             maxLength={16}
             helperText="Max 16 characters"

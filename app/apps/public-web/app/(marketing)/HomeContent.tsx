@@ -84,7 +84,7 @@ export const HomeContent = (): ReactElement => {
               },
               {
                 title: "Multi-Location",
-                description: "Manage multiple venues, menus, and staff from a single unified dashboard.",
+                description: "Manage multiple restaurants, menus, and staff from a single unified dashboard.",
                 IconComponent: FaGlobe,
                 iconBackground: "bg-surface-secondary",
               },

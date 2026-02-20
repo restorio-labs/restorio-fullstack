@@ -152,4 +152,3 @@ class TestUserResponseDTO:
                 created_at=now,
             )
             assert dto.account_type == account_type
-

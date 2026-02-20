@@ -26,6 +26,3 @@ class TenantRepository:
 
     async def update(self, session: AsyncSession, tenant: Tenant) -> Tenant:
         pass
-
-    async def delete(self, session: AsyncSession, tenant: Tenant) -> None:
-        pass

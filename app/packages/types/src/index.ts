@@ -3,6 +3,7 @@ export * from "./tenant";
 export * from "./restaurant";
 export * from "./menu";
 export * from "./order";
+export * from "./payment";
 export * from "./floorCanvas";
 export * from "./common";
 export * from "./environment";

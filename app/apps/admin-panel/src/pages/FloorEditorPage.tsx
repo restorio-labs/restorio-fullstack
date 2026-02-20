@@ -19,28 +19,28 @@ const getActiveCanvas = (tenant: Tenant): FloorCanvasType | undefined => {
 };
 
 export const FloorEditorPage = (): ReactElement => {
-  const { venueId } = useParams<{ venueId: string }>();
+  const { restaurantId } = useParams<{ restaurantId: string }>();
   const navigate = useNavigate();
 
   const [loadingState, setLoadingState] = useState<LoadingState>("loading");
   const [tenant, setTenant] = useState<Tenant | null>(null);
 
   useEffect(() => {
-    if (!venueId) {
+    if (!restaurantId) {
       setLoadingState("not-found");
 
       return;
     }
 
     const fetchTenant = async (): Promise<void> => {
-      if (!venueId) {
+      if (!restaurantId) {
         setLoadingState("not-found");
 
         return;
       }
 
       try {
-        const data = await api.tenants.get(venueId);
+        const data = await api.tenants.get(restaurantId);
 
         setTenant(data);
         setLoadingState("loaded");
@@ -56,7 +56,7 @@ export const FloorEditorPage = (): ReactElement => {
     };
 
     void fetchTenant();
-  }, [venueId]);
+  }, [restaurantId]);
 
   const headerActions = (
     <button
@@ -64,7 +64,7 @@ export const FloorEditorPage = (): ReactElement => {
       onClick={() => navigate("/")}
       className="text-sm font-medium text-interactive-primary hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
     >
-      Back to venues
+      Back to restaurants
     </button>
   );
 
@@ -72,7 +72,7 @@ export const FloorEditorPage = (): ReactElement => {
     return (
       <PageLayout title="Floor layout" description="Loading..." headerActions={headerActions}>
         <div className="flex flex-1 items-center justify-center p-8">
-          <div className="text-sm text-text-tertiary">Loading venue...</div>
+          <div className="text-sm text-text-tertiary">Loading restaurant...</div>
         </div>
       </PageLayout>
     );
@@ -86,7 +86,7 @@ export const FloorEditorPage = (): ReactElement => {
     return (
       <PageLayout title="Floor layout" description="Error" headerActions={headerActions}>
         <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-text-tertiary">
-          Failed to load venue. Please try again later.
+          Failed to load restaurant. Please try again later.
         </div>
       </PageLayout>
     );
@@ -99,8 +99,8 @@ export const FloorEditorPage = (): ReactElement => {
     return (
       <PageLayout title="Floor layout" description={tenant.name} headerActions={headerActions}>
         <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-text-tertiary">
-          No saved floor layouts exist for this venue yet. Add one from the venues list or contact support if you
-          believe this is an error.
+          No saved floor layouts exist for this restaurant yet. Add one from the restaurants list or contact support if
+          you believe this is an error.
         </div>
       </PageLayout>
     );

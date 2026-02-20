@@ -5,7 +5,16 @@ from decimal import Decimal
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
-from sqlalchemy import CheckConstraint, DateTime, Enum, ForeignKey, Index, Numeric, String, func
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Index,
+    Numeric,
+    String,
+    func,
+)
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -34,7 +43,12 @@ class Order(Base):
         nullable=False,
     )
     status: Mapped[OrderStatus] = mapped_column(
-        Enum("OrderStatus", name="order_status", create_constraint=True),
+        Enum(
+            OrderStatus,
+            name="order_status",
+            create_constraint=True,
+            value_callable=lambda e: [m.value for m in e],
+        ),
         nullable=False,
         default=OrderStatus.PLACED,
     )

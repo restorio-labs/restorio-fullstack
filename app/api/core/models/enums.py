@@ -13,6 +13,11 @@ class OrderStatus(str, Enum):
     PLACED = "placed"
     PAID = "paid"
     CANCELLED = "cancelled"
+    NEW = "new"
+    PENDING = "pending"
+    CONFIRMED = "confirmed"
+    PREPARING = "preparing"
+    READY = "ready"
 
 
 class PaymentProvider(str, Enum):

@@ -4,10 +4,10 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { AppLayout } from "./layouts/AppLayout";
 import { PageLayout } from "./layouts/PageLayout";
 
-const VenuesPage = (): ReactElement => {
+const RestaurantsPage = (): ReactElement => {
   return (
     <PageLayout title="Floor" description="Waiter floor view">
-      <div className="p-6 text-sm text-text-tertiary">Floor runtime is not yet connected to live venues.</div>
+      <div className="p-6 text-sm text-text-tertiary">Floor runtime is not yet connected to live restaurants.</div>
     </PageLayout>
   );
 };
@@ -20,8 +20,8 @@ export const App = (): ReactElement => {
   return (
     <AppLayout>
       <Routes>
-        <Route path="/" element={<VenuesPage />} />
-        <Route path="/venues/:venueId" element={<FloorPage />} />
+        <Route path="/" element={<RestaurantsPage />} />
+        <Route path="/restaurants/:restaurantId" element={<FloorPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AppLayout>

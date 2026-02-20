@@ -1,13 +1,13 @@
+import type { UpdateP24ConfigRequest, UpdateP24ConfigResponse } from "@restorio/types";
+
 import { BaseResource } from "./base";
 
-export interface UpdateP24ConfigRequest {
-  p24_merchantid: number;
-  p24_api: string;
-  p24_crc: string;
-}
-
 export class PaymentsResource extends BaseResource {
-  updateP24Config(tenantId: string, data: UpdateP24ConfigRequest, signal?: AbortSignal): Promise<void> {
+  updateP24Config(
+    tenantId: string,
+    data: UpdateP24ConfigRequest,
+    signal?: AbortSignal,
+  ): Promise<UpdateP24ConfigResponse> {
     return this.client.put(`/payments/tenant/${tenantId}/p24-config`, data, { signal });
   }
 }
