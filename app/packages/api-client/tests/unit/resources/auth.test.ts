@@ -56,6 +56,12 @@ describe("AuthResource", () => {
     );
   });
 
+  it("refresh without token calls POST /auth/refresh with empty body", async () => {
+    await resource.refresh();
+
+    expect(client.post).toHaveBeenCalledWith("/auth/refresh", undefined, { signal: undefined });
+  });
+
   it("me calls GET /auth/me", async () => {
     await resource.me();
     expect(client.get).toHaveBeenCalledWith("/auth/me", { signal: undefined });

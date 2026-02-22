@@ -1,4 +1,4 @@
-import { Button, Stack, Text, ThemeProvider, useTheme } from "@restorio/ui";
+import { Button, Stack, Text, THEME_STORAGE_KEY, ThemeProvider, useTheme } from "@restorio/ui";
 import type { ReactElement } from "react";
 import { Navigate, NavLink, Route, Routes } from "react-router-dom";
 
@@ -64,7 +64,7 @@ const ThemeToggle = (): ReactElement => {
 
 const App = (): ReactElement => {
   return (
-    <ThemeProvider>
+    <ThemeProvider defaultMode="system" storageKey={THEME_STORAGE_KEY}>
       <div className="min-h-screen bg-background-primary text-text-primary">
         <header className="border-b border-border-default bg-surface-primary">
           <div className="mx-auto max-w-6xl px-6 py-4 flex items-center justify-between gap-4">

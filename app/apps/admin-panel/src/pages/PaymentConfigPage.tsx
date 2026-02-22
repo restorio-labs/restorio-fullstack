@@ -73,13 +73,12 @@ export const PaymentConfigPage = (): ReactElement => {
     setErrorMessage("");
 
     try {
-      const response = await api.payments.updateP24Config(tenantId.trim(), {
+      await api.payments.updateP24Config(tenantId.trim(), {
         p24_merchantid: Number(merchantId),
         p24_api: apiKey.trim(),
         p24_crc: crcKey.trim(),
       });
 
-      console.log(response);
       setSubmitState("success");
     } catch {
       setSubmitState("error");

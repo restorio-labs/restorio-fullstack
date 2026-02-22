@@ -1,23 +1,73 @@
+from datetime import timedelta
 from uuid import UUID
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Request, Response, status
+from sqlalchemy import select
 
 from core.dto.v1.auth import RegisterCreatedData, RegisterDTO, TenantSlugData
 from core.dto.v1.users import UserLoginDTO
+from core.exceptions.http import UnauthorizedError
+from core.foundation.auth_cookies import (
+    clear_auth_cookies,
+    get_refresh_token_from_request,
+    set_auth_cookies,
+)
 from core.foundation.dependencies import (
     EmailServiceDep,
     PostgresSession,
+    SecurityServiceDep,
     UserServiceDep,
 )
 from core.foundation.http.responses import CreatedResponse, SuccessResponse
 from core.foundation.infra.config import settings
+from core.models.user import User
 
 router = APIRouter()
 
 
-@router.post("/login", status_code=status.HTTP_200_OK)
-async def login(credentials: UserLoginDTO) -> dict[str, str]:  # noqa: ARG001
-    return {"message": "Login endpoint - to be implemented"}
+@router.post(
+    "/login",
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessResponse[dict[str, str]],
+)
+async def login(
+    credentials: UserLoginDTO,
+    request: Request,
+    response: Response,
+    session: PostgresSession,
+    security_service: SecurityServiceDep,
+) -> SuccessResponse[dict[str, str]]:
+    user = await session.scalar(select(User).where(User.email == credentials.email))
+
+    if user is None or not security_service.verify_password(
+        credentials.password, user.password_hash
+    ):
+        raise UnauthorizedError(message="Invalid email or password")
+
+    if not user.is_active:
+        raise UnauthorizedError(message="Account is inactive")
+
+    token_data = {
+        "sub": str(user.id),
+        "tenant_id": str(user.tenant_id) if user.tenant_id is not None else "",
+    }
+    access_token = security_service.create_access_token(token_data)
+    refresh_token = security_service.create_access_token(
+        {**token_data, "type": "refresh"},
+        expires_delta=timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
+    )
+
+    set_auth_cookies(
+        response=response,
+        request=request,
+        access_token=access_token,
+        refresh_token=refresh_token,
+    )
+
+    return SuccessResponse(
+        message="Login successful",
+        data={"authenticated": "true"},
+    )
 
 
 @router.post(
@@ -115,6 +165,84 @@ async def resend_activation(
     )
 
 
-@router.post("/refresh", status_code=status.HTTP_200_OK)
-async def refresh_token() -> dict[str, str]:
-    return {"message": "Refresh token endpoint - to be implemented"}
+@router.post(
+    "/refresh",
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessResponse[dict[str, str]],
+)
+async def refresh_token(
+    request: Request,
+    response: Response,
+    security_service: SecurityServiceDep,
+) -> SuccessResponse[dict[str, str]]:
+    refresh_token_value = get_refresh_token_from_request(request)
+    if refresh_token_value is None:
+        raise UnauthorizedError(message="Unauthorized")
+
+    payload = security_service.decode_access_token(refresh_token_value)
+    if payload.get("type") != "refresh":
+        raise UnauthorizedError(message="Unauthorized")
+
+    user_id = payload.get("sub")
+    if not isinstance(user_id, str) or not user_id:
+        raise UnauthorizedError(message="Unauthorized")
+
+    tenant_id = payload.get("tenant_id")
+    token_data = {
+        "sub": user_id,
+        "tenant_id": tenant_id if isinstance(tenant_id, str) else "",
+    }
+    access_token = security_service.create_access_token(token_data)
+    next_refresh_token = security_service.create_access_token(
+        {**token_data, "type": "refresh"},
+        expires_delta=timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
+    )
+
+    set_auth_cookies(
+        response=response,
+        request=request,
+        access_token=access_token,
+        refresh_token=next_refresh_token,
+    )
+
+    return SuccessResponse(
+        message="Token refreshed",
+        data={"refreshed": "true"},
+    )
+
+
+@router.post(
+    "/logout",
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessResponse[dict[str, str]],
+)
+async def logout(request: Request, response: Response) -> SuccessResponse[dict[str, str]]:
+    clear_auth_cookies(response=response, request=request)
+    return SuccessResponse(
+        message="Logout successful",
+        data={"logged_out": "true"},
+    )
+
+
+@router.get(
+    "/me",
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessResponse[dict[str, str]],
+)
+async def me(request: Request) -> SuccessResponse[dict[str, str]]:
+    user = getattr(request.state, "user", None)
+    if not isinstance(user, dict):
+        raise UnauthorizedError(message="Unauthorized")
+
+    subject = user.get("sub")
+    tenant_id = user.get("tenant_id")
+    if not isinstance(subject, str):
+        raise UnauthorizedError(message="Unauthorized")
+
+    return SuccessResponse(
+        data={
+            "sub": subject,
+            "tenant_id": tenant_id if isinstance(tenant_id, str) else "",
+        },
+        message="Authenticated",
+    )

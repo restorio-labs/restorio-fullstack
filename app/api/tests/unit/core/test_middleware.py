@@ -80,6 +80,20 @@ async def test_unauthorized_middleware_allows_public_routes() -> None:
 
 
 @pytest.mark.asyncio
+async def test_unauthorized_middleware_allows_public_auth_login_route() -> None:
+    async def call_next(_: Request) -> Response:
+        return Response(status_code=204)
+
+    middleware = UnauthorizedMiddleware(call_next)
+    scope = {"type": "http", "method": "POST", "path": "/api/v1/auth/login", "headers": []}
+    request = Request(scope)
+
+    response = await middleware.dispatch(request, call_next)
+
+    assert response.status_code == 204  # noqa: PLR2004
+
+
+@pytest.mark.asyncio
 async def test_unauthorized_middleware_returns_401_on_invalid_token() -> None:
     async def call_next(_: Request) -> Response:
         return Response(status_code=200)
@@ -99,3 +113,23 @@ async def test_unauthorized_middleware_returns_401_on_invalid_token() -> None:
         response = await middleware.dispatch(request, call_next)
 
     assert response.status_code == 401  # noqa: PLR2004
+
+
+@pytest.mark.asyncio
+async def test_unauthorized_middleware_accepts_access_token_cookie() -> None:
+    async def call_next(_: Request) -> Response:
+        return Response(status_code=200)
+
+    middleware = UnauthorizedMiddleware(call_next)
+    scope = {
+        "type": "http",
+        "method": "GET",
+        "path": "/",
+        "headers": [(b"cookie", b"restorio_access_token=valid-token")],
+    }
+    request = Request(scope)
+
+    with patch.object(middleware._security, "decode_access_token", return_value={"sub": "user-1"}):
+        response = await middleware.dispatch(request, call_next)
+
+    assert response.status_code == 200  # noqa: PLR2004

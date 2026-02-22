@@ -28,11 +28,13 @@ export class AuthResource extends BaseResource {
   }
   /**
    * Refresh an expired access token.
-   * @param refreshToken - The refresh token
+   * When HttpOnly cookies are enabled, refresh token is read server-side from cookie.
    * @returns New access and refresh tokens
    */
-  refresh(refreshToken: string, signal?: AbortSignal): Promise<AuthTokens> {
-    return this.client.post("/auth/refresh", { refreshToken }, { signal });
+  refresh(refreshToken?: string, signal?: AbortSignal): Promise<AuthTokens> {
+    const body = refreshToken ? { refreshToken } : undefined;
+
+    return this.client.post("/auth/refresh", body, { signal });
   }
 
   /**

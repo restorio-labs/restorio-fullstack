@@ -18,6 +18,11 @@
       "types": "./dist/theme/tailwindUtils.d.ts",
       "import": "./dist/theme/tailwindUtils.js",
       "require": "./dist/theme/tailwindUtils.cjs"
+    },
+    "./theme-mode": {
+      "types": "./dist/theme/themeMode.d.ts",
+      "import": "./src/theme/themeMode.ts",
+      "require": "./src/theme/themeMode.ts"
     }
   },
   "scripts": {
