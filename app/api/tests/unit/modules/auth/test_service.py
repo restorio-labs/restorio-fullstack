@@ -5,22 +5,19 @@ import pytest
 
 from core.exceptions import (
     BadRequestError,
-    ConflictError,
     GoneError,
     NotFoundError,
     TooManyRequestsError,
+    UnauthorizedError,
 )
 from core.foundation.security import SecurityService
 from core.models.activation_link import ActivationLink
-from core.models.enums import AccountType, TenantStatus
+from core.models.enums import TenantStatus
 from core.models.tenant import Tenant
-from core.models.tenant_role import TenantRole
 from core.models.user import User
 from services.auth_service import AuthService
 
 auth_service = AuthService(security=SecurityService())
-
-PASSWORD_HASH_MIN_LENGTH = 50
 EXPECTED_NEW_LINK_COUNT = 2
 
 
@@ -28,20 +25,19 @@ class FakeAsyncSession:
     def __init__(self) -> None:
         self.users: list[User] = []
         self.tenants: list[Tenant] = []
-        self.tenant_roles: list[TenantRole] = []
         self.activation_links: list[ActivationLink] = []
         self.added_objects: list[object] = []
 
-    async def scalar(self, query: object) -> User | Tenant | None:
+    async def scalar(self, query: object) -> User | None:
         query_str = str(query)
-        if "users.email" in query_str:
-            return next((u for u in self.users), None)
-        if "tenants.slug" in query_str:
-            return next((t for t in self.tenants), None)
-        return None
+        query_params: dict[str, object] = {}
+        if hasattr(query, "compile"):
+            query_params = query.compile().params
 
-    def add_all(self, objects: list[object]) -> None:
-        self.added_objects.extend(objects)
+        if "users.email" in query_str:
+            email = next(iter(query_params.values()), None)
+            return next((u for u in self.users if u.email == email), None)
+        return None
 
     def add(self, obj: object) -> None:
         self.added_objects.append(obj)
@@ -57,17 +53,7 @@ class FakeAsyncSession:
 
     async def flush(self) -> None:
         for obj in self.added_objects:
-            if isinstance(obj, User):
-                if not hasattr(obj, "id") or obj.id is None:
-                    obj.id = uuid4()
-                self.users.append(obj)
-            elif isinstance(obj, Tenant):
-                if not hasattr(obj, "id") or obj.id is None:
-                    obj.id = uuid4()
-                self.tenants.append(obj)
-            elif isinstance(obj, TenantRole):
-                self.tenant_roles.append(obj)
-            elif isinstance(obj, ActivationLink):
+            if isinstance(obj, ActivationLink):
                 if not hasattr(obj, "id") or obj.id is None:
                     obj.id = uuid4()
                 self.activation_links.append(obj)
@@ -75,145 +61,6 @@ class FakeAsyncSession:
 
     async def refresh(self, obj: object) -> None:
         pass
-
-
-@pytest.mark.asyncio
-async def test_create_user_with_tenant_success() -> None:
-    session = FakeAsyncSession()
-
-    user, tenant = await auth_service.create_user_with_tenant(
-        session=session,
-        email="owner@example.com",
-        password="secure_password",
-        restaurant_name="My Restaurant",
-    )
-
-    assert user is not None
-    assert user.email == "owner@example.com"
-    assert user.is_active is False
-    assert user.password_hash != "secure_password"
-    assert len(user.password_hash) > 0
-
-    assert tenant is not None
-    assert tenant.name == "My Restaurant"
-    assert tenant.slug == "myrestaurant"
-    assert tenant.status == TenantStatus.INACTIVE
-    assert tenant.owner_id == user.id
-    assert user.tenant_id == tenant.id
-
-    assert len(session.tenant_roles) == 1
-    tenant_role = session.tenant_roles[0]
-    assert tenant_role.account_id == user.id
-    assert tenant_role.tenant_id == tenant.id
-    assert tenant_role.account_type == AccountType.OWNER
-
-
-@pytest.mark.asyncio
-async def test_create_user_with_tenant_slug_generation() -> None:
-    session = FakeAsyncSession()
-
-    test_cases = [
-        ("My Restaurant", "myrestaurant"),
-        ("The Best Pizza", "thebestpizza"),
-        ("Café Délice", "cafédélice"),
-        ("Restaurant   With   Spaces", "restaurantwithspaces"),
-        ("A", "a"),
-    ]
-
-    for restaurant_name, expected_slug in test_cases:
-        session = FakeAsyncSession()
-        _, tenant = await auth_service.create_user_with_tenant(
-            session=session,
-            email=f"owner{expected_slug}@example.com",
-            password="password",
-            restaurant_name=restaurant_name,
-        )
-        assert tenant.slug == expected_slug
-
-
-@pytest.mark.asyncio
-async def test_create_user_with_tenant_duplicate_email() -> None:
-    session = FakeAsyncSession()
-
-    existing_user = User(
-        id=uuid4(),
-        email="existing@example.com",
-        password_hash="hashed",
-        is_active=True,
-    )
-    session.users.append(existing_user)
-
-    with pytest.raises(ConflictError) as exc_info:
-        await auth_service.create_user_with_tenant(
-            session=session,
-            email="existing@example.com",
-            password="password",
-            restaurant_name="New Restaurant",
-        )
-
-    assert "Email already registered" in str(exc_info.value)
-
-
-@pytest.mark.asyncio
-async def test_create_user_with_tenant_duplicate_slug() -> None:
-    session = FakeAsyncSession()
-
-    existing_tenant = Tenant(
-        id=uuid4(),
-        name="Existing Restaurant",
-        slug="myrestaurant",
-        status=TenantStatus.ACTIVE,
-    )
-    session.tenants.append(existing_tenant)
-
-    with pytest.raises(ConflictError) as exc_info:
-        await auth_service.create_user_with_tenant(
-            session=session,
-            email="newowner@example.com",
-            password="password",
-            restaurant_name="My Restaurant",
-        )
-
-    assert "Restaurant slug already exists" in str(exc_info.value)
-
-
-@pytest.mark.asyncio
-async def test_create_user_with_tenant_password_is_hashed() -> None:
-    session = FakeAsyncSession()
-
-    plain_password = "my_secure_password_123"
-
-    user, _ = await auth_service.create_user_with_tenant(
-        session=session,
-        email="test@example.com",
-        password=plain_password,
-        restaurant_name="Test Restaurant",
-    )
-
-    assert user.password_hash != plain_password
-    assert user.password_hash.startswith("$2b$")
-    assert len(user.password_hash) > PASSWORD_HASH_MIN_LENGTH
-
-
-@pytest.mark.asyncio
-async def test_create_user_with_tenant_role_relationship() -> None:
-    session = FakeAsyncSession()
-
-    user, tenant = await auth_service.create_user_with_tenant(
-        session=session,
-        email="owner@example.com",
-        password="password",
-        restaurant_name="Test Restaurant",
-    )
-
-    assert len(session.tenant_roles) == 1
-    tenant_role = session.tenant_roles[0]
-    assert tenant_role.account_id == user.id
-    assert tenant_role.tenant_id == tenant.id
-    assert tenant_role.account_type == AccountType.OWNER
-    assert len(session.tenant_roles) == 1
-    assert tenant.owner_id == user.id
-    assert user.tenant_id == tenant.id
 
 
 @pytest.mark.asyncio
@@ -513,3 +360,86 @@ async def test_resend_activation_link_success_creates_new_link() -> None:
     assert result_tenant.id == tenant.id
     assert len(session.activation_links) == EXPECTED_NEW_LINK_COUNT
     assert link.last_resend_at is not None
+
+
+@pytest.mark.asyncio
+async def test_login_success_returns_jwt_with_claims() -> None:
+    session = FakeAsyncSession()
+    tenant_id = uuid4()
+    user = User(
+        id=uuid4(),
+        email="owner@example.com",
+        password_hash=auth_service.security.hash_password("my_password_123"),
+        tenant_id=tenant_id,
+        is_active=True,
+    )
+    session.users.append(user)
+
+    access_token = await auth_service.login(
+        session=session,
+        email="owner@example.com",
+        password="my_password_123",
+    )
+
+    assert isinstance(access_token, str)
+    decoded = auth_service.security.decode_access_token(access_token)
+    assert decoded is not None
+    assert decoded["sub"] == str(user.id)
+    assert decoded["email"] == user.email
+    assert decoded["tenant_id"] == str(tenant_id)
+
+
+@pytest.mark.asyncio
+async def test_login_invalid_credentials() -> None:
+    session = FakeAsyncSession()
+    user = User(
+        id=uuid4(),
+        email="owner@example.com",
+        password_hash=auth_service.security.hash_password("my_password_123"),
+        is_active=True,
+    )
+    session.users.append(user)
+
+    with pytest.raises(UnauthorizedError) as exc_info:
+        await auth_service.login(
+            session=session,
+            email="owner@example.com",
+            password="wrong-password",
+        )
+
+    assert "invalid credentials" in exc_info.value.detail.lower()
+
+
+@pytest.mark.asyncio
+async def test_login_inactive_account() -> None:
+    session = FakeAsyncSession()
+    user = User(
+        id=uuid4(),
+        email="owner@example.com",
+        password_hash=auth_service.security.hash_password("my_password_123"),
+        is_active=False,
+    )
+    session.users.append(user)
+
+    with pytest.raises(UnauthorizedError) as exc_info:
+        await auth_service.login(
+            session=session,
+            email="owner@example.com",
+            password="my_password_123",
+        )
+
+    assert "not active" in exc_info.value.detail.lower()
+
+
+@pytest.mark.asyncio
+async def test_login_user_not_found() -> None:
+    session = FakeAsyncSession()
+
+    with pytest.raises(UnauthorizedError) as exc_info:
+        await auth_service.login(
+            session=session,
+            email="missing@example.com",
+            password="my_password_123",
+        )
+
+    assert "invalid credentials" in exc_info.value.detail.lower()

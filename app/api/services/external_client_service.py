@@ -11,6 +11,32 @@ class ExternalClient:
     def __init__(self) -> None:
         self._client = httpx.AsyncClient()
 
+    async def external_get(
+        self,
+        url: str,
+        *,
+        headers: dict[str, str] | None = None,
+        timeout: float = 10.0,
+        service_name: str = "External API",
+    ) -> str:
+        """GET a plain-text response from an external API."""
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.get(url, headers=headers or {}, timeout=timeout)
+                response.raise_for_status()
+
+                return response.json()
+            except httpx.HTTPStatusError as e:
+                error_message = self._extract_error_message(e)
+                raise ExternalAPIError(
+                    status_code=e.response.status_code,
+                    message=f"{service_name} error: {error_message}",
+                ) from e
+            except httpx.RequestError as e:
+                raise ServiceUnavailableError(
+                    message=f"Failed to connect to {service_name}: {e!s}",
+                ) from e
+
     async def post_json(
         self,
         url: str,
