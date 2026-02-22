@@ -6,13 +6,15 @@ export interface UpdateP24ConfigRequest {
   p24_crc: string;
 }
 
+export interface UpdateP24ConfigData {
+  id: string;
+  name: string;
+  slug: string;
+  status: TenantStatus;
+  createdAt: string;
+}
+
 export interface UpdateP24ConfigResponse {
   message: string;
-  data: {
-    id: string;
-    name: string;
-    slug: string;
-    status: TenantStatus;
-    created_at: string;
-  };
+  data: UpdateP24ConfigData;
 }

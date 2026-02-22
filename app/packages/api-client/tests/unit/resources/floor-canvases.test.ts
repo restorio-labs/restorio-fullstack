@@ -12,9 +12,9 @@ describe("FloorCanvasesResource", () => {
 
   beforeEach(() => {
     client = {
-      get: vi.fn().mockResolvedValue(undefined),
-      post: vi.fn().mockResolvedValue(undefined),
-      put: vi.fn().mockResolvedValue(undefined),
+      get: vi.fn().mockResolvedValue({ data: [] }),
+      post: vi.fn().mockResolvedValue({ data: {} }),
+      put: vi.fn().mockResolvedValue({ data: {} }),
       delete: vi.fn().mockResolvedValue(undefined),
     };
 
