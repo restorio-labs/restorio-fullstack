@@ -1,6 +1,7 @@
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.exceptions import (
@@ -8,6 +9,7 @@ from core.exceptions import (
     GoneError,
     NotFoundError,
     TooManyRequestsError,
+    UnauthorizedError,
 )
 from core.foundation.security import SecurityService
 from core.models.activation_link import ActivationLink
@@ -113,3 +115,26 @@ class AuthService:
         await session.flush()
         await session.refresh(new_link)
         return new_link, tenant
+
+    async def login(
+        self,
+        session: AsyncSession,
+        email: str,
+        password: str,
+    ) -> str:
+        user = await session.scalar(select(User).where(User.email == email))
+        if user is None or not self.security.verify_password(password, user.password_hash):
+            msg = "Invalid credentials"
+            raise UnauthorizedError(msg)
+
+        if not user.is_active:
+            msg = "Account is not active"
+            raise UnauthorizedError(msg)
+
+        return self.security.create_access_token(
+            data={
+                "sub": str(user.id),
+                "email": user.email,
+                "tenant_id": str(user.tenant_id) if user.tenant_id else None,
+            }
+        )
