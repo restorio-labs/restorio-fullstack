@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 
 from core.exceptions import BaseHTTPException
-from core.foundation.http.schemas import ErrorResponse
+from core.foundation.http.responses import ErrorResponse
 from core.foundation.infra.config import Settings
 
 

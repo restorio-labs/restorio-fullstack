@@ -4,7 +4,7 @@ from uuid import uuid4
 from pydantic import ValidationError
 import pytest
 
-from api.v1.dto.restaurants import (
+from core.dto.v1.restaurants import (
     CreateRestaurantTableDTO,
     RestaurantTableResponseDTO,
     UpdateRestaurantTableDTO,

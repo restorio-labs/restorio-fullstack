@@ -15,8 +15,6 @@ from core.models.restaurant_table import RestaurantTable
 from core.models.tenant import Tenant
 from core.models.tenant_role import TenantRole
 from core.models.user import User
-from core.models.user_tenant import UserTenant
-from core.models.venue import Venue
 
 __all__ = [
     "ActivationLink",
@@ -35,6 +33,4 @@ __all__ = [
     "TenantRole",
     "TenantStatus",
     "User",
-    "UserTenant",
-    "Venue",
 ]

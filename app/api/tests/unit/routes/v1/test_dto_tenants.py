@@ -4,8 +4,8 @@ from uuid import uuid4
 from pydantic import ValidationError
 import pytest
 
-from api.v1.dto.common import TenantStatus
-from api.v1.dto.tenants import CreateTenantDTO, TenantResponseDTO, UpdateTenantDTO
+from core.dto.v1.common import TenantStatus
+from core.dto.v1.tenants import CreateTenantDTO, TenantResponseDTO, UpdateTenantDTO
 
 
 class TestCreateTenantDTO:

@@ -2,13 +2,13 @@ from uuid import UUID
 
 from fastapi import APIRouter, status
 
-from api.v1.dto.restaurants import (
+from core.dto.v1.restaurants import (
     CreateRestaurantTableDTO,
     RestaurantTableResponseDTO,
     UpdateRestaurantTableDTO,
 )
-from core.foundation.http import MSG_NOT_IMPLEMENTED
-from core.foundation.http.schemas import (
+from core.foundation.http.consts import MSG_NOT_IMPLEMENTED
+from core.foundation.http.responses import (
     CreatedResponse,
     DeletedResponse,
     SuccessResponse,

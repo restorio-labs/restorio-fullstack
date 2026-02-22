@@ -3,7 +3,7 @@ from decimal import Decimal
 from pydantic import ValidationError
 import pytest
 
-from api.v1.dto.menus import CreateMenuItemDTO, CreateModifierDTO, MenuItemDTO, ModifierDTO
+from core.dto.v1.menus import CreateMenuItemDTO, CreateModifierDTO, MenuItemDTO, ModifierDTO
 
 
 class TestCreateModifierDTO:

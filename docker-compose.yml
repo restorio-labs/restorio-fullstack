@@ -22,6 +22,7 @@ services:
       - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-}
     volumes:
       - ./app/api:/app
+      - /app/.venv
     depends_on:
       redis:
         condition: service_healthy
@@ -32,6 +33,8 @@ services:
     networks:
       - restorio-network
     restart: unless-stopped
+    command: >
+      sh -c 'uv run alembic upgrade head && exec uvicorn main:app --host 0.0.0.0 --port 8000'
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 10s

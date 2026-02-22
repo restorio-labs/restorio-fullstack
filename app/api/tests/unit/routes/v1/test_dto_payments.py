@@ -5,8 +5,8 @@ from uuid import uuid4
 from pydantic import ValidationError
 import pytest
 
-from api.v1.dto.common import PaymentProvider, PaymentStatus
-from api.v1.dto.payments import CreatePaymentDTO, PaymentResponseDTO, UpdatePaymentDTO
+from core.dto.v1.common import PaymentProvider, PaymentStatus
+from core.dto.v1.payments import CreatePaymentDTO, PaymentResponseDTO, UpdatePaymentDTO
 
 
 class TestCreatePaymentDTO:

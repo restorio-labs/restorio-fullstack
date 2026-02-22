@@ -1,10 +1,10 @@
-import type { TableDisplayInfo, TableRuntimeState, Venue } from "@restorio/types";
+import type { FloorCanvas as FloorCanvasType, TableDisplayInfo, TableRuntimeState, Tenant } from "@restorio/types";
 import { FloorCanvas } from "@restorio/ui";
 import type { ReactElement } from "react";
 import { useCallback, useState } from "react";
 
 interface FloorRuntimeViewProps {
-  venue: Venue;
+  venue: Tenant;
   tableStates?: Record<string, TableRuntimeState>;
   tableDisplayInfo?: Record<string, TableDisplayInfo>;
 }
@@ -24,7 +24,7 @@ export const FloorRuntimeView = ({
   const hasCanvases = venue.floorCanvases.length > 0;
 
   const activeCanvas = hasCanvases
-    ? (venue.floorCanvases.find((c) => c.id === venue.activeLayoutVersionId) ?? venue.floorCanvases[0])
+    ? (venue.floorCanvases.find((c: FloorCanvasType) => c.id === venue.activeLayoutVersionId) ?? venue.floorCanvases[0])
     : undefined;
 
   const handleElementPointerDown = useCallback((id: string): void => {

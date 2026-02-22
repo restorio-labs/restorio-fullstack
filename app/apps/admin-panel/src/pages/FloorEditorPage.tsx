@@ -1,4 +1,4 @@
-import type { FloorCanvas as FloorCanvasType, Venue } from "@restorio/types";
+import type { FloorCanvas as FloorCanvasType, Tenant } from "@restorio/types";
 import { useEffect, useState, type ReactElement } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 
@@ -8,41 +8,41 @@ import { FloorLayoutEditorView } from "../views/FloorLayoutEditorView";
 
 type LoadingState = "loading" | "loaded" | "error" | "not-found";
 
-const getActiveCanvas = (venue: Venue): FloorCanvasType | undefined => {
-  const canvases = venue.floorCanvases;
+const getActiveCanvas = (tenant: Tenant): FloorCanvasType | undefined => {
+  const canvases = tenant.floorCanvases;
 
   if (canvases.length === 0) {
     return undefined;
   }
 
-  return canvases.find((c) => c.id === venue.activeLayoutVersionId) ?? canvases[0];
+  return canvases.find((c) => c.id === tenant.activeLayoutVersionId) ?? canvases[0];
 };
 
 export const FloorEditorPage = (): ReactElement => {
-  const { venueId } = useParams<{ venueId: string }>();
+  const { restaurantId } = useParams<{ restaurantId: string }>();
   const navigate = useNavigate();
 
   const [loadingState, setLoadingState] = useState<LoadingState>("loading");
-  const [venue, setVenue] = useState<Venue | null>(null);
+  const [tenant, setTenant] = useState<Tenant | null>(null);
 
   useEffect(() => {
-    if (!venueId) {
+    if (!restaurantId) {
       setLoadingState("not-found");
 
       return;
     }
 
-    const fetchVenue = async (): Promise<void> => {
-      if (!venueId) {
+    const fetchTenant = async (): Promise<void> => {
+      if (!restaurantId) {
         setLoadingState("not-found");
 
         return;
       }
 
       try {
-        const data = await api.venues.get(venueId);
+        const data = await api.tenants.get(restaurantId);
 
-        setVenue(data);
+        setTenant(data);
         setLoadingState("loaded");
       } catch (error) {
         const httpError = error as { response?: { status?: number } };
@@ -55,8 +55,8 @@ export const FloorEditorPage = (): ReactElement => {
       }
     };
 
-    void fetchVenue();
-  }, [venueId]);
+    void fetchTenant();
+  }, [restaurantId]);
 
   const headerActions = (
     <button
@@ -64,7 +64,7 @@ export const FloorEditorPage = (): ReactElement => {
       onClick={() => navigate("/")}
       className="text-sm font-medium text-interactive-primary hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
     >
-      Back to venues
+      Back to restaurants
     </button>
   );
 
@@ -72,13 +72,13 @@ export const FloorEditorPage = (): ReactElement => {
     return (
       <PageLayout title="Floor layout" description="Loading..." headerActions={headerActions}>
         <div className="flex flex-1 items-center justify-center p-8">
-          <div className="text-sm text-text-tertiary">Loading venue...</div>
+          <div className="text-sm text-text-tertiary">Loading restaurant...</div>
         </div>
       </PageLayout>
     );
   }
 
-  if (loadingState === "not-found" || !venue) {
+  if (loadingState === "not-found" || !tenant) {
     return <Navigate to="/" replace />;
   }
 
@@ -86,21 +86,21 @@ export const FloorEditorPage = (): ReactElement => {
     return (
       <PageLayout title="Floor layout" description="Error" headerActions={headerActions}>
         <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-text-tertiary">
-          Failed to load venue. Please try again later.
+          Failed to load restaurant. Please try again later.
         </div>
       </PageLayout>
     );
   }
 
-  const hasCanvases = venue.floorCanvases.length > 0;
-  const activeCanvas = hasCanvases ? getActiveCanvas(venue) : undefined;
+  const hasCanvases = tenant.floorCanvases.length > 0;
+  const activeCanvas = hasCanvases ? getActiveCanvas(tenant) : undefined;
 
   if (!hasCanvases || activeCanvas === undefined) {
     return (
-      <PageLayout title="Floor layout" description={venue.name} headerActions={headerActions}>
+      <PageLayout title="Floor layout" description={tenant.name} headerActions={headerActions}>
         <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-text-tertiary">
-          No saved floor layouts exist for this venue yet. Add one from the venues list or contact support if you
-          believe this is an error.
+          No saved floor layouts exist for this restaurant yet. Add one from the restaurants list or contact support if
+          you believe this is an error.
         </div>
       </PageLayout>
     );
@@ -108,7 +108,7 @@ export const FloorEditorPage = (): ReactElement => {
 
   const handleSave = async (layout: FloorCanvasType): Promise<void> => {
     try {
-      await api.floorCanvases.update(venue.id, activeCanvas.id, {
+      await api.floorCanvases.update(tenant.id, activeCanvas.id, {
         name: layout.name,
         width: layout.width,
         height: layout.height,
@@ -120,7 +120,7 @@ export const FloorEditorPage = (): ReactElement => {
   };
 
   return (
-    <PageLayout title={`Floor: ${activeCanvas.name}`} description={venue.name} headerActions={headerActions}>
+    <PageLayout title={`Floor: ${activeCanvas.name}`} description={tenant.name} headerActions={headerActions}>
       <FloorLayoutEditorView initialLayout={activeCanvas} onSave={handleSave} />
     </PageLayout>
   );

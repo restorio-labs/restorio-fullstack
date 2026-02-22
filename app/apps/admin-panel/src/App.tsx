@@ -11,9 +11,9 @@ import {
   MenuPageConfiguratorPage,
   PaymentConfigPage,
   QRCodeGeneratorPage,
+  RestaurantCreatorPage,
   StaffPage,
-  VenueCreatorPage,
-  VenuesPage,
+  RestaurantsPage,
 } from "./pages";
 
 const PUBLIC_WEB_URL: string =
@@ -24,9 +24,9 @@ export const App = (): ReactElement => {
     <RedirectAuthGuard redirectTo={PUBLIC_WEB_URL}>
       <AppLayout sidebar={<AdminSidebar />}>
         <Routes>
-          <Route path="/" element={<VenuesPage />} />
-          <Route path="/venue-creator" element={<VenueCreatorPage />} />
-          <Route path="/venues/:venueId/floor" element={<FloorEditorPage />} />
+          <Route path="/" element={<RestaurantsPage />} />
+          <Route path="/restaurant-creator" element={<RestaurantCreatorPage />} />
+          <Route path="/restaurants/:restaurantId/floor" element={<FloorEditorPage />} />
           <Route path="/menu-creator" element={<MenuCreatorPage />} />
           <Route path="/menu-page-configurator" element={<MenuPageConfiguratorPage />} />
           <Route path="/qr-code-generator" element={<QRCodeGeneratorPage />} />

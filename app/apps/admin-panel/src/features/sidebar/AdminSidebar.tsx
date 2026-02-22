@@ -15,20 +15,22 @@ export const AdminSidebar = (): ReactElement => {
 
   return (
     <Sidebar aria-label="Admin navigation" variant="persistent">
-      <ThemeSwitcher />
-      <SidebarSection title="Venue Management">
+      <SidebarSection title="Appearance">
+        <ThemeSwitcher className="w-full justify-between" showLabel />
+      </SidebarSection>
+      <SidebarSection title="Restaurant Management">
         <NavSection>
           <NavItem as={Link} to="/" href="/" active={isActive("/")} role="menuitem">
-            Venues
+            Restaurants
           </NavItem>
           <NavItem
             as={Link}
-            to="/venue-creator"
-            href="/venue-creator"
-            active={isActive("/venue-creator")}
+            to="/restaurant-creator"
+            href="/restaurant-creator"
+            active={isActive("/restaurant-creator")}
             role="menuitem"
           >
-            Venue Creator
+            Restaurant Creator
           </NavItem>
         </NavSection>
       </SidebarSection>
