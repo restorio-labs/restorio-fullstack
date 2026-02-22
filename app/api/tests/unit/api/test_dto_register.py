@@ -1,7 +1,7 @@
 from pydantic import ValidationError as PydanticValidationError
 import pytest
 
-from core.dto.v1.auth import _MIN_PASSWORD_LENGTH, RegisterDTO
+from core.dto.v1.auth import RegisterDTO
 from core.exceptions import ValidationError as CoreValidationError
 
 BASE_VALID = {
