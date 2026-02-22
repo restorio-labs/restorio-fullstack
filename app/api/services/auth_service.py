@@ -35,7 +35,7 @@ class AuthService:
         password: str,
         restaurant_name: str,
     ) -> tuple[User, Tenant]:
-        await self.check_password_pwned(password)
+        # await self.check_password_pwned(password)  # noqa: ERA001 If we ever want to check passwords against HIBP
 
         slug = "".join(restaurant_name.split()).lower()
 
