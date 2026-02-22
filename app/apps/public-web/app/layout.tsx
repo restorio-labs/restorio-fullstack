@@ -1,9 +1,9 @@
+import { getThemeBootScript } from "@restorio/ui/theme-mode";
 import type { Metadata, Viewport } from "next";
 import type { ReactElement, ReactNode } from "react";
 
 import { AppProviders } from "../src/wrappers/AppProviders";
 
-import { getThemeBootScript } from "@/theme/themeMode";
 import "./globals.css";
 
 export const viewport: Viewport = {

@@ -12,53 +12,50 @@ const getEnvVar = (key: string): string | undefined => {
 const ACCESS_TOKEN_KEY = getEnvVar("ACCESS_TOKEN_KEY") ?? "restorio_access_token";
 const REFRESH_TOKEN_KEY = getEnvVar("REFRESH_TOKEN_KEY") ?? "restorio_refresh_token";
 
-const getLocalStorage = (): Storage | undefined => {
+const getDocument = (): Document | undefined => {
   if (typeof window === "undefined") {
     return undefined;
   }
 
-  return window.localStorage;
+  return window.document;
+};
+
+const getCookieValue = (key: string): string | null => {
+  const doc = getDocument();
+
+  if (doc === undefined) {
+    return null;
+  }
+
+  const cookieEntry = doc.cookie
+    .split(";")
+    .map((item) => item.trim())
+    .find((item) => item.startsWith(`${key}=`));
+
+  if (!cookieEntry) {
+    return null;
+  }
+
+  const value = cookieEntry.slice(key.length + 1);
+
+  return decodeURIComponent(value);
 };
 
 export class TokenStorage {
   static getAccessToken(): string | null {
-    const storage = getLocalStorage();
-
-    if (storage === undefined) {
-      return null;
-    }
-
-    return storage.getItem(ACCESS_TOKEN_KEY);
+    return getCookieValue(ACCESS_TOKEN_KEY);
   }
 
   static setAccessToken(token: string): void {
-    const storage = getLocalStorage();
-
-    if (storage === undefined) {
-      return;
-    }
-
-    storage.setItem(ACCESS_TOKEN_KEY, token);
+    void token;
   }
 
   static getRefreshToken(): string | null {
-    const storage = getLocalStorage();
-
-    if (storage === undefined) {
-      return null;
-    }
-
-    return storage.getItem(REFRESH_TOKEN_KEY);
+    return getCookieValue(REFRESH_TOKEN_KEY);
   }
 
   static setRefreshToken(token: string): void {
-    const storage = getLocalStorage();
-
-    if (storage === undefined) {
-      return;
-    }
-
-    storage.setItem(REFRESH_TOKEN_KEY, token);
+    void token;
   }
 
   static setTokens(accessToken: string, refreshToken: string): void {
@@ -67,14 +64,7 @@ export class TokenStorage {
   }
 
   static clearTokens(): void {
-    const storage = getLocalStorage();
-
-    if (storage === undefined) {
-      return;
-    }
-
-    storage.removeItem(ACCESS_TOKEN_KEY);
-    storage.removeItem(REFRESH_TOKEN_KEY);
+    // HttpOnly auth cookies are controlled by the backend.
   }
 
   static decodeToken(token: string): Record<string, string> | null {
