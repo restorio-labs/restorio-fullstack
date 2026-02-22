@@ -32,6 +32,20 @@ async def test_timing_middleware_adds_header() -> None:
 
 
 @pytest.mark.asyncio
+async def test_unauthorized_middleware_allows_options_request() -> None:
+    async def call_next(_: Request) -> Response:
+        return Response(status_code=202)
+
+    mid = UnauthorizedMiddleware(call_next)
+    scope = {"type": "http", "method": "OPTIONS", "path": "/api/v1/private", "headers": []}
+    request = Request(scope)
+
+    response = await mid.dispatch(request, call_next)
+
+    assert response.status_code == 202  # noqa: PLR2004
+
+
+@pytest.mark.asyncio
 async def test_unauthorized_middleware_transforms_not_found() -> None:
     async def call_next(_: Request) -> Response:
         return Response(status_code=404)
