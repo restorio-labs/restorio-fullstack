@@ -1,10 +1,16 @@
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, Mock
+from uuid import uuid4
 
 import pytest
 
-from core.exceptions import ExternalAPIError, ServiceUnavailableError
+from core.dto.v1.payments import CreateTransactionDTO
+from core.exceptions import (
+    BadRequestError,
+    ExternalAPIError,
+    NotFoundError,
+    ServiceUnavailableError,
+)
 from core.foundation.http.responses import CreatedResponse
-from core.models import CreatePaymentRequest
 from routes.v1.payments.create_payment import create_payment
 from services.payment_service import P24Service
 
@@ -40,115 +46,177 @@ class TestCalculatePrzelewy24Sign:
 
 
 @pytest.fixture
-def create_payment_request() -> CreatePaymentRequest:
-    return CreatePaymentRequest(
-        sessionId="test-session-123",
+def tenant_id():
+    return uuid4()
+
+
+@pytest.fixture
+def create_transaction_request(tenant_id):
+    return CreateTransactionDTO(
+        tenant_id=tenant_id,
         amount=10000,
-        currency="PLN",
-        description="Test order",
         email="user@example.com",
-        country="PL",
-        language="pl",
-        urlReturn="https://example.com/return",
-        urlStatus="https://example.com/status",
-        waitForResult=True,
-        regulationAccept=True,
+        order={"items": [{"name": "Pizza", "qty": 1}]},
+        note="Test payment",
     )
 
 
 @pytest.fixture
-def przelewy24_success_response() -> dict:
+def mock_tenant(tenant_id):
+    tenant = Mock()
+    tenant.id = tenant_id
+    tenant.name = "Test Restaurant"
+    tenant.p24_merchantid = 12345
+    tenant.p24_api = "test-api-key"
+    tenant.p24_crc = "test-crc"
+    return tenant
+
+
+@pytest.fixture
+def przelewy24_success_response():
     return {"data": {"token": "p24-token-xyz"}, "responseCode": 0}
 
 
 @pytest.mark.asyncio
 async def test_create_payment_success(
-    create_payment_request: CreatePaymentRequest,
-    przelewy24_success_response: dict,
-) -> None:
-    with patch("routes.v1.payments.create_payment.settings") as mock_settings:
-        mock_settings.PRZELEWY24_API_URL = "https://sandbox.przelewy24.pl/api/v1"
+    create_transaction_request,
+    mock_tenant,
+    przelewy24_success_response,
+):
+    session = AsyncMock()
+    tenant_service = AsyncMock()
+    tenant_service.get_tenant.return_value = mock_tenant
 
-        service = Mock()
-        service._merchant_id = 12345
-        service._pos_id = 12345
-        service._crc = "test-crc"
-        service._PRZELEWY24_SERVICE_NAME = "Przelewy24"
-        service._przelewy24_sign.return_value = "a" * 96
-        service._przelewy24_basic_auth.return_value = "Basic test-auth"
+    p24_service = AsyncMock()
+    p24_service.register_transaction.return_value = przelewy24_success_response
 
-        external_client = Mock()
-        external_client.external_post_json = AsyncMock(return_value=przelewy24_success_response)
+    external_client = Mock()
 
-        result = await create_payment(create_payment_request, service, external_client)
+    result = await create_payment(
+        create_transaction_request, session, tenant_service, p24_service, external_client
+    )
 
     assert isinstance(result, CreatedResponse)
     assert result.message == "Payment transaction created successfully"
     assert result.data == przelewy24_success_response
-    external_client.external_post_json.assert_called_once()
-    args, kwargs = external_client.external_post_json.call_args
-    assert "transaction/register" in str(args[0])
-    assert kwargs.get("headers", {}).get("Authorization", "").startswith("Basic ")
+    tenant_service.get_tenant.assert_called_once_with(session, create_transaction_request.tenant_id)
+    p24_service.register_transaction.assert_called_once_with(
+        external_client,
+        merchant_id=mock_tenant.p24_merchantid,
+        api_key=mock_tenant.p24_api,
+        crc=mock_tenant.p24_crc,
+        amount=create_transaction_request.amount,
+        email=create_transaction_request.email,
+        description=create_transaction_request.note,
+    )
 
 
 @pytest.mark.asyncio
-async def test_create_payment_http_status_error(
-    create_payment_request: CreatePaymentRequest,
-) -> None:
-    status_code = 400
-    with patch("routes.v1.payments.create_payment.settings") as mock_settings:
-        mock_settings.PRZELEWY24_API_URL = "https://sandbox.przelewy24.pl/api/v1"
+async def test_create_payment_tenant_not_found(create_transaction_request):
+    session = AsyncMock()
+    tenant_service = AsyncMock()
+    tenant_service.get_tenant.side_effect = NotFoundError(
+        "Tenant", str(create_transaction_request.tenant_id)
+    )
 
-        service = Mock()
-        service._merchant_id = 12345
-        service._pos_id = 12345
-        service._crc = "crc"
-        service._PRZELEWY24_SERVICE_NAME = "Przelewy24"
-        service._przelewy24_sign.return_value = "a" * 96
-        service._przelewy24_basic_auth.return_value = "Basic test-auth"
+    p24_service = AsyncMock()
+    external_client = Mock()
 
-        external_client = Mock()
-        external_client.external_post_json = AsyncMock(
-            side_effect=ExternalAPIError(
-                status_code=400,
-                message="Przelewy24 error: Invalid merchant configuration",
-            )
+    with pytest.raises(NotFoundError):
+        await create_payment(
+            create_transaction_request, session, tenant_service, p24_service, external_client
         )
-
-        with pytest.raises(ExternalAPIError) as exc_info:
-            await create_payment(create_payment_request, service, external_client)
-
-        assert exc_info.value.status_code == status_code
-        assert "Przelewy24" in exc_info.value.detail
-        assert "Invalid merchant configuration" in exc_info.value.detail
 
 
 @pytest.mark.asyncio
-async def test_create_payment_request_error(
-    create_payment_request: CreatePaymentRequest,
-) -> None:
-    status_code = 503
-    with patch("routes.v1.payments.create_payment.settings") as mock_settings:
-        mock_settings.PRZELEWY24_API_URL = "https://sandbox.przelewy24.pl/api/v1"
+async def test_create_payment_missing_p24_credentials(create_transaction_request, mock_tenant):
+    mock_tenant.p24_merchantid = None
+    mock_tenant.p24_api = None
+    mock_tenant.p24_crc = None
 
-        service = Mock()
-        service._merchant_id = 12345
-        service._pos_id = 12345
-        service._crc = "crc"
-        service._PRZELEWY24_SERVICE_NAME = "Przelewy24"
-        service._przelewy24_sign.return_value = "a" * 96
-        service._przelewy24_basic_auth.return_value = "Basic test-auth"
+    session = AsyncMock()
+    tenant_service = AsyncMock()
+    tenant_service.get_tenant.return_value = mock_tenant
 
-        external_client = Mock()
-        external_client.external_post_json = AsyncMock(
-            side_effect=ServiceUnavailableError(
-                message="Failed to connect to Przelewy24: Connection refused",
-            )
+    p24_service = AsyncMock()
+    external_client = Mock()
+
+    with pytest.raises(BadRequestError) as exc_info:
+        await create_payment(
+            create_transaction_request, session, tenant_service, p24_service, external_client
         )
 
-        with pytest.raises(ServiceUnavailableError) as exc_info:
-            await create_payment(create_payment_request, service, external_client)
+    assert "Przelewy24 credentials" in exc_info.value.detail
 
-        assert exc_info.value.status_code == status_code
-        assert "Przelewy24" in exc_info.value.detail
-        assert "Connection refused" in exc_info.value.detail
+
+@pytest.mark.asyncio
+async def test_create_payment_p24_api_error(create_transaction_request, mock_tenant):
+    session = AsyncMock()
+    tenant_service = AsyncMock()
+    tenant_service.get_tenant.return_value = mock_tenant
+
+    p24_service = AsyncMock()
+    p24_service.register_transaction.side_effect = ExternalAPIError(
+        status_code=400,
+        message="Przelewy24 error: Invalid merchant configuration",
+    )
+
+    external_client = Mock()
+
+    with pytest.raises(ExternalAPIError) as exc_info:
+        await create_payment(
+            create_transaction_request, session, tenant_service, p24_service, external_client
+        )
+
+    assert exc_info.value.status_code == 400
+    assert "Przelewy24" in exc_info.value.detail
+
+
+@pytest.mark.asyncio
+async def test_create_payment_service_unavailable(create_transaction_request, mock_tenant):
+    session = AsyncMock()
+    tenant_service = AsyncMock()
+    tenant_service.get_tenant.return_value = mock_tenant
+
+    p24_service = AsyncMock()
+    p24_service.register_transaction.side_effect = ServiceUnavailableError(
+        message="Failed to connect to Przelewy24: Connection refused",
+    )
+
+    external_client = Mock()
+
+    with pytest.raises(ServiceUnavailableError) as exc_info:
+        await create_payment(
+            create_transaction_request, session, tenant_service, p24_service, external_client
+        )
+
+    assert exc_info.value.status_code == 503
+    assert "Przelewy24" in exc_info.value.detail
+
+
+@pytest.mark.asyncio
+async def test_create_payment_optional_fields_empty(
+    tenant_id,
+    mock_tenant,
+    przelewy24_success_response,
+):
+    request = CreateTransactionDTO(
+        tenant_id=tenant_id,
+        amount=5000,
+        email="user@example.com",
+    )
+
+    session = AsyncMock()
+    tenant_service = AsyncMock()
+    tenant_service.get_tenant.return_value = mock_tenant
+
+    p24_service = AsyncMock()
+    p24_service.register_transaction.return_value = przelewy24_success_response
+
+    external_client = Mock()
+
+    result = await create_payment(request, session, tenant_service, p24_service, external_client)
+
+    assert isinstance(result, CreatedResponse)
+    call_kwargs = p24_service.register_transaction.call_args.kwargs
+    assert call_kwargs["description"] == ""

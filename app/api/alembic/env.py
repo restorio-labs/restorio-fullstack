@@ -16,6 +16,7 @@ from core.models import (
     RestaurantTable,  # pyright: ignore[reportUnusedImport] # noqa: F401
     Tenant,  # pyright: ignore[reportUnusedImport] # noqa: F401
     TenantRole,  # pyright: ignore[reportUnusedImport] # noqa: F401
+    Transaction,  # pyright: ignore[reportUnusedImport] # noqa: F401
     User,  # pyright: ignore[reportUnusedImport] # noqa: F401
 )
 

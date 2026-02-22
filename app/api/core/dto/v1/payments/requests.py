@@ -1,4 +1,5 @@
 from decimal import Decimal
+from typing import Any
 
 from pydantic import Field
 
@@ -12,6 +13,14 @@ class CreatePaymentDTO(BaseDTO):
     external_reference: str | None = Field(
         None, max_length=255, description="External payment reference"
     )
+
+
+class CreateTransactionDTO(BaseDTO):
+    tenant_id: EntityId = Field(..., description="Tenant identifier")
+    amount: int = Field(..., gt=0, description="Transaction amount in minor units")
+    email: str = Field(..., description="Payer email address")
+    order: dict[str, Any] | None = Field(default=None, description="Order details")
+    note: str | None = Field(default=None, description="Additional notes")
 
 
 class UpdatePaymentDTO(BaseDTO):
