@@ -19,9 +19,11 @@ class UnauthorizedMiddleware(BaseHTTPMiddleware):
     ) -> Response:
         # Allow public routes
         if (
-            request.url.path.startswith("/docs")
+            request.method == "OPTIONS"
+            or request.url.path.startswith("/docs")
             or request.url.path.startswith("/openapi")
             or request.url.path.startswith("/health")
+            or request.url.path.startswith("/api/v1/auth")
         ):
             return await call_next(request)
 
