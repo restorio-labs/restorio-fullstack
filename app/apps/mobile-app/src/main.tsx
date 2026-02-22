@@ -1,24 +1,12 @@
-import { StrictMode, type ReactElement } from "react";
+import { runThemeBootScript } from "@restorio/ui";
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
-import { AppLayout } from "./layouts/AppLayout";
-import { PageLayout } from "./layouts/PageLayout";
+import { App } from "./App";
 import { AppProviders } from "./wrappers/AppProviders";
 import "./index.css";
 
-const App = (): ReactElement => {
-  return (
-    <AppProviders>
-      <AppLayout>
-        <PageLayout title="Restorio Tablet App">
-          <div className="p-6">
-            <p>Tablet/kiosk interface coming soon...</p>
-          </div>
-        </PageLayout>
-      </AppLayout>
-    </AppProviders>
-  );
-};
+runThemeBootScript();
 
 const root = document.getElementById("root");
 
@@ -30,6 +18,8 @@ const reactRoot = createRoot(root);
 
 reactRoot.render(
   <StrictMode>
-    <App />
+    <AppProviders>
+      <App />
+    </AppProviders>
   </StrictMode>,
 );

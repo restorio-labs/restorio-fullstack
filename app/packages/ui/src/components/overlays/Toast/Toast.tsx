@@ -12,6 +12,7 @@ export interface ToastProps {
   action?: ReactNode;
   onClose?: () => void;
   className?: string;
+  closeButtonAriaLabel?: string;
 }
 
 const variantStyles: Record<ToastVariant, string> = {
@@ -28,6 +29,7 @@ export const Toast = ({
   action,
   onClose,
   className,
+  closeButtonAriaLabel = "Close toast",
 }: ToastProps): ReactElement => {
   return (
     <div
@@ -49,7 +51,7 @@ export const Toast = ({
           type="button"
           onClick={onClose}
           className="flex-shrink-0 p-1 hover:opacity-70 focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-sm"
-          aria-label="Close toast"
+          aria-label={closeButtonAriaLabel}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

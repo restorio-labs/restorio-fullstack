@@ -1,32 +1,72 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 import { TokenStorage } from "../../src/storage";
 
 describe("TokenStorage", () => {
-  const mockGetItem = vi.fn();
-  const mockSetItem = vi.fn();
-  const mockRemoveItem = vi.fn();
+  let cookieStore: Record<string, string>;
+  let cookieWrites: string[];
+  const originalWindow = globalThis.window;
+  const originalDocument = globalThis.document;
+  const originalCookieDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, "cookie");
+  const originalLocationDescriptor = Object.getOwnPropertyDescriptor(window, "location");
 
   beforeEach(() => {
     vi.clearAllMocks();
+    cookieStore = {};
+    cookieWrites = [];
 
-    if (typeof globalThis.window === "undefined") {
+    Object.defineProperty(document, "cookie", {
+      configurable: true,
+      get: () =>
+        Object.entries(cookieStore)
+          .map(([key, value]) => `${key}=${value}`)
+          .join("; "),
+      set: (cookie: string) => {
+        cookieWrites.push(cookie);
+
+        const [firstPart] = cookie.split(";");
+        const [rawKey, rawValue = ""] = firstPart.split("=");
+        const key = rawKey.trim();
+        const value = rawValue.trim();
+        const hasMaxAgeZero = cookie.includes("Max-Age=0");
+
+        if (hasMaxAgeZero) {
+          delete cookieStore[key];
+
+          return;
+        }
+
+        cookieStore[key] = value;
+      },
+    });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+
+    if (originalWindow !== undefined) {
       Object.defineProperty(globalThis, "window", {
-        value: {},
+        value: originalWindow,
         writable: true,
         configurable: true,
       });
     }
 
-    Object.defineProperty(globalThis.window, "localStorage", {
-      value: {
-        getItem: mockGetItem,
-        setItem: mockSetItem,
-        removeItem: mockRemoveItem,
-      },
-      writable: true,
-      configurable: true,
-    });
+    if (originalDocument !== undefined) {
+      Object.defineProperty(globalThis, "document", {
+        value: originalDocument,
+        writable: true,
+        configurable: true,
+      });
+    }
+
+    if (originalCookieDescriptor) {
+      Object.defineProperty(Document.prototype, "cookie", originalCookieDescriptor);
+    }
+
+    if (originalLocationDescriptor) {
+      Object.defineProperty(window, "location", originalLocationDescriptor);
+    }
   });
 
   it("should return null when window is undefined", () => {
@@ -37,50 +77,57 @@ describe("TokenStorage", () => {
     vi.stubGlobal("window", originalWindow);
   });
 
-  it("should get access token from localStorage", () => {
+  it("should get access token from cookie", () => {
     const mockToken = "test-access-token";
 
-    mockGetItem.mockReturnValue(mockToken);
+    cookieStore.restorio_access_token = encodeURIComponent(mockToken);
 
     expect(TokenStorage.getAccessToken()).toBe(mockToken);
-    expect(mockGetItem).toHaveBeenCalledWith("restorio_access_token");
   });
 
-  it("should set access token in localStorage", () => {
+  it("should not set access token from client-side code", () => {
     const mockToken = "test-access-token";
 
     TokenStorage.setAccessToken(mockToken);
 
-    expect(mockSetItem).toHaveBeenCalledWith("restorio_access_token", mockToken);
+    expect(cookieWrites).toHaveLength(0);
   });
 
-  it("should return null if storage is undefined", () => {
-    Object.defineProperty(globalThis.window, "localStorage", {
+  it("should return null if document is undefined", () => {
+    Object.defineProperty(globalThis.window, "document", {
+      value: undefined,
+      configurable: true,
+    });
+
+    expect(TokenStorage.getAccessToken()).toBeNull();
+  });
+
+  it("should do nothing if document is undefined", () => {
+    Object.defineProperty(globalThis.window, "document", {
       value: undefined,
       configurable: true,
     });
 
     TokenStorage.setAccessToken("test");
 
-    expect(mockSetItem).not.toHaveBeenCalled();
+    expect(cookieWrites).toHaveLength(0);
   });
 
-  it("should clear tokens from localStorage", () => {
+  it("should not clear HttpOnly cookies from client-side code", () => {
     TokenStorage.clearTokens();
 
-    expect(mockRemoveItem).toHaveBeenCalledWith("restorio_access_token");
-    expect(mockRemoveItem).toHaveBeenCalledWith("restorio_refresh_token");
+    expect(cookieWrites).toHaveLength(0);
   });
 
-  it("should not clear tokens if storage is undefined", () => {
-    Object.defineProperty(globalThis.window, "localStorage", {
+  it("should not clear tokens if document is undefined", () => {
+    Object.defineProperty(globalThis.window, "document", {
       value: undefined,
       configurable: true,
     });
 
     TokenStorage.clearTokens();
 
-    expect(mockRemoveItem).not.toHaveBeenCalled();
+    expect(cookieWrites).toHaveLength(0);
   });
 
   it("should decode token", () => {
@@ -95,7 +142,7 @@ describe("TokenStorage", () => {
 
   it("should set both tokens", () => {
     TokenStorage.setTokens("access", "refresh");
-    expect(mockSetItem).toHaveBeenCalledTimes(2);
+    expect(cookieWrites).toHaveLength(0);
   });
 
   it("should return true if token is expired", () => {
@@ -118,19 +165,19 @@ describe("TokenStorage", () => {
     expect(result).toBeNull();
   });
 
-  it("setRefreshToken does nothing when localStorage is undefined", () => {
-    Object.defineProperty(globalThis.window, "localStorage", {
+  it("setRefreshToken does nothing when document is undefined", () => {
+    Object.defineProperty(globalThis.window, "document", {
       value: undefined,
       configurable: true,
     });
 
     TokenStorage.setRefreshToken("refresh-token");
 
-    expect(mockSetItem).not.toHaveBeenCalled();
+    expect(cookieWrites).toHaveLength(0);
   });
 
-  it("getRefreshToken returns null when localStorage is undefined", () => {
-    Object.defineProperty(globalThis.window, "localStorage", {
+  it("getRefreshToken returns null when document is undefined", () => {
+    Object.defineProperty(globalThis.window, "document", {
       value: undefined,
       configurable: true,
     });
@@ -140,19 +187,32 @@ describe("TokenStorage", () => {
     expect(result).toBeNull();
   });
 
-  it("getRefreshToken returns value from localStorage", () => {
-    mockGetItem.mockReturnValue("refresh-token-value");
+  it("getRefreshToken returns value from cookie", () => {
+    cookieStore.restorio_refresh_token = encodeURIComponent("refresh-token-value");
 
     const result = TokenStorage.getRefreshToken();
 
-    expect(mockGetItem).toHaveBeenCalledTimes(1);
     expect(result).toBe("refresh-token-value");
   });
 
-  it("setRefreshToken sets value in localStorage", () => {
+  it("setRefreshToken does not set value from client-side code", () => {
     TokenStorage.setRefreshToken("new-refresh-token");
 
-    expect(mockSetItem).toHaveBeenCalledWith("restorio_refresh_token", "new-refresh-token");
+    expect(cookieWrites).toHaveLength(0);
+  });
+
+  it("setAccessToken remains no-op for production hosts", () => {
+    Object.defineProperty(window, "location", {
+      value: {
+        hostname: "admin.restorio.org",
+        protocol: "https:",
+      },
+      configurable: true,
+    });
+
+    TokenStorage.setAccessToken("abc");
+
+    expect(cookieWrites).toHaveLength(0);
   });
 
   it("isTokenExpired returns true when token has no exp field", () => {

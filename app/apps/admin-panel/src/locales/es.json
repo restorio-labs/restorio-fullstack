@@ -1,0 +1,15 @@
+{
+  "common": {
+    "skipToContent": "Saltar al contenido principal",
+    "loading": "Cargando...",
+    "error": "Error"
+  },
+  "app": {
+    "title": "Panel de Administración Restorio",
+    "comingSoon": "Panel de administración próximamente...",
+    "description": "Gestiona las operaciones de tu restaurante"
+  },
+  "errors": {
+    "rootElementNotFound": "Elemento raíz no encontrado"
+  }
+}

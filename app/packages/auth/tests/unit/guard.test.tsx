@@ -13,6 +13,11 @@ vi.mock("../../src/storage", () => ({
   },
 }));
 
+const ROUTER_FUTURE_FLAGS = {
+  v7_startTransition: true,
+  v7_relativeSplatPath: true,
+} as const;
+
 describe("AuthGuard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -20,7 +25,7 @@ describe("AuthGuard", () => {
 
   it("should render children when strategy is none", () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter future={ROUTER_FUTURE_FLAGS}>
         <AuthGuard strategy="none">
           <div>Protected Content</div>
         </AuthGuard>
@@ -37,7 +42,7 @@ describe("AuthGuard", () => {
     (TokenStorage.isAccessTokenValid as Mock).mockReturnValue(true);
 
     render(
-      <MemoryRouter>
+      <MemoryRouter future={ROUTER_FUTURE_FLAGS}>
         <AuthGuard>
           <div>Protected Content</div>
         </AuthGuard>
@@ -53,7 +58,7 @@ describe("AuthGuard", () => {
     (TokenStorage.getAccessToken as Mock).mockReturnValue(null);
 
     render(
-      <MemoryRouter initialEntries={["/protected"]}>
+      <MemoryRouter future={ROUTER_FUTURE_FLAGS} initialEntries={["/protected"]}>
         <AuthGuard>
           <div>Protected Content</div>
         </AuthGuard>
@@ -70,7 +75,7 @@ describe("AuthGuard", () => {
     (TokenStorage.isAccessTokenValid as Mock).mockReturnValue(false);
 
     render(
-      <MemoryRouter initialEntries={["/protected"]}>
+      <MemoryRouter future={ROUTER_FUTURE_FLAGS} initialEntries={["/protected"]}>
         <AuthGuard>
           <div>Protected Content</div>
         </AuthGuard>
@@ -86,7 +91,7 @@ describe("AuthGuard", () => {
     (TokenStorage.getAccessToken as Mock).mockReturnValue(null);
 
     render(
-      <MemoryRouter initialEntries={["/protected"]}>
+      <MemoryRouter future={ROUTER_FUTURE_FLAGS} initialEntries={["/protected"]}>
         <AuthGuard loginPath="/custom-login">
           <div>Protected Content</div>
         </AuthGuard>
@@ -103,7 +108,7 @@ describe("AuthGuard", () => {
     (TokenStorage.isAccessTokenValid as Mock).mockReturnValue(true);
 
     render(
-      <MemoryRouter>
+      <MemoryRouter future={ROUTER_FUTURE_FLAGS}>
         <AuthGuard>
           <div>Protected Content</div>
         </AuthGuard>

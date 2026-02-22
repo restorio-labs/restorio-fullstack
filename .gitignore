@@ -56,3 +56,5 @@ ENV/
 # Misc
 *.tsbuildinfo
 .cache/
+
+.cursor/settings.json

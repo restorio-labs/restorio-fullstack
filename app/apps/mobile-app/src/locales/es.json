@@ -1,0 +1,15 @@
+{
+  "common": {
+    "skipToContent": "Saltar al contenido principal",
+    "loading": "Cargando...",
+    "error": "Error"
+  },
+  "app": {
+    "title": "Aplicación de Tablet Restorio",
+    "comingSoon": "Interfaz de tablet/kiosco próximamente...",
+    "description": "Pedidos de autoservicio para clientes"
+  },
+  "errors": {
+    "rootElementNotFound": "Elemento raíz no encontrado"
+  }
+}

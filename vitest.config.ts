@@ -16,7 +16,7 @@ export default defineConfig({
     reporters: isCI ? ["default", "github-actions"] : ["default"],
 
     coverage: {
-      enabled: true,
+      enabled: isCI,
       provider: "v8",
       reportsDirectory: "./coverage",
 
@@ -31,6 +31,7 @@ export default defineConfig({
       "@restorio/ui": resolve(__dirname, "./app/packages/ui/src"),
       "@restorio/api-client": resolve(__dirname, "./app/packages/api-client/src"),
       "@restorio/auth": resolve(__dirname, "./app/packages/auth/src"),
+      "@restorio/utils": resolve(__dirname, "./app/packages/utils/src"),
       "@utils": resolve(__dirname, "./app/packages/ui/src/utils/index.ts"),
       "@components": resolve(__dirname, "./app/packages/ui/src/components"),
     },

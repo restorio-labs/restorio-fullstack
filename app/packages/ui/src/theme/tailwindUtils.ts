@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 import { colorTokens } from "../tokens/colors";
+import { motionTokens } from "../tokens/motion";
 import { radiusTokens, radiusSemantic } from "../tokens/radius";
 import { shadowTokens, shadowSemantic } from "../tokens/shadows";
 import { spacingScale, spacingTokens } from "../tokens/spacing";
@@ -9,24 +10,21 @@ import { zIndexTokens } from "../tokens/zIndex";
 
 import { themePlugin } from "./tailwindPlugin";
 
-export const flattenColorTokens = (obj: Record<string, unknown>, prefix = ""): Record<string, string> => {
+export const flattenColorVars = (obj: Record<string, unknown>, prefix = ""): Record<string, string> => {
   const result: Record<string, string> = {};
 
   for (const [key, value] of Object.entries(obj)) {
-    const newKey = prefix ? `${prefix}-${key}` : key;
+    const path = prefix ? `${prefix}-${key}` : key;
+    const cssVarPath = path.replace(/([A-Z])/g, "-$1").toLowerCase();
 
     if (typeof value === "string") {
-      result[newKey] = value;
+      result[path] = `var(--color-${cssVarPath})`;
     } else if (typeof value === "object" && value !== null) {
-      Object.assign(result, flattenColorTokens(value as Record<string, unknown>, newKey));
+      Object.assign(result, flattenColorVars(value as Record<string, unknown>, path));
     }
   }
 
   return result;
-};
-
-export const getFlattenedLightColors = (): Record<string, string> => {
-  return flattenColorTokens(colorTokens.light);
 };
 
 export const getTypographyFontSize = (): Record<string, string | [string, { lineHeight: string }]> => {
@@ -48,14 +46,13 @@ export interface CreateTailwindConfigOptions {
 }
 
 export const createTailwindThemeConfig = (): Config["theme"] => {
-  const lightColors = getFlattenedLightColors();
   const typographyFontSize = getTypographyFontSize();
   const zIndex = getZIndexConfig();
 
   return {
     extend: {
       colors: {
-        ...lightColors,
+        ...flattenColorVars(colorTokens.light),
       },
       spacing: {
         ...spacingTokens,
@@ -74,6 +71,7 @@ export const createTailwindThemeConfig = (): Config["theme"] => {
         ...shadowSemantic,
       },
       zIndex,
+      transitionDuration: motionTokens.duration,
     },
   };
 };

@@ -81,7 +81,7 @@ This project emphasizes:
 - Tablet/kiosk ordering
 - Order modification and cancellation (time-limited)
 - Split bills
-- Payment processing (Stripe, Przelewy24)
+- Payment processing (Przelewy24)
 
 #### Staff & Permissions
 
@@ -142,7 +142,7 @@ NGINX (Mikrus VPS)
         ├─ PostgreSQL (Transactional, relational data)
         ├─ MongoDB (Order drafts, live sessions)
         ├─ Redis (Sessions, Pub/Sub, Queues)
-        └─ Payment Providers (Stripe, Przelewy24)
+        └─ Payment Providers (Przelewy24)
 ```
 
 ---

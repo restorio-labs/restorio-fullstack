@@ -12,7 +12,13 @@ class Settings(BaseSettings):
 
     API_V1_PREFIX: str = "/api/v1"
 
-    CORS_ORIGINS: list[str] = ["*"]
+    CORS_ORIGINS: list[str] = [
+        "localhost:3000",
+        "localhost:3001",
+        "localhost:3002",
+        "localhost:3003",
+        "localhost:3004",
+    ]
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
@@ -30,9 +36,34 @@ class Settings(BaseSettings):
 
     REDIS_URL: str = "redis://localhost:6379/0"
 
+    RESEND_API_KEY: str = ""
+    RESEND_FROM_EMAIL: str = ""
+    FRONTEND_URL: str = "http://localhost:3000"
+
     SECRET_KEY: str = "change-me-in-production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 14
+    ACCESS_TOKEN_COOKIE_NAME: str = "restorio_access_token"
+    REFRESH_TOKEN_COOKIE_NAME: str = "restorio_refresh_token"
+
+    # Przelewy24 (values from .env)
+    PRZELEWY24_MERCHANT_ID: int = 0
+    PRZELEWY24_POS_ID: int = 0
+
+    @field_validator("PRZELEWY24_MERCHANT_ID", "PRZELEWY24_POS_ID", mode="before")
+    @classmethod
+    def parse_przelewy24_int(cls, v: str | int) -> int:
+        if isinstance(v, int):
+            return v
+        try:
+            return int(v)
+        except (ValueError, TypeError):
+            return 0
+
+    PRZELEWY24_CRC: str = ""
+    PRZELEWY24_API_KEY: str = ""
+    PRZELEWY24_API_URL: str = "https://sandbox.przelewy24.pl/api/v1"
 
     model_config = SettingsConfigDict(
         env_file=".env",

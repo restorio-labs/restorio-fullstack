@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from fastapi.responses import JSONResponse
 
-from core.foundation.http.schemas import ErrorResponse
+from core.foundation.http.responses import ErrorResponse
 
 
 class BaseHTTPException(HTTPException):
@@ -85,4 +85,40 @@ class BadRequestError(BaseHTTPException):
             status_code=status.HTTP_400_BAD_REQUEST,
             message=message,
             error_code="BAD_REQUEST",
+        )
+
+
+class GoneError(BaseHTTPException):
+    def __init__(self, message: str = "Resource no longer available") -> None:
+        super().__init__(
+            status_code=status.HTTP_410_GONE,
+            message=message,
+            error_code="GONE",
+        )
+
+
+class TooManyRequestsError(BaseHTTPException):
+    def __init__(self, message: str = "Too many requests") -> None:
+        super().__init__(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            message=message,
+            error_code="TOO_MANY_REQUESTS",
+        )
+
+
+class ServiceUnavailableError(BaseHTTPException):
+    def __init__(self, message: str = "Service unavailable") -> None:
+        super().__init__(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            message=message,
+            error_code="SERVICE_UNAVAILABLE",
+        )
+
+
+class ExternalAPIError(BaseHTTPException):
+    def __init__(self, status_code: int, message: str) -> None:
+        super().__init__(
+            status_code=status_code,
+            message=message,
+            error_code="EXTERNAL_API_ERROR",
         )

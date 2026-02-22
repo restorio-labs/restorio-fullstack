@@ -4,7 +4,7 @@ export enum UserRole {
   OWNER = "owner",
   MANAGER = "manager",
   WAITER = "waiter",
-  KITCHEN_STAFF = "kitchen_staff",
+  KITCHEN_STAFF = "kitchen",
 }
 
 export interface User {

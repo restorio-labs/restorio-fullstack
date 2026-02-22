@@ -93,7 +93,7 @@ describe("ToastContainer", () => {
     );
 
     expect(screen.getByRole("region").className).toContain("top-4");
-    expect(screen.getByRole("region").className).toContain("right-4");
+    expect(screen.getByRole("region").className).toContain("end-4");
 
     rerender(
       <ToastContainer position="bottom-left">
@@ -101,7 +101,7 @@ describe("ToastContainer", () => {
       </ToastContainer>,
     );
     expect(screen.getByRole("region").className).toContain("bottom-4");
-    expect(screen.getByRole("region").className).toContain("left-4");
+    expect(screen.getByRole("region").className).toContain("start-4");
   });
 
   it("should have proper aria attributes", () => {

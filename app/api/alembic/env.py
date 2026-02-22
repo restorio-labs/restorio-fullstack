@@ -15,8 +15,8 @@ from core.models import (
     Payment,  # pyright: ignore[reportUnusedImport] # noqa: F401
     RestaurantTable,  # pyright: ignore[reportUnusedImport] # noqa: F401
     Tenant,  # pyright: ignore[reportUnusedImport] # noqa: F401
+    TenantRole,  # pyright: ignore[reportUnusedImport] # noqa: F401
     User,  # pyright: ignore[reportUnusedImport] # noqa: F401
-    UserTenant,  # pyright: ignore[reportUnusedImport] # noqa: F401
 )
 
 config = context.config

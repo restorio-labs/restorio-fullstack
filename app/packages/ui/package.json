@@ -12,10 +12,17 @@
       "import": "./src/index.ts",
       "require": "./src/index.ts"
     },
+    "./styles": "./src/styles/tailwind.css",
+    "./styles/tailwind.css": "./src/styles/tailwind.css",
     "./tailwind": {
       "types": "./dist/theme/tailwindUtils.d.ts",
       "import": "./dist/theme/tailwindUtils.js",
       "require": "./dist/theme/tailwindUtils.cjs"
+    },
+    "./theme-mode": {
+      "types": "./dist/theme/themeMode.d.ts",
+      "import": "./src/theme/themeMode.ts",
+      "require": "./src/theme/themeMode.ts"
     }
   },
   "scripts": {

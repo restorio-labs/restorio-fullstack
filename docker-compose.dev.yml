@@ -9,7 +9,13 @@ services:
       - PYTHONUNBUFFERED=1
       - DATABASE_URL=${DATABASE_URL:-mongodb://mongo:27017/restorio}
       - POSTGRES_DSN=${POSTGRES_DSN:-postgresql://restorio:restorio@postgres:5432/restorio}
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-}
+    command: >
+      sh -c '
+      uv run alembic upgrade head &&
+      uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+      '
 
   postgres:
     image: postgres:16-alpine
@@ -36,6 +42,7 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data-dev:/data/db
+    command: ["mongod", "--quiet", "--logpath", "/dev/null"]  # Suppress MongoDB startup logs 0=errors only 1=warnings >2=more verbose
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s

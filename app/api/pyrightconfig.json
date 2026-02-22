@@ -1,5 +1,5 @@
 {
-  "venvPath": ".",
+  "venvPath": "./app/api/",
   "venv": ".venv",
   "pythonVersion": "3.12",
   "include": ["."],

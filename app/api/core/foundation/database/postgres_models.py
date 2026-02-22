@@ -1,40 +1,16 @@
 from datetime import datetime
 from decimal import Decimal
-from enum import Enum
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-
-class TenantStatus(str, Enum):
-    ACTIVE = "ACTIVE"
-    SUSPENDED = "SUSPENDED"
-    INACTIVE = "INACTIVE"
-
-
-class OrderStatus(str, Enum):
-    PLACED = "PLACED"
-    PAID = "PAID"
-    CANCELLED = "CANCELLED"
-
-
-class PaymentProvider(str, Enum):
-    PRZELEWY24 = "PRZELEWY24"
-    STRIPE = "STRIPE"
-    CASH = "CASH"
-
-
-class PaymentStatus(str, Enum):
-    PENDING = "PENDING"
-    COMPLETED = "COMPLETED"
-    FAILED = "FAILED"
-    REFUNDED = "REFUNDED"
-
-
-class AccountType(str, Enum):
-    OWNER = "owner"
-    WAITER = "waiter"
-    KITCHEN = "kitchen"
+from core.models.enums import (
+    AccountType,
+    OrderStatus,
+    PaymentProvider,
+    PaymentStatus,
+    TenantStatus,
+)
 
 
 class Tenant(BaseModel):
@@ -44,8 +20,7 @@ class Tenant(BaseModel):
     status: TenantStatus = TenantStatus.ACTIVE
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TenantCreate(BaseModel):
@@ -61,8 +36,7 @@ class User(BaseModel):
     is_active: bool = True
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserCreate(BaseModel):
@@ -70,22 +44,6 @@ class UserCreate(BaseModel):
     password_hash: str
     account_type: AccountType = AccountType.OWNER
     is_active: bool = True
-
-
-class UserTenant(BaseModel):
-    user_id: UUID
-    tenant_id: UUID
-    role: str = Field(..., max_length=50)
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
-class UserTenantCreate(BaseModel):
-    user_id: UUID
-    tenant_id: UUID
-    role: str = Field(..., max_length=50)
 
 
 class RestaurantTable(BaseModel):
@@ -96,8 +54,7 @@ class RestaurantTable(BaseModel):
     is_active: bool = True
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class RestaurantTableCreate(BaseModel):
@@ -117,8 +74,7 @@ class Order(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OrderCreate(BaseModel):
@@ -138,8 +94,7 @@ class OrderItem(BaseModel):
     unit_price: Decimal = Field(..., ge=0, decimal_places=2)
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OrderItemCreate(BaseModel):
@@ -160,8 +115,7 @@ class Payment(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PaymentCreate(BaseModel):
@@ -182,8 +136,7 @@ class AuditLog(BaseModel):
     metadata: dict | None = None
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AuditLogCreate(BaseModel):

@@ -1,6 +1,6 @@
 "use client";
 
-import { ThemeProvider } from "@restorio/ui";
+import { THEME_STORAGE_KEY, ThemeProvider } from "@restorio/ui";
 import type { ReactNode } from "react";
 
 interface AppProvidersProps {
@@ -8,5 +8,9 @@ interface AppProvidersProps {
 }
 
 export const AppProviders = ({ children }: AppProvidersProps): ReactNode => {
-  return <ThemeProvider defaultMode="system">{children}</ThemeProvider>;
+  return (
+    <ThemeProvider defaultMode="system" storageKey={THEME_STORAGE_KEY}>
+      {children}
+    </ThemeProvider>
+  );
 };

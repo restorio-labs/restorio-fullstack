@@ -10,7 +10,7 @@ models/
 ├── enums.py             # All enum types (TenantStatus, OrderStatus, etc.)
 ├── tenant.py            # Tenant model
 ├── user.py              # User model
-├── user_tenant.py       # UserTenant junction model
+├── tenant_role.py       # TenantRole junction model
 ├── restaurant_table.py  # RestaurantTable model
 ├── order.py             # Order model
 ├── order_item.py        # OrderItem model
@@ -26,7 +26,7 @@ All models can be imported from the package:
 from core.models import (
     Tenant,
     User,
-    UserTenant,
+    TenantRole,
     RestaurantTable,
     Order,
     OrderItem,

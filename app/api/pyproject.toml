@@ -17,7 +17,9 @@ dependencies = [
     "sqlalchemy[asyncio]==2.0.25",
     "alembic==1.13.1",
     "redis==5.0.1",
-    "bcrypt==4.0.1"
+    "httpx==0.26.0",
+    "bcrypt==4.0.1",
+    "resend>=2.0.0"
 ]
 
 [project.optional-dependencies]
@@ -101,6 +103,9 @@ python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 asyncio_mode = "auto"
+filterwarnings = [
+    "ignore:datetime.datetime.utcnow\\(\\) is deprecated.*:DeprecationWarning:jose\\.jwt",
+]
 addopts = [
     "--strict-markers",
     "--cov=core",
@@ -110,7 +115,9 @@ addopts = [
     "--cov-report=term",
     "--cov-report=html:coverage/html",
 ]
-cov_fail_under = 0
 
 [tool.coverage.run]
 data_file = "coverage/.coverage"
+
+[tool.coverage.report]
+fail_under = 0

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, useMemo } from "react";
 
 import { colorTokens } from "../tokens/colors";
-import type { ThemeMode, ThemeOverride } from "../tokens/types";
+import type { ThemeMode, ThemeOverride, Direction } from "../tokens/types";
 
 import { generateCSSVariables } from "./cssVariables";
 
@@ -12,6 +12,8 @@ interface ThemeContextValue {
   override: ThemeOverride | null;
   setOverride: (override: ThemeOverride | null) => void;
   colors: typeof colorTokens.light | typeof colorTokens.dark;
+  direction: "ltr" | "rtl";
+  setDirection: (direction: Direction) => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
@@ -20,9 +22,38 @@ interface ThemeProviderProps {
   children: React.ReactNode;
   defaultMode?: ThemeMode;
   initialOverride?: ThemeOverride;
+  defaultDirection?: Direction;
+  storageKey?: string;
 }
 
-const getSystemTheme = (): "light" | "dark" => {
+const isStoredMode = (value: string | null): value is ThemeMode =>
+  value === "light" || value === "dark" || value === "system";
+
+const getInitialMode = (defaultMode: ThemeMode, storageKey: string): ThemeMode => {
+  if (typeof window === "undefined" || storageKey.trim() === "") {
+    return defaultMode;
+  }
+
+  try {
+    const storedMode = window.localStorage.getItem(storageKey);
+
+    if (storedMode === "light" || storedMode === "dark") {
+      return storedMode;
+    }
+
+    const fallbackMode = defaultMode === "system" ? getSystemTheme() : defaultMode;
+
+    if (!isStoredMode(storedMode) || storedMode === "system") {
+      window.localStorage.setItem(storageKey, fallbackMode);
+    }
+
+    return fallbackMode;
+  } catch {
+    return defaultMode === "system" ? getSystemTheme() : defaultMode;
+  }
+};
+
+export const getSystemTheme = (): "light" | "dark" => {
   if (typeof window === "undefined") {
     return "light";
   }
@@ -36,14 +67,34 @@ const getSystemTheme = (): "light" | "dark" => {
   }
 };
 
+export const getSystemDirection = (): "ltr" | "rtl" => {
+  if (typeof window === "undefined") {
+    return "ltr";
+  }
+
+  try {
+    const lang = document.documentElement.lang || navigator.language;
+    const rtlLanguages = ["ar", "he", "fa", "ur", "yi"];
+    const langCode = lang.split("-")[0].toLowerCase();
+
+    return rtlLanguages.includes(langCode) ? "rtl" : "ltr";
+  } catch {
+    return "ltr";
+  }
+};
+
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   children,
   defaultMode = "system",
   initialOverride = null,
+  defaultDirection = "auto",
+  storageKey = "",
 }) => {
-  const [mode, setModeState] = useState<ThemeMode>(defaultMode);
+  const [mode, setModeState] = useState<ThemeMode>(() => getInitialMode(defaultMode, storageKey));
   const [override, setOverrideState] = useState<ThemeOverride | null>(initialOverride);
   const [systemTheme, setSystemTheme] = useState<"light" | "dark">(getSystemTheme());
+  const [directionState, setDirectionState] = useState<Direction>(defaultDirection);
+  const [systemDirection, setSystemDirection] = useState<"ltr" | "rtl">(getSystemDirection());
 
   useEffect(() => {
     if (mode !== "system" || typeof window === "undefined") {
@@ -66,6 +117,20 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     }
   }, [mode]);
 
+  useEffect(() => {
+    if (typeof window === "undefined" || storageKey.trim() === "") {
+      return;
+    }
+
+    try {
+      const storedMode = mode === "system" ? getSystemTheme() : mode;
+
+      window.localStorage.setItem(storageKey, storedMode);
+    } catch {
+      // Ignore storage errors in unsupported environments
+    }
+  }, [mode, storageKey]);
+
   const resolvedMode = useMemo(() => {
     if (mode === "system") {
       return systemTheme;
@@ -74,30 +139,33 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     return mode;
   }, [mode, systemTheme]);
 
-  useEffect(() => {
-    if (typeof document === "undefined") {
-      return;
+  const direction = useMemo(() => {
+    if (directionState === "auto") {
+      return systemDirection;
     }
 
+    return directionState;
+  }, [directionState, systemDirection]);
+
+  useEffect(() => {
     try {
       const root = document.documentElement;
 
       root.setAttribute("data-theme", resolvedMode);
       root.classList.toggle("dark", resolvedMode === "dark");
+      root.setAttribute("dir", direction);
 
       if (override) {
         const cssVars = generateCSSVariables(override);
 
         for (const [key, value] of Object.entries(cssVars)) {
-          if (typeof value === "string") {
-            root.style.setProperty(key, value);
-          }
+          root.style.setProperty(key, value);
         }
       }
     } catch {
       // Ignore errors in SSR or unsupported environments
     }
-  }, [resolvedMode, override]);
+  }, [resolvedMode, override, direction]);
 
   const setMode = (newMode: ThemeMode): void => {
     setModeState(newMode);
@@ -105,6 +173,14 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
 
   const setOverride = (newOverride: ThemeOverride | null): void => {
     setOverrideState(newOverride);
+  };
+
+  const setDirection = (newDirection: Direction): void => {
+    setDirectionState(newDirection);
+
+    if (newDirection === "auto") {
+      setSystemDirection(getSystemDirection());
+    }
   };
 
   const colors = useMemo(() => {
@@ -158,8 +234,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
       override,
       setOverride,
       colors,
+      direction,
+      setDirection,
     }),
-    [mode, resolvedMode, override, colors],
+    [mode, resolvedMode, override, colors, direction],
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

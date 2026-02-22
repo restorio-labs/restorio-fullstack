@@ -1,33 +1,65 @@
 from datetime import UTC, datetime, timedelta
 
+from bcrypt import checkpw, gensalt, hashpw
+from fastapi import Request
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 
+from core.exceptions.http import UnauthorizedError
+from core.foundation.auth_cookies import get_access_token_from_request
 from core.foundation.infra.config import settings
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
-def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+from core.foundation.logging.logger import logger
 
 
-def verify_password(password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(password, hashed_password)
-
-
-def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now(UTC) + expires_delta
+async def get_current_user(self, request: Request) -> dict | None:
+    auth_header = request.headers.get("Authorization")
+    token: str | None = None
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header.split(" ")[1]
     else:
-        expire = datetime.now(UTC) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+        token = get_access_token_from_request(request)
+
+    if token is None:
+        raise UnauthorizedError(message="Unauthorized")
+
+    return self.decode_access_token(token=token)
 
 
-def decode_access_token(token: str) -> dict | None:
-    try:
-        return jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-    except JWTError:
-        return None
+class SecurityService:
+    def __init__(self) -> None:
+        self._algorithm = settings.ALGORITHM
+        self._secret_key = settings.SECRET_KEY
+        self._access_token_expire_minutes = settings.ACCESS_TOKEN_EXPIRE_MINUTES
+
+    @staticmethod
+    def hash_password(password: str) -> str:
+        password_bytes = password.encode("utf-8")
+        salt = gensalt()
+        return hashpw(password_bytes, salt).decode("utf-8")
+
+    @staticmethod
+    def verify_password(password: str, hashed_password: str) -> bool:
+        return checkpw(password.encode("utf-8"), hashed_password.encode("utf-8"))
+
+    def create_access_token(self, data: dict, expires_delta: timedelta | None = None) -> str:
+        to_encode = data.copy()
+        if expires_delta:
+            expire = datetime.now(UTC) + expires_delta
+        else:
+            expire = datetime.now(UTC) + timedelta(minutes=self._access_token_expire_minutes)
+        to_encode.update({"exp": expire})
+        return jwt.encode(to_encode, self._secret_key, algorithm=self._algorithm)
+
+    def decode_access_token(self, token: str) -> dict:
+        try:
+            return jwt.decode(token, self._secret_key, algorithms=[self._algorithm])
+        except JWTError as err:
+            logger.error(f"Invalid token: {err!s}", exc_info=True)
+
+            raise UnauthorizedError(message="Unauthorized") from None
+        except Exception as err:
+            logger.error(f"Invalid token: {err!s}", exc_info=True)
+
+            raise UnauthorizedError(message="Unauthorized") from None
+
+
+security_service = SecurityService()

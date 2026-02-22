@@ -1,4 +1,5 @@
 module.exports = {
+  ignorePatterns: ["tests/unit/**"],
   extends: ["../../../.eslintrc.react.json"],
   parserOptions: {
     tsconfigRootDir: __dirname,

@@ -77,7 +77,7 @@ describe("Icon", () => {
 
   it("should render custom component via 'as' prop", () => {
     const CustomComponent = forwardRef<SVGSVGElement, SVGProps<SVGSVGElement>>((props, ref) => (
-      <g ref={ref} data-testid="custom-as" {...props} />
+      <svg ref={ref} data-testid="custom-as" {...props} />
     ));
 
     render(<Icon as={CustomComponent} size="lg" className="test-class" />);
@@ -142,5 +142,59 @@ describe("Icon", () => {
     expect(icon).toBeInTheDocument();
     // @ts-expect-error - test purposes
     expect(icon).toHaveTextContent("KM");
+  });
+
+  it("should render the Restorio logo with computed dimensions for fixed sizes", () => {
+    const { container } = render(<Icon isLogo size="lg" logoBackground="#111111" logoColor="#22ccff" />);
+
+    const wrapper = container.querySelector("span");
+    const logo = container.querySelector("svg");
+    const background = container.querySelector("rect");
+    const coloredPath = container.querySelector("path[fill='#22ccff']");
+
+    // @ts-expect-error - test purposes
+    expect(wrapper).toBeInTheDocument();
+    // @ts-expect-error - test purposes
+    expect(wrapper?.className).toContain("h-6");
+    // @ts-expect-error - test purposes
+    expect(wrapper?.className).toContain("w-auto");
+    expect(logo?.getAttribute("width")).toBe("72");
+    expect(logo?.getAttribute("height")).toBe("24");
+    expect(background?.getAttribute("fill")).toBe("#111111");
+    // @ts-expect-error - test purposes
+    expect(coloredPath).toBeInTheDocument();
+  });
+
+  it("should render logo in fillContainer mode when size is full", () => {
+    const { container } = render(<Icon isLogo size="full" />);
+
+    const wrapper = container.querySelector("span");
+    const logo = container.querySelector("svg");
+
+    // @ts-expect-error - test purposes
+    expect(wrapper).toBeInTheDocument();
+    // @ts-expect-error - test purposes
+    expect(wrapper?.className).toContain("h-full");
+    // @ts-expect-error - test purposes
+    expect(wrapper?.className).toContain("aspect-[3/1]");
+    expect(logo?.getAttribute("width")).toBe("100%");
+    expect(logo?.getAttribute("height")).toBe("100%");
+  });
+
+  it("should forward wink states to logo animation classes", () => {
+    const { container, rerender } = render(<Icon isLogo wink />);
+
+    let winkNode = container.querySelector(".restorio-wink-base");
+
+    // @ts-expect-error - test purposes
+    expect(winkNode).toBeInTheDocument();
+    // @ts-expect-error - test purposes
+    expect(winkNode?.className.baseVal).toContain("restorio-wink-once");
+
+    rerender(<Icon isLogo winking />);
+    winkNode = container.querySelector(".restorio-wink-base");
+
+    // @ts-expect-error - test purposes
+    expect(winkNode?.className.baseVal).toContain("restorio-winking");
   });
 });

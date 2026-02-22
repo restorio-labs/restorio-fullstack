@@ -1,4 +1,4 @@
-from core.foundation.http.schemas import PaginatedResponse
+from core.foundation.http.responses import PaginatedResponse
 
 
 class TestPaginatedResponseCreate:
