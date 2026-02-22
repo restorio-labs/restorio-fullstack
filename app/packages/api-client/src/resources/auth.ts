@@ -1,47 +1,67 @@
-import type { User, AuthTokens } from "@restorio/types";
+import type {
+  AuthMeData,
+  LoginResponse,
+  RefreshResponse,
+  RegisterRequest,
+  RegisterResponse,
+  SuccessResponse,
+  TenantSlugResponse,
+} from "@restorio/types";
 
 import { BaseResource } from "./base";
 
 export class AuthResource extends BaseResource {
   /**
-   * Authenticate a user with email and password.
-   * @returns Access and refresh tokens
+   * Authenticate with email and password. Tokens are set in HTTP-only cookies.
+   * @returns Success body; tokens are in cookies
    */
-  login(email: string, password: string, signal?: AbortSignal): Promise<AuthTokens> {
+  login(email: string, password: string, signal?: AbortSignal): Promise<LoginResponse> {
     return this.client.post("/auth/login", { email, password }, { signal });
   }
 
   /**
-   * Register a new user account.
-   * @returns Access and refresh tokens for the new user
+   * Register a new user and tenant.
    */
-  register(
-    data: {
-      email: string;
-      password: string;
-      firstName: string;
-      lastName: string;
-    },
-    signal?: AbortSignal,
-  ): Promise<AuthTokens> {
+  register(data: RegisterRequest, signal?: AbortSignal): Promise<RegisterResponse> {
     return this.client.post("/auth/register", data, { signal });
   }
+
   /**
-   * Refresh an expired access token.
-   * When HttpOnly cookies are enabled, refresh token is read server-side from cookie.
-   * @returns New access and refresh tokens
+   * Activate an account using the activation link id.
    */
-  refresh(refreshToken?: string, signal?: AbortSignal): Promise<AuthTokens> {
+  activate(activationId: string, signal?: AbortSignal): Promise<TenantSlugResponse> {
+    const url = `/auth/activate?activation_id=${encodeURIComponent(activationId)}`;
+
+    return this.client.post(url, undefined, { signal });
+  }
+
+  /**
+   * Resend activation email for the given activation link id.
+   */
+  resendActivation(activationId: string, signal?: AbortSignal): Promise<TenantSlugResponse> {
+    const url = `/auth/resend-activation?activation_id=${encodeURIComponent(activationId)}`;
+
+    return this.client.post(url, undefined, { signal });
+  }
+
+  /**
+   * Refresh access token. New tokens are set in HTTP-only cookies.
+   * @returns Success body; tokens are in cookies
+   */
+  refresh(refreshToken?: string, signal?: AbortSignal): Promise<RefreshResponse> {
     const body = refreshToken ? { refreshToken } : undefined;
 
     return this.client.post("/auth/refresh", body, { signal });
   }
 
   /**
-   * Get the currently authenticated user.
-   * @returns User profile information
+   * Get current session (id and tenantId from JWT). Not a full user profile.
    */
-  me(signal?: AbortSignal): Promise<User> {
-    return this.client.get("/auth/me", { signal });
+  async me(signal?: AbortSignal): Promise<AuthMeData> {
+    const { data } = await this.client.get<SuccessResponse<{ sub: string; tenant_id: string }>>("/auth/me", {
+      signal,
+    });
+
+    return { id: data.sub, tenantId: data.tenant_id ?? "" };
   }
 }

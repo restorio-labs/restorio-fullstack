@@ -1,8 +1,11 @@
 "use client";
 
+import type { TenantSlugResponse } from "@restorio/types";
 import { Button, ContentContainer, Text } from "@restorio/ui";
 import type { ReactElement } from "react";
 import { useEffect, useRef, useState } from "react";
+
+import { api } from "@/api/client";
 
 type Result = "loading" | "success" | "already_activated" | "expired" | "error" | "resend_sent";
 
@@ -57,35 +60,35 @@ export function ActivateContent(): ReactElement {
       return;
     }
 
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+    const run = async (): Promise<void> => {
+      try {
+        /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call,
+           @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
+        const body = await api.auth.activate(id);
 
-    fetch(`${apiBaseUrl}/api/v1/auth/activate?activation_id=${encodeURIComponent(id)}`, { method: "POST" })
-      .then(async (res) => {
-        const body = (await res.json().catch(() => null)) as {
-          detail?: string;
-          message?: string;
-          data?: { tenant_slug?: string };
-        } | null;
-        const errorMessage = body?.message ?? body?.detail;
-
-        if (!res.ok) {
-          if (res.status === 410) {
-            setErrorMessage(errorMessage ?? "Activation link has expired.");
-            setResult("expired");
-          } else {
-            setErrorMessage(errorMessage ?? "Activation failed. Please request a new link.");
-            setResult("error");
-          }
-
-          return;
+        setTenantSlug(String(body.data.tenant_slug ?? ""));
+        setResult((body.message === "Account already activated" ? "already_activated" : "success") as Result);
+        /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call,
+           @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
+      } catch (err: unknown) {
+        interface AxiosErrorShape {
+          response?: { status?: number; data?: { message?: string; detail?: string } };
         }
-        setTenantSlug(body?.data?.tenant_slug ?? "");
-        setResult(body?.message === "Account already activated" ? "already_activated" : "success");
-      })
-      .catch(() => {
-        setErrorMessage("Activation failed. Please try again later.");
-        setResult("error");
-      });
+        const axiosErr = err && typeof err === "object" && "response" in err ? (err as AxiosErrorShape) : undefined;
+        const status = axiosErr?.response?.status;
+        const msg = axiosErr?.response?.data?.message ?? axiosErr?.response?.data?.detail;
+
+        if (status === 410) {
+          setErrorMessage(msg ?? "Activation link has expired.");
+          setResult("expired");
+        } else {
+          setErrorMessage(msg ?? "Activation failed. Please request a new link.");
+          setResult("error");
+        }
+      }
+    };
+
+    void run();
   }, []);
 
   const handleResend = (): void => {
@@ -93,34 +96,30 @@ export function ActivateContent(): ReactElement {
       return;
     }
     setResendLoading(true);
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
-    fetch(`${apiBaseUrl}/api/v1/auth/resend-activation?activation_id=${encodeURIComponent(activationId)}`, {
-      method: "POST",
-    })
-      .then(async (res) => {
-        const data = (await res.json().catch(() => null)) as {
-          detail?: string;
-          message?: string;
-        } | null;
-
-        if (!res.ok) {
-          setErrorMessage(data?.message ?? data?.detail ?? "Failed to resend activation email.");
-
-          if (res.status === 429) {
-            setResendCooldownUntil(Date.now() + 300_000);
-          }
-          setResendLoading(false);
-
-          return;
-        }
+    const run = async (): Promise<void> => {
+      try {
+        await (api.auth.resendActivation as (id: string) => Promise<TenantSlugResponse>)(activationId);
         setResult("resend_sent");
+      } catch (err: unknown) {
+        interface AxiosErrorShape {
+          response?: { status?: number; data?: { message?: string; detail?: string } };
+        }
+        const axiosErr = err && typeof err === "object" && "response" in err ? (err as AxiosErrorShape) : undefined;
+
+        setErrorMessage(
+          axiosErr?.response?.data?.message ?? axiosErr?.response?.data?.detail ?? "Failed to resend activation email.",
+        );
+
+        if (axiosErr?.response?.status === 429) {
+          setResendCooldownUntil(Date.now() + 300_000);
+        }
+      } finally {
         setResendLoading(false);
-      })
-      .catch(() => {
-        setErrorMessage("Failed to resend. Please try again later.");
-        setResendLoading(false);
-      });
+      }
+    };
+
+    void run();
   };
 
   const resendOnCooldown = cooldownSeconds > 0;

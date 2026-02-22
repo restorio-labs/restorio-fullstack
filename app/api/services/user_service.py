@@ -11,7 +11,6 @@ from core.models.user import User
 
 class UserService:
     def __init__(self, security: SecurityService) -> None:
-        self._resend_cooldown_seconds = 300
         self.security = security
 
     async def create_user_with_tenant(

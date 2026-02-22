@@ -11,7 +11,7 @@ def tenant_to_response(tenant: Tenant) -> TenantResponseDTO:
         status=tenant.status,
         activeLayoutVersionId=tenant.active_layout_version_id,
         floorCanvases=[floor_canvas_to_response(fc) for fc in tenant.floor_canvases],
-        createdAt=tenant.created_at,
+        created_at=tenant.created_at,
     )
 
 
@@ -23,7 +23,7 @@ def tenant_to_summary(tenant: Tenant) -> TenantSummaryResponseDTO:
         status=tenant.status,
         activeLayoutVersionId=tenant.active_layout_version_id,
         floorCanvasCount=len(tenant.floor_canvases),
-        createdAt=tenant.created_at,
+        created_at=tenant.created_at,
     )
 
 

@@ -1,18 +1,25 @@
 from datetime import UTC, datetime, timedelta
+import hashlib
 from uuid import UUID
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.exceptions import (
     BadRequestError,
+    ConflictError,
+    ExternalAPIError,
     GoneError,
     NotFoundError,
+    ServiceUnavailableError,
     TooManyRequestsError,
+    UnauthorizedError,
 )
 from core.foundation.security import SecurityService
 from core.models.activation_link import ActivationLink
-from core.models.enums import TenantStatus
+from core.models.enums import AccountType, TenantStatus
 from core.models.tenant import Tenant
+from core.models.tenant_role import TenantRole
 from core.models.user import User
 
 
@@ -20,6 +27,56 @@ class AuthService:
     def __init__(self, security: SecurityService) -> None:
         self._resend_cooldown_seconds = 300
         self.security = security
+
+    async def create_user_with_tenant(
+        self,
+        session: AsyncSession,
+        email: str,
+        password: str,
+        restaurant_name: str,
+    ) -> tuple[User, Tenant]:
+        # await self.check_password_pwned(password)  # noqa: ERA001 If we ever want to check passwords against HIBP
+
+        slug = "".join(restaurant_name.split()).lower()
+
+        existing_user = await session.scalar(select(User).where(User.email == email))
+        if existing_user:
+            msg = "Email already registered"
+            raise ConflictError(msg)
+
+        existing_tenant = await session.scalar(select(Tenant).where(Tenant.slug == slug))
+        if existing_tenant:
+            msg = "Restaurant slug already exists"
+            raise ConflictError(msg)
+
+        user = User(
+            email=email,
+            password_hash=self.security.hash_password(password),
+            is_active=False,
+        )
+        tenant = Tenant(
+            name=restaurant_name,
+            slug=slug,
+            status=TenantStatus.INACTIVE,
+        )
+
+        session.add_all([user, tenant])
+        await session.flush()
+        user.tenant_id = tenant.id
+        tenant.owner_id = user.id
+        await session.flush()
+        await session.refresh(user)
+        await session.refresh(tenant)
+
+        tenant_role = TenantRole(
+            account_id=user.id,
+            tenant_id=tenant.id,
+            account_type=AccountType.OWNER,
+        )
+        session.add(tenant_role)
+        await session.flush()
+
+        return user, tenant
 
     async def create_activation_link(
         self,
@@ -113,3 +170,58 @@ class AuthService:
         await session.flush()
         await session.refresh(new_link)
         return new_link, tenant
+
+    async def login(
+        self,
+        session: AsyncSession,
+        email: str,
+        password: str,
+    ) -> str:
+        user = await session.scalar(select(User).where(User.email == email))
+        if user is None or not self.security.verify_password(password, user.password_hash):
+            msg = "Invalid credentials"
+            raise UnauthorizedError(msg)
+
+        if not user.is_active:
+            msg = "Account is not active"
+            raise UnauthorizedError(msg)
+
+        return self.security.create_access_token(
+            data={
+                "sub": str(user.id),
+                "email": user.email,
+                "tenant_id": str(user.tenant_id) if user.tenant_id else None,
+            }
+        )
+
+    async def check_password_pwned(self, password: str) -> None:
+        """Check password against HaveIBeenPwned Pwned Passwords (k-anonymity range lookup).
+
+        Only the first 5 characters of the SHA-1 hash are transmitted.
+        Raises BadRequestError if the password appears in known data breaches.
+        Silently passes on connectivity issues to avoid blocking registration.
+        """
+
+        sha1 = hashlib.sha1(password.encode("utf-8"), usedforsecurity=False).hexdigest().upper()
+        prefix, suffix = sha1[:5], sha1[5:]
+
+        try:
+            raw = await self.external_client.external_get(
+                f"{self._hibp_url}{prefix}",
+                headers={"Add-Padding": "true"},
+                service_name="HaveIBeenPwned",
+            )
+        except (ExternalAPIError, ServiceUnavailableError):
+            return
+
+        for line in raw.splitlines():
+            if ":" not in line:
+                continue
+            line_suffix, _, count_str = line.partition(":")
+            if line_suffix.upper() == suffix:
+                count = int(count_str.strip())
+                msg = (
+                    f"This password has appeared in {count:,} known data breach(es). "
+                    "Please choose a different password."
+                )
+                raise BadRequestError(msg)

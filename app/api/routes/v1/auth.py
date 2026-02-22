@@ -2,9 +2,8 @@ from datetime import timedelta
 from uuid import UUID
 
 from fastapi import APIRouter, Request, Response, status
-from sqlalchemy import select
 
-from core.dto.v1.auth import RegisterCreatedData, RegisterDTO, TenantSlugData
+from core.dto.v1.auth import LoginResponseData, RegisterCreatedData, RegisterDTO, TenantSlugData
 from core.dto.v1.users import UserLoginDTO
 from core.exceptions.http import UnauthorizedError
 from core.foundation.auth_cookies import (
@@ -13,6 +12,7 @@ from core.foundation.auth_cookies import (
     set_auth_cookies,
 )
 from core.foundation.dependencies import (
+    AuthServiceDep,
     EmailServiceDep,
     PostgresSession,
     SecurityServiceDep,
@@ -20,7 +20,6 @@ from core.foundation.dependencies import (
 )
 from core.foundation.http.responses import CreatedResponse, SuccessResponse
 from core.foundation.infra.config import settings
-from core.models.user import User
 
 router = APIRouter()
 
@@ -28,45 +27,26 @@ router = APIRouter()
 @router.post(
     "/login",
     status_code=status.HTTP_200_OK,
-    response_model=SuccessResponse[dict[str, str]],
+    response_model=SuccessResponse[LoginResponseData],
+    summary="Login a user",
+    description="Login a user",
+    response_description="Login successful",
 )
 async def login(
     credentials: UserLoginDTO,
-    request: Request,
-    response: Response,
     session: PostgresSession,
-    security_service: SecurityServiceDep,
-) -> SuccessResponse[dict[str, str]]:
-    user = await session.scalar(select(User).where(User.email == credentials.email))
-
-    if user is None or not security_service.verify_password(
-        credentials.password, user.password_hash
-    ):
-        raise UnauthorizedError(message="Invalid email or password")
-
-    if not user.is_active:
-        raise UnauthorizedError(message="Account is inactive")
-
-    token_data = {
-        "sub": str(user.id),
-        "tenant_id": str(user.tenant_id) if user.tenant_id is not None else "",
-    }
-    access_token = security_service.create_access_token(token_data)
-    refresh_token = security_service.create_access_token(
-        {**token_data, "type": "refresh"},
-        expires_delta=timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
+    auth_service: AuthServiceDep,
+) -> SuccessResponse[LoginResponseData]:
+    access_token = await auth_service.login(
+        session=session,
+        email=credentials.email,
+        password=credentials.password,
     )
-
-    set_auth_cookies(
-        response=response,
-        request=request,
-        access_token=access_token,
-        refresh_token=refresh_token,
-    )
-
     return SuccessResponse(
+        data=LoginResponseData(
+            at=access_token,
+        ),
         message="Login successful",
-        data={"authenticated": "true"},
     )
 
 
@@ -81,6 +61,7 @@ async def login(
 async def register(
     data: RegisterDTO,
     session: PostgresSession,
+    auth_service: AuthServiceDep,
     user_service: UserServiceDep,
     email_service: EmailServiceDep,
 ) -> CreatedResponse[RegisterCreatedData]:
@@ -90,7 +71,7 @@ async def register(
         password=data.password,
         restaurant_name=data.restaurant_name,
     )
-    activation = await email_service.create_activation_link(
+    activation = await auth_service.create_activation_link(
         session=session,
         email=user.email,
         user_id=user.id,
@@ -124,9 +105,9 @@ async def register(
     response_description="Tenant activated successfully",
 )
 async def activate(
-    activation_id: UUID, session: PostgresSession, email_service: EmailServiceDep
+    activation_id: UUID, session: PostgresSession, auth_service: AuthServiceDep
 ) -> SuccessResponse[TenantSlugData]:
-    tenant, already_activated = await email_service.activate_account(
+    tenant, already_activated = await auth_service.activate_account(
         session=session, activation_id=activation_id
     )
     return SuccessResponse(
@@ -148,9 +129,10 @@ async def activate(
 async def resend_activation(
     activation_id: UUID,
     session: PostgresSession,
+    auth_service: AuthServiceDep,
     email_service: EmailServiceDep,
 ) -> SuccessResponse[TenantSlugData]:
-    new_link, tenant = await email_service.resend_activation_link(
+    new_link, tenant = await auth_service.resend_activation_link(
         session=session, activation_id=activation_id
     )
     activation_url = f"{settings.FRONTEND_URL}/activate?activation_id={new_link.id}"

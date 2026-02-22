@@ -6,8 +6,8 @@ from fastapi import HTTPException
 from pydantic import ValidationError
 import pytest
 
-from api.v1.dto.payments import UpdateP24ConfigDTO
-from core.foundation.http.schemas import UpdatedResponse
+from core.dto.v1.payments import UpdateP24ConfigDTO
+from core.foundation.http.responses import UpdatedResponse
 from core.models.enums import TenantStatus
 from routes.v1.payments.update_p24_config import update_p24_config
 

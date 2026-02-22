@@ -37,8 +37,7 @@ describe("AuthResource", () => {
     const data = {
       email: "new@user.com",
       password: "password",
-      firstName: "John",
-      lastName: "Doe",
+      restaurant_name: "My Restaurant",
     };
 
     await resource.register(data);
@@ -62,8 +61,28 @@ describe("AuthResource", () => {
     expect(client.post).toHaveBeenCalledWith("/auth/refresh", undefined, { signal: undefined });
   });
 
-  it("me calls GET /auth/me", async () => {
-    await resource.me();
+  it("me calls GET /auth/me and returns unwrapped AuthMeData", async () => {
+    client.get = vi.fn().mockResolvedValue({ data: { sub: "user-1", tenant_id: "t-1" } });
+
+    const result = await resource.me();
+
     expect(client.get).toHaveBeenCalledWith("/auth/me", { signal: undefined });
+    expect(result).toEqual({ id: "user-1", tenantId: "t-1" });
+  });
+
+  it("activate calls POST /auth/activate with activation_id query", async () => {
+    await resource.activate("abc-123-uuid");
+
+    expect(client.post).toHaveBeenCalledWith("/auth/activate?activation_id=abc-123-uuid", undefined, {
+      signal: undefined,
+    });
+  });
+
+  it("resendActivation calls POST /auth/resend-activation with activation_id query", async () => {
+    await resource.resendActivation("xyz-456-uuid");
+
+    expect(client.post).toHaveBeenCalledWith("/auth/resend-activation?activation_id=xyz-456-uuid", undefined, {
+      signal: undefined,
+    });
   });
 });
