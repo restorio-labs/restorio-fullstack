@@ -32,3 +32,7 @@ class RegisterResponseDTO(BaseDTO):
 
 class TenantSlugData(BaseDTO):
     tenant_slug: str = Field(..., description="Tenant slug")
+
+
+class LoginResponseData(BaseDTO):
+    at: str = Field(..., description="JWT access token")
