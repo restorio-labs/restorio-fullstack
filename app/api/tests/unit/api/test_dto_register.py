@@ -1,7 +1,7 @@
 from pydantic import ValidationError as PydanticValidationError
 import pytest
 
-from core.dto.v1.auth import RegisterDTO
+from core.dto.v1.auth import _MIN_PASSWORD_LENGTH, RegisterDTO
 from core.exceptions import ValidationError as CoreValidationError
 
 BASE_VALID = {
@@ -14,6 +14,11 @@ BASE_VALID = {
 class TestRegisterDTO:
     def make_dto(self, **overrides) -> RegisterDTO:
         return RegisterDTO(**{**BASE_VALID, **overrides})
+
+    def test_password_length_check_in_validator_directly(self):
+        with pytest.raises(CoreValidationError) as exc_info:
+            RegisterDTO.password_complexity("Abc1!xy")
+        assert "8 characters" in exc_info.value.detail
 
     def expect_password_error(self, password: str) -> str:
         with pytest.raises((PydanticValidationError, CoreValidationError)) as exc_info:
