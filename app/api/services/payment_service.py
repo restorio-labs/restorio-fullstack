@@ -1,13 +1,18 @@
 import base64
+from datetime import date
 import hashlib
 import json
 from typing import Any
-from uuid import uuid4
+from uuid import UUID, uuid4
+
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.exceptions import BadRequestError
 from core.foundation.infra.config import settings
 from core.models import Przelewy24RegisterRequest
 from core.models.tenant import Tenant
+from core.models.transaction import Transaction
 from services.external_client_service import ExternalClient
 
 
@@ -114,3 +119,31 @@ class P24Service:
         )
 
         return P24RegistrationResult(request_body=body, p24_response=response)
+
+    async def list_transactions(
+        self,
+        session: AsyncSession,
+        tenant_id: UUID,
+        *,
+        date_from: date | None = None,
+        date_to: date | None = None,
+        page: int = 1,
+        page_size: int = 20,
+    ) -> tuple[list[Transaction], int]:
+        base_query = select(Transaction).where(Transaction.tenant_id == tenant_id)
+
+        if date_from is not None:
+            base_query = base_query.where(func.date(Transaction.created_at) >= date_from)
+        if date_to is not None:
+            base_query = base_query.where(func.date(Transaction.created_at) <= date_to)
+
+        count_query = select(func.count()).select_from(base_query.subquery())
+        total = (await session.execute(count_query)).scalar_one()
+
+        offset = (page - 1) * page_size
+        items_query = (
+            base_query.order_by(Transaction.created_at.desc()).offset(offset).limit(page_size)
+        )
+        items = list((await session.execute(items_query)).scalars().all())
+
+        return items, total
