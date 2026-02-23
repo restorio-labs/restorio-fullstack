@@ -3,7 +3,6 @@ from typing import Any
 from fastapi import APIRouter, status
 
 from core.dto.v1.payments import CreateTransactionDTO
-from core.exceptions import BadRequestError
 from core.foundation.dependencies import (
     ExternalClientDep,
     P24ServiceDep,
@@ -29,11 +28,7 @@ async def create_payment(
     external_client: ExternalClientDep,
 ) -> CreatedResponse[dict[str, Any]]:
     tenant = await tenant_service.get_tenant(session, request.tenant_id)
-
-    if not all([tenant.p24_merchantid, tenant.p24_api, tenant.p24_crc]):
-        raise BadRequestError(
-            message=f"Tenant '{tenant.name}' does not have Przelewy24 credentials configured"
-        )
+    p24_service.validate_tenant_p24_credentials(tenant)
 
     result = await p24_service.register_transaction(
         external_client,

@@ -4,8 +4,10 @@ import json
 from typing import Any
 from uuid import uuid4
 
+from core.exceptions import BadRequestError
 from core.foundation.infra.config import settings
 from core.models import Przelewy24RegisterRequest
+from core.models.tenant import Tenant
 from services.external_client_service import ExternalClient
 
 
@@ -32,6 +34,13 @@ class P24RegistrationResult:
 
 class P24Service:
     _PRZELEWY24_SERVICE_NAME = "Przelewy24"
+
+    @staticmethod
+    def validate_tenant_p24_credentials(tenant: Tenant) -> None:
+        if not all([tenant.p24_merchantid, tenant.p24_api, tenant.p24_crc]):
+            raise BadRequestError(
+                message=f"Tenant '{tenant.name}' does not have Przelewy24 credentials configured"
+            )
 
     @staticmethod
     def _przelewy24_sign(
