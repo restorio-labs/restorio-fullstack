@@ -1,4 +1,4 @@
-export const THEME_STORAGE_KEY = "rtm";
+import { THEME_STORAGE_KEY } from "@restorio/utils";
 
 export const runThemeBootScript = (): void => {
   try {

@@ -24,6 +24,7 @@ export const FloorEditorPage = (): ReactElement => {
 
   const [loadingState, setLoadingState] = useState<LoadingState>("loading");
   const [tenant, setTenant] = useState<Tenant | null>(null);
+  const [isCreatingCanvas, setIsCreatingCanvas] = useState(false);
 
   useEffect(() => {
     if (!restaurantId) {
@@ -93,22 +94,55 @@ export const FloorEditorPage = (): ReactElement => {
   }
 
   const hasCanvases = tenant.floorCanvases.length > 0;
-  const activeCanvas = hasCanvases ? getActiveCanvas(tenant) : undefined;
 
-  if (!hasCanvases || activeCanvas === undefined) {
+  const handleCreateCanvas = async (): Promise<void> => {
+    if (isCreatingCanvas) {
+      return;
+    }
+
+    setIsCreatingCanvas(true);
+
+    try {
+      await api.floorCanvases.create(tenant.id, {
+        name: "Floor 1",
+        width: 800,
+        height: 600,
+        elements: [],
+      });
+
+      const updated = await api.tenants.get(tenant.id);
+
+      setTenant(updated);
+    } finally {
+      setIsCreatingCanvas(false);
+    }
+  };
+
+  if (!hasCanvases) {
     return (
       <PageLayout title="Floor layout" description={tenant.name} headerActions={headerActions}>
-        <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-text-tertiary">
-          No saved floor layouts exist for this restaurant yet. Add one from the restaurants list or contact support if
-          you believe this is an error.
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
+          <p className="text-sm text-text-tertiary">
+            No floor layout exists for this restaurant yet. Create one to start designing.
+          </p>
+          <button
+            type="button"
+            onClick={() => void handleCreateCanvas()}
+            disabled={isCreatingCanvas}
+            className="rounded-md bg-interactive-primary px-4 py-2 text-sm font-medium text-primary-inverse hover:bg-interactive-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus disabled:opacity-50"
+          >
+            {isCreatingCanvas ? "Creating…" : "Create floor layout"}
+          </button>
         </div>
       </PageLayout>
     );
   }
 
+  const activeCanvasForEditor = getActiveCanvas(tenant)!;
+
   const handleSave = async (layout: FloorCanvasType): Promise<void> => {
     try {
-      await api.floorCanvases.update(tenant.id, activeCanvas.id, {
+      await api.floorCanvases.update(tenant.id, activeCanvasForEditor.id, {
         name: layout.name,
         width: layout.width,
         height: layout.height,
@@ -120,8 +154,8 @@ export const FloorEditorPage = (): ReactElement => {
   };
 
   return (
-    <PageLayout title={`Floor: ${activeCanvas.name}`} description={tenant.name} headerActions={headerActions}>
-      <FloorLayoutEditorView initialLayout={activeCanvas} onSave={handleSave} />
+    <PageLayout title={`Floor: ${activeCanvasForEditor.name}`} description={tenant.name} headerActions={headerActions}>
+      <FloorLayoutEditorView initialLayout={activeCanvasForEditor} onSave={handleSave} />
     </PageLayout>
   );
 };

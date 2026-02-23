@@ -1,11 +1,49 @@
 "use client";
 
-import { Button, cn, ContentContainer, Icon, Stack, Text } from "@restorio/ui";
+import type { AppSlug } from "@restorio/types";
+import { Button, ChooseApp, cn, ContentContainer, Icon, Stack, Text } from "@restorio/ui";
+import {
+  getAppUrl,
+  getEnvironmentFromEnv,
+  getEnvSource,
+  LAST_VISITED_APP_STORAGE_KEY,
+  resolveNextEnvVar,
+} from "@restorio/utils";
 import Link from "next/link";
 import type { ReactElement } from "react";
+import { useEffect, useState } from "react";
 import { FaBolt, FaGlobe, FaMobileAlt } from "react-icons/fa";
 
+import { api } from "@/api/client";
+
+const getEnvMode = (): string => {
+  const viteEnv =
+    typeof import.meta !== "undefined" ? (import.meta as { env?: Record<string, unknown> }).env : undefined;
+  const envSource = getEnvSource(viteEnv);
+
+  return resolveNextEnvVar(envSource, "ENV", "NODE_ENV") ?? "development";
+};
+
 export const HomeContent = (): ReactElement => {
+  const [authStatus, setAuthStatus] = useState<"loading" | "authenticated" | "anonymous">("loading");
+
+  useEffect(() => {
+    api.auth
+      .me()
+      .then(() => setAuthStatus("authenticated"))
+      .catch(() => setAuthStatus("anonymous"));
+  }, []);
+
+  if (authStatus === "authenticated") {
+    const envMode = getEnvMode();
+    const goToApp = (slug: AppSlug): void => {
+      localStorage.setItem(LAST_VISITED_APP_STORAGE_KEY, slug);
+      window.location.href = getAppUrl(getEnvironmentFromEnv(envMode), slug);
+    };
+
+    return <ChooseApp onSelectApp={goToApp} />;
+  }
+
   return (
     <div className="flex flex-col gap-24 py-12 md:py-24">
       {/* Hero Section */}

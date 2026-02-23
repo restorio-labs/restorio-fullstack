@@ -80,7 +80,7 @@ describe("TokenStorage", () => {
   it("should get access token from cookie", () => {
     const mockToken = "test-access-token";
 
-    cookieStore.restorio_access_token = encodeURIComponent(mockToken);
+    cookieStore.rat = encodeURIComponent(mockToken);
 
     expect(TokenStorage.getAccessToken()).toBe(mockToken);
   });
@@ -188,7 +188,7 @@ describe("TokenStorage", () => {
   });
 
   it("getRefreshToken returns value from cookie", () => {
-    cookieStore.restorio_refresh_token = encodeURIComponent("refresh-token-value");
+    cookieStore.rfr = encodeURIComponent("refresh-token-value");
 
     const result = TokenStorage.getRefreshToken();
 

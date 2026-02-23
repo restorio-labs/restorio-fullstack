@@ -22,7 +22,7 @@ def round_pct(pct: float) -> float:
 
 def read_coverage() -> dict[str, Any]:
     if not COVERAGE_PATH.exists():
-        raise FileNotFoundError(f"Coverage file not found: {COVERAGE_PATH}")
+        raise FileNotFoundResponse(f"Coverage file not found: {COVERAGE_PATH}")
 
     print(f"📄 Using coverage file: {COVERAGE_PATH}")
 
@@ -131,7 +131,9 @@ def main() -> None:
             }
         )
 
-    markdown = f"## 🧪 API Unit Test Coverage{render_table('API Modules', rows)}\n".strip()
+    markdown = (
+        f"## 🧪 API Unit Test Coverage{render_table('API Modules', rows)}\n".strip()
+    )
 
     output_path = Path("coverage-summary.md")
     output_path.write_text(markdown, encoding="utf-8")

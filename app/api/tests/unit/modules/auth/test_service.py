@@ -6,7 +6,7 @@ import pytest
 from core.exceptions import (
     BadRequestError,
     GoneError,
-    NotFoundError,
+    NotFoundResponse,
     TooManyRequestsError,
     UnauthorizedError,
 )
@@ -103,7 +103,7 @@ async def test_activate_account_link_not_found() -> None:
     session = FakeAsyncSession()
     unknown_id = uuid4()
 
-    with pytest.raises(NotFoundError) as exc_info:
+    with pytest.raises(NotFoundResponse) as exc_info:
         await auth_service.activate_account(session=session, activation_id=unknown_id)
 
     assert str(unknown_id) in exc_info.value.detail
@@ -155,7 +155,7 @@ async def test_activate_account_tenant_not_found() -> None:
     session.users.append(user)
     session.activation_links.append(link)
 
-    with pytest.raises(NotFoundError) as exc_info:
+    with pytest.raises(NotFoundResponse) as exc_info:
         await auth_service.activate_account(session=session, activation_id=link.id)
 
     assert "Account" in exc_info.value.detail
@@ -237,7 +237,7 @@ async def test_activate_account_user_not_found() -> None:
     )
     session.activation_links.append(link)
 
-    with pytest.raises(NotFoundError) as exc_info:
+    with pytest.raises(NotFoundResponse) as exc_info:
         await auth_service.activate_account(session=session, activation_id=link.id)
 
     assert "Account" in exc_info.value.detail
@@ -248,7 +248,7 @@ async def test_resend_activation_link_not_found() -> None:
     session = FakeAsyncSession()
     unknown_id = uuid4()
 
-    with pytest.raises(NotFoundError) as exc_info:
+    with pytest.raises(NotFoundResponse) as exc_info:
         await auth_service.resend_activation_link(session=session, activation_id=unknown_id)
 
     assert str(unknown_id) in exc_info.value.detail
@@ -328,7 +328,7 @@ async def test_resend_activation_link_tenant_not_found() -> None:
     )
     session.activation_links.append(link)
 
-    with pytest.raises(NotFoundError) as exc_info:
+    with pytest.raises(NotFoundResponse) as exc_info:
         await auth_service.resend_activation_link(session=session, activation_id=link.id)
 
     assert "Account" in exc_info.value.detail

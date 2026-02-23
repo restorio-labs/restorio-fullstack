@@ -41,6 +41,7 @@
   "dependencies": {
     "@types/node": "^22",
     "@restorio/types": "workspace:*",
+    "@restorio/utils": "workspace:*",
     "@testing-library/user-event": "^14.6.1"
   },
   "devDependencies": {

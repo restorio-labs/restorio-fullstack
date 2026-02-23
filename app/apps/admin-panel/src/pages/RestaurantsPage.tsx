@@ -1,32 +1,39 @@
-import type { FloorCanvas, Tenant, TenantSummary } from "@restorio/types";
+import type { FloorCanvas } from "@restorio/types";
 import { useEffect, useState, type ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { api } from "../api/client";
+import { useTenants } from "../hooks/useTenants";
 import { PageLayout } from "../layouts/PageLayout";
 import { RestaurantsView } from "../views/RestaurantsView";
 
-type LoadingState = "loading" | "loaded" | "error";
-
-const getActiveCanvas = (tenant: Tenant): FloorCanvas | null => {
+const getActiveCanvas = (tenant: {
+  floorCanvases: FloorCanvas[];
+  activeLayoutVersionId: string | null;
+}): FloorCanvas | null => {
   if (tenant.floorCanvases.length === 0) {
     return null;
   }
 
-  return tenant.floorCanvases.find((canvas) => canvas.id === tenant.activeLayoutVersionId) ?? tenant.floorCanvases[0];
+  return (
+    tenant.floorCanvases.find((canvas: FloorCanvas) => canvas.id === tenant.activeLayoutVersionId) ??
+    tenant.floorCanvases[0]
+  );
 };
 
 export const RestaurantsPage = (): ReactElement => {
   const navigate = useNavigate();
-  const [loadingState, setLoadingState] = useState<LoadingState>("loading");
-  const [tenants, setTenants] = useState<TenantSummary[]>([]);
+  const { tenants, state } = useTenants();
   const [activeCanvasesByTenantId, setActiveCanvasesByTenantId] = useState<Record<string, FloorCanvas | null>>({});
 
   useEffect(() => {
-    const fetchTenants = async (): Promise<void> => {
+    const fetchCanvases = async (): Promise<void> => {
+      if (state !== "loaded" || tenants.length === 0) {
+        return;
+      }
+
       try {
-        const data = await api.tenants.list();
-        const tenantsWithCanvases = data.filter((tenant) => tenant.floorCanvasCount > 0);
+        const tenantsWithCanvases = tenants.filter((tenant) => tenant.floorCanvasCount > 0);
         const tenantDetails = await Promise.allSettled(tenantsWithCanvases.map((tenant) => api.tenants.get(tenant.id)));
         const nextActiveCanvasesByTenantId: Record<string, FloorCanvas | null> = {};
 
@@ -41,18 +48,16 @@ export const RestaurantsPage = (): ReactElement => {
           nextActiveCanvasesByTenantId[tenantSummary.id] = activeCanvas;
         });
 
-        setTenants(data);
         setActiveCanvasesByTenantId(nextActiveCanvasesByTenantId);
-        setLoadingState("loaded");
       } catch {
-        setLoadingState("error");
+        // ignore; state will stay as-is
       }
     };
 
-    void fetchTenants();
-  }, []);
+    void fetchCanvases();
+  }, [state, tenants]);
 
-  if (loadingState === "loading") {
+  if (state === "idle" || state === "loading") {
     return (
       <PageLayout title="Restaurants" description="Manage restaurant floor layouts">
         <div className="flex flex-1 items-center justify-center p-8">
@@ -62,7 +67,7 @@ export const RestaurantsPage = (): ReactElement => {
     );
   }
 
-  if (loadingState === "error") {
+  if (state === "error") {
     return (
       <PageLayout title="Restaurants" description="Manage restaurant floor layouts">
         <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-text-tertiary">

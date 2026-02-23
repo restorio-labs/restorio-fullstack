@@ -2,6 +2,7 @@
 
 import type { TenantSlugResponse } from "@restorio/types";
 import { Button, ContentContainer, Text } from "@restorio/ui";
+import { getAppUrl, getEnvironmentFromEnv, getEnvSource, resolveNextEnvVar } from "@restorio/utils";
 import type { ReactElement } from "react";
 import { useEffect, useRef, useState } from "react";
 
@@ -12,7 +13,6 @@ type Result = "loading" | "success" | "already_activated" | "expired" | "error" 
 export function ActivateContent(): ReactElement {
   const [result, setResult] = useState<Result>("loading");
   const [errorMessage, setErrorMessage] = useState("");
-  const [tenantSlug, setTenantSlug] = useState("");
   const [activationId, setActivationId] = useState("");
   const [resendLoading, setResendLoading] = useState(false);
   const [resendCooldownUntil, setResendCooldownUntil] = useState(0);
@@ -66,7 +66,6 @@ export function ActivateContent(): ReactElement {
            @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
         const body = await api.auth.activate(id);
 
-        setTenantSlug(String(body.data.tenant_slug ?? ""));
         setResult((body.message === "Account already activated" ? "already_activated" : "success") as Result);
         /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call,
            @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
@@ -124,7 +123,12 @@ export function ActivateContent(): ReactElement {
 
   const resendOnCooldown = cooldownSeconds > 0;
 
-  const loginUrl = tenantSlug ? `https://${tenantSlug}.restorio.com/login` : "";
+  const viteEnv =
+    typeof import.meta !== "undefined" ? (import.meta as { env?: Record<string, unknown> }).env : undefined;
+  const envSource = getEnvSource(viteEnv);
+  const envMode = resolveNextEnvVar(envSource, "ENV", "NODE_ENV") ?? "development";
+  const adminPanelUrlEnv = resolveNextEnvVar(envSource, "VITE_ADMIN_PANEL_URL", "NEXT_PUBLIC_ADMIN_PANEL_URL");
+  const adminPanelUrl = adminPanelUrlEnv ?? getAppUrl(getEnvironmentFromEnv(envMode), "admin-panel");
 
   return (
     <div className="py-16 md:py-24">
@@ -144,18 +148,22 @@ export function ActivateContent(): ReactElement {
           {result === "success" && (
             <>
               <Text variant="h2" weight="bold" className="mb-4">
-                Your account has been created.
+                Your account is activated.
               </Text>
               <Text variant="body-lg" className="text-text-secondary">
-                You can login on{" "}
-                {loginUrl ? (
-                  <a href={loginUrl} className="text-interactive-primary underline">
-                    {tenantSlug}.restorio.com/login
-                  </a>
-                ) : (
-                  "{tenant_slug}.restorio.com/login"
-                )}
+                You’re now logged in. Continue to the admin panel to finish setup.
               </Text>
+              <div className="mt-8 flex justify-center">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onClick={() => {
+                    window.location.href = adminPanelUrl;
+                  }}
+                >
+                  Go to admin panel
+                </Button>
+              </div>
             </>
           )}
 
@@ -165,15 +173,19 @@ export function ActivateContent(): ReactElement {
                 This account is already activated.
               </Text>
               <Text variant="body-lg" className="text-text-secondary">
-                You can login on{" "}
-                {loginUrl ? (
-                  <a href={loginUrl} className="text-interactive-primary underline">
-                    {tenantSlug}.restorio.com/login
-                  </a>
-                ) : (
-                  "{tenant_slug}.restorio.com/login"
-                )}
+                Continue to the admin panel.
               </Text>
+              <div className="mt-8 flex justify-center">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onClick={() => {
+                    window.location.href = adminPanelUrl;
+                  }}
+                >
+                  Go to admin panel
+                </Button>
+              </div>
             </>
           )}
 

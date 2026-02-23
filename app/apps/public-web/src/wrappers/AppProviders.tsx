@@ -1,6 +1,7 @@
 "use client";
 
-import { THEME_STORAGE_KEY, ThemeProvider } from "@restorio/ui";
+import { ThemeProvider } from "@restorio/ui";
+import { THEME_STORAGE_KEY } from "@restorio/utils";
 import type { ReactNode } from "react";
 
 interface AppProvidersProps {

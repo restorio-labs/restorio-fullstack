@@ -40,7 +40,7 @@ export const App = (): ReactElement => {
   }, []);
 
   return (
-    <RedirectAuthGuard redirectTo={PUBLIC_WEB_URL} checkAuth={checkAuth}>
+    <RedirectAuthGuard redirectTo={`${PUBLIC_WEB_URL}/login`} checkAuth={checkAuth}>
       <AppLayout sidebar={<AdminSidebar />}>
         <Routes>
           <Route path="/" element={<RestaurantsPage />} />

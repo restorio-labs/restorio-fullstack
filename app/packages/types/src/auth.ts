@@ -29,11 +29,12 @@ export interface TenantSlugResponse {
 export interface AuthMeData {
   id: string;
   tenantId: string;
+  accountType: string;
 }
 
 export interface LoginResponse {
   message: string;
-  data: { authenticated: string };
+  data: { at: string };
 }
 
 export interface RefreshResponse {

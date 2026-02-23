@@ -6,7 +6,7 @@ from core.exceptions import (
     ConflictError,
     ForbiddenError,
     GoneError,
-    NotFoundError,
+    NotFoundResponse,
     TooManyRequestsError,
     UnauthorizedError,
     ValidationError,
@@ -50,16 +50,16 @@ class TestBaseHTTPException:
         assert "Test error" in content
 
 
-class TestNotFoundError:
+class TestNotFoundResponse:
     def test_not_found_error_without_identifier(self) -> None:
-        exception = NotFoundError("User")
+        exception = NotFoundResponse("User")
 
         assert exception.status_code == status.HTTP_404_NOT_FOUND
         assert exception.detail == "User not found"
         assert exception.error_code == "NOT_FOUND"
 
     def test_not_found_error_with_identifier(self) -> None:
-        exception = NotFoundError("User", identifier="123")
+        exception = NotFoundResponse("User", identifier="123")
 
         assert exception.status_code == status.HTTP_404_NOT_FOUND
         assert exception.detail == "User with id '123' not found"

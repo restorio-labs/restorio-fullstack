@@ -44,8 +44,8 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 14
-    ACCESS_TOKEN_COOKIE_NAME: str = "restorio_access_token"
-    REFRESH_TOKEN_COOKIE_NAME: str = "restorio_refresh_token"
+    ACCESS_TOKEN_COOKIE_NAME: str = "rat"
+    REFRESH_TOKEN_COOKIE_NAME: str = "rfr"
 
     # Przelewy24 (values from .env)
     PRZELEWY24_MERCHANT_ID: int = 0

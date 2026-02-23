@@ -61,6 +61,12 @@ class TestCookieDomain:
     def test_deep_subdomain(self):
         assert _cookie_domain("staging.api.restorio.org") == ".restorio.org"
 
+    def test_apex_domain_com(self):
+        assert _cookie_domain("restorio.com") == ".restorio.com"
+
+    def test_subdomain_com(self):
+        assert _cookie_domain("api.restorio.com") == ".restorio.com"
+
     def test_unknown_host_returns_none(self):
         assert _cookie_domain("evil.com") is None
 

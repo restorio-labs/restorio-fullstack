@@ -14,8 +14,9 @@ def _cookie_domain(hostname: str | None) -> str | None:
     if _is_local_host(hostname):
         return None
 
-    if hostname == "restorio.org" or (hostname and hostname.endswith(".restorio.org")):
-        return ".restorio.org"
+    for domain in ("restorio.com", "restorio.org"):
+        if hostname == domain or (hostname and hostname.endswith(f".{domain}")):
+            return f".{domain}"
 
     return None
 
