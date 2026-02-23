@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from core.models.order import Order
     from core.models.restaurant_table import RestaurantTable
     from core.models.tenant_role import TenantRole
+    from core.models.transaction import Transaction
 
 
 class Tenant(Base):
@@ -64,4 +65,7 @@ class Tenant(Base):
         back_populates="tenant",
         cascade="all, delete-orphan",
         foreign_keys="FloorCanvas.tenant_id",
+    )
+    transactions: Mapped[list[Transaction]] = relationship(
+        "Transaction", back_populates="tenant", cascade="all, delete-orphan"
     )
