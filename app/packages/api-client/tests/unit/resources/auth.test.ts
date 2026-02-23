@@ -62,12 +62,12 @@ describe("AuthResource", () => {
   });
 
   it("me calls GET /auth/me and returns unwrapped AuthMeData", async () => {
-    client.get = vi.fn().mockResolvedValue({ data: { sub: "user-1", tenant_id: "t-1" } });
+    client.get = vi.fn().mockResolvedValue({ data: { sub: "user-1", tenant_id: "t-1", role: "owner" } });
 
     const result = await resource.me();
 
     expect(client.get).toHaveBeenCalledWith("/auth/me", { signal: undefined });
-    expect(result).toEqual({ id: "user-1", tenantId: "t-1" });
+    expect(result).toEqual({ id: "user-1", tenantId: "t-1", role: "owner" });
   });
 
   it("activate calls POST /auth/activate with activation_id query", async () => {

@@ -218,13 +218,17 @@ async def me(request: Request) -> SuccessResponse[dict[str, str]]:
 
     subject = user.get("sub")
     tenant_id = user.get("tenant_id")
+    role = user.get("role")
     if not isinstance(subject, str):
+        raise UnauthorizedError(message="Unauthorized")
+    if not isinstance(role, str):
         raise UnauthorizedError(message="Unauthorized")
 
     return SuccessResponse(
         data={
             "sub": subject,
             "tenant_id": tenant_id if isinstance(tenant_id, str) else "",
+            "role": role,
         },
         message="Authenticated",
     )

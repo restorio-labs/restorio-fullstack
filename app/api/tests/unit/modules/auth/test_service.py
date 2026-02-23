@@ -12,8 +12,9 @@ from core.exceptions import (
 )
 from core.foundation.security import SecurityService
 from core.models.activation_link import ActivationLink
-from core.models.enums import TenantStatus
+from core.models.enums import AccountType, TenantStatus
 from core.models.tenant import Tenant
+from core.models.tenant_role import TenantRole
 from core.models.user import User
 from services.auth_service import AuthService
 
@@ -25,15 +26,23 @@ class FakeAsyncSession:
     def __init__(self) -> None:
         self.users: list[User] = []
         self.tenants: list[Tenant] = []
+        self.tenant_roles: list[TenantRole] = []
         self.activation_links: list[ActivationLink] = []
         self.added_objects: list[object] = []
 
-    async def scalar(self, query: object) -> User | None:
+    async def scalar(self, query: object) -> User | AccountType | None:
         query_str = str(query)
         query_params: dict[str, object] = {}
         if hasattr(query, "compile"):
             query_params = query.compile().params
 
+        if "tenant_roles.account_type" in query_str:
+            account_id = query_params.get("account_id_1")
+            tenant_id = query_params.get("tenant_id_1")
+            for role in self.tenant_roles:
+                if role.account_id == account_id and role.tenant_id == tenant_id:
+                    return role.account_type
+            return None
         if "users.email" in query_str:
             email = next(iter(query_params.values()), None)
             return next((u for u in self.users if u.email == email), None)
@@ -374,6 +383,9 @@ async def test_login_success_returns_jwt_with_claims() -> None:
         is_active=True,
     )
     session.users.append(user)
+    session.tenant_roles.append(
+        TenantRole(account_id=user.id, tenant_id=tenant_id, account_type=AccountType.OWNER)
+    )
 
     access_token = await auth_service.login(
         session=session,
@@ -387,6 +399,7 @@ async def test_login_success_returns_jwt_with_claims() -> None:
     assert decoded["sub"] == str(user.id)
     assert decoded["email"] == user.email
     assert decoded["tenant_id"] == str(tenant_id)
+    assert decoded["role"] == AccountType.OWNER.value
 
 
 @pytest.mark.asyncio

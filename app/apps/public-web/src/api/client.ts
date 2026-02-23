@@ -1,6 +1,8 @@
 import { ApiClient, RestorioApi } from "@restorio/api-client";
 import { getAppUrl, getEnvironmentFromEnv, resolveNextEnvVar, getEnvSource } from "@restorio/utils";
 
+import { getAccessTokenFromCookie } from "@/lib/authCookie";
+
 const viteEnv = typeof import.meta !== "undefined" ? (import.meta as { env?: Record<string, unknown> }).env : undefined;
 const envSource = getEnvSource(viteEnv);
 const envMode = resolveNextEnvVar(envSource, "ENV", "NODE_ENV") ?? "development";
@@ -12,6 +14,7 @@ const PUBLIC_WEB_URL = publicWebUrlEnv ?? getAppUrl(getEnvironmentFromEnv(envMod
 
 const apiClient = new ApiClient({
   baseURL: API_BASE_URL,
+  getAccessToken: (): string | null => getAccessTokenFromCookie(),
   onUnauthorized: (): void => {
     window.location.href = PUBLIC_WEB_URL;
   },

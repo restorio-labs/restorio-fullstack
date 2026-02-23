@@ -1,3 +1,5 @@
+import type { UserRole } from "./user";
+
 export interface RegisterRequest {
   email: string;
   password: string;
@@ -29,11 +31,12 @@ export interface TenantSlugResponse {
 export interface AuthMeData {
   id: string;
   tenantId: string;
+  role: UserRole;
 }
 
 export interface LoginResponse {
   message: string;
-  data: { authenticated: string };
+  data: { at: string };
 }
 
 export interface RefreshResponse {

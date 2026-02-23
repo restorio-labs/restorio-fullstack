@@ -2,14 +2,14 @@
 
 import { type ReactElement } from "react";
 
-import { RegisterContent } from "./RegisterContent";
+import { LoginContent } from "./LoginContent";
 
 import { AuthWindow } from "@/components/app/AuthWindow";
 
-export default function RegisterPage(): ReactElement {
+export default function LoginPage(): ReactElement {
   return (
     <AuthWindow>
-      <RegisterContent />
+      <LoginContent />
     </AuthWindow>
   );
 }

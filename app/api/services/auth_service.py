@@ -186,11 +186,24 @@ class AuthService:
             msg = "Account is not active"
             raise UnauthorizedError(msg)
 
+        account_type = AccountType.OWNER
+        if user.tenant_id is not None:
+            account_type = (
+                await session.scalar(
+                    select(TenantRole.account_type).where(
+                        TenantRole.account_id == user.id,
+                        TenantRole.tenant_id == user.tenant_id,
+                    )
+                )
+                or AccountType.OWNER
+            )
+
         return self.security.create_access_token(
             data={
                 "sub": str(user.id),
                 "email": user.email,
                 "tenant_id": str(user.tenant_id) if user.tenant_id else None,
+                "role": account_type.value,
             }
         )
 

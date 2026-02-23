@@ -55,13 +55,15 @@ export class AuthResource extends BaseResource {
   }
 
   /**
-   * Get current session (id and tenantId from JWT). Not a full user profile.
+   * Get current session (id, tenantId and role from JWT). Not a full user profile.
    */
   async me(signal?: AbortSignal): Promise<AuthMeData> {
-    const { data } = await this.client.get<SuccessResponse<{ sub: string; tenant_id: string }>>("/auth/me", {
+    const { data } = await this.client.get<
+      SuccessResponse<{ sub: string; tenant_id: string; role: AuthMeData["role"] }>
+    >("/auth/me", {
       signal,
     });
 
-    return { id: data.sub, tenantId: data.tenant_id ?? "" };
+    return { id: data.sub, tenantId: data.tenant_id ?? "", role: data.role };
   }
 }
