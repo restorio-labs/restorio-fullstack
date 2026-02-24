@@ -1,4 +1,5 @@
-import { ThemeSwitcher, NavItem, NavSection, Sidebar, SidebarSection } from "@restorio/ui";
+import { ChooseApp, ThemeSwitcher, NavItem, NavSection, Sidebar, SidebarSection } from "@restorio/ui";
+import { goToApp } from "@restorio/utils";
 import type { ReactElement } from "react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -14,10 +15,7 @@ export const AdminSidebar = (): ReactElement => {
   };
 
   return (
-    <Sidebar aria-label="Admin navigation" variant="persistent">
-      <SidebarSection title="Appearance">
-        <ThemeSwitcher className="w-full justify-between" showLabel />
-      </SidebarSection>
+    <Sidebar aria-label="Admin navigation" variant="persistent" className="flex flex-col h-full">
       <SidebarSection title="Restaurant Management">
         <NavSection>
           <NavItem as={Link} to="/" href="/" active={isActive("/")} role="menuitem">
@@ -82,6 +80,13 @@ export const AdminSidebar = (): ReactElement => {
           </NavItem>
         </NavSection>
       </SidebarSection>
+      <div className="sticky bottom-0 mt-4 flex items-center justify-between gap-3 border-t border-border-default bg-surface-secondary/80 px-4 py-3 backdrop-blur">
+        <ThemeSwitcher />
+        <label className="flex items-center gap-2 text-xs text-text-secondary">
+          <span>View</span>
+          <ChooseApp variant="dropdown" value="admin-panel" onSelectApp={goToApp} />
+        </label>
+      </div>
     </Sidebar>
   );
 };

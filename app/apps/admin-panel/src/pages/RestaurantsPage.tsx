@@ -81,9 +81,9 @@ export const RestaurantsPage = (): ReactElement => {
     <PageLayout title="Restaurants" description="Manage restaurant floor layouts">
       <RestaurantsView
         restaurants={tenants}
-        activeCanvasesByVenueId={activeCanvasesByTenantId}
-        onSelectVenue={(tenant) => navigate(`/restaurants/${tenant.id}/floor`)}
-        onAddVenue={() => navigate("/restaurant-creator")}
+        activeCanvasesByTenantId={activeCanvasesByTenantId}
+        onSelectTenant={(tenant) => navigate(`/restaurants/${tenant.id}/floor`)}
+        onAddTenant={() => navigate("/restaurant-creator")}
       />
     </PageLayout>
   );
