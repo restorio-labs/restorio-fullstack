@@ -139,7 +139,7 @@ async def test_unauthorized_middleware_accepts_access_token_cookie() -> None:
         "type": "http",
         "method": "GET",
         "path": "/",
-        "headers": [(b"cookie", b"restorio_access_token=valid-token")],
+        "headers": [(b"cookie", b"rat=valid-token")],
     }
     request = Request(scope)
 

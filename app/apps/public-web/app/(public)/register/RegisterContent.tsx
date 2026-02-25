@@ -76,7 +76,7 @@ export const RegisterContent = (): ReactElement => {
       });
 
       setFeedbackStatus("success");
-      setFeedbackMessage(String(response.message ?? ""));
+      setFeedbackMessage(String(response.message));
       setSubmitted(false);
     } catch (err: unknown) {
       interface AxiosErrorData {

@@ -14,8 +14,9 @@ def _cookie_domain(hostname: str | None) -> str | None:
     if _is_local_host(hostname):
         return None
 
-    if hostname == "restorio.org" or (hostname and hostname.endswith(".restorio.org")):
-        return ".restorio.org"
+    for domain in ["restorio.org"]:
+        if hostname == domain or (hostname and hostname.endswith(f".{domain}")):
+            return f".{domain}"
 
     return None
 
@@ -55,6 +56,16 @@ def set_auth_cookies(
         path="/",
         domain=domain,
     )
+    response.set_cookie(
+        key=settings.SESSION_HINT_COOKIE,
+        value="1",
+        httponly=False,
+        secure=secure,
+        samesite="lax",
+        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+        path="/",
+        domain=domain,
+    )
 
 
 def clear_auth_cookies(response: Response, request: Request) -> None:
@@ -76,6 +87,14 @@ def clear_auth_cookies(response: Response, request: Request) -> None:
         domain=domain,
         secure=secure,
         httponly=True,
+        samesite="lax",
+    )
+    response.delete_cookie(
+        key=settings.SESSION_HINT_COOKIE,
+        path="/",
+        domain=domain,
+        secure=secure,
+        httponly=False,
         samesite="lax",
     )
 

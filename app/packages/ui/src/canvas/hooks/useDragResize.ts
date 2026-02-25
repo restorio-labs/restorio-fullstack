@@ -100,6 +100,8 @@ export const useDragResize = (options: UseDragResizeOptions = {}): UseDragResize
       const startY = startBounds.y;
       const startW = startBounds.w;
       const startH = startBounds.h;
+      const right = startX + startW;
+      const bottom = startY + startH;
       let x = startX;
       let y = startY;
       let w = startW;
@@ -152,12 +154,31 @@ export const useDragResize = (options: UseDragResizeOptions = {}): UseDragResize
           return;
       }
 
+      const leftMoves = mode.includes("w");
+      const topMoves = mode.includes("n");
+
+      if (leftMoves) {
+        const snappedX = snap(x, startY).x;
+
+        x = snappedX;
+        w = Math.max(minWidth, right - x);
+        x = right - w;
+      }
+
+      if (topMoves) {
+        const snappedY = snap(startX, y).y;
+
+        y = snappedY;
+        h = Math.max(minHeight, bottom - y);
+        y = bottom - h;
+      }
+
       const snapped = snapSize(w, h);
       const { rotation } = startBounds;
 
       onBoundsChange?.(id, {
-        x,
-        y,
+        x: leftMoves ? right - snapped.w : x,
+        y: topMoves ? bottom - snapped.h : y,
         w: snapped.w,
         h: snapped.h,
         rotation,

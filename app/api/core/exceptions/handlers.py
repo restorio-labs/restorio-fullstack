@@ -12,14 +12,17 @@ def setup_exception_handlers(app: FastAPI, settings: Settings) -> None:
         _: Request,
         exc: BaseHTTPException,
     ) -> JSONResponse:
-        error_response = ErrorResponse(
-            error_code=exc.error_code,
-            message=exc.detail,
-            details=exc.details,
-        )
+        if settings.DEBUG:
+            content = ErrorResponse(message=exc.detail, details=exc.details).model_dump(
+                exclude_none=True
+            )
+        else:
+            content = ErrorResponse(message="An error occurred", details=None).model_dump(
+                exclude_none=True
+            )
         return JSONResponse(
-            status_code=exc.status_code,
-            content=error_response.model_dump(exclude_none=True),
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content=content,
         )
 
     @app.exception_handler(Exception)
@@ -27,12 +30,16 @@ def setup_exception_handlers(app: FastAPI, settings: Settings) -> None:
         _: Request,
         exc: Exception,
     ) -> JSONResponse:
-        error_response = ErrorResponse(
-            error_code="INTERNAL_ERROR",
-            message="An unexpected error occurred",
-            details={"type": type(exc).__name__} if settings.DEBUG else None,
-        )
+        if settings.DEBUG:
+            content = ErrorResponse(
+                message="An unexpected error occurred",
+                details={"type": type(exc).__name__},
+            ).model_dump(exclude_none=True)
+        else:
+            content = ErrorResponse(
+                message="An unexpected error occurred", details=None
+            ).model_dump(exclude_none=True)
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content=error_response.model_dump(exclude_none=True),
+            content=content,
         )

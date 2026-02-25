@@ -1,16 +1,4 @@
-interface EnvSource {
-  env?: Record<string, string | undefined>;
-}
-
-const getEnvVar = (key: string): string | undefined => {
-  const processEnv = (globalThis as { process?: EnvSource }).process?.env;
-  const viteEnv = (import.meta as EnvSource).env;
-
-  return processEnv?.[key] ?? viteEnv?.[key];
-};
-
-const ACCESS_TOKEN_KEY = getEnvVar("ACCESS_TOKEN_KEY") ?? "restorio_access_token";
-const REFRESH_TOKEN_KEY = getEnvVar("REFRESH_TOKEN_KEY") ?? "restorio_refresh_token";
+import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "@restorio/utils";
 
 const getDocument = (): Document | undefined => {
   if (typeof window === "undefined") {

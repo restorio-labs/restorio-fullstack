@@ -46,7 +46,7 @@ async def test_send_activation_email_calls_resend_with_correct_payload() -> None
         patch("services.email_service.asyncio.to_thread", new_callable=AsyncMock) as mock_to_thread,
     ):
         mock_settings.RESEND_API_KEY = "test-key"
-        mock_settings.RESEND_FROM_EMAIL = "noreply@restorio.com"
+        mock_settings.RESEND_FROM_EMAIL = "noreply@restorio.org"
         mock_to_thread.return_value = None
         email_service = EmailService()
 
@@ -60,7 +60,7 @@ async def test_send_activation_email_calls_resend_with_correct_payload() -> None
         call_args = mock_to_thread.call_args
         assert call_args[0][0].__name__ == "send"
         payload = call_args[0][1]
-        assert payload["from"] == "noreply@restorio.com"
+        assert payload["from"] == "noreply@restorio.org"
         assert payload["to"] == ["user@example.com"]
         assert "Activate your My Restaurant account" in payload["subject"]
         assert "My Restaurant" in payload["html"]

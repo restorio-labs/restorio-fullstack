@@ -25,6 +25,7 @@
   "dependencies": {
     "@restorio/types": "workspace:*",
     "@restorio/auth": "workspace:*",
+    "@restorio/utils": "workspace:*",
     "axios": "^1.6.2"
   },
   "devDependencies": {

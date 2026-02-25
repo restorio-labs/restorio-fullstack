@@ -11,6 +11,7 @@ const PUBLIC_WEB_URL = publicWebUrlEnv ?? getAppUrl(getEnvironmentFromEnv(envMod
 
 const apiClient = new ApiClient({
   baseURL: API_BASE_URL,
+  refreshPath: "auth/refresh",
   onUnauthorized: (): void => {
     window.location.href = PUBLIC_WEB_URL;
   },

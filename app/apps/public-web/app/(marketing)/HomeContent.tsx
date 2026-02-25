@@ -1,11 +1,35 @@
 "use client";
 
-import { Button, cn, ContentContainer, Icon, Stack, Text } from "@restorio/ui";
+import type { AppSlug } from "@restorio/types";
+import {
+  Button,
+  ChooseApp,
+  cn,
+  ContentContainer,
+  Icon,
+  Stack,
+  Text,
+  useAuthRoute,
+  type AuthRouteStatus,
+} from "@restorio/ui";
+import { getAppUrl, getEnvironmentFromEnv, LAST_VISITED_APP_STORAGE_KEY, getEnvMode } from "@restorio/utils";
 import Link from "next/link";
 import type { ReactElement } from "react";
 import { FaBolt, FaGlobe, FaMobileAlt } from "react-icons/fa";
 
 export const HomeContent = (): ReactElement => {
+  const { authStatus }: { authStatus: AuthRouteStatus } = useAuthRoute();
+
+  if (authStatus === "authenticated") {
+    const envMode = getEnvMode();
+    const goToApp = (slug: AppSlug): void => {
+      localStorage.setItem(LAST_VISITED_APP_STORAGE_KEY, slug);
+      window.location.href = getAppUrl(getEnvironmentFromEnv(envMode), slug);
+    };
+
+    return <ChooseApp onSelectApp={goToApp} />;
+  }
+
   return (
     <div className="flex flex-col gap-24 py-12 md:py-24">
       {/* Hero Section */}

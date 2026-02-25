@@ -28,10 +28,7 @@ class ExternalClient:
                 return response.json()
             except httpx.HTTPStatusError as e:
                 error_message = self._extract_error_message(e)
-                raise ExternalAPIError(
-                    status_code=e.response.status_code,
-                    message=f"{service_name} error: {error_message}",
-                ) from e
+                raise ExternalAPIError(message=f"{service_name} error: {error_message}") from e
             except httpx.RequestError as e:
                 raise ServiceUnavailableError(
                     message=f"Failed to connect to {service_name}: {e!s}",
@@ -75,10 +72,7 @@ class ExternalClient:
                 return response.json()
             except httpx.HTTPStatusError as e:
                 error_message = self._extract_error_message(e)
-                raise ExternalAPIError(
-                    status_code=e.response.status_code,
-                    message=f"{service_name} error: {error_message}",
-                ) from e
+                raise ExternalAPIError(message=f"{service_name} error: {error_message}") from e
             except httpx.RequestError as e:
                 raise ServiceUnavailableError(
                     message=f"Failed to connect to {service_name}: {e!s}",

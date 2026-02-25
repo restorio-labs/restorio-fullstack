@@ -1,4 +1,5 @@
-import { Button, Stack, Text, THEME_STORAGE_KEY, ThemeProvider, useTheme } from "@restorio/ui";
+import { Button, Stack, Text, ThemeProvider, useTheme } from "@restorio/ui";
+import { THEME_STORAGE_KEY } from "@restorio/utils";
 import type { ReactElement } from "react";
 import { Navigate, NavLink, Route, Routes } from "react-router-dom";
 

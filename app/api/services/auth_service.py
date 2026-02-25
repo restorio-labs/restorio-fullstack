@@ -10,7 +10,7 @@ from core.exceptions import (
     ConflictError,
     ExternalAPIError,
     GoneError,
-    NotFoundError,
+    NotFoundResponse,
     ServiceUnavailableError,
     TooManyRequestsError,
     UnauthorizedError,
@@ -105,7 +105,7 @@ class AuthService:
         activation_link = await session.get(ActivationLink, activation_id)
         if activation_link is None:
             msg = "Activation link not found"
-            raise NotFoundError(msg, str(activation_id))
+            raise NotFoundResponse(msg, str(activation_id))
 
         now = datetime.now(tz=UTC)
         if activation_link.expires_at < now:
@@ -115,7 +115,7 @@ class AuthService:
         tenant = await session.get(Tenant, activation_link.tenant_id)
         if tenant is None:
             msg = "Account"
-            raise NotFoundError(msg, "activation link")
+            raise NotFoundResponse(msg, "activation link")
 
         if activation_link.used_at is not None:
             return tenant, True
@@ -123,7 +123,7 @@ class AuthService:
         user = await session.get(User, activation_link.user_id)
         if user is None:
             msg = "Account"
-            raise NotFoundError(msg, "activation link")
+            raise NotFoundResponse(msg, "activation link")
         user.is_active = True
         tenant.status = TenantStatus.ACTIVE
         activation_link.used_at = now
@@ -138,7 +138,7 @@ class AuthService:
         activation_link = await session.get(ActivationLink, activation_id)
         if activation_link is None:
             msg = "Activation link"
-            raise NotFoundError(msg, str(activation_id))
+            raise NotFoundResponse(msg, str(activation_id))
 
         now = datetime.now(tz=UTC)
         if activation_link.used_at is not None:
@@ -158,7 +158,7 @@ class AuthService:
         tenant = await session.get(Tenant, activation_link.tenant_id)
         if tenant is None:
             msg = "Account"
-            raise NotFoundError(msg, "activation link")
+            raise NotFoundResponse(msg, "activation link")
 
         new_link = ActivationLink(
             email=activation_link.email,
@@ -186,13 +186,28 @@ class AuthService:
             msg = "Account is not active"
             raise UnauthorizedError(msg)
 
-        return self.security.create_access_token(
-            data={
-                "sub": str(user.id),
-                "email": user.email,
-                "tenant_id": str(user.tenant_id) if user.tenant_id else None,
-            }
-        )
+        role: TenantRole | None = None
+        if user.tenant_id is not None:
+            role = await session.scalar(
+                select(TenantRole).where(
+                    TenantRole.account_id == user.id,
+                    TenantRole.tenant_id == user.tenant_id,
+                )
+            )
+        if role is None:
+            role = await session.scalar(
+                select(TenantRole).where(TenantRole.account_id == user.id).limit(1)
+            )
+
+        token_data: dict[str, str | None] = {
+            "sub": str(user.id),
+            "email": user.email,
+            "tenant_id": str(user.tenant_id) if user.tenant_id else None,
+        }
+        if role is not None:
+            token_data["account_type"] = role.account_type.value
+
+        return self.security.create_access_token(data=token_data)
 
     async def check_password_pwned(self, password: str) -> None:
         """Check password against HaveIBeenPwned Pwned Passwords (k-anonymity range lookup).

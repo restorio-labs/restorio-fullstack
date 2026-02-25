@@ -25,13 +25,11 @@ class DeletedResponse(BaseModel):
 
 
 class ErrorResponse(BaseModel):
-    error_code: str
     message: str
     details: dict | None = None
 
 
 class ValidationErrorResponse(BaseModel):
-    error_code: str = "VALIDATION_ERROR"
     message: str = "Validation failed"
     errors: list[dict[str, str]]
 
@@ -59,3 +57,35 @@ class PaginatedResponse[T](BaseModel):
             page_size=page_size,
             total_pages=total_pages,
         )
+
+
+class UnauthenticatedResponse(BaseModel):
+    message: str = "Unauthenticated"
+
+
+class UnauthorizedResponse(BaseModel):
+    message: str = "Unauthorized"
+
+
+class NotFoundResponse(BaseModel):
+    message: str = "Not found"
+
+
+class ConflictResponse(BaseModel):
+    message: str = "Conflict"
+
+
+class BadRequestResponse(BaseModel):
+    message: str = "Bad request"
+
+
+class GoneResponse(BaseModel):
+    message: str = "Gone"
+
+
+class TooManyRequestsResponse(BaseModel):
+    message: str = "Too many requests"
+
+
+class ServiceUnavailableResponse(BaseModel):
+    message: str = "Service unavailable"

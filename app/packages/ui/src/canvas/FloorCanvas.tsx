@@ -114,6 +114,11 @@ export const FloorCanvas = ({
   onElementPointerDown,
   onCanvasBackgroundPointerDown,
 }: FloorCanvasProps): ReactNode => {
+  const sortedElements = [...layout.elements]
+    .map((el, index) => ({ el, index }))
+    .sort((a, b) => (a.el.zIndex ?? 0) - (b.el.zIndex ?? 0) || a.index - b.index)
+    .map(({ el }) => el);
+
   const inner = (
     <div
       className={cn("relative overflow-hidden bg-background-secondary", !centered && className)}
@@ -137,7 +142,7 @@ export const FloorCanvas = ({
             : undefined
         }
       >
-        {layout.elements.map((el) =>
+        {sortedElements.map((el) =>
           renderElement(el, tableStates, tableDisplayInfo, selectedElementId, interactive, onElementPointerDown),
         )}
       </div>

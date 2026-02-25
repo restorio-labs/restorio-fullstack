@@ -4,11 +4,18 @@ export interface ApiClientConfig {
   baseURL: string;
   getAccessToken?: () => string | null;
   onUnauthorized?: () => void;
+  refreshPath?: string;
+}
+
+interface AxiosErrorWithConfig {
+  response?: { status?: number };
+  config?: AxiosRequestConfig & { _retry?: boolean };
 }
 
 export class ApiClient {
   private client: AxiosInstance;
   private config: ApiClientConfig;
+  private refreshPromise: Promise<boolean> | null = null;
 
   constructor(config: ApiClientConfig) {
     this.config = config;
@@ -32,12 +39,55 @@ export class ApiClient {
 
     this.client.interceptors.response.use(
       (response) => response,
-      (error: { response?: { status?: number } }) => {
-        if (error.response?.status === 401) {
-          this.config.onUnauthorized?.();
+      async (error: AxiosErrorWithConfig) => {
+        if (error.response?.status !== 401) {
+          return Promise.reject(error);
         }
 
-        return Promise.reject(error);
+        const { refreshPath } = this.config;
+        const requestUrl = error.config?.url ?? "";
+        const isRefreshRequest =
+          refreshPath != null && (requestUrl === refreshPath || requestUrl.endsWith(`/${refreshPath}`));
+
+        if (error.config?._retry === true || isRefreshRequest || refreshPath == null) {
+          this.config.onUnauthorized?.();
+
+          return Promise.reject(error);
+        }
+
+        const doRefresh = (): Promise<boolean> => {
+          if (this.refreshPromise != null) {
+            return this.refreshPromise;
+          }
+
+          this.refreshPromise = this.client
+            .post(refreshPath, undefined, { withCredentials: true })
+            .then(() => {
+              this.refreshPromise = null;
+
+              return true;
+            })
+            .catch(() => {
+              this.refreshPromise = null;
+
+              return false;
+            });
+
+          return this.refreshPromise;
+        };
+
+        const refreshed = await doRefresh();
+        const { config } = error;
+
+        if (!refreshed || config == null) {
+          this.config.onUnauthorized?.();
+
+          return Promise.reject(error);
+        }
+
+        config._retry = true;
+
+        return this.client.request(config);
       },
     );
   }

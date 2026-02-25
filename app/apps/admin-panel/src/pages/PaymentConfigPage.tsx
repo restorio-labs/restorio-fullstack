@@ -1,8 +1,8 @@
-import type { TenantSummary } from "@restorio/types";
 import { Button, Form, FormActions, Input } from "@restorio/ui";
 import { type FormEvent, type ReactElement, useEffect, useMemo, useState } from "react";
 
 import { api } from "../api/client";
+import { useTenants } from "../hooks/useTenants";
 import { PageLayout } from "../layouts/PageLayout";
 
 type SubmitState = "idle" | "submitting" | "success" | "error";
@@ -10,14 +10,12 @@ type SubmitState = "idle" | "submitting" | "success" | "error";
 export const PaymentConfigPage = (): ReactElement => {
   const [tenantId, setTenantId] = useState("");
   const [tenantQuery, setTenantQuery] = useState("");
-  const [tenants, setTenants] = useState<TenantSummary[]>([]);
-  const [tenantLoadError, setTenantLoadError] = useState("");
+  const { tenants, state } = useTenants();
   const [merchantId, setMerchantId] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [crcKey, setCrcKey] = useState("");
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [errorMessage, setErrorMessage] = useState("");
-  const [tenantOptionsLoaded, setTenantOptionsLoaded] = useState(false);
 
   const isFormValid =
     tenantId.trim() !== "" && merchantId.trim() !== "" && apiKey.trim() !== "" && crcKey.trim() !== "";
@@ -32,21 +30,10 @@ export const PaymentConfigPage = (): ReactElement => {
   );
 
   useEffect(() => {
-    const loadTenants = async (): Promise<void> => {
-      try {
-        const data = await api.tenants.list();
-
-        setTenants(data);
-        setTenantLoadError("");
-      } catch {
-        setTenantLoadError("Failed to load restaurants. You can still paste a tenant ID.");
-      } finally {
-        setTenantOptionsLoaded(true);
-      }
-    };
-
-    void loadTenants();
-  }, []);
+    if (state === "error") {
+      setErrorMessage("Failed to load restaurants. You can still paste a tenant ID.");
+    }
+  }, [state]);
 
   const resetSubmitState = (): void => {
     if (submitState !== "idle") {
@@ -104,8 +91,12 @@ export const PaymentConfigPage = (): ReactElement => {
               <option key={option.id} value={option.display} />
             ))}
           </datalist>
-          {!tenantOptionsLoaded && <div className="text-xs text-text-tertiary">Loading restaurants...</div>}
-          {tenantLoadError && <div className="text-xs text-status-error-text">{tenantLoadError}</div>}
+          {state === "loading" && <div className="text-xs text-text-tertiary">Loading restaurants...</div>}
+          {state === "error" && (
+            <div className="text-xs text-status-error-text">
+              Failed to load restaurants. You can still paste a tenant ID.
+            </div>
+          )}
 
           <Input
             label="Merchant ID"

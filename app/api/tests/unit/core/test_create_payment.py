@@ -1,5 +1,6 @@
 from unittest.mock import AsyncMock, Mock, patch
 
+from fastapi import status
 import pytest
 
 from core.exceptions import ExternalAPIError, ServiceUnavailableError
@@ -95,7 +96,6 @@ async def test_create_payment_success(
 async def test_create_payment_http_status_error(
     create_payment_request: CreatePaymentRequest,
 ) -> None:
-    status_code = 400
     with patch("routes.v1.payments.create_payment.settings") as mock_settings:
         mock_settings.PRZELEWY24_API_URL = "https://sandbox.przelewy24.pl/api/v1"
 
@@ -110,7 +110,6 @@ async def test_create_payment_http_status_error(
         external_client = Mock()
         external_client.external_post_json = AsyncMock(
             side_effect=ExternalAPIError(
-                status_code=400,
                 message="Przelewy24 error: Invalid merchant configuration",
             )
         )
@@ -118,7 +117,7 @@ async def test_create_payment_http_status_error(
         with pytest.raises(ExternalAPIError) as exc_info:
             await create_payment(create_payment_request, service, external_client)
 
-        assert exc_info.value.status_code == status_code
+        assert exc_info.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         assert "Przelewy24" in exc_info.value.detail
         assert "Invalid merchant configuration" in exc_info.value.detail
 
@@ -127,7 +126,6 @@ async def test_create_payment_http_status_error(
 async def test_create_payment_request_error(
     create_payment_request: CreatePaymentRequest,
 ) -> None:
-    status_code = 503
     with patch("routes.v1.payments.create_payment.settings") as mock_settings:
         mock_settings.PRZELEWY24_API_URL = "https://sandbox.przelewy24.pl/api/v1"
 
@@ -149,6 +147,6 @@ async def test_create_payment_request_error(
         with pytest.raises(ServiceUnavailableError) as exc_info:
             await create_payment(create_payment_request, service, external_client)
 
-        assert exc_info.value.status_code == status_code
+        assert exc_info.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         assert "Przelewy24" in exc_info.value.detail
         assert "Connection refused" in exc_info.value.detail
