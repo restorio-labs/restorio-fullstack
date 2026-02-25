@@ -15,3 +15,5 @@ export const LAST_VISITED_APP_STORAGE_KEY = getEnvVar("LAST_VISITED_APP_STORAGE_
 
 export const ACCESS_TOKEN_KEY = getEnvVar("ACCESS_TOKEN_KEY") ?? "rat";
 export const REFRESH_TOKEN_KEY = getEnvVar("REFRESH_TOKEN_KEY") ?? "rfr";
+
+export const SESSION_HINT_COOKIE_NAME = getEnvVar("SESSION_HINT_COOKIE_NAME") ?? "rshc";

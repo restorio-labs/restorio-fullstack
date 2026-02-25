@@ -23,6 +23,7 @@ const accessTokenRef: { current: string | null } = { current: null };
 const apiClient = new ApiClient({
   baseURL: API_BASE_URL,
   getAccessToken: (): string | null => accessTokenRef.current,
+  refreshPath: "auth/refresh",
   onUnauthorized: (): void => {
     window.location.href = PUBLIC_WEB_URL;
   },

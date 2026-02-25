@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactElement } from "react";
 
 import { HomeContent } from "./HomeContent";
+import { MarketingAuthProvider } from "./MarketingAuthProvider";
 
 export const metadata: Metadata = {
   title: "Home",
@@ -9,5 +10,9 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage(): ReactElement {
-  return <HomeContent />;
+  return (
+    <MarketingAuthProvider>
+      <HomeContent />
+    </MarketingAuthProvider>
+  );
 }

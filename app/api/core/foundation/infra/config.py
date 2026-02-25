@@ -46,6 +46,7 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 14
     ACCESS_TOKEN_COOKIE_NAME: str = "rat"
     REFRESH_TOKEN_COOKIE_NAME: str = "rfr"
+    SESSION_HINT_COOKIE: str = "rs"
 
     # Przelewy24 (values from .env)
     PRZELEWY24_MERCHANT_ID: int = 0

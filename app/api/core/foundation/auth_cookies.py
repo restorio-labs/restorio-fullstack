@@ -56,6 +56,16 @@ def set_auth_cookies(
         path="/",
         domain=domain,
     )
+    response.set_cookie(
+        key=settings.SESSION_HINT_COOKIE,
+        value="1",
+        httponly=False,
+        secure=secure,
+        samesite="lax",
+        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+        path="/",
+        domain=domain,
+    )
 
 
 def clear_auth_cookies(response: Response, request: Request) -> None:
@@ -77,6 +87,14 @@ def clear_auth_cookies(response: Response, request: Request) -> None:
         domain=domain,
         secure=secure,
         httponly=True,
+        samesite="lax",
+    )
+    response.delete_cookie(
+        key=settings.SESSION_HINT_COOKIE,
+        path="/",
+        domain=domain,
+        secure=secure,
+        httponly=False,
         samesite="lax",
     )
 
