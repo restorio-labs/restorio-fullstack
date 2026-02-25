@@ -1,7 +1,7 @@
 "use client";
 
 import { AuthRouteProvider } from "@restorio/ui";
-import { SESSION_HINT_COOKIE_NAME } from "@restorio/utils";
+import { SESSION_HINT_COOKIE } from "@restorio/utils";
 import type { ReactElement, ReactNode } from "react";
 import { useCallback } from "react";
 
@@ -15,7 +15,7 @@ export const MarketingAuthProvider = ({ children }: MarketingAuthProviderProps):
   const checkAuth = useCallback(async (): Promise<boolean> => {
     const hasSessionCookie =
       typeof document !== "undefined" &&
-      document.cookie.split(";").some((entry) => entry.trim().startsWith(`${SESSION_HINT_COOKIE_NAME}=`));
+      document.cookie.split(";").some((entry) => entry.trim().startsWith(`${SESSION_HINT_COOKIE}=`));
 
     if (!hasSessionCookie) {
       return false;
