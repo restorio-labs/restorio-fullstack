@@ -1,5 +1,5 @@
 import { Button, Form, FormActions, Input } from "@restorio/ui";
-import { type FormEvent, type ReactElement, useEffect, useMemo, useState } from "react";
+import { type FormEvent, type ReactElement, useEffect, useState } from "react";
 
 import { api } from "../api/client";
 import { useTenants } from "../hooks/useTenants";
@@ -20,15 +20,6 @@ export const PaymentConfigPage = (): ReactElement => {
   const isFormValid =
     tenantId.trim() !== "" && merchantId.trim() !== "" && apiKey.trim() !== "" && crcKey.trim() !== "";
 
-  const tenantOptions = useMemo(
-    () =>
-      tenants.map((tenant) => ({
-        id: tenant.id,
-        display: `${tenant.name} (${tenant.slug}) - ${tenant.id}`,
-      })),
-    [tenants],
-  );
-
   useEffect(() => {
     if (state === "error") {
       setErrorMessage("Failed to load restaurants. You can still paste a tenant ID.");
@@ -43,13 +34,7 @@ export const PaymentConfigPage = (): ReactElement => {
 
   const handleTenantChange = (value: string): void => {
     setTenantQuery(value);
-    const matchedOption = tenantOptions.find((option) => option.display === value);
-
-    if (matchedOption) {
-      setTenantId(matchedOption.id);
-    } else {
-      setTenantId(value);
-    }
+    setTenantId(value);
 
     resetSubmitState();
   };
@@ -87,8 +72,8 @@ export const PaymentConfigPage = (): ReactElement => {
             required
           />
           <datalist id="tenant-options">
-            {tenantOptions.map((option) => (
-              <option key={option.id} value={option.display} />
+            {tenants.map((tenant) => (
+              <option key={tenant.id} value={tenant.name} />
             ))}
           </datalist>
           {state === "loading" && <div className="text-xs text-text-tertiary">Loading restaurants...</div>}

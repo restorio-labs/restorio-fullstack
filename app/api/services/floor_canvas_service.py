@@ -51,12 +51,14 @@ class FloorCanvasService:
     ) -> FloorCanvas:
         await self._ensure_tenant_exists(session, tenant_id)
 
+        elements = [el.model_dump(by_alias=True, exclude_none=True) for el in data.elements]
+
         canvas = FloorCanvas(
             tenant_id=tenant_id,
             name=data.name,
             width=data.width,
             height=data.height,
-            elements=data.elements,
+            elements=elements,
         )
         session.add(canvas)
         await session.commit()
@@ -74,7 +76,9 @@ class FloorCanvasService:
 
         if data.elements is not None:
             await archive_canvas_version(canvas)
-            canvas.elements = data.elements
+            canvas.elements = [
+                el.model_dump(by_alias=True, exclude_none=True) for el in data.elements
+            ]
             canvas.version += 1
 
         if data.name is not None:

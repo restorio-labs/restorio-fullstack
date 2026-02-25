@@ -2,6 +2,8 @@ import type { FloorCanvas as FloorCanvasType, TenantSummary } from "@restorio/ty
 import { Button, FloorCanvas } from "@restorio/ui";
 import type { ReactElement } from "react";
 
+import { RestaurantListCard } from "../components/RestaurantListCard";
+
 interface RestaurantsViewProps {
   restaurants: TenantSummary[];
   activeCanvasesByTenantId?: Record<string, FloorCanvasType | null>;
@@ -41,32 +43,26 @@ export const RestaurantsView = ({
             const activeCanvas = activeCanvasesByTenantId[tenant.id];
 
             return (
-              <li key={tenant.id}>
-                <button
-                  type="button"
-                  onClick={() => onSelectTenant(tenant)}
-                  className="w-full rounded-lg border border-border-default bg-surface-primary px-4 py-3 text-left transition-colors hover:bg-surface-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
-                  aria-label={`Open floor layout for ${tenant.name}`}
-                >
-                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                    <div className="min-w-0">
-                      <span className="font-medium text-text-primary">{tenant.name}</span>
-                      <span className="ml-2 text-sm text-text-secondary">{tenant.floorCanvasCount} floor(s)</span>
+              <RestaurantListCard
+                key={tenant.id}
+                title={tenant.name}
+                subtitle={`${tenant.floorCanvasCount} floor(s)`}
+                rightContent={
+                  activeCanvas ? (
+                    <div className="h-[120px] w-[180px] overflow-hidden rounded-md border border-border-default bg-background-secondary">
+                      <FloorCanvas
+                        layout={activeCanvas}
+                        showGrid={false}
+                        interactive={false}
+                        centered
+                        transformStyle={getPreviewTransform(activeCanvas)}
+                      />
                     </div>
-                    {activeCanvas && (
-                      <div className="h-[120px] w-[180px] overflow-hidden rounded-md border border-border-default bg-background-secondary">
-                        <FloorCanvas
-                          layout={activeCanvas}
-                          showGrid={false}
-                          interactive={false}
-                          centered
-                          transformStyle={getPreviewTransform(activeCanvas)}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </button>
-              </li>
+                  ) : undefined
+                }
+                onClick={() => onSelectTenant(tenant)}
+                ariaLabel={`Open floor layout for ${tenant.name}`}
+              />
             );
           })}
         </ul>
