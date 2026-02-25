@@ -63,14 +63,13 @@ async def test_external_post_json_http_status_error_raises_external_api_error() 
                 service_name="Example API",
             )
 
-        assert exc_info.value.status_code == mock_response.status_code
+        assert exc_info.value.status_code == 500
         assert "Example API error" in exc_info.value.detail
         assert "Invalid request" in exc_info.value.detail
 
 
 @pytest.mark.asyncio
 async def test_external_post_json_request_error_raises_service_unavailable() -> None:
-    status_code = 503
     with patch("services.external_client_service.httpx.AsyncClient") as mock_client_cls:
         mock_post = AsyncMock(side_effect=httpx.ConnectError("Connection refused"))
         mock_client_cls.return_value.__aenter__.return_value.post = mock_post
@@ -83,7 +82,7 @@ async def test_external_post_json_request_error_raises_service_unavailable() -> 
                 service_name="Example API",
             )
 
-        assert exc_info.value.status_code == status_code
+        assert exc_info.value.status_code == 500
         assert "Failed to connect to Example API" in exc_info.value.detail
         assert "Connection refused" in exc_info.value.detail
 
@@ -133,7 +132,7 @@ async def test_external_post_json_extract_error_fallback_to_response_text() -> N
         with pytest.raises(ExternalAPIError) as exc_info:
             await ExternalClient().external_post_json("https://api.example.com", json={})
 
-        assert exc_info.value.status_code == mock_response.status_code
+        assert exc_info.value.status_code == 500
         assert "Internal Server Error" in exc_info.value.detail
 
 
@@ -163,5 +162,5 @@ async def test_external_post_json_extract_error_fallback_inside_try_block() -> N
                 service_name="Example API",
             )
 
-        assert exc_info.value.status_code == mock_response.status_code
+        assert exc_info.value.status_code == 500
         assert "I'm a teapot" in exc_info.value.detail

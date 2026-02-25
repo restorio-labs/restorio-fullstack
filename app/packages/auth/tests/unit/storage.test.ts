@@ -5,8 +5,8 @@ import { TokenStorage } from "../../src/storage";
 describe("TokenStorage", () => {
   let cookieStore: Record<string, string>;
   let cookieWrites: string[];
-  const originalWindow = globalThis.window;
-  const originalDocument = globalThis.document;
+  const originalWindow = globalThis.window as typeof globalThis.window | undefined;
+  const originalDocument = globalThis.document as typeof globalThis.document | undefined;
   const originalCookieDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, "cookie");
   const originalLocationDescriptor = Object.getOwnPropertyDescriptor(window, "location");
 

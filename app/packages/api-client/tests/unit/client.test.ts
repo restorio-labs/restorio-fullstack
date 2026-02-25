@@ -147,4 +147,85 @@ describe("Api Client", () => {
 
     expect(result).toBe(mockResponse);
   });
+
+  it("on 401 with refreshPath set and non-refresh request, calls refresh then retries request", async () => {
+    const onUnauthorized = vi.fn();
+
+    vi.mocked(ctx.instance.post).mockResolvedValueOnce({ data: {} });
+    vi.mocked(ctx.instance.request).mockResolvedValueOnce({ data: { ok: true } });
+
+    new ApiClient({
+      baseURL: "x",
+      refreshPath: "auth/refresh",
+      onUnauthorized,
+    });
+
+    const error = {
+      response: { status: 401 },
+      config: { url: "items", method: "get" },
+    };
+
+    const result = await ctx.responseError!(error as AxiosError);
+
+    expect(onUnauthorized).not.toHaveBeenCalled();
+    expect(ctx.instance.post).toHaveBeenCalledWith("auth/refresh", undefined, { withCredentials: true });
+    expect(ctx.instance.request).toHaveBeenCalledWith(expect.objectContaining({ _retry: true, url: "items" }));
+    expect(result).toEqual({ data: { ok: true } });
+  });
+
+  it("on 401 with refreshPath when refresh fails calls onUnauthorized", async () => {
+    const onUnauthorized = vi.fn();
+
+    vi.mocked(ctx.instance.post).mockRejectedValueOnce(new Error("refresh failed"));
+
+    new ApiClient({
+      baseURL: "x",
+      refreshPath: "auth/refresh",
+      onUnauthorized,
+    });
+
+    const error = {
+      response: { status: 401 },
+      config: { url: "items" },
+    };
+
+    await expect(ctx.responseError!(error as AxiosError)).rejects.toBe(error);
+    expect(onUnauthorized).toHaveBeenCalledOnce();
+  });
+
+  it("on 401 for refresh path url calls onUnauthorized without retry", async () => {
+    const onUnauthorized = vi.fn();
+
+    new ApiClient({
+      baseURL: "x",
+      refreshPath: "auth/refresh",
+      onUnauthorized,
+    });
+
+    const error = {
+      response: { status: 401 },
+      config: { url: "auth/refresh" },
+    };
+
+    await expect(ctx.responseError!(error as AxiosError)).rejects.toBe(error);
+    expect(onUnauthorized).toHaveBeenCalledOnce();
+    expect(ctx.instance.post).not.toHaveBeenCalled();
+  });
+
+  it("on 401 without refreshPath calls onUnauthorized", async () => {
+    const onUnauthorized = vi.fn();
+
+    new ApiClient({
+      baseURL: "x",
+      onUnauthorized,
+    });
+
+    const error = {
+      response: { status: 401 },
+      config: { url: "items" },
+    };
+
+    await expect(ctx.responseError!(error as AxiosError)).rejects.toBe(error);
+    expect(onUnauthorized).toHaveBeenCalledOnce();
+  });
 });

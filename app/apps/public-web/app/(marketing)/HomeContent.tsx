@@ -1,14 +1,24 @@
 "use client";
 
 import type { AppSlug } from "@restorio/types";
-import { Button, ChooseApp, cn, ContentContainer, Icon, Stack, Text, useAuthRoute } from "@restorio/ui";
+import {
+  Button,
+  ChooseApp,
+  cn,
+  ContentContainer,
+  Icon,
+  Stack,
+  Text,
+  useAuthRoute,
+  type AuthRouteStatus,
+} from "@restorio/ui";
 import { getAppUrl, getEnvironmentFromEnv, LAST_VISITED_APP_STORAGE_KEY, getEnvMode } from "@restorio/utils";
 import Link from "next/link";
 import type { ReactElement } from "react";
 import { FaBolt, FaGlobe, FaMobileAlt } from "react-icons/fa";
 
 export const HomeContent = (): ReactElement => {
-  const { authStatus } = useAuthRoute();
+  const { authStatus }: { authStatus: AuthRouteStatus } = useAuthRoute();
 
   if (authStatus === "authenticated") {
     const envMode = getEnvMode();
