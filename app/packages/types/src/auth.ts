@@ -19,11 +19,17 @@ export interface RegisterResponse {
 
 export interface TenantSlugData {
   tenant_slug: string;
+  requires_password_change?: boolean;
 }
 
 export interface TenantSlugResponse {
   message: string;
   data: TenantSlugData;
+}
+
+export interface SetActivationPasswordRequest {
+  activation_id: string;
+  password: string;
 }
 
 export interface AuthMeData {

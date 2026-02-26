@@ -72,6 +72,7 @@ async def create_user(
         password=temp_password,
         tenant_id=tenant_id,
         account_type=data.access_level,
+        force_password_change=True,
     )
 
     activation = await auth_service.create_activation_link(

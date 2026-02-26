@@ -197,7 +197,7 @@ export const StaffPage = (): ReactElement => {
 
   return (
     <PageLayout title="Staff Management" description="Manage kitchen, waiter, and other staff accounts">
-      <div className="mx-auto max-w-3xl p-6 space-y-4">
+      <div className="w-full p-6 space-y-4">
         <div className="rounded-lg border border-border-default bg-surface-secondary p-4">
           <Button type="button" onClick={() => setShowForm((current) => !current)}>
             {showForm ? "Cancel" : "Add user"}

@@ -208,11 +208,29 @@ async def test_create_user_for_tenant_success() -> None:
 
     assert user.email == "kitchen@example.com"
     assert user.is_active is False
+    assert user.force_password_change is False
     assert user.tenant_id == tenant_id
     assert user.password_hash != "StrongPass1!"
     assert tenant_role.account_id == user.id
     assert tenant_role.tenant_id == tenant_id
     assert tenant_role.account_type == AccountType.KITCHEN
+
+
+@pytest.mark.asyncio
+async def test_create_user_for_tenant_can_force_password_change() -> None:
+    session = FakeAsyncSession()
+    tenant_id = uuid4()
+
+    user, _ = await user_service.create_user_for_tenant(
+        session=session,
+        email="waiter@example.com",
+        password="StrongPass1!",
+        tenant_id=tenant_id,
+        account_type=AccountType.WAITER,
+        force_password_change=True,
+    )
+
+    assert user.force_password_change is True
 
 
 @pytest.mark.asyncio

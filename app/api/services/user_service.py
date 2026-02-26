@@ -70,6 +70,7 @@ class UserService:
         password: str,
         tenant_id: UUID,
         account_type: AccountType,
+        force_password_change: bool = False,
     ) -> tuple[User, TenantRole]:
         existing_user = await session.scalar(select(User).where(User.email == email))
         if existing_user:
@@ -81,6 +82,7 @@ class UserService:
             password_hash=self.security.hash_password(password),
             is_active=False,
             tenant_id=tenant_id,
+            force_password_change=force_password_change,
         )
         session.add(user)
         await session.flush()
