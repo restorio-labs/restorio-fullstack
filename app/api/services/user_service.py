@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -60,3 +62,36 @@ class UserService:
         await session.flush()
 
         return user, tenant, tenant_role
+
+    async def create_user_for_tenant(
+        self,
+        session: AsyncSession,
+        email: str,
+        password: str,
+        tenant_id: UUID,
+        account_type: AccountType,
+    ) -> tuple[User, TenantRole]:
+        existing_user = await session.scalar(select(User).where(User.email == email))
+        if existing_user:
+            msg = "Email already registered"
+            raise ConflictError(msg)
+
+        user = User(
+            email=email,
+            password_hash=self.security.hash_password(password),
+            is_active=False,
+            tenant_id=tenant_id,
+        )
+        session.add(user)
+        await session.flush()
+        await session.refresh(user)
+
+        tenant_role = TenantRole(
+            account_id=user.id,
+            tenant_id=tenant_id,
+            account_type=account_type,
+        )
+        session.add(tenant_role)
+        await session.flush()
+
+        return user, tenant_role

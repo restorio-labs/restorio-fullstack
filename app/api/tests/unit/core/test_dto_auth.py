@@ -2,6 +2,7 @@ from pydantic import ValidationError as PydanticValidationError
 import pytest
 
 from core.dto.v1.auth import (
+    CreateUserDTO,
     LoginResponseData,
     RegisterCreatedData,
     RegisterDTO,
@@ -66,6 +67,24 @@ class TestRegisterDTO:
                 restaurant_name="Restaurant",
             )
         assert "special" in exc_info.value.detail
+
+
+class TestCreateUserDTO:
+    def test_valid_staff_access_level(self) -> None:
+        dto = CreateUserDTO(
+            email="waiter@example.com",
+            access_level="waiter",
+        )
+        assert dto.email == "waiter@example.com"
+        assert dto.access_level.value == "waiter"
+
+    def test_invalid_access_level_raises_validation_error(self) -> None:
+        with pytest.raises(ValidationError) as exc_info:
+            CreateUserDTO(
+                email="owner@example.com",
+                access_level="owner",
+            )
+        assert "waiter or kitchen" in exc_info.value.detail
 
 
 class TestRegisterCreatedData:

@@ -2,7 +2,7 @@ import re
 
 from pydantic import EmailStr, Field, field_validator
 
-from core.dto.v1.common import BaseDTO
+from core.dto.v1.common import AccountType, BaseDTO
 from core.exceptions import ValidationError
 
 _MIN_PASSWORD_LENGTH = 8
@@ -38,6 +38,19 @@ class RegisterDTO(BaseDTO):
             raise ValidationError(message=msg)
         if not _PASSWORD_SPECIAL.search(value):
             msg = _ERROR_MESSAGES["password_special"]
+            raise ValidationError(message=msg)
+        return value
+
+
+class CreateUserDTO(BaseDTO):
+    email: EmailStr = Field(..., description="User email address")
+    access_level: AccountType = Field(..., description="Access level (waiter, kitchen)")
+
+    @field_validator("access_level")
+    @classmethod
+    def only_staff_access_levels(cls, value: AccountType) -> AccountType:
+        if value not in {AccountType.WAITER, AccountType.KITCHEN}:
+            msg = "Access level must be waiter or kitchen"
             raise ValidationError(message=msg)
         return value
 

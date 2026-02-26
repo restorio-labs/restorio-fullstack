@@ -51,6 +51,7 @@ export const App = (): ReactElement => {
           <Route path="/qr-code-generator" element={<QRCodeGeneratorPage />} />
           <Route path="/payment-config" element={<PaymentConfigPage />} />
           <Route path="/staff" element={<StaffPage />} />
+          <Route path="/stuff" element={<StaffPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AppLayout>
