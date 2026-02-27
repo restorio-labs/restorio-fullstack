@@ -2,15 +2,13 @@ import { Button, Form, FormActions, Input } from "@restorio/ui";
 import { type FormEvent, type ReactElement, useEffect, useState } from "react";
 
 import { api } from "../api/client";
-import { useTenants } from "../hooks/useTenants";
+import { useCurrentTenant } from "../context/TenantContext";
 import { PageLayout } from "../layouts/PageLayout";
 
 type SubmitState = "idle" | "submitting" | "success" | "error";
 
 export const PaymentConfigPage = (): ReactElement => {
-  const [tenantId, setTenantId] = useState("");
-  const [tenantQuery, setTenantQuery] = useState("");
-  const { tenants, state } = useTenants();
+  const { selectedTenantId, selectedTenant, tenantsState } = useCurrentTenant();
   const [merchantId, setMerchantId] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [crcKey, setCrcKey] = useState("");
@@ -18,13 +16,17 @@ export const PaymentConfigPage = (): ReactElement => {
   const [errorMessage, setErrorMessage] = useState("");
 
   const isFormValid =
-    tenantId.trim() !== "" && merchantId.trim() !== "" && apiKey.trim() !== "" && crcKey.trim() !== "";
+    (selectedTenantId ?? "").trim() !== "" && merchantId.trim() !== "" && apiKey.trim() !== "" && crcKey.trim() !== "";
 
   useEffect(() => {
-    if (state === "error") {
-      setErrorMessage("Failed to load restaurants. You can still paste a tenant ID.");
+    if (tenantsState === "error") {
+      setErrorMessage("Failed to load restaurants. Please refresh and try again.");
     }
-  }, [state]);
+  }, [tenantsState]);
+
+  useEffect(() => {
+    setSubmitState((currentState) => (currentState === "idle" ? currentState : "idle"));
+  }, [selectedTenantId]);
 
   const resetSubmitState = (): void => {
     if (submitState !== "idle") {
@@ -32,20 +34,21 @@ export const PaymentConfigPage = (): ReactElement => {
     }
   };
 
-  const handleTenantChange = (value: string): void => {
-    setTenantQuery(value);
-    setTenantId(value);
-
-    resetSubmitState();
-  };
-
   const handleSubmit = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
+
+    if (!selectedTenantId) {
+      setSubmitState("error");
+      setErrorMessage("Select a restaurant from the header dropdown.");
+
+      return;
+    }
+
     setSubmitState("submitting");
     setErrorMessage("");
 
     try {
-      await api.payments.updateP24Config(tenantId.trim(), {
+      await api.payments.updateP24Config(selectedTenantId.trim(), {
         p24_merchantid: Number(merchantId),
         p24_api: apiKey.trim(),
         p24_crc: crcKey.trim(),
@@ -62,24 +65,16 @@ export const PaymentConfigPage = (): ReactElement => {
     <PageLayout title="Payment Configuration" description="Configure Przelewy24 payment provider settings">
       <div className="mx-auto max-w-lg p-6">
         <Form onSubmit={(e) => void handleSubmit(e)}>
-          <Input
-            label="Restaurant Tenant"
-            placeholder="Search by restaurant name or paste tenant ID"
-            value={tenantQuery}
-            onChange={(e) => handleTenantChange(e.target.value)}
-            list="tenant-options"
-            helperText="Select from dropdown or paste a tenant UUID"
-            required
-          />
-          <datalist id="tenant-options">
-            {tenants.map((tenant) => (
-              <option key={tenant.id} value={tenant.name} />
-            ))}
-          </datalist>
-          {state === "loading" && <div className="text-xs text-text-tertiary">Loading restaurants...</div>}
-          {state === "error" && (
+          <div className="rounded-lg border border-border-default bg-surface-secondary px-4 py-3 text-sm">
+            <div className="font-medium text-text-primary">Selected restaurant</div>
+            <div className="mt-1 text-text-secondary">
+              {selectedTenant ? `${selectedTenant.name} (${selectedTenant.id})` : "No restaurant selected."}
+            </div>
+          </div>
+          {tenantsState === "loading" && <div className="text-xs text-text-tertiary">Loading restaurants...</div>}
+          {tenantsState === "error" && (
             <div className="text-xs text-status-error-text">
-              Failed to load restaurants. You can still paste a tenant ID.
+              Failed to load restaurants. Please refresh and try again.
             </div>
           )}
 

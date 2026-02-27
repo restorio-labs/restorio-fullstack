@@ -1,10 +1,11 @@
-import axios, { type AxiosInstance, type AxiosRequestConfig } from "axios";
+import axios, { type AxiosInstance, type AxiosRequestConfig, type InternalAxiosRequestConfig } from "axios";
 
 export interface ApiClientConfig {
   baseURL: string;
   getAccessToken?: () => string | null;
   onUnauthorized?: () => void;
   refreshPath?: string;
+  tokenExpiryBufferMs?: number;
 }
 
 interface AxiosErrorWithConfig {
@@ -12,13 +13,43 @@ interface AxiosErrorWithConfig {
   config?: AxiosRequestConfig & { _retry?: boolean };
 }
 
+const decodeTokenExp = (token: string): number | null => {
+  try {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => `%${`00${c.charCodeAt(0).toString(16)}`.slice(-2)}`)
+        .join(""),
+    );
+    const payload = JSON.parse(jsonPayload) as { exp?: number };
+
+    return payload.exp ?? null;
+  } catch {
+    return null;
+  }
+};
+
+const isTokenExpiringSoon = (token: string, bufferMs: number): boolean => {
+  const exp = decodeTokenExp(token);
+
+  if (exp === null) {
+    return false;
+  }
+
+  return Date.now() >= exp * 1000 - bufferMs;
+};
+
 export class ApiClient {
   private client: AxiosInstance;
   private config: ApiClientConfig;
   private refreshPromise: Promise<boolean> | null = null;
+  private tokenExpiryBufferMs: number;
 
   constructor(config: ApiClientConfig) {
     this.config = config;
+    this.tokenExpiryBufferMs = config.tokenExpiryBufferMs ?? 60_000;
     this.client = axios.create({
       baseURL: config.baseURL,
       withCredentials: true,
@@ -27,11 +58,20 @@ export class ApiClient {
       },
     });
 
-    this.client.interceptors.request.use((requestConfig) => {
+    this.client.interceptors.request.use(async (requestConfig: InternalAxiosRequestConfig) => {
       const token = this.config.getAccessToken?.();
 
       if (token && requestConfig.headers.Authorization === undefined) {
         requestConfig.headers.Authorization = `Bearer ${token}`;
+      }
+
+      const { refreshPath } = this.config;
+      const requestUrl = requestConfig.url ?? "";
+      const isRefreshRequest =
+        refreshPath != null && (requestUrl === refreshPath || requestUrl.endsWith(`/${refreshPath}`));
+
+      if (!isRefreshRequest && refreshPath != null && token && isTokenExpiringSoon(token, this.tokenExpiryBufferMs)) {
+        await this.doRefresh();
       }
 
       return requestConfig;
@@ -55,28 +95,7 @@ export class ApiClient {
           return Promise.reject(error);
         }
 
-        const doRefresh = (): Promise<boolean> => {
-          if (this.refreshPromise != null) {
-            return this.refreshPromise;
-          }
-
-          this.refreshPromise = this.client
-            .post(refreshPath, undefined, { withCredentials: true })
-            .then(() => {
-              this.refreshPromise = null;
-
-              return true;
-            })
-            .catch(() => {
-              this.refreshPromise = null;
-
-              return false;
-            });
-
-          return this.refreshPromise;
-        };
-
-        const refreshed = await doRefresh();
+        const refreshed = await this.doRefresh();
         const { config } = error;
 
         if (!refreshed || config == null) {
@@ -90,6 +109,33 @@ export class ApiClient {
         return this.client.request(config);
       },
     );
+  }
+
+  private doRefresh(): Promise<boolean> {
+    if (this.refreshPromise != null) {
+      return this.refreshPromise;
+    }
+
+    const { refreshPath } = this.config;
+
+    if (refreshPath == null) {
+      return Promise.resolve(false);
+    }
+
+    this.refreshPromise = this.client
+      .post(refreshPath, undefined, { withCredentials: true })
+      .then(() => {
+        this.refreshPromise = null;
+
+        return true;
+      })
+      .catch(() => {
+        this.refreshPromise = null;
+
+        return false;
+      });
+
+    return this.refreshPromise;
   }
 
   async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {

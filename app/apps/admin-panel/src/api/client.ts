@@ -1,3 +1,4 @@
+import { TokenStorage } from "@restorio/auth";
 import { ApiClient, RestorioApi } from "@restorio/api-client";
 import { getAppUrl, getEnvironmentFromEnv } from "@restorio/utils";
 
@@ -12,8 +13,9 @@ const PUBLIC_WEB_URL = publicWebUrlEnv ?? getAppUrl(getEnvironmentFromEnv(envMod
 const apiClient = new ApiClient({
   baseURL: API_BASE_URL,
   refreshPath: "auth/refresh",
+  getAccessToken: () => TokenStorage.getAccessToken(),
   onUnauthorized: (): void => {
-    window.location.href = PUBLIC_WEB_URL;
+    window.location.href = `${PUBLIC_WEB_URL}/login`;
   },
 });
 
