@@ -28,7 +28,7 @@ export interface TenantSlugResponse {
 
 export interface AuthMeData {
   id: string;
-  tenantId: string;
+  tenantIds: string[];
   accountType: string;
 }
 

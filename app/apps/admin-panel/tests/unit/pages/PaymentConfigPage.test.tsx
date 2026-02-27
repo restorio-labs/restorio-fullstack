@@ -6,22 +6,23 @@ import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 
 vi.mock("../../../src/api/client", () => ({
   api: {
-    tenants: {
-      list: vi.fn(),
-    },
     payments: {
       updateP24Config: vi.fn(),
     },
   },
 }));
 
+vi.mock("../../../src/context/TenantContext", () => ({
+  useCurrentTenant: vi.fn(),
+}));
+
 import { api } from "../../../src/api/client";
+import { useCurrentTenant } from "../../../src/context/TenantContext";
 import { PaymentConfigPage } from "../../../src/pages/PaymentConfigPage";
 
 // eslint-disable-next-line @typescript-eslint/unbound-method
 const mockUpdateP24Config = api.payments.updateP24Config as Mock;
-// eslint-disable-next-line @typescript-eslint/unbound-method
-const mockListTenants = api.tenants.list as Mock;
+const mockUseCurrentTenant = useCurrentTenant as Mock;
 
 const renderPage = (): RenderResult =>
   render(
@@ -33,23 +34,23 @@ const renderPage = (): RenderResult =>
 describe("PaymentConfigPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockListTenants.mockResolvedValue([
-      {
+    mockUseCurrentTenant.mockReturnValue({
+      selectedTenantId: "550e8400-e29b-41d4-a716-446655440000",
+      selectedTenant: {
         id: "550e8400-e29b-41d4-a716-446655440000",
         name: "Main Restaurant",
-        slug: "main-restaurant",
-        status: "ACTIVE",
-        activeLayoutVersionId: null,
-        floorCanvasCount: 0,
-        createdAt: new Date("2026-01-01"),
       },
-    ]);
+      tenants: [],
+      tenantsState: "loaded",
+      setSelectedTenantId: vi.fn(),
+    });
   });
 
-  it("renders all form fields and submit button", () => {
+  it("renders selected restaurant details and payment fields", () => {
     renderPage();
 
-    expect(screen.getByLabelText(/restaurant tenant/i)).toBeDefined();
+    expect(screen.getByText(/selected restaurant/i)).toBeInTheDocument();
+    expect(screen.getByText(/main restaurant/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/merchant id/i)).toBeDefined();
     expect(screen.getByLabelText(/p24 api key/i)).toBeDefined();
     expect(screen.getByLabelText(/p24 crc key/i)).toBeDefined();
@@ -67,7 +68,6 @@ describe("PaymentConfigPage", () => {
 
     renderPage();
 
-    await user.type(screen.getByLabelText(/restaurant tenant/i), "550e8400-e29b-41d4-a716-446655440000");
     await user.type(screen.getByLabelText(/merchant id/i), "123456");
     await user.type(screen.getByLabelText(/p24 api key/i), "test-api-key");
     await user.type(screen.getByLabelText(/p24 crc key/i), "test-crc-key");
@@ -75,25 +75,12 @@ describe("PaymentConfigPage", () => {
     expect(screen.getByRole("button", { name: /save configuration/i })).toBeEnabled();
   });
 
-  it("keeps submit button disabled when any field is empty", async () => {
-    const user = userEvent.setup();
-
-    renderPage();
-
-    await user.type(screen.getByLabelText(/restaurant tenant/i), "550e8400-e29b-41d4-a716-446655440000");
-    await user.type(screen.getByLabelText(/merchant id/i), "123456");
-    await user.type(screen.getByLabelText(/p24 api key/i), "test-api-key");
-
-    expect(screen.getByRole("button", { name: /save configuration/i })).toBeDisabled();
-  });
-
-  it("calls API with correct data on submit", async () => {
+  it("calls API with selected tenant on submit", async () => {
     const user = userEvent.setup();
 
     mockUpdateP24Config.mockResolvedValueOnce(undefined);
     renderPage();
 
-    await user.type(screen.getByLabelText(/restaurant tenant/i), "550e8400-e29b-41d4-a716-446655440000");
     await user.type(screen.getByLabelText(/merchant id/i), "123456");
     await user.type(screen.getByLabelText(/p24 api key/i), "my-api-key");
     await user.type(screen.getByLabelText(/p24 crc key/i), "my-crc-key");
@@ -114,7 +101,6 @@ describe("PaymentConfigPage", () => {
     mockUpdateP24Config.mockResolvedValueOnce(undefined);
     renderPage();
 
-    await user.type(screen.getByLabelText(/restaurant tenant/i), "550e8400-e29b-41d4-a716-446655440000");
     await user.type(screen.getByLabelText(/merchant id/i), "123456");
     await user.type(screen.getByLabelText(/p24 api key/i), "test-api-key");
     await user.type(screen.getByLabelText(/p24 crc key/i), "test-crc-key");
@@ -131,7 +117,6 @@ describe("PaymentConfigPage", () => {
     mockUpdateP24Config.mockRejectedValueOnce(new Error("Network error"));
     renderPage();
 
-    await user.type(screen.getByLabelText(/restaurant tenant/i), "550e8400-e29b-41d4-a716-446655440000");
     await user.type(screen.getByLabelText(/merchant id/i), "123456");
     await user.type(screen.getByLabelText(/p24 api key/i), "test-api-key");
     await user.type(screen.getByLabelText(/p24 crc key/i), "test-crc-key");
@@ -149,7 +134,6 @@ describe("PaymentConfigPage", () => {
     mockUpdateP24Config.mockReturnValueOnce(new Promise<void>((resolve) => (resolvePromise = resolve)));
     renderPage();
 
-    await user.type(screen.getByLabelText(/restaurant tenant/i), "550e8400-e29b-41d4-a716-446655440000");
     await user.type(screen.getByLabelText(/merchant id/i), "123456");
     await user.type(screen.getByLabelText(/p24 api key/i), "test-api-key");
     await user.type(screen.getByLabelText(/p24 crc key/i), "test-crc-key");
@@ -170,7 +154,6 @@ describe("PaymentConfigPage", () => {
     mockUpdateP24Config.mockResolvedValueOnce(undefined);
     renderPage();
 
-    await user.type(screen.getByLabelText(/restaurant tenant/i), "550e8400-e29b-41d4-a716-446655440000");
     await user.type(screen.getByLabelText(/merchant id/i), "123456");
     await user.type(screen.getByLabelText(/p24 api key/i), "test-api-key");
     await user.type(screen.getByLabelText(/p24 crc key/i), "test-crc-key");
@@ -180,7 +163,7 @@ describe("PaymentConfigPage", () => {
       expect(screen.getByText(/p24 configuration updated successfully/i)).toBeInTheDocument();
     });
 
-    await user.type(screen.getByLabelText(/restaurant tenant/i), "x");
+    await user.type(screen.getByLabelText(/p24 api key/i), "x");
 
     expect(screen.queryByText(/p24 configuration updated successfully/i)).not.toBeInTheDocument();
   });
@@ -188,10 +171,19 @@ describe("PaymentConfigPage", () => {
   it("trims whitespace from input values before sending", async () => {
     const user = userEvent.setup();
 
+    mockUseCurrentTenant.mockReturnValue({
+      selectedTenantId: "  some-id  ",
+      selectedTenant: {
+        id: "some-id",
+        name: "Main Restaurant",
+      },
+      tenants: [],
+      tenantsState: "loaded",
+      setSelectedTenantId: vi.fn(),
+    });
     mockUpdateP24Config.mockResolvedValueOnce(undefined);
     renderPage();
 
-    await user.type(screen.getByLabelText(/restaurant tenant/i), "  some-id  ");
     await user.type(screen.getByLabelText(/merchant id/i), "100");
     await user.type(screen.getByLabelText(/p24 api key/i), "  key  ");
     await user.type(screen.getByLabelText(/p24 crc key/i), "  crc  ");
@@ -204,5 +196,20 @@ describe("PaymentConfigPage", () => {
         p24_crc: "crc",
       });
     });
+  });
+
+  it("shows a clear state when no tenant is selected", async () => {
+    mockUseCurrentTenant.mockReturnValue({
+      selectedTenantId: null,
+      selectedTenant: null,
+      tenants: [],
+      tenantsState: "loaded",
+      setSelectedTenantId: vi.fn(),
+    });
+    renderPage();
+
+    expect(screen.getByText(/no restaurant selected/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /save configuration/i })).toBeDisabled();
+    expect(mockUpdateP24Config).not.toHaveBeenCalled();
   });
 });

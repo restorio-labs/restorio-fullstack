@@ -8,13 +8,23 @@ import type {
 
 const nextId = (): string => `el-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
+export const cloneFloorElement = (element: FloorElement): FloorElement => ({
+  ...element,
+  id: nextId(),
+});
+
 export const createElementFromToAdd = (toAdd: ElementToAdd, _tenantId?: string): FloorElement => {
   const id = nextId();
   const base = { id, x: 0, y: 0, w: 80, h: 80, zoneId: undefined };
 
   switch (toAdd.type) {
     case "table":
-      return { ...base, type: "table", tableNumber: toAdd.tableNumber, seats: toAdd.seats };
+      return {
+        ...base,
+        type: "table",
+        tableNumber: toAdd.tableNumber ?? 0,
+        seats: toAdd.seats,
+      };
     case "tableGroup":
       return {
         ...base,

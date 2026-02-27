@@ -39,7 +39,7 @@ describe("storageKeys", () => {
     expect(keys.THEME_STORAGE_KEY).toBe("rtm");
     expect(keys.LAST_VISITED_APP_STORAGE_KEY).toBe("rlvp");
     expect(keys.ACCESS_TOKEN_KEY).toBe("rat");
-    expect(keys.REFRESH_TOKEN_KEY).toBe("rfr");
+    expect(keys.REFRESH_TOKEN_KEY).toBe("rrt");
     expect(keys.SESSION_HINT_COOKIE).toBe("rshc");
   });
 

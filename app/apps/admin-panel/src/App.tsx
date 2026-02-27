@@ -1,4 +1,4 @@
-import { RedirectAuthGuard, checkAuthSession } from "@restorio/auth";
+import { AuthGuard } from "@restorio/auth";
 import { getAppUrl, getEnvironmentFromEnv } from "@restorio/utils";
 import type { ReactElement } from "react";
 import { useCallback } from "react";
@@ -24,6 +24,15 @@ const envMode = typeof ENV.ENV === "string" ? ENV.ENV : "development";
 const publicWebUrlEnv = typeof ENV.VITE_PUBLIC_WEB_URL === "string" ? ENV.VITE_PUBLIC_WEB_URL : undefined;
 
 const PUBLIC_WEB_URL: string = publicWebUrlEnv ?? getAppUrl(getEnvironmentFromEnv(envMode), "public-web");
+const AUTH_REVALIDATE_INTERVAL_MS = (() => {
+  const envValue = typeof ENV.VITE_AUTH_REVALIDATE_INTERVAL_MS === "string" ? Number(ENV.VITE_AUTH_REVALIDATE_INTERVAL_MS) : undefined;
+
+  if (Number.isFinite(envValue) && envValue !== undefined && envValue > 0) {
+    return envValue;
+  }
+
+  return 15 * 60 * 1000; // default to 15 minutes
+})();
 
 const AdminShell = (): ReactElement => {
   return (
@@ -34,12 +43,30 @@ const AdminShell = (): ReactElement => {
 };
 
 export const App = (): ReactElement => {
-  const checkAuth = useCallback((): Promise<boolean> => {
-    return checkAuthSession(() => api.auth.me());
+  const checkAuth = useCallback(async (): Promise<boolean> => {
+    try {
+      await api.auth.me();
+
+      return true;
+    } catch {
+      try {
+        await api.auth.refresh();
+        await api.auth.me();
+
+        return true;
+      } catch {
+        return false;
+      }
+    }
   }, []);
 
   return (
-    <RedirectAuthGuard redirectTo={`${PUBLIC_WEB_URL}/login`} checkAuth={checkAuth}>
+    <AuthGuard
+      redirectTo={`${PUBLIC_WEB_URL}/login`}
+      checkAuth={checkAuth}
+      revalidateIntervalMs={AUTH_REVALIDATE_INTERVAL_MS}
+      fallback={<div />}
+    >
       <Routes>
         <Route path="/qr-code-generator/:tenantId" element={<QRCodePrintPage />} />
         <Route element={<AdminShell />}>
@@ -54,6 +81,6 @@ export const App = (): ReactElement => {
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </RedirectAuthGuard>
+    </AuthGuard>
   );
 };

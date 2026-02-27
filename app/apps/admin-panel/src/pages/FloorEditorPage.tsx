@@ -1,12 +1,11 @@
-import type { FloorCanvas as FloorCanvasType, Tenant } from "@restorio/types";
+import type { FloorCanvas as FloorCanvasType, LoadingState, Tenant } from "@restorio/types";
+import { useToast } from "@restorio/ui";
 import { useEffect, useState, type ReactElement } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 
 import { api } from "../api/client";
 import { PageLayout } from "../layouts/PageLayout";
 import { FloorLayoutEditorView } from "../views/FloorLayoutEditorView";
-
-type LoadingState = "loading" | "loaded" | "error" | "not-found";
 
 const getActiveCanvas = (tenant: Tenant): FloorCanvasType | undefined => {
   const canvases = tenant.floorCanvases;
@@ -25,6 +24,7 @@ export const FloorEditorPage = (): ReactElement => {
   const [loadingState, setLoadingState] = useState<LoadingState>("loading");
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [isCreatingCanvas, setIsCreatingCanvas] = useState(false);
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (!restaurantId) {
@@ -105,8 +105,8 @@ export const FloorEditorPage = (): ReactElement => {
     try {
       await api.floorCanvases.create(tenant.id, {
         name: "Floor 1",
-        width: 800,
-        height: 600,
+        width: 1000,
+        height: 800,
         elements: [],
       });
 
@@ -148,8 +148,10 @@ export const FloorEditorPage = (): ReactElement => {
         height: layout.height,
         elements: layout.elements,
       });
+      showToast("success", "Layout saved", "Your floor layout changes were saved.");
     } catch (error) {
       console.error("Failed to save layout:", error);
+      showToast("error", "Save failed", "Could not save floor layout. Please try again.");
     }
   };
 
