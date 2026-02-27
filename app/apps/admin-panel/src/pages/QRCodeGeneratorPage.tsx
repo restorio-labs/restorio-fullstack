@@ -4,10 +4,10 @@ import { useMemo } from "react";
 import { Link } from "react-router-dom";
 
 import { useCurrentTenant } from "../context/TenantContext";
-import { QRCodeRow } from "../features/qr/QRCodeRow";
 import { useQRCodeDataUrl } from "../features/qr/hooks/useQRCodeDataUrl";
 import { useSelectedTenantDetails } from "../features/qr/hooks/useSelectedTenantDetails";
 import { useTableQRCodes } from "../features/qr/hooks/useTableQRCodes";
+import { QRCodeRow } from "../features/qr/QRCodeRow";
 import { getTenantTablesFromActiveCanvas } from "../features/qr/tableQRCodes";
 import { PageLayout } from "../layouts/PageLayout";
 

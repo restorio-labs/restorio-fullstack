@@ -42,6 +42,7 @@ export const ToastProvider = ({ children }: ToastProviderProps): ReactElement =>
 
   const removeToast = useCallback((id: string): void => {
     const timerId = timerIdsRef.current.get(id);
+
     if (timerId !== undefined) {
       window.clearTimeout(timerId);
       timerIdsRef.current.delete(id);
@@ -61,6 +62,7 @@ export const ToastProvider = ({ children }: ToastProviderProps): ReactElement =>
       const timerId = window.setTimeout(() => {
         removeToast(id);
       }, timeoutMs);
+
       timerIdsRef.current.set(id, timerId);
     },
     [removeToast],
@@ -102,6 +104,7 @@ export const ToastProvider = ({ children }: ToastProviderProps): ReactElement =>
 
 export const useToast = (): ToastContextValue => {
   const context = useContext(ToastContext);
+
   if (context === null) {
     throw new Error("useToast must be used within a ToastProvider");
   }

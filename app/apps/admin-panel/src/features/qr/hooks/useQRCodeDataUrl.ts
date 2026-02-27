@@ -15,6 +15,7 @@ export const useQRCodeDataUrl = (url: string | null, options?: UseQRCodeDataUrlO
   useEffect(() => {
     if (!url) {
       setQrDataUrl(null);
+
       return;
     }
 

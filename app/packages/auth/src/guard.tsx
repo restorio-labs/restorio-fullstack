@@ -1,4 +1,4 @@
-import { RestorioApi } from "@restorio/api-client";
+import { type RestorioApi } from "@restorio/api-client";
 import type { ReactElement, ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
@@ -72,10 +72,7 @@ export const AuthGuard = ({
   const redirectTarget = redirectTo ?? loginPath;
   const shouldPoll = useMemo(() => Boolean(revalidateIntervalMs && revalidateIntervalMs > 0), [revalidateIntervalMs]);
   const shouldRevalidateOnFocus = useMemo(() => Boolean(revalidateOnFocus), [revalidateOnFocus]);
-  const effectiveCheckAuth = useMemo(
-    () => checkAuth ?? createDefaultCheckAuth(client),
-    [checkAuth, client],
-  );
+  const effectiveCheckAuth = useMemo(() => checkAuth ?? createDefaultCheckAuth(client), [checkAuth, client]);
 
   useEffect(() => {
     if (strategy === "none") {

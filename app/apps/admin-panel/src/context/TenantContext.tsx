@@ -60,6 +60,7 @@ export const TenantProvider = ({ children }: TenantProviderProps): ReactElement 
     if (state !== "loaded" || !selectedTenantId) {
       setSelectedTenantDetails(null);
       setSelectedTenantDetailsState(state === "error" ? "error" : "idle");
+
       return;
     }
 
@@ -112,8 +113,7 @@ export const TenantProvider = ({ children }: TenantProviderProps): ReactElement 
     [selectedTenantId, tenants],
   );
 
-  const isSelectedTenantLoading =
-    state === "idle" || state === "loading" || selectedTenantDetailsState === "loading";
+  const isSelectedTenantLoading = state === "idle" || state === "loading" || selectedTenantDetailsState === "loading";
 
   const value = useMemo<TenantContextValue>(
     () => ({

@@ -1,6 +1,5 @@
-import { useCallback, useState, type ReactElement, type ReactNode } from "react";
-
 import { Button, type ButtonProps } from "@restorio/ui";
+import { useCallback, useState, type ReactElement, type ReactNode } from "react";
 
 export interface LogoutButtonProps extends Omit<ButtonProps, "onClick"> {
   /**
@@ -56,7 +55,7 @@ const LogoutIcon = ({ className }: { className?: string }): ReactElement => (
   </svg>
 );
 
-const mergeClasses = (...classes: Array<string | undefined>): string => classes.filter(Boolean).join(" ");
+const mergeClasses = (...classes: (string | undefined)[]): string => classes.filter(Boolean).join(" ");
 
 export const LogoutButton = ({
   onLogout,

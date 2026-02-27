@@ -5,8 +5,8 @@ import type { ReactElement } from "react";
 import { useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 
-import { TenantSwitcher } from "../tenant/TenantSwitcher";
 import { api } from "../../api/client";
+import { TenantSwitcher } from "../tenant/TenantSwitcher";
 
 const ENV = import.meta.env as unknown as Record<string, unknown>;
 const envMode = typeof ENV.ENV === "string" ? ENV.ENV : "development";

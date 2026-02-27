@@ -210,10 +210,7 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
         }, 0);
         const pasted = clipboardElements.map((element) => {
           const copy = cloneFloorElement(element);
-          const withNumber =
-            copy.type === "table"
-              ? { ...copy, tableNumber: ++nextTableNumber }
-              : copy;
+          const withNumber = copy.type === "table" ? { ...copy, tableNumber: ++nextTableNumber } : copy;
           const nextBounds = clampElementBounds(
             {
               x: element.x + Math.round(element.w / 2),

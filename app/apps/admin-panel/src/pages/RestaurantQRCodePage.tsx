@@ -4,10 +4,10 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useCurrentTenant } from "../context/TenantContext";
-import { QRCodeDisplay } from "../features/qr/QRCodeDisplay";
-import { QRCodeLoadingError } from "../features/qr/QRCodeLoadingError";
 import { useQRCodeDataUrl } from "../features/qr/hooks/useQRCodeDataUrl";
 import { useSelectedTenantDetails } from "../features/qr/hooks/useSelectedTenantDetails";
+import { QRCodeDisplay } from "../features/qr/QRCodeDisplay";
+import { QRCodeLoadingError } from "../features/qr/QRCodeLoadingError";
 
 export const RestaurantQRCodePage = (): ReactElement => {
   const { tenantsState } = useCurrentTenant();

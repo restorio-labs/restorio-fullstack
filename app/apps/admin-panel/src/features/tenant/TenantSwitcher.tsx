@@ -43,7 +43,15 @@ export const TenantSwitcher = (): ReactElement | null => {
         trigger={
           <div className="flex w-full items-center justify-between rounded-lg border border-border-default bg-surface-primary px-5 py-4 text-base font-medium text-text-primary shadow-sm transition hover:bg-surface-secondary">
             <span className="truncate">{selectedTenant?.name ?? "Select restaurant"}</span>
-            <svg className="ml-3 h-5 w-5 shrink-0 text-text-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              className="ml-3 h-5 w-5 shrink-0 text-text-secondary"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <polyline points="6 9 12 15 18 9" />
             </svg>
           </div>

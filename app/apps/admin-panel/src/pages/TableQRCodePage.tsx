@@ -3,10 +3,10 @@ import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { useCurrentTenant } from "../context/TenantContext";
-import { QRCodeDisplay } from "../features/qr/QRCodeDisplay";
-import { QRCodeLoadingError } from "../features/qr/QRCodeLoadingError";
 import { useQRCodeDataUrl } from "../features/qr/hooks/useQRCodeDataUrl";
 import { useSelectedTenantDetails } from "../features/qr/hooks/useSelectedTenantDetails";
+import { QRCodeDisplay } from "../features/qr/QRCodeDisplay";
+import { QRCodeLoadingError } from "../features/qr/QRCodeLoadingError";
 import { getTableQrUrl } from "../features/qr/tableQRCodes";
 
 export const TableQRCodePage = (): ReactElement => {

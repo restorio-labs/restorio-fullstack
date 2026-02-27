@@ -1,6 +1,7 @@
 import { useRef, type ReactElement, type ReactNode } from "react";
 
 import { cn } from "../../../utils";
+
 import { createToastId } from "./createToastId";
 
 export type ToastVariant = "info" | "success" | "warning" | "error";

@@ -35,6 +35,7 @@ export const useTableQRCodes = (
     if (!tenant || tables.length === 0) {
       setTableQRCodes([]);
       setIsGenerating(false);
+
       return;
     }
 
