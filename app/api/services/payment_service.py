@@ -120,7 +120,7 @@ class P24Service:
 
         return P24RegistrationResult(request_body=body, p24_response=response)
 
-    async def list_transactions(
+    async def get_transactions_page(
         self,
         session: AsyncSession,
         tenant_id: UUID,
@@ -128,7 +128,7 @@ class P24Service:
         date_from: date | None = None,
         date_to: date | None = None,
         page: int = 1,
-        page_size: int = 20,
+        pagination: int = 20,
     ) -> tuple[list[Transaction], int]:
         base_query = select(Transaction).where(Transaction.tenant_id == tenant_id)
 
@@ -140,9 +140,9 @@ class P24Service:
         count_query = select(func.count()).select_from(base_query.subquery())
         total = (await session.execute(count_query)).scalar_one()
 
-        offset = (page - 1) * page_size
+        offset = (page - 1) * pagination
         items_query = (
-            base_query.order_by(Transaction.created_at.desc()).offset(offset).limit(page_size)
+            base_query.order_by(Transaction.created_at.desc()).offset(offset).limit(pagination)
         )
         items = list((await session.execute(items_query)).scalars().all())
 

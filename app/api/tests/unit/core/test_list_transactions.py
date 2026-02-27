@@ -4,7 +4,7 @@ from uuid import uuid4
 
 import pytest
 
-from core.dto.v1.payments import TransactionListItemDTO
+from core.dto.v1.payments import TransactionListItemDTO, TransactionListQueryDTO
 from core.foundation.http.responses import PaginatedResponse
 from routes.v1.payments.list_transactions import list_transactions
 
@@ -52,7 +52,7 @@ def mock_session():
 @pytest.fixture
 def mock_p24_service():
     service = Mock()
-    service.list_transactions = AsyncMock()
+    service.get_transactions_page = AsyncMock()
     return service
 
 
@@ -61,12 +61,13 @@ async def test_list_transactions_returns_paginated_response(
     tenant_id, mock_session, mock_p24_service
 ):
     transactions = [_make_transaction(tenant_id=tenant_id) for _ in range(3)]
-    mock_p24_service.list_transactions.return_value = (transactions, 3)
+    mock_p24_service.get_transactions_page.return_value = (transactions, 3)
 
     result = await list_transactions(
         tenant_id=tenant_id,
         session=mock_session,
         p24_service=mock_p24_service,
+        query=TransactionListQueryDTO(),
     )
 
     assert isinstance(result, PaginatedResponse)
@@ -76,51 +77,52 @@ async def test_list_transactions_returns_paginated_response(
     assert result.total_pages == 1
     assert len(result.items) == 3
 
-    mock_p24_service.list_transactions.assert_called_once_with(
+    mock_p24_service.get_transactions_page.assert_called_once_with(
         mock_session,
         tenant_id,
         date_from=None,
         date_to=None,
         page=1,
-        page_size=20,
+        pagination=20,
     )
 
 
 @pytest.mark.asyncio
 async def test_list_transactions_with_date_filters(tenant_id, mock_session, mock_p24_service):
-    mock_p24_service.list_transactions.return_value = ([], 0)
+    mock_p24_service.get_transactions_page.return_value = ([], 0)
 
     result = await list_transactions(
         tenant_id=tenant_id,
         session=mock_session,
         p24_service=mock_p24_service,
-        date_from=date(2025, 1, 1),
-        date_to=date(2025, 6, 30),
+        query=TransactionListQueryDTO(
+            date_from=date(2025, 1, 1),
+            date_to=date(2025, 6, 30),
+        ),
     )
 
     assert result.total == 0
     assert result.items == []
-    mock_p24_service.list_transactions.assert_called_once_with(
+    mock_p24_service.get_transactions_page.assert_called_once_with(
         mock_session,
         tenant_id,
         date_from=date(2025, 1, 1),
         date_to=date(2025, 6, 30),
         page=1,
-        page_size=20,
+        pagination=20,
     )
 
 
 @pytest.mark.asyncio
 async def test_list_transactions_with_custom_pagination(tenant_id, mock_session, mock_p24_service):
     transactions = [_make_transaction(tenant_id=tenant_id) for _ in range(5)]
-    mock_p24_service.list_transactions.return_value = (transactions, 25)
+    mock_p24_service.get_transactions_page.return_value = (transactions, 25)
 
     result = await list_transactions(
         tenant_id=tenant_id,
         session=mock_session,
         p24_service=mock_p24_service,
-        page=3,
-        page_size=5,
+        query=TransactionListQueryDTO(page=3, pagination=5),
     )
 
     assert result.page == 3
@@ -129,13 +131,13 @@ async def test_list_transactions_with_custom_pagination(tenant_id, mock_session,
     assert result.total_pages == 5
     assert len(result.items) == 5
 
-    mock_p24_service.list_transactions.assert_called_once_with(
+    mock_p24_service.get_transactions_page.assert_called_once_with(
         mock_session,
         tenant_id,
         date_from=None,
         date_to=None,
         page=3,
-        page_size=5,
+        pagination=5,
     )
 
 
@@ -151,12 +153,13 @@ async def test_list_transactions_maps_dto_fields(tenant_id, mock_session, mock_p
         order={"table": 5},
         note="Notatka",
     )
-    mock_p24_service.list_transactions.return_value = ([txn], 1)
+    mock_p24_service.get_transactions_page.return_value = ([txn], 1)
 
     result = await list_transactions(
         tenant_id=tenant_id,
         session=mock_session,
         p24_service=mock_p24_service,
+        query=TransactionListQueryDTO(),
     )
 
     item = result.items[0]
@@ -173,12 +176,13 @@ async def test_list_transactions_maps_dto_fields(tenant_id, mock_session, mock_p
 
 @pytest.mark.asyncio
 async def test_list_transactions_empty_result(tenant_id, mock_session, mock_p24_service):
-    mock_p24_service.list_transactions.return_value = ([], 0)
+    mock_p24_service.get_transactions_page.return_value = ([], 0)
 
     result = await list_transactions(
         tenant_id=tenant_id,
         session=mock_session,
         p24_service=mock_p24_service,
+        query=TransactionListQueryDTO(),
     )
 
     assert result.items == []
@@ -194,12 +198,13 @@ async def test_list_transactions_nullable_fields(tenant_id, mock_session, mock_p
         order=None,
         note=None,
     )
-    mock_p24_service.list_transactions.return_value = ([txn], 1)
+    mock_p24_service.get_transactions_page.return_value = ([txn], 1)
 
     result = await list_transactions(
         tenant_id=tenant_id,
         session=mock_session,
         p24_service=mock_p24_service,
+        query=TransactionListQueryDTO(),
     )
 
     item = result.items[0]

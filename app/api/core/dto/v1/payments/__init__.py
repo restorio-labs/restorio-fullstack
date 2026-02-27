@@ -1,6 +1,7 @@
 from core.dto.v1.payments.requests import (
     CreatePaymentDTO,
     CreateTransactionDTO,
+    TransactionListQueryDTO,
     UpdateP24ConfigDTO,
     UpdatePaymentDTO,
 )
@@ -10,6 +11,7 @@ __all__ = [
     "CreatePaymentDTO",
     "CreateTransactionDTO",
     "PaymentResponseDTO",
+    "TransactionListQueryDTO",
     "TransactionListItemDTO",
     "UpdateP24ConfigDTO",
     "UpdatePaymentDTO",
