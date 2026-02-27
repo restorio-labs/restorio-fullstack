@@ -1,4 +1,4 @@
-import QRCode from "qrcode";
+import { toDataURL } from "qrcode";
 import { useEffect, useState } from "react";
 
 interface UseQRCodeDataUrlOptions {
@@ -23,7 +23,7 @@ export const useQRCodeDataUrl = (url: string | null, options?: UseQRCodeDataUrlO
 
     setQrDataUrl(null);
 
-    void QRCode.toDataURL(url, { width, margin })
+    void toDataURL(url, { width, margin })
       .then((dataUrl) => {
         if (!cancelled) {
           setQrDataUrl(dataUrl);

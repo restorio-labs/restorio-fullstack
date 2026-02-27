@@ -1,2 +1,2 @@
 export * from "./AuthRouteProvider";
-export * from "./ToastProvider";
+export { ToastProvider } from "./ToastProvider";

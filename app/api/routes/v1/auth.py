@@ -228,7 +228,9 @@ async def refresh_token(
     tenant_ids_claim = payload.get("tenant_ids")
     tenant_ids: list[str] = []
     if isinstance(tenant_ids_claim, list):
-        tenant_ids = [tenant_id_item for tenant_id_item in tenant_ids_claim if isinstance(tenant_id_item, str)]
+        tenant_ids = [
+            tenant_id_item for tenant_id_item in tenant_ids_claim if isinstance(tenant_id_item, str)
+        ]
     account_type = payload.get("account_type")
     email = payload.get("email")
     token_data = {
@@ -283,7 +285,9 @@ async def me(request: Request) -> SuccessResponse[AuthMeSessionData]:
     tenant_ids_claim = user.get("tenant_ids")
     tenant_ids: list[str] = []
     if isinstance(tenant_ids_claim, list):
-        tenant_ids = [tenant_id_item for tenant_id_item in tenant_ids_claim if isinstance(tenant_id_item, str)]
+        tenant_ids = [
+            tenant_id_item for tenant_id_item in tenant_ids_claim if isinstance(tenant_id_item, str)
+        ]
     account_type = user.get("account_type")
     if not isinstance(subject, str):
         raise UnauthenticatedResponse(message="Unauthorized")

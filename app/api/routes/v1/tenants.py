@@ -233,7 +233,7 @@ async def update_floor_canvas(
         elements = [el.model_dump(by_alias=True, exclude_none=True) for el in request.elements]
 
     service.ensure_valid_table_numeration(elements)
-    
+
     data = UpdateFloorCanvasDTO(
         name=request.name,
         width=request.width,

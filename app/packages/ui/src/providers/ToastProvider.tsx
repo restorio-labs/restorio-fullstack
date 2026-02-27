@@ -69,11 +69,13 @@ export const ToastProvider = ({ children }: ToastProviderProps): ReactElement =>
   );
 
   useEffect(() => {
+    const timerIds = timerIdsRef.current;
+
     return () => {
-      timerIdsRef.current.forEach((timerId) => {
+      timerIds.forEach((timerId) => {
         window.clearTimeout(timerId);
       });
-      timerIdsRef.current.clear();
+      timerIds.clear();
     };
   }, []);
 

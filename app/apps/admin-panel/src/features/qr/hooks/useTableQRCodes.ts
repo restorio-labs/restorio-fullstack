@@ -1,5 +1,5 @@
 import type { Tenant } from "@restorio/types";
-import QRCode from "qrcode";
+import { toDataURL } from "qrcode";
 import { useEffect, useState } from "react";
 
 import { getTableQrUrl } from "../tableQRCodes";
@@ -39,23 +39,24 @@ export const useTableQRCodes = (
       return;
     }
 
-    let cancelled = false;
+    const abortController = new AbortController();
+    const isCancelled = (): boolean => abortController.signal.aborted;
 
     setTableQRCodes([]);
     setIsGenerating(true);
 
     const generateQRCodes = async (): Promise<void> => {
       for (const tableId of tables) {
-        if (cancelled) {
+        if (isCancelled()) {
           break;
         }
 
         const url = getTableQrUrl(tenant.slug, tableId);
 
         try {
-          const qrDataUrl = await QRCode.toDataURL(url, { width, margin });
+          const qrDataUrl = await toDataURL(url, { width, margin });
 
-          if (!cancelled) {
+          if (!isCancelled()) {
             setTableQRCodes((prev) => [...prev, { tableId, url, qrDataUrl }]);
           }
         } catch (error) {
@@ -65,13 +66,13 @@ export const useTableQRCodes = (
             console.error(`Failed to generate QR code for table ${tableId}:`, error);
           }
 
-          if (!cancelled) {
+          if (!isCancelled()) {
             setTableQRCodes((prev) => [...prev, { tableId, url, qrDataUrl: null }]);
           }
         }
       }
 
-      if (!cancelled) {
+      if (!isCancelled()) {
         setIsGenerating(false);
       }
     };
@@ -79,7 +80,7 @@ export const useTableQRCodes = (
     void generateQRCodes();
 
     return () => {
-      cancelled = true;
+      abortController.abort();
     };
   }, [margin, options?.errorMessage, tables, tenant, width]);
 

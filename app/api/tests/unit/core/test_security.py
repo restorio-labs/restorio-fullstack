@@ -36,7 +36,12 @@ class TestCreateAccessToken:
 
     def test_create_access_token_preserves_data(self) -> None:
         service = SecurityService()
-        data = {"sub": "user@example.com", "role": "admin", "tenant_id": "123", "tenant_ids": ["123", "456"]}
+        data = {
+            "sub": "user@example.com",
+            "role": "admin",
+            "tenant_id": "123",
+            "tenant_ids": ["123", "456"],
+        }
         token = service.create_access_token(data)
 
         decoded = service.decode_access_token(token)

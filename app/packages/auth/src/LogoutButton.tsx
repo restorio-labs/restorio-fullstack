@@ -69,7 +69,7 @@ export const LogoutButton = ({
   const { variant = "danger", ...restButtonProps } = buttonProps;
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleClick = useCallback(async () => {
+  const handleLogout = useCallback(async (): Promise<void> => {
     if (isLoading) {
       return;
     }
@@ -84,6 +84,10 @@ export const LogoutButton = ({
     }
   }, [isLoading, onLogout, redirectTo]);
 
+  const handleClick = useCallback((): void => {
+    void handleLogout();
+  }, [handleLogout]);
+
   return (
     <Button
       {...restButtonProps}
@@ -93,7 +97,7 @@ export const LogoutButton = ({
         className,
       )}
       onClick={handleClick}
-      disabled={disabled || isLoading}
+      disabled={disabled ?? isLoading}
       aria-busy={isLoading}
       aria-label={typeof children === "string" ? children : "Logout"}
     >

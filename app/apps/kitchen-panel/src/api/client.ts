@@ -9,7 +9,7 @@ const API_BASE_URL = apiBaseUrlEnv ?? "http://localhost:8000/api/v1";
 const apiClient = new ApiClient({
   baseURL: API_BASE_URL,
   refreshPath: "auth/refresh",
-  getAccessToken: () => TokenStorage.getAccessToken(),
+  getAccessToken: (): string | null => TokenStorage.getAccessToken(),
   onUnauthorized: (): void => {
     window.location.href = "/login";
   },

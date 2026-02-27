@@ -101,6 +101,11 @@ class FloorCanvasService:
         if not elements:
             return
 
+        invalid_integer_msg = "Table numbers must be integers"
+        non_positive_msg = "Table numbers must be positive"
+        duplicate_msg = "Duplicate table numbers detected"
+        non_continuous_msg = "Table numbers must form a continuous sequence starting from 1"
+
         table_numbers: list[int] = []
 
         for element in elements:
@@ -110,10 +115,10 @@ class FloorCanvasService:
             number = element.get("tableNumber")
 
             if not isinstance(number, int):
-                raise ValidationError("Table numbers must be integers")
+                raise ValidationError(invalid_integer_msg)
 
             if number <= 0:
-                raise ValidationError("Table numbers must be positive")
+                raise ValidationError(non_positive_msg)
 
             table_numbers.append(number)
 
@@ -123,12 +128,12 @@ class FloorCanvasService:
         unique_numbers = set(table_numbers)
 
         if len(unique_numbers) != len(table_numbers):
-            raise ValidationError("Duplicate table numbers detected")
+            raise ValidationError(duplicate_msg)
 
         expected = set(range(1, len(table_numbers) + 1))
 
         if unique_numbers != expected:
-            raise ValidationError("Table numbers must form a continuous sequence starting from 1")
+            raise ValidationError(non_continuous_msg)
 
     async def list_versions(
         self, session: AsyncSession, tenant_id: UUID, canvas_id: UUID, limit: int = 50

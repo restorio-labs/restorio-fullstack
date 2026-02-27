@@ -206,7 +206,7 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
             return max;
           }
 
-          return Math.max(max, element.tableNumber ?? 0);
+          return Math.max(max, element.tableNumber);
         }, 0);
         const pasted = clipboardElements.map((element) => {
           const copy = cloneFloorElement(element);

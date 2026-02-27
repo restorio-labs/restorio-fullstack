@@ -33,9 +33,9 @@ const fallbackTokenCheck = (): boolean => {
   return Boolean(refreshToken);
 };
 
-const createDefaultCheckAuth = (client: RestorioApi) => {
+const createDefaultCheckAuth = (client: RestorioApi): (() => boolean | Promise<boolean>) => {
   if (typeof window === "undefined") {
-    return () => fallbackTokenCheck();
+    return (): boolean => fallbackTokenCheck();
   }
 
   return async (): Promise<boolean> => {

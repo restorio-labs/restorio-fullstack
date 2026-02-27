@@ -24,7 +24,7 @@ const envMode = typeof ENV.ENV === "string" ? ENV.ENV : "development";
 const publicWebUrlEnv = typeof ENV.VITE_PUBLIC_WEB_URL === "string" ? ENV.VITE_PUBLIC_WEB_URL : undefined;
 
 const PUBLIC_WEB_URL: string = publicWebUrlEnv ?? getAppUrl(getEnvironmentFromEnv(envMode), "public-web");
-const AUTH_REVALIDATE_INTERVAL_MS = (() => {
+const AUTH_REVALIDATE_INTERVAL_MS = ((): number => {
   const envValue =
     typeof ENV.VITE_AUTH_REVALIDATE_INTERVAL_MS === "string" ? Number(ENV.VITE_AUTH_REVALIDATE_INTERVAL_MS) : undefined;
 
