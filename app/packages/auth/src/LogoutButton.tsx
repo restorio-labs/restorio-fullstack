@@ -98,7 +98,7 @@ export const LogoutButton = ({
       aria-busy={isLoading}
       aria-label={typeof children === "string" ? children : "Logout"}
     >
-      {isLoading ? loadingLabel : children ?? <LogoutIcon className="h-6 w-6" />}
+      {isLoading ? loadingLabel : (children ?? <LogoutIcon className="h-6 w-6" />)}
     </Button>
   );
 };

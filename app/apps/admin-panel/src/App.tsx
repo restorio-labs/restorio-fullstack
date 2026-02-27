@@ -1,7 +1,6 @@
 import { AuthGuard } from "@restorio/auth";
 import { getAppUrl, getEnvironmentFromEnv } from "@restorio/utils";
 import type { ReactElement } from "react";
-import { useCallback } from "react";
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 
 import { api } from "./api/client";
@@ -15,8 +14,9 @@ import {
   QRCodeGeneratorPage,
   QRCodePrintPage,
   RestaurantCreatorPage,
+  RestaurantQRCodePage,
   StaffPage,
-  RestaurantsPage,
+  TableQRCodePage,
 } from "./pages";
 
 const ENV = import.meta.env as unknown as Record<string, unknown>;
@@ -43,42 +43,26 @@ const AdminShell = (): ReactElement => {
 };
 
 export const App = (): ReactElement => {
-  const checkAuth = useCallback(async (): Promise<boolean> => {
-    try {
-      await api.auth.me();
-
-      return true;
-    } catch {
-      try {
-        await api.auth.refresh();
-        await api.auth.me();
-
-        return true;
-      } catch {
-        return false;
-      }
-    }
-  }, []);
-
   return (
     <AuthGuard
       redirectTo={`${PUBLIC_WEB_URL}/login`}
-      checkAuth={checkAuth}
+      client={api}
       revalidateIntervalMs={AUTH_REVALIDATE_INTERVAL_MS}
       fallback={<div />}
     >
       <Routes>
-        <Route path="/qr-code-generator/:tenantId" element={<QRCodePrintPage />} />
         <Route element={<AdminShell />}>
-          <Route path="/" element={<RestaurantsPage />} />
+          <Route path="/" element={<FloorEditorPage />} />
           <Route path="/restaurant-creator" element={<RestaurantCreatorPage />} />
-          <Route path="/restaurants/:restaurantId/floor" element={<FloorEditorPage />} />
           <Route path="/menu-creator" element={<MenuCreatorPage />} />
           <Route path="/menu-page-configurator" element={<MenuPageConfiguratorPage />} />
           <Route path="/qr-code-generator" element={<QRCodeGeneratorPage />} />
           <Route path="/payment-config" element={<PaymentConfigPage />} />
           <Route path="/staff" element={<StaffPage />} />
         </Route>
+        <Route path="/qr-code/table/:tableId" element={<TableQRCodePage />} />
+        <Route path="/qr-code/restaurant" element={<RestaurantQRCodePage />} />
+        <Route path="/qr-code/tables" element={<QRCodePrintPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthGuard>

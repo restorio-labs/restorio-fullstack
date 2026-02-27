@@ -35,19 +35,10 @@ export const AdminSidebar = (): ReactElement => {
         <TenantSwitcher />
       </div>
 
-      <SidebarSection title="Restaurant Management">
+      <SidebarSection title="Floor Layout">
         <NavSection>
           <NavItem as={Link} to="/" href="/" active={isActive("/")} role="menuitem">
-            Restaurants
-          </NavItem>
-          <NavItem
-            as={Link}
-            to="/restaurant-creator"
-            href="/restaurant-creator"
-            active={isActive("/restaurant-creator")}
-            role="menuitem"
-          >
-            Restaurant Creator
+            Floor Editor
           </NavItem>
         </NavSection>
       </SidebarSection>

@@ -1,4 +1,4 @@
-import { ApiClient } from "@restorio/api-client";
+import { RestorioApi } from "@restorio/api-client";
 import type { ReactElement, ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
@@ -16,15 +16,10 @@ export interface AuthGuardProps {
   checkAuth?: () => boolean | Promise<boolean>;
   revalidateIntervalMs?: number;
   revalidateOnFocus?: boolean;
-  sessionPath?: string;
-  refreshPath?: string;
-  apiBaseUrl?: string;
+  client: RestorioApi;
 }
 
 type AuthStatus = "pending" | "allowed" | "unauthorized";
-
-const DEFAULT_SESSION_PATH = "/api/v1/auth/me";
-const DEFAULT_REFRESH_PATH = "/api/v1/auth/refresh";
 
 const fallbackTokenCheck = (): boolean => {
   const accessToken = TokenStorage.getAccessToken();
@@ -38,35 +33,25 @@ const fallbackTokenCheck = (): boolean => {
   return Boolean(refreshToken);
 };
 
-const createDefaultCheckAuth = (sessionPath: string, refreshPath?: string, apiBaseUrl?: string) => {
+const createDefaultCheckAuth = (client: RestorioApi) => {
   if (typeof window === "undefined") {
     return () => fallbackTokenCheck();
   }
 
-  const baseURL = apiBaseUrl ?? window.location.origin;
-  const client = new ApiClient({
-    baseURL,
-    refreshPath,
-  });
-
   return async (): Promise<boolean> => {
     try {
-      await client.get(sessionPath);
+      await client.auth.me();
 
       return true;
-    } catch (error) {
-      const maybeAxiosError = error as { response?: { status?: number } } | undefined;
-      const status = maybeAxiosError?.response?.status;
+    } catch {
+      try {
+        await client.auth.refresh();
+        await client.auth.me();
 
-      if (status === undefined) {
-        return fallbackTokenCheck();
-      }
-
-      if (status === 401) {
+        return true;
+      } catch {
         return false;
       }
-
-      return false;
     }
   };
 };
@@ -78,11 +63,9 @@ export const AuthGuard = ({
   redirectTo,
   fallback = null,
   checkAuth,
+  client,
   revalidateIntervalMs,
   revalidateOnFocus = true,
-  sessionPath = DEFAULT_SESSION_PATH,
-  refreshPath = DEFAULT_REFRESH_PATH,
-  apiBaseUrl,
 }: AuthGuardProps): ReactElement | null => {
   const [status, setStatus] = useState<AuthStatus>(strategy === "none" ? "allowed" : "pending");
 
@@ -90,8 +73,8 @@ export const AuthGuard = ({
   const shouldPoll = useMemo(() => Boolean(revalidateIntervalMs && revalidateIntervalMs > 0), [revalidateIntervalMs]);
   const shouldRevalidateOnFocus = useMemo(() => Boolean(revalidateOnFocus), [revalidateOnFocus]);
   const effectiveCheckAuth = useMemo(
-    () => checkAuth ?? createDefaultCheckAuth(sessionPath, refreshPath, apiBaseUrl),
-    [apiBaseUrl, checkAuth, refreshPath, sessionPath],
+    () => checkAuth ?? createDefaultCheckAuth(client),
+    [checkAuth, client],
   );
 
   useEffect(() => {
@@ -113,6 +96,7 @@ export const AuthGuard = ({
 
       try {
         const result = await effectiveCheckAuth();
+
         authorized = Boolean(result);
       } catch {
         authorized = false;
