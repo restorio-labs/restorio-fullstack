@@ -11,6 +11,7 @@ let loadPromise: Promise<TenantSummary[]> | null = null;
 export const useTenants = (): {
   tenants: TenantSummary[];
   state: TenantsState;
+  refresh: () => void;
 } => {
   const [state, setState] = useState<TenantsState>("idle");
   const [tenants, setTenants] = useState<TenantSummary[]>([]);
@@ -40,5 +41,23 @@ export const useTenants = (): {
       });
   }, []);
 
-  return { tenants, state };
+  const refresh = (): void => {
+    cachedTenants = null;
+    loadPromise = null;
+    setState("loading");
+
+    loadPromise = api.tenants.list();
+
+    void loadPromise
+      .then((data) => {
+        cachedTenants = data;
+        setTenants(data);
+        setState("loaded");
+      })
+      .catch(() => {
+        setState("error");
+      });
+  };
+
+  return { tenants, state, refresh };
 };

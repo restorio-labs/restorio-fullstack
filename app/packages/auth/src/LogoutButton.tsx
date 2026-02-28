@@ -69,7 +69,7 @@ export const LogoutButton = ({
   const { variant = "danger", ...restButtonProps } = buttonProps;
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleClick = useCallback(async (): Promise<void> => {
+  const handleLogout = useCallback(async (): Promise<void> => {
     if (isLoading) {
       return;
     }
@@ -84,9 +84,9 @@ export const LogoutButton = ({
     }
   }, [isLoading, onLogout, redirectTo]);
 
-  const handleButtonClick = useCallback((): void => {
-    void handleClick();
-  }, [handleClick]);
+  const handleClick = useCallback((): void => {
+    void handleLogout();
+  }, [handleLogout]);
 
   return (
     <Button
@@ -96,8 +96,8 @@ export const LogoutButton = ({
         "gap-3 transition-colors duration-200 hover:bg-[#8B0000] focus-visible:outline focus-visible:outline-offset-2",
         className,
       )}
-      onClick={handleButtonClick}
-      disabled={(disabled ?? false) || isLoading}
+      onClick={handleClick}
+      disabled={disabled ?? isLoading}
       aria-busy={isLoading}
       aria-label={typeof children === "string" ? children : "Logout"}
     >

@@ -17,18 +17,14 @@ class FloorElementBaseDTO(BaseDTO):
 
 class FloorTableElementDTO(FloorElementBaseDTO):
     type: Literal["table"] = "table"
-    table_number: str = Field(..., alias="tableNumber", description="Table display number")
+    table_number: int = Field(..., alias="tableNumber", description="Table display number")
     seats: int = Field(..., gt=0, description="Number of seats")
-    table_id: str | None = Field(None, alias="tableId", description="Reference to RestaurantTable")
 
 
 class FloorTableGroupElementDTO(FloorElementBaseDTO):
     type: Literal["tableGroup"] = "tableGroup"
-    table_numbers: list[str] = Field(..., alias="tableNumbers", description="Table display numbers")
+    table_numbers: list[int] = Field(..., alias="tableNumbers", description="Table display numbers")
     seats: int = Field(..., gt=0, description="Total seats")
-    table_ids: list[str] | None = Field(
-        None, alias="tableIds", description="References to RestaurantTables"
-    )
 
 
 class FloorBarElementDTO(FloorElementBaseDTO):

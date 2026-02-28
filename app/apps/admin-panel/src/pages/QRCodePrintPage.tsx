@@ -1,113 +1,114 @@
-import { getAppHref } from "@restorio/utils";
-import QRCode from "qrcode";
 import type { ReactElement } from "react";
-import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useMemo } from "react";
+import { Link } from "react-router-dom";
 
-import { useTenants } from "../hooks/useTenants";
-import { PageLayout } from "../layouts/PageLayout";
+import { useCurrentTenant } from "../context/TenantContext";
+import { useSelectedTenantDetails } from "../features/qr/hooks/useSelectedTenantDetails";
+import { useTableQRCodes } from "../features/qr/hooks/useTableQRCodes";
+import { getTenantTablesFromActiveCanvas } from "../features/qr/tableQRCodes";
 
 export const QRCodePrintPage = (): ReactElement => {
-  const { tenantId } = useParams<{ tenantId: string }>();
-  const { tenants, state } = useTenants();
-  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const { tenantsState } = useCurrentTenant();
+  const { tenant, isLoading } = useSelectedTenantDetails();
 
-  const selectedTenant = useMemo(() => tenants.find((tenant) => tenant.id === tenantId) ?? null, [tenantId, tenants]);
-
-  const menuUrl = useMemo(() => {
-    if (!selectedTenant) {
-      return null;
+  const tables = useMemo(() => {
+    if (!tenant) {
+      return [];
     }
 
-    return `${getAppHref("mobile-app")}/${selectedTenant.slug}`;
-  }, [selectedTenant]);
+    return getTenantTablesFromActiveCanvas(tenant);
+  }, [tenant]);
 
-  useEffect(() => {
-    if (!menuUrl) {
-      setQrDataUrl(null);
-
-      return;
-    }
-
-    let cancelled = false;
-
-    void QRCode.toDataURL(menuUrl, { width: 640, margin: 2 }).then((dataUrl) => {
-      if (!cancelled) {
-        setQrDataUrl(dataUrl);
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [menuUrl]);
+  const { tableQRCodes, isGenerating } = useTableQRCodes(tenant, tables, {
+    width: 512,
+    margin: 2,
+  });
 
   const handlePrint = (): void => {
     window.print();
   };
 
-  if (state === "idle" || state === "loading") {
+  if (isLoading) {
     return (
-      <PageLayout title="Printable QR Code" description="Print QR code for a restaurant menu">
-        <div className="flex flex-1 items-center justify-center p-8">
-          <div className="text-sm text-text-tertiary">Loading restaurant...</div>
-        </div>
-      </PageLayout>
+      <div className="flex min-h-screen items-center justify-center p-8">
+        <div className="text-sm text-text-tertiary">Loading restaurant...</div>
+      </div>
     );
   }
 
-  if (state === "error") {
+  if (tenantsState === "error") {
     return (
-      <PageLayout title="Printable QR Code" description="Print QR code for a restaurant menu">
-        <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-text-tertiary">
-          Failed to load restaurant. Please try again later.
-        </div>
-      </PageLayout>
+      <div className="flex min-h-screen items-center justify-center p-8 text-center text-sm text-text-tertiary">
+        Failed to load restaurant. Please try again later.
+      </div>
     );
   }
 
-  if (!selectedTenant || !menuUrl) {
+  if (!tenant) {
     return (
-      <PageLayout title="Printable QR Code" description="Print QR code for a restaurant menu">
-        <div className="p-6 text-sm text-text-tertiary">
-          Restaurant not found.{" "}
-          <Link to="/qr-code-generator" className="text-interactive-primary hover:underline">
-            Back to QR Code Generator
-          </Link>
-        </div>
-      </PageLayout>
+      <div className="p-6 text-sm text-text-tertiary">
+        No restaurant selected.{" "}
+        <Link to="/qr-code-generator" className="text-interactive-primary hover:underline">
+          Back to QR Code Generator
+        </Link>
+      </div>
+    );
+  }
+
+  if (tables.length === 0) {
+    return (
+      <div className="p-6 text-center text-sm text-text-tertiary">
+        <p className="mb-2">No tables found in the floor layout.</p>
+        <Link to="/floor-editor" className="text-interactive-primary hover:underline">
+          Go to Floor Editor to add tables
+        </Link>
+      </div>
     );
   }
 
   return (
-    <PageLayout title={`${selectedTenant.name} QR Code`} description="Print QR code for your restaurant menu">
-      <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 p-6 text-center">
-        <div className="print:hidden">
-          <Link to="/qr-code-generator" className="text-sm text-interactive-primary hover:underline">
-            Back to restaurant list
-          </Link>
-        </div>
-
-        {qrDataUrl ? (
-          <img
-            src={qrDataUrl}
-            alt={`QR code for ${selectedTenant.name} menu`}
-            width={640}
-            height={640}
-            className="w-full max-w-[640px] rounded-lg border border-border-default bg-surface-primary p-3"
-          />
-        ) : (
-          <div className="text-sm text-text-tertiary">Generating QR code...</div>
-        )}
-
+    <div className="flex flex-col gap-6 p-6">
+      <div className="print:hidden flex flex-wrap items-center justify-between gap-3">
+        <Link
+          to="/qr-code-generator"
+          className="rounded-md border border-border-default bg-surface-primary px-4 py-2 text-sm font-medium text-text-primary hover:bg-surface-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
+        >
+          Go Back
+        </Link>
         <button
           type="button"
           onClick={handlePrint}
-          className="print:hidden rounded-md bg-interactive-primary px-4 py-2 text-sm font-medium text-primary-inverse hover:bg-interactive-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
+          disabled={isGenerating}
+          className="rounded-md bg-interactive-primary px-4 py-2 text-sm font-medium text-primary-inverse hover:bg-interactive-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus disabled:opacity-50"
         >
-          Print
+          {isGenerating ? "Generating QR codes..." : "Print"}
         </button>
       </div>
-    </PageLayout>
+
+      {isGenerating && (
+        <div className="print:hidden text-center text-sm text-text-tertiary">
+          Generating QR codes for {tables.length} tables...
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 print:grid-cols-3">
+        {tableQRCodes.map((qrCode) => (
+          <div key={qrCode.tableId} className="flex flex-col items-center p-2 print:break-inside-avoid">
+            {qrCode.qrDataUrl ? (
+              <img
+                src={qrCode.qrDataUrl}
+                alt={`QR code for table ${qrCode.tableId}`}
+                className="h-auto w-full max-w-[360px]"
+              />
+            ) : (
+              <div className="flex h-[360px] w-full max-w-[360px] items-center justify-center text-sm text-text-tertiary">
+                Failed to generate QR code
+              </div>
+            )}
+            <h3 className="mt-4 text-lg font-semibold text-text-primary print:text-2xl">Table {qrCode.tableId}</h3>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 };

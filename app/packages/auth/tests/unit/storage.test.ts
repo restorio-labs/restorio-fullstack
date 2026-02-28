@@ -188,7 +188,7 @@ describe("TokenStorage", () => {
   });
 
   it("getRefreshToken returns value from cookie", () => {
-    cookieStore.rfr = encodeURIComponent("refresh-token-value");
+    cookieStore.rrt = encodeURIComponent("refresh-token-value");
 
     const result = TokenStorage.getRefreshToken();
 

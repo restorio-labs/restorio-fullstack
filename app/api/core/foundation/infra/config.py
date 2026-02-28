@@ -47,7 +47,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 14
     ACCESS_TOKEN_COOKIE_NAME: str = "rat"
-    REFRESH_TOKEN_COOKIE_NAME: str = "rfr"
+    REFRESH_TOKEN_COOKIE_NAME: str = "rrt"
     SESSION_HINT_COOKIE: str = "rshc"
 
     # Przelewy24 (values from .env)

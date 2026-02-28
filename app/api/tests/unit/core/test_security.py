@@ -36,13 +36,19 @@ class TestCreateAccessToken:
 
     def test_create_access_token_preserves_data(self) -> None:
         service = SecurityService()
-        data = {"sub": "user@example.com", "role": "admin", "tenant_id": "123"}
+        data = {
+            "sub": "user@example.com",
+            "role": "admin",
+            "tenant_id": "123",
+            "tenant_ids": ["123", "456"],
+        }
         token = service.create_access_token(data)
 
         decoded = service.decode_access_token(token)
         assert decoded["sub"] == "user@example.com"
         assert decoded["role"] == "admin"
         assert decoded["tenant_id"] == "123"
+        assert decoded["tenant_ids"] == ["123", "456"]
 
 
 class TestDecodeAccessToken:

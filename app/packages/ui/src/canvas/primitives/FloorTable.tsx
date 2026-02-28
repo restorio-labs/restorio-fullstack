@@ -6,7 +6,7 @@ import { CanvasElement } from "../CanvasElement";
 
 export interface FloorTableProps {
   bounds: CanvasBounds;
-  tableNumber: string;
+  tableNumber: number;
   seats: number;
   state?: TableRuntimeState;
   displayInfo?: TableDisplayInfo;
@@ -66,7 +66,7 @@ export const FloorTable = ({
           </span>
         )}
         <span className="font-medium" aria-hidden="true">
-          {tableNumber}
+          {`Table ${tableNumber}`}
         </span>
         <span className="text-xs text-text-secondary" aria-hidden="true">
           {guests != null ? `${guests}/${seats}` : seats}

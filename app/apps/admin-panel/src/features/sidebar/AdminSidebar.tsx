@@ -1,7 +1,18 @@
+import { LogoutButton } from "@restorio/auth";
 import { ChooseApp, ThemeSwitcher, NavItem, NavSection, Sidebar, SidebarSection } from "@restorio/ui";
-import { goToApp } from "@restorio/utils";
+import { goToApp, getAppUrl, getEnvironmentFromEnv } from "@restorio/utils";
 import type { ReactElement } from "react";
+import { useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
+
+import { api } from "../../api/client";
+import { TenantSwitcher } from "../tenant/TenantSwitcher";
+
+const ENV = import.meta.env as unknown as Record<string, unknown>;
+const envMode = typeof ENV.ENV === "string" ? ENV.ENV : "development";
+const publicWebUrlEnv = typeof ENV.VITE_PUBLIC_WEB_URL === "string" ? ENV.VITE_PUBLIC_WEB_URL : undefined;
+
+const PUBLIC_WEB_URL: string = publicWebUrlEnv ?? getAppUrl(getEnvironmentFromEnv(envMode), "public-web");
 
 export const AdminSidebar = (): ReactElement => {
   const { pathname } = useLocation();
@@ -14,21 +25,20 @@ export const AdminSidebar = (): ReactElement => {
     return pathname.startsWith(path);
   };
 
+  const handleLogout = useCallback(async (): Promise<void> => {
+    await api.auth.logout();
+  }, []);
+
   return (
     <Sidebar aria-label="Admin navigation" variant="persistent" className="flex flex-col h-full">
-      <SidebarSection title="Restaurant Management">
+      <div className="px-4 py-4 border-b border-border-default">
+        <TenantSwitcher />
+      </div>
+
+      <SidebarSection title="Floor Layout">
         <NavSection>
           <NavItem as={Link} to="/" href="/" active={isActive("/")} role="menuitem">
-            Restaurants
-          </NavItem>
-          <NavItem
-            as={Link}
-            to="/restaurant-creator"
-            href="/restaurant-creator"
-            active={isActive("/restaurant-creator")}
-            role="menuitem"
-          >
-            Restaurant Creator
+            Floor Editor
           </NavItem>
         </NavSection>
       </SidebarSection>
@@ -80,12 +90,21 @@ export const AdminSidebar = (): ReactElement => {
           </NavItem>
         </NavSection>
       </SidebarSection>
-      <div className="sticky bottom-0 mt-4 flex items-center justify-between gap-3 border-t border-border-default bg-surface-secondary/80 px-4 py-3 backdrop-blur">
-        <ThemeSwitcher />
-        <label className="flex items-center gap-2 text-xs text-text-secondary">
-          <span>View</span>
-          <ChooseApp variant="dropdown" value="admin-panel" onSelectApp={goToApp} />
-        </label>
+      <div className="sticky bottom-0 mt-4 flex flex-col gap-3 border-t border-border-default bg-surface-secondary/80 px-4 py-3 backdrop-blur">
+        <div className="flex items-center justify-between gap-3">
+          <ThemeSwitcher />
+          <label className="flex items-center gap-2 text-xs text-text-secondary">
+            <span>View</span>
+            <ChooseApp variant="dropdown" value="admin-panel" onSelectApp={goToApp} />
+          </label>
+        </div>
+        <LogoutButton
+          variant="secondary"
+          fullWidth
+          onLogout={handleLogout}
+          redirectTo={`${PUBLIC_WEB_URL}/login`}
+          loadingLabel="Logging out..."
+        />
       </div>
     </Sidebar>
   );

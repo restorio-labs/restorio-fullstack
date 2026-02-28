@@ -186,23 +186,25 @@ class AuthService:
             msg = "Account is not active"
             raise UnauthorizedError(msg)
 
+        tenant_ids_result = await session.scalars(
+            select(TenantRole.tenant_id).where(TenantRole.account_id == user.id)
+        )
+        tenant_role_ids = tenant_ids_result.all()
+        tenant_ids = [str(tenant_id) for tenant_id in tenant_role_ids]
+        if not tenant_ids and user.tenant_id is not None:
+            tenant_ids = [str(user.tenant_id)]
+
         role: TenantRole | None = None
-        if user.tenant_id is not None:
-            role = await session.scalar(
-                select(TenantRole).where(
-                    TenantRole.account_id == user.id,
-                    TenantRole.tenant_id == user.tenant_id,
-                )
-            )
+
         if role is None:
             role = await session.scalar(
                 select(TenantRole).where(TenantRole.account_id == user.id).limit(1)
             )
 
-        token_data: dict[str, str | None] = {
+        token_data: dict[str, str | list[str] | None] = {
             "sub": str(user.id),
             "email": user.email,
-            "tenant_id": str(user.tenant_id) if user.tenant_id else None,
+            "tenant_ids": tenant_ids,
         }
         if role is not None:
             token_data["account_type"] = role.account_type.value
