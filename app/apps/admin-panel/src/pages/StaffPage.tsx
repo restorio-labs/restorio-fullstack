@@ -62,6 +62,8 @@ export const StaffPage = (): ReactElement => {
   const [accessLevel, setAccessLevel] = useState<AccessLevel>("kitchen");
   const [users, setUsers] = useState<StaffUser[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
+  const [pendingDeleteUserId, setPendingDeleteUserId] = useState<string | null>(null);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
@@ -195,6 +197,42 @@ export const StaffPage = (): ReactElement => {
     }
   };
 
+  const handleDeleteUser = async (userId: string): Promise<void> => {
+    if (deletingUserId !== null) {
+      return;
+    }
+
+    setFeedback(null);
+    setDeletingUserId(userId);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/delete-user/${encodeURIComponent(userId)}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const responseBody: unknown = await response.json().catch(() => null);
+        const errorMessage =
+          responseBody && typeof responseBody === "object" && "message" in responseBody
+            ? String((responseBody as { message?: unknown }).message)
+            : "Unable to delete user.";
+
+        throw new Error(errorMessage);
+      }
+
+      setUsers((previous) => previous.filter((user) => user.id !== userId));
+      setPendingDeleteUserId(null);
+      setFeedback({ type: "success", message: "User deleted successfully." });
+    } catch (error: unknown) {
+      const message = error instanceof Error && error.message.trim() !== "" ? error.message : "Unable to delete user.";
+
+      setFeedback({ type: "error", message });
+    } finally {
+      setDeletingUserId(null);
+    }
+  };
+
   return (
     <PageLayout title="Staff Management" description="Manage kitchen, waiter, and other staff accounts">
       <div className="w-full p-6 space-y-4">
@@ -261,7 +299,50 @@ export const StaffPage = (): ReactElement => {
                 {users.map((user) => (
                   <li key={user.id} className="flex items-center justify-between py-3">
                     <span className="text-sm text-text-primary">{user.email}</span>
-                    <span className="text-xs uppercase tracking-wide text-text-tertiary">{user.accessLevel}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs uppercase tracking-wide text-text-tertiary">{user.accessLevel}</span>
+                      <div className="relative">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="danger"
+                          disabled={deletingUserId === user.id}
+                          onClick={() => {
+                            setPendingDeleteUserId((current) => (current === user.id ? null : user.id));
+                          }}
+                        >
+                          {deletingUserId === user.id ? "Deleting..." : "Delete user"}
+                        </Button>
+                        {pendingDeleteUserId === user.id && (
+                          <div className="absolute bottom-full right-0 z-10 mb-2 w-64 rounded-md border border-border-default bg-surface-primary p-3 shadow-lg">
+                            <p className="text-xs text-text-secondary">Delete this user?</p>
+                            <div className="mt-3 flex justify-end gap-2">
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => {
+                                  setPendingDeleteUserId(null);
+                                }}
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="danger"
+                                disabled={deletingUserId === user.id}
+                                onClick={() => {
+                                  void handleDeleteUser(user.id);
+                                }}
+                              >
+                                Confirm
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </li>
                 ))}
               </ul>

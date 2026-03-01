@@ -3,17 +3,22 @@ import string
 from uuid import UUID
 
 from fastapi import APIRouter, Request, status
+from sqlalchemy import select
 
 from core.dto.v1.auth import CreateUserDTO, RegisterCreatedData
+from core.exceptions import NotFoundResponse
 from core.foundation.dependencies import (
     AuthServiceDep,
     EmailServiceDep,
     PostgresSession,
     UserServiceDep,
 )
-from core.foundation.http.responses import CreatedResponse, UnauthenticatedResponse
+from core.foundation.http.responses import CreatedResponse, SuccessResponse, UnauthenticatedResponse
 from core.foundation.infra.config import settings
+from core.models.enums import AccountType
 from core.models.tenant import Tenant
+from core.models.tenant_role import TenantRole
+from core.models.user import User
 
 router = APIRouter()
 
@@ -37,6 +42,18 @@ def generate_temporary_password(length: int = 24) -> str:
     return "".join(candidate)
 
 
+def get_tenant_id_from_request(request: Request) -> UUID:
+    user = getattr(request.state, "user", None)
+    if not isinstance(user, dict):
+        raise UnauthenticatedResponse(message="Unauthorized")
+
+    tenant_id_value = user.get("tenant_id")
+    if not isinstance(tenant_id_value, str) or tenant_id_value == "":
+        raise UnauthenticatedResponse(message="Unauthorized")
+
+    return UUID(tenant_id_value)
+
+
 @router.post(
     "/createuser",
     status_code=status.HTTP_201_CREATED,
@@ -52,15 +69,7 @@ async def create_user(
     user_service: UserServiceDep,
     email_service: EmailServiceDep,
 ) -> CreatedResponse[RegisterCreatedData]:
-    user = getattr(request.state, "user", None)
-    if not isinstance(user, dict):
-        raise UnauthenticatedResponse(message="Unauthorized")
-
-    tenant_id_value = user.get("tenant_id")
-    if not isinstance(tenant_id_value, str) or tenant_id_value == "":
-        raise UnauthenticatedResponse(message="Unauthorized")
-
-    tenant_id = UUID(tenant_id_value)
+    tenant_id = get_tenant_id_from_request(request)
     tenant = await session.get(Tenant, tenant_id)
     if tenant is None:
         raise UnauthenticatedResponse(message="Unauthorized")
@@ -97,4 +106,69 @@ async def create_user(
             tenant_slug=tenant.slug,
         ),
         message="User created successfully, activation email sent",
+    )
+
+
+@router.get(
+    "/users",
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessResponse[list[dict[str, str]]],
+    summary="List tenant staff users",
+    description="List waiter and kitchen users for current tenant",
+)
+async def list_users(
+    request: Request,
+    session: PostgresSession,
+) -> SuccessResponse[list[dict[str, str]]]:
+    tenant_id = get_tenant_id_from_request(request)
+
+    stmt = (
+        select(User.id, User.email, TenantRole.account_type)
+        .join(TenantRole, TenantRole.account_id == User.id)
+        .where(
+            TenantRole.tenant_id == tenant_id,
+            TenantRole.account_type.in_([AccountType.WAITER, AccountType.KITCHEN]),
+        )
+    )
+    rows = await session.execute(stmt)
+
+    users = [
+        {
+            "id": str(user_id),
+            "email": email,
+            "account_type": account_type.value,
+        }
+        for user_id, email, account_type in rows.all()
+    ]
+
+    return SuccessResponse(
+        message="Users retrieved successfully",
+        data=users,
+    )
+
+
+@router.delete(
+    "/delete-user/{user_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessResponse[dict[str, str]],
+    summary="Delete staff user",
+    description="Delete a user from current tenant",
+)
+async def delete_user(
+    user_id: UUID,
+    request: Request,
+    session: PostgresSession,
+) -> SuccessResponse[dict[str, str]]:
+    tenant_id = get_tenant_id_from_request(request)
+
+    user = await session.scalar(select(User).where(User.id == user_id, User.tenant_id == tenant_id))
+    if user is None:
+        raise NotFoundResponse("User", str(user_id))
+
+    await session.delete(user)
+    await session.flush()
+
+    return SuccessResponse(
+        message="User deleted successfully",
+        data={"deleted_user_id": str(user_id)},
     )

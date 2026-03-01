@@ -211,7 +211,7 @@ export function ActivateContent(): ReactElement {
 
   return (
     <div className="py-16 md:py-24">
-      <ContentContainer maxWidth="md" padding>
+      <ContentContainer maxWidth={result === "set_password" ? "full" : "md"} padding>
         <div className="rounded-2xl border border-border-default bg-surface-primary p-8 text-center">
           {result === "loading" && (
             <>
@@ -294,7 +294,7 @@ export function ActivateContent(): ReactElement {
               <Text variant="body-lg" className="mb-6 text-text-secondary">
                 Before activation, set a password for your account.
               </Text>
-              <form className="mx-auto max-w-md space-y-4 text-left" onSubmit={handleSetPassword}>
+              <form className="w-full space-y-4 text-left" onSubmit={handleSetPassword}>
                 <div className="relative">
                   <Input
                     label="Password"
