@@ -1,9 +1,12 @@
 import type {
   AuthMeData,
+  CreateStaffUserRequest,
+  DeleteUserData,
   LoginResponse,
   RefreshResponse,
   RegisterRequest,
   RegisterResponse,
+  StaffUserData,
   SetActivationPasswordRequest,
   SuccessResponse,
   TenantSlugResponse,
@@ -25,6 +28,36 @@ export class AuthResource extends BaseResource {
    */
   register(data: RegisterRequest, signal?: AbortSignal): Promise<RegisterResponse> {
     return this.client.post("auth/register", data, { signal });
+  }
+
+  /**
+   * Create staff user (kitchen/waiter).
+   */
+  createUser(data: CreateStaffUserRequest, signal?: AbortSignal): Promise<RegisterResponse> {
+    return this.client.post("createuser", data, { signal });
+  }
+
+  /**
+   * List current tenant staff users.
+   */
+  async listUsers(signal?: AbortSignal): Promise<StaffUserData[]> {
+    const { data } = await this.client.get<SuccessResponse<StaffUserData[]>>("users", { signal });
+
+    return data;
+  }
+
+  /**
+   * Delete staff user by id.
+   */
+  async deleteUser(userId: string, signal?: AbortSignal): Promise<DeleteUserData> {
+    const { data } = await this.client.delete<SuccessResponse<DeleteUserData>>(
+      `delete-user/${encodeURIComponent(userId)}`,
+      {
+        signal,
+      },
+    );
+
+    return data;
   }
 
   /**

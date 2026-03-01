@@ -75,14 +75,8 @@ export const AdminSidebar = (): ReactElement => {
           >
             Payment Config
           </NavItem>
-          <NavItem
-            as={Link}
-            to="/stuff"
-            href="/stuff"
-            active={isActive("/stuff") || isActive("/staff")}
-            role="menuitem"
-          >
-            Stuff
+          <NavItem as={Link} to="/staff" href="/staff" active={isActive("/staff")} role="menuitem">
+            Staff
           </NavItem>
         </NavSection>
       </SidebarSection>

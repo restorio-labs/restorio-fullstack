@@ -1,6 +1,7 @@
 import { Button, Input, Select } from "@restorio/ui";
 import { type FormEvent, type ReactElement, useEffect, useMemo, useState } from "react";
 
+import { api } from "../api/client";
 import { PageLayout } from "../layouts/PageLayout";
 
 type AccessLevel = "kitchen" | "waiter";
@@ -11,9 +12,13 @@ interface StaffUser {
   accessLevel: AccessLevel;
 }
 
-const ENV = import.meta.env as unknown as Record<string, unknown>;
-const apiBaseUrlEnv = typeof ENV.VITE_API_BASE_URL === "string" ? ENV.VITE_API_BASE_URL : undefined;
-const API_BASE_URL = apiBaseUrlEnv ?? "http://localhost:8000/api/v1";
+interface StaffApiClient {
+  listUsers: () => Promise<{ id: string; email: string; account_type: string }[]>;
+  createUser: (payload: { email: string; access_level: AccessLevel }) => Promise<unknown>;
+  deleteUser: (userId: string) => Promise<unknown>;
+}
+
+const staffApi = api.auth as unknown as StaffApiClient;
 
 const isValidEmail = (value: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 
@@ -23,37 +28,6 @@ const toAccessLevel = (value: unknown): AccessLevel | null => {
   }
 
   return null;
-};
-
-const parseUsersResponse = (payload: unknown): StaffUser[] => {
-  const rawUsers =
-    payload && typeof payload === "object" && "data" in payload ? (payload as { data?: unknown }).data : payload;
-
-  if (!Array.isArray(rawUsers)) {
-    return [];
-  }
-
-  return rawUsers
-    .map((raw): StaffUser | null => {
-      if (!raw || typeof raw !== "object") {
-        return null;
-      }
-
-      const candidate = raw as { id?: unknown; email?: unknown; accessLevel?: unknown; account_type?: unknown };
-      const email = typeof candidate.email === "string" ? candidate.email : "";
-      const accessLevel = toAccessLevel(candidate.accessLevel ?? candidate.account_type);
-
-      if (email.trim() === "" || accessLevel === null) {
-        return null;
-      }
-
-      return {
-        id: typeof candidate.id === "string" ? candidate.id : crypto.randomUUID(),
-        email,
-        accessLevel,
-      };
-    })
-    .filter((user): user is StaffUser => user !== null);
 };
 
 export const StaffPage = (): ReactElement => {
@@ -80,31 +54,24 @@ export const StaffPage = (): ReactElement => {
       setIsLoadingUsers(true);
 
       try {
-        const usersResponse = await fetch(`${API_BASE_URL}/users`, {
-          method: "GET",
-          credentials: "include",
-        });
+        const loadedUsers = await staffApi.listUsers();
+        const parsedUsers = loadedUsers
+          .map((user): StaffUser | null => {
+            const accessLevel = toAccessLevel(user.account_type);
 
-        if (usersResponse.ok) {
-          const payload: unknown = await usersResponse.json();
+            if (accessLevel === null) {
+              return null;
+            }
 
-          setUsers(parseUsersResponse(payload));
+            return {
+              id: user.id,
+              email: user.email,
+              accessLevel,
+            };
+          })
+          .filter((user): user is StaffUser => user !== null);
 
-          return;
-        }
-
-        const authUsersResponse = await fetch(`${API_BASE_URL}/auth/users`, {
-          method: "GET",
-          credentials: "include",
-        });
-
-        if (!authUsersResponse.ok) {
-          return;
-        }
-
-        const payload: unknown = await authUsersResponse.json();
-
-        setUsers(parseUsersResponse(payload));
+        setUsers(parsedUsers);
       } catch {
         setUsers([]);
       } finally {
@@ -135,46 +102,7 @@ export const StaffPage = (): ReactElement => {
     };
 
     try {
-      let response = await fetch(`${API_BASE_URL}/createuser`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(payload),
-      });
-
-      if (response.status === 404) {
-        response = await fetch(`${API_BASE_URL}/register`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify(payload),
-        });
-      }
-
-      if (response.status === 404) {
-        response = await fetch(`${API_BASE_URL}/auth/register`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify(payload),
-        });
-      }
-
-      if (!response.ok) {
-        const responseBody: unknown = await response.json().catch(() => null);
-        const errorMessage =
-          responseBody && typeof responseBody === "object" && "message" in responseBody
-            ? String((responseBody as { message?: unknown }).message)
-            : "Unable to create user.";
-
-        throw new Error(errorMessage);
-      }
+      await staffApi.createUser(payload);
 
       setUsers((prevUsers) => [
         {
@@ -206,20 +134,7 @@ export const StaffPage = (): ReactElement => {
     setDeletingUserId(userId);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/delete-user/${encodeURIComponent(userId)}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        const responseBody: unknown = await response.json().catch(() => null);
-        const errorMessage =
-          responseBody && typeof responseBody === "object" && "message" in responseBody
-            ? String((responseBody as { message?: unknown }).message)
-            : "Unable to delete user.";
-
-        throw new Error(errorMessage);
-      }
+      await staffApi.deleteUser(userId);
 
       setUsers((previous) => previous.filter((user) => user.id !== userId));
       setPendingDeleteUserId(null);
@@ -291,11 +206,11 @@ export const StaffPage = (): ReactElement => {
           <div className="border-b border-border-default px-4 py-3 text-sm font-medium text-text-secondary">
             All users
           </div>
-          <div className="px-4 py-3">
+          <div className="px-4">
             {isLoadingUsers && <p className="text-sm text-text-tertiary">Loading users...</p>}
             {!isLoadingUsers && users.length === 0 && <p className="text-sm text-text-tertiary">No users yet.</p>}
             {!isLoadingUsers && users.length > 0 && (
-              <ul className="divide-y divide-border-default">
+              <ul className="m-0 list-none divide-y divide-border-default p-0">
                 {users.map((user) => (
                   <li key={user.id} className="flex items-center justify-between py-3">
                     <span className="text-sm text-text-primary">{user.email}</span>
@@ -320,7 +235,7 @@ export const StaffPage = (): ReactElement => {
                               <Button
                                 type="button"
                                 size="sm"
-                                variant="ghost"
+                                variant="secondary"
                                 onClick={() => {
                                   setPendingDeleteUserId(null);
                                 }}
