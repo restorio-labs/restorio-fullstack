@@ -160,10 +160,11 @@ async def delete_user(
     session: PostgresSession,
 ) -> SuccessResponse[dict[str, str]]:
     tenant_id = get_tenant_id_from_request(request)
+    resource_name = "User"
 
     user = await session.scalar(select(User).where(User.id == user_id, User.tenant_id == tenant_id))
     if user is None:
-        raise NotFoundResponse("User", str(user_id))
+        raise NotFoundResponse(resource_name, str(user_id))
 
     await session.delete(user)
     await session.flush()
