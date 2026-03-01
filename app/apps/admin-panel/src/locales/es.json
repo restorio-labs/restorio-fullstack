@@ -11,5 +11,14 @@
   },
   "errors": {
     "rootElementNotFound": "Elemento raíz no encontrado"
+  },
+  "languageSwitcher": {
+    "label": "Idioma",
+    "options": {
+      "en": "Inglés",
+      "pl": "Polaco",
+      "es": "Español",
+      "ar": "Árabe"
+    }
   }
 }

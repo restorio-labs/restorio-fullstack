@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, useMemo } from "react";
 
 import { colorTokens } from "../tokens/colors";
 import type { ThemeMode, ThemeOverride, Direction } from "../tokens/types";
+import { getCrossAppValue, setCrossAppValue } from "@restorio/utils";
 
 import { generateCSSVariables } from "./cssVariables";
 
@@ -35,7 +36,7 @@ const getInitialMode = (defaultMode: ThemeMode, storageKey: string): ThemeMode =
   }
 
   try {
-    const storedMode = window.localStorage.getItem(storageKey);
+    const storedMode = getCrossAppValue(storageKey);
 
     if (storedMode === "light" || storedMode === "dark") {
       return storedMode;
@@ -44,7 +45,7 @@ const getInitialMode = (defaultMode: ThemeMode, storageKey: string): ThemeMode =
     const fallbackMode = defaultMode === "system" ? getSystemTheme() : defaultMode;
 
     if (!isStoredMode(storedMode) || storedMode === "system") {
-      window.localStorage.setItem(storageKey, fallbackMode);
+      setCrossAppValue(storageKey, fallbackMode);
     }
 
     return fallbackMode;
@@ -125,7 +126,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     try {
       const storedMode = mode === "system" ? getSystemTheme() : mode;
 
-      window.localStorage.setItem(storageKey, storedMode);
+      setCrossAppValue(storageKey, storedMode);
     } catch {
       // Ignore storage errors in unsupported environments
     }

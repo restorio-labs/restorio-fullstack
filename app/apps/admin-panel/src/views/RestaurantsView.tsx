@@ -1,5 +1,5 @@
 import type { FloorCanvas as FloorCanvasType, TenantSummary } from "@restorio/types";
-import { Button, FloorCanvas } from "@restorio/ui";
+import { Button, FloorCanvas, useI18n } from "@restorio/ui";
 import type { ReactElement } from "react";
 
 import { RestaurantListCard } from "../components/RestaurantListCard";
@@ -28,15 +28,17 @@ export const RestaurantsView = ({
   onSelectTenant,
   onAddTenant,
 }: RestaurantsViewProps): ReactElement => {
+  const { t } = useI18n();
+
   return (
     <div className="p-6">
       <div className="flex items-center justify-between gap-4 pb-4">
         <Button variant="primary" size="sm" onClick={onAddTenant}>
-          Add restaurant
+          {t("restaurantsView.add")}
         </Button>
       </div>
       {restaurants.length === 0 ? (
-        <div className="text-center text-sm text-text-tertiary py-8">No restaurants found.</div>
+        <div className="text-center text-sm text-text-tertiary py-8">{t("restaurantsView.empty")}</div>
       ) : (
         <ul className="flex flex-col gap-2">
           {restaurants.map((tenant) => {
@@ -46,7 +48,7 @@ export const RestaurantsView = ({
               <RestaurantListCard
                 key={tenant.id}
                 title={tenant.name}
-                subtitle={`${tenant.floorCanvasCount} floor(s)`}
+                subtitle={t("restaurantsView.floorCount", { count: tenant.floorCanvasCount })}
                 rightContent={
                   activeCanvas ? (
                     <div className="h-[120px] w-[180px] overflow-hidden rounded-md border border-border-default bg-background-secondary">
@@ -61,7 +63,7 @@ export const RestaurantsView = ({
                   ) : undefined
                 }
                 onClick={() => onSelectTenant(tenant)}
-                ariaLabel={`Open floor layout for ${tenant.name}`}
+                ariaLabel={t("restaurantsView.ariaLabel", { name: tenant.name })}
               />
             );
           })}

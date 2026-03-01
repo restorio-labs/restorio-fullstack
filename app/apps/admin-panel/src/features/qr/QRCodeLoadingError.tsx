@@ -1,3 +1,4 @@
+import { useI18n } from "@restorio/ui";
 import type { ReactElement } from "react";
 
 interface QRCodeLoadingErrorProps {
@@ -10,13 +11,16 @@ interface QRCodeLoadingErrorProps {
 export const QRCodeLoadingError = ({
   isLoading,
   isError,
-  errorMessage = "Failed to load QR code.",
+  errorMessage,
   onGoBack,
 }: QRCodeLoadingErrorProps): ReactElement | null => {
+  const { t } = useI18n();
+  const resolvedErrorMessage = errorMessage ?? t("qrLoadingError.default");
+
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="text-sm text-text-tertiary">Loading...</div>
+        <div className="text-sm text-text-tertiary">{t("common.loading")}</div>
       </div>
     );
   }
@@ -25,9 +29,9 @@ export const QRCodeLoadingError = ({
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center text-sm text-text-tertiary">
-          <p className="mb-4">{errorMessage}</p>
+          <p className="mb-4">{resolvedErrorMessage}</p>
           <button type="button" onClick={onGoBack} className="text-interactive-primary hover:underline">
-            Go back to QR Code Generator
+            {t("qrLoadingError.goBack")}
           </button>
         </div>
       </div>

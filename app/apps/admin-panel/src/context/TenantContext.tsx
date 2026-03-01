@@ -1,4 +1,5 @@
 import type { Tenant, TenantSummary } from "@restorio/types";
+import { TENANT_STORAGE_KEY } from "@restorio/utils";
 import type { ReactElement, ReactNode } from "react";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
@@ -17,8 +18,6 @@ interface TenantContextValue {
   setSelectedTenantId: (tenantId: string) => void;
   refreshTenants: () => void;
 }
-
-const TENANT_STORAGE_KEY = "admin-panel:selected-tenant-id";
 
 const TenantContext = createContext<TenantContextValue | null>(null);
 

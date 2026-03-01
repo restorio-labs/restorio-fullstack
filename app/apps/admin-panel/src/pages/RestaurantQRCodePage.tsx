@@ -1,3 +1,4 @@
+import { useI18n } from "@restorio/ui";
 import { getAppHref } from "@restorio/utils";
 import type { ReactElement } from "react";
 import { useMemo } from "react";
@@ -10,6 +11,7 @@ import { QRCodeDisplay } from "../features/qr/QRCodeDisplay";
 import { QRCodeLoadingError } from "../features/qr/QRCodeLoadingError";
 
 export const RestaurantQRCodePage = (): ReactElement => {
+  const { t } = useI18n();
   const { tenantsState } = useCurrentTenant();
   const navigate = useNavigate();
   const { tenant, isLoading } = useSelectedTenantDetails();
@@ -23,7 +25,7 @@ export const RestaurantQRCodePage = (): ReactElement => {
   const qrDataUrl = useQRCodeDataUrl(menuUrl, {
     width: 1024,
     margin: 2,
-    errorMessage: "Failed to generate QR code for restaurant:",
+    errorMessage: t("restaurantQr.generateError"),
   });
 
   const handlePrint = (): void => {
@@ -37,7 +39,7 @@ export const RestaurantQRCodePage = (): ReactElement => {
   const loadingError = QRCodeLoadingError({
     isLoading,
     isError: tenantsState === "error" || !tenant,
-    errorMessage: "Failed to load restaurant QR code.",
+    errorMessage: t("restaurantQr.loadError"),
     onGoBack: handleGoBack,
   });
 
@@ -49,7 +51,7 @@ export const RestaurantQRCodePage = (): ReactElement => {
     <QRCodeDisplay
       title={tenant!.name}
       qrDataUrl={qrDataUrl}
-      subtitle="Restaurant Menu"
+      subtitle={t("restaurantQr.subtitle")}
       onPrint={handlePrint}
       onGoBack={handleGoBack}
       isPrintDisabled={!qrDataUrl}

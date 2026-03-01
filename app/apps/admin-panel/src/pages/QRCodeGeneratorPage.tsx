@@ -1,3 +1,4 @@
+import { useI18n } from "@restorio/ui";
 import { getAppHref } from "@restorio/utils";
 import type { ReactElement } from "react";
 import { useMemo } from "react";
@@ -12,6 +13,7 @@ import { getTenantTablesFromActiveCanvas } from "../features/qr/tableQRCodes";
 import { PageLayout } from "../layouts/PageLayout";
 
 export const QRCodeGeneratorPage = (): ReactElement => {
+  const { t } = useI18n();
   const { selectedTenant, selectedTenantId, tenantsState } = useCurrentTenant();
   const { tenant, isLoading } = useSelectedTenantDetails();
 
@@ -42,9 +44,9 @@ export const QRCodeGeneratorPage = (): ReactElement => {
 
   if (isLoading) {
     return (
-      <PageLayout title="QR Code Generator" description="Generate QR codes that redirect customers to your menu">
+      <PageLayout title={t("qrGenerator.title")} description={t("qrGenerator.description")}>
         <div className="flex flex-1 items-center justify-center p-8">
-          <div className="text-sm text-text-tertiary">Loading restaurant...</div>
+          <div className="text-sm text-text-tertiary">{t("qrGenerator.loadingRestaurant")}</div>
         </div>
       </PageLayout>
     );
@@ -52,9 +54,9 @@ export const QRCodeGeneratorPage = (): ReactElement => {
 
   if (tenantsState === "error") {
     return (
-      <PageLayout title="QR Code Generator" description="Generate QR codes that redirect customers to your menu">
+      <PageLayout title={t("qrGenerator.title")} description={t("qrGenerator.description")}>
         <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-text-tertiary">
-          Failed to load restaurants. Please try again later.
+          {t("qrGenerator.loadError")}
         </div>
       </PageLayout>
     );
@@ -62,9 +64,9 @@ export const QRCodeGeneratorPage = (): ReactElement => {
 
   if (!selectedTenantId || !selectedTenant) {
     return (
-      <PageLayout title="QR Code Generator" description="Generate QR codes that redirect customers to your menu">
+      <PageLayout title={t("qrGenerator.title")} description={t("qrGenerator.description")}>
         <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-text-tertiary">
-          Select a restaurant from the sidebar to generate its QR code.
+          {t("qrGenerator.selectRestaurant")}
         </div>
       </PageLayout>
     );
@@ -72,9 +74,9 @@ export const QRCodeGeneratorPage = (): ReactElement => {
 
   if (!tenant || !menuUrl) {
     return (
-      <PageLayout title="QR Code Generator" description="Generate QR codes that redirect customers to your menu">
+      <PageLayout title={t("qrGenerator.title")} description={t("qrGenerator.description")}>
         <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-text-tertiary">
-          Failed to load tenant details. Please try again later.
+          {t("qrGenerator.loadTenantError")}
         </div>
       </PageLayout>
     );
@@ -82,8 +84,8 @@ export const QRCodeGeneratorPage = (): ReactElement => {
 
   return (
     <PageLayout
-      title={`${selectedTenant.name} QR Codes`}
-      description="Generate QR codes that redirect customers to your menu"
+      title={t("qrGenerator.pageTitle", { name: selectedTenant.name })}
+      description={t("qrGenerator.description")}
     >
       <div className="flex flex-col gap-6 p-6">
         {tables.length > 3 && (
@@ -92,30 +94,28 @@ export const QRCodeGeneratorPage = (): ReactElement => {
               to="/qr-code/tables"
               className="inline-flex  rounded-md bg-interactive-primary px-4 py-2 text-sm font-medium text-primary-inverse hover:bg-interactive-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
             >
-              Batch Download Table QR Codes
+              {t("qrGenerator.batchDownload")}
             </Link>
           </div>
         )}
 
         <section className="flex flex-col gap-4">
-          <h2 className="text-xl font-semibold text-text-primary">QR Codes</h2>
+          <h2 className="text-xl font-semibold text-text-primary">{t("qrGenerator.sectionTitle")}</h2>
           {menuQrDataUrl ? (
             <QRCodeRow qrDataUrl={menuQrDataUrl} />
           ) : (
-            <div className="text-sm text-text-tertiary">Generating QR code...</div>
+            <div className="text-sm text-text-tertiary">{t("qrGenerator.generatingMenu")}</div>
           )}
         </section>
 
         <section className="flex flex-col gap-4">
           {tables.length === 0 ? (
-            <p className="text-sm text-text-tertiary">
-              No tables found in the active floor canvas. Add tables in Floor Editor to generate table QR codes.
-            </p>
+            <p className="text-sm text-text-tertiary">{t("qrGenerator.noTables")}</p>
           ) : (
             <>
               {isGeneratingTableQRCodes && (
                 <p className="print:hidden text-sm text-text-tertiary">
-                  Generating QR codes for {tables.length} tables...
+                  {t("qrGenerator.generatingTables", { count: tables.length })}
                 </p>
               )}
               <div className="flex flex-col gap-3">

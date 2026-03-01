@@ -2,7 +2,16 @@
   "common": {
     "skipToContent": "Skip to main content",
     "loading": "Loading...",
-    "error": "Error"
+    "error": "Error",
+    "actions": {
+      "save": "Save",
+      "saving": "Saving...",
+      "delete": "Delete",
+      "deleteSelected": "Delete selected",
+      "goBack": "Go Back",
+      "print": "Print",
+      "printQr": "Print QR Code"
+    }
   },
   "app": {
     "title": "Restorio Admin Panel",
@@ -11,5 +20,215 @@
   },
   "errors": {
     "rootElementNotFound": "Root element not found"
+  },
+  "sidebar": {
+    "ariaLabel": "Admin navigation",
+    "sections": {
+      "floorLayout": "Floor Layout",
+      "menu": "Menu",
+      "tools": "Tools",
+      "settings": "Settings"
+    },
+    "items": {
+      "label": "Choose app",
+      "adminPanel": "Admin Panel",
+      "kitchenPanel": "Kitchen Panel",
+      "waiterPanel": "Waiter Panel",
+      "floorEditor": "Floor Editor",
+      "menuCreator": "Menu Creator",
+      "pageConfigurator": "Page Configurator",
+      "qrCodeGenerator": "QR Code Generator",
+      "paymentConfig": "Payment Config",
+      "staff": "Staff"
+    },
+    "logoutLoading": "Logging out..."
+  },
+  "languageSwitcher": {
+    "label": "Language",
+    "options": {
+      "en": "English",
+      "pl": "Polish",
+      "es": "Spanish",
+      "ar": "Arabic"
+    }
+  },
+  "tenantSwitcher": {
+    "loadError": "Failed to load restaurants.",
+    "loading": "Loading restaurants...",
+    "empty": "No restaurants available.",
+    "addRestaurant": "+ Add new restaurant",
+    "select": "Select restaurant"
+  },
+  "floorEditor": {
+    "title": "Floor layout",
+    "loadingDescription": "Loading...",
+    "loadingRestaurant": "Loading restaurant...",
+    "noRestaurantDescription": "No restaurant selected",
+    "noRestaurantMessage": "Select a restaurant from the sidebar to edit its floor layout.",
+    "errorDescription": "Error",
+    "errorMessage": "Failed to load restaurant. Please try again later.",
+    "emptyMessage": "No floor layout exists for this restaurant yet. Create one to start designing.",
+    "createButton": "Create floor layout",
+    "creatingButton": "Creating...",
+    "layoutTitle": "Floor: {{name}}",
+    "defaultCanvasName": "Floor 1",
+    "saveSuccessTitle": "Layout saved",
+    "saveSuccessMessage": "Your floor layout changes were saved.",
+    "saveErrorTitle": "Save failed",
+    "saveErrorMessage": "Could not save floor layout. Please try again.",
+    "toolbar": {
+      "undo": "Undo",
+      "redo": "Redo",
+      "save": "Save",
+      "add": "Add"
+    },
+    "addMenu": {
+      "table": "Add table",
+      "zone": "Add zone",
+      "bar": "Add bar",
+      "wall": "Add wall",
+      "entrance": "Add entrance"
+    },
+    "panel": {
+      "title": "Customize",
+      "layer": "Layer",
+      "bringToFront": "Bring to front",
+      "sendToBack": "Send to back",
+      "forward": "Forward",
+      "backward": "Backward",
+      "name": "Name",
+      "color": "Color",
+      "seats": "Seats",
+      "label": "Label",
+      "delete": "Delete",
+      "deleteSelected": "Delete selected",
+      "multiSelected": "{{count}} items selected.",
+      "multiSelectHint": "Control mode: multi-select and move only.",
+      "selectHint": "Select an element on the canvas to customize it."
+    },
+    "aria": {
+      "resizeHandle": "Resize {{mode}}",
+      "setColor": "Set color {{color}}"
+    },
+    "zoneName": "Zone {{number}}"
+  },
+  "menuCreator": {
+    "title": "Menu Creator",
+    "description": "Create and manage menus for your restaurants",
+    "placeholderTitle": "Menu Creator",
+    "placeholderDescription": "Design menus with categories, items, and pricing"
+  },
+  "menuConfigurator": {
+    "title": "Page Configurator",
+    "description": "Configure the components and layout of your restaurant pages",
+    "placeholderTitle": "Menu Page Configurator",
+    "placeholderDescription": "Customize how your menu appears to customers on your restaurant page"
+  },
+  "payment": {
+    "title": "Payment Configurations",
+    "description": "Configure Przelewy24 payment provider settings",
+    "errors": {
+      "loadRestaurants": "Failed to load restaurants. Please refresh and try again.",
+      "selectRestaurant": "Select a restaurant from the header dropdown.",
+      "updateFailed": "Failed to update P24 configuration. Please verify the restaurant tenant ID and try again."
+    },
+    "selectedRestaurant": {
+      "title": "Selected restaurant",
+      "empty": "No restaurant selected."
+    },
+    "loadingRestaurants": "Loading restaurants...",
+    "fields": {
+      "merchantId": {
+        "label": "Merchant ID",
+        "placeholder": "e.g. 123456",
+        "helper": "Przelewy24 merchant identifier (max 6 digits)"
+      },
+      "apiKey": {
+        "label": "P24 API Key",
+        "placeholder": "Enter Przelewy24 API key",
+        "helper": "Max 32 characters"
+      },
+      "crcKey": {
+        "label": "P24 CRC Key",
+        "placeholder": "Enter Przelewy24 CRC key",
+        "helper": "Max 16 characters"
+      }
+    },
+    "success": "P24 configuration updated successfully.",
+    "actions": {
+      "save": "Save Configuration",
+      "saving": "Saving..."
+    }
+  },
+  "qrGenerator": {
+    "title": "QR Code Generator",
+    "description": "Generate QR codes that redirect customers to your menu",
+    "loadingRestaurant": "Loading restaurant...",
+    "loadError": "Failed to load restaurants. Please try again later.",
+    "selectRestaurant": "Select a restaurant from the sidebar to generate its QR code.",
+    "loadTenantError": "Failed to load tenant details. Please try again later.",
+    "pageTitle": "{{name}} QR Codes",
+    "batchDownload": "Batch Download Table QR Codes",
+    "sectionTitle": "QR Codes",
+    "generatingMenu": "Generating QR code...",
+    "noTables": "No tables found in the active floor canvas. Add tables in Floor Editor to generate table QR codes.",
+    "generatingTables": "Generating QR codes for {{count}} tables..."
+  },
+  "qrPrint": {
+    "loadingRestaurant": "Loading restaurant...",
+    "loadError": "Failed to load restaurant. Please try again later.",
+    "noRestaurant": "No restaurant selected.",
+    "backToGenerator": "Back to QR Code Generator",
+    "noTablesTitle": "No tables found in the floor layout.",
+    "noTablesAction": "Go to Floor Editor to add tables",
+    "goBack": "Go Back",
+    "print": "Print",
+    "generating": "Generating QR codes...",
+    "generatingTables": "Generating QR codes for {{count}} tables..."
+  },
+  "qrDisplay": {
+    "goBack": "Go Back",
+    "print": "Print QR Code",
+    "generating": "Generating QR code...",
+    "qrAlt": "QR code for {{title}}"
+  },
+  "qrRow": {
+    "table": "Table {{table}}",
+    "restaurant": "Restaurant",
+    "qrAltTable": "QR code for table {{table}}",
+    "qrAltRestaurant": "QR code for restaurant",
+    "failed": "Failed to generate QR code"
+  },
+  "qrLoadingError": {
+    "default": "Failed to load QR code.",
+    "goBack": "Go back to QR Code Generator"
+  },
+  "restaurantsView": {
+    "add": "Add restaurant",
+    "empty": "No restaurants found.",
+    "floorCount": "{{count}} floor(s)",
+    "ariaLabel": "Open floor layout for {{name}}"
+  },
+  "restaurantCreator": {
+    "title": "Restaurant Creator",
+    "description": "Create and configure new restaurants",
+    "placeholderTitle": "Restaurant Creator",
+    "placeholderDescription": "Create new restaurants for your business"
+  },
+  "restaurantQr": {
+    "generateError": "Failed to generate QR code for restaurant:",
+    "loadError": "Failed to load restaurant QR code.",
+    "subtitle": "Restaurant Menu"
+  },
+  "staff": {
+    "title": "Staff Management",
+    "description": "Manage kitchen, waiter, and other staff accounts",
+    "placeholderTitle": "Staff Management",
+    "placeholderDescription": "Add staff members and send activation links for kitchen panel, waiter panel, and other apps"
+  },
+  "tableQr": {
+    "generateError": "Failed to generate QR code for table {{table}}:",
+    "loadError": "Failed to load table QR code.",
+    "title": "Table {{table}}"
   }
 }

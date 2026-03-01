@@ -93,7 +93,7 @@ export const LogoutButton = ({
       {...restButtonProps}
       variant={variant}
       className={mergeClasses(
-        "gap-3 transition-colors duration-200 hover:bg-[#8B0000] focus-visible:outline focus-visible:outline-offset-2",
+        "gap-3 transition-colors duration-200 focus-visible:outline focus-visible:outline-offset-2",
         className,
       )}
       onClick={handleClick}

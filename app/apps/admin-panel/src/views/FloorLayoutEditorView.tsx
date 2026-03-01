@@ -5,9 +5,9 @@ import type {
   FloorLayoutEditorState,
   LayoutHistoryAction,
 } from "@restorio/types";
-import { Button, Dropdown, FloorCanvas, useDragResize, type DragResizeMode, useSnapToGrid } from "@restorio/ui";
+import { Button, Dropdown, FloorCanvas, useDragResize, type DragResizeMode, useI18n, useSnapToGrid, useTheme } from "@restorio/ui";
 import type { ReactElement, Reducer } from "react";
-import { useCallback, useEffect, useReducer, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 
 import { cloneFloorElement, createElementFromToAdd, layoutHistoryReducer } from "../features/floor/floorLayoutState";
 
@@ -24,6 +24,31 @@ const RESIZE_HANDLES: { mode: DragResizeMode; left: string; top: string; cursor:
   { mode: "resize-s", left: "50%", top: "100%", cursor: "s-resize" },
   { mode: "resize-sw", left: "0", top: "100%", cursor: "nesw-resize" },
   { mode: "resize-w", left: "0", top: "50%", cursor: "w-resize" },
+];
+
+type ThemeColors = ReturnType<typeof useTheme>["colors"];
+
+const ZONE_COLOR_SELECTORS: Array<(colors: ThemeColors) => string> = [
+  (theme) => theme.status.success.background,
+  (theme) => theme.status.info.background,
+  (theme) => theme.status.warning.background,
+  (theme) => theme.status.error.background,
+  (theme) => theme.status.success.border,
+  (theme) => theme.status.info.border,
+  (theme) => theme.status.warning.border,
+  (theme) => theme.status.error.border,
+  (theme) => theme.interactive.primary,
+  (theme) => theme.interactive.primaryHover,
+  (theme) => theme.interactive.primaryActive,
+  (theme) => theme.interactive.secondary,
+  (theme) => theme.interactive.secondaryHover,
+  (theme) => theme.interactive.secondaryActive,
+  (theme) => theme.interactive.success,
+  (theme) => theme.interactive.successHover,
+  (theme) => theme.interactive.danger,
+  (theme) => theme.interactive.dangerHover,
+  (theme) => theme.background.secondary,
+  (theme) => theme.background.tertiary,
 ];
 
 interface FloorLayoutEditorViewProps {
@@ -74,6 +99,8 @@ const getMinZIndex = (elements: FloorCanvasType["elements"]): number =>
   elements.reduce((min, el) => Math.min(min, Number(el.zIndex ?? 0)), 0);
 
 export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEditorViewProps): ReactElement => {
+  const { t } = useI18n();
+  const { colors } = useTheme();
   const normalizedInitialLayout = ensureMinimumCanvasSize(initialLayout);
   const [state, dispatch] = useReducer<Reducer<FloorLayoutEditorState, LayoutHistoryAction>>(layoutHistoryReducer, {
     layout: normalizedInitialLayout,
@@ -145,6 +172,18 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
   const { setSelectedId } = dragResize;
 
   const [addZoneCount, setAddZoneCount] = useState(0);
+
+  const zoneColors = useMemo(() => {
+    const palette = ZONE_COLOR_SELECTORS.map((getColor) => getColor(colors)).filter(
+      (value): value is string => Boolean(value),
+    );
+
+    if (palette.length === 0) {
+      return [colors.status.info.background];
+    }
+
+    return Array.from(new Set(palette));
+  }, [colors]);
 
   useEffect(() => {
     dispatch({ type: "SET_LAYOUT", payload: ensureMinimumCanvasSize(initialLayout) });
@@ -342,8 +381,14 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
 
   const handleAddZone = useCallback(() => {
     setAddZoneCount((c) => c + 1);
-    addElement({ type: "zone", name: `Zone ${addZoneCount + 1}` });
-  }, [addElement, addZoneCount]);
+    const paletteColor = zoneColors[(addZoneCount + zoneColors.length) % zoneColors.length] ?? zoneColors[0];
+
+    addElement({
+      type: "zone",
+      name: t("floorEditor.zoneName", { number: addZoneCount + 1 }),
+      color: paletteColor,
+    });
+  }, [addElement, addZoneCount, t, zoneColors]);
 
   const selectedElements = state.layout.elements.filter((el) => selectedIds.includes(el.id));
   const selectedElement = selectedElements.length === 1 ? selectedElements[0] : null;
@@ -351,17 +396,6 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
 
   const canUndo = state.historyIndex > 0;
   const canRedo = state.historyIndex < state.history.length - 1;
-
-  // prettier-ignore
-  const ZONE_COLORS = [
-    "#FF6B6B", "#FF8E53", "#FFB703", "#FFD166", "#F4E409", "#C9F31D",
-    "#90EE02", "#4CD137", "#2ECC71", "#1ABC9C", "#00B894", "#00CEC9",
-    "#00A8FF", "#0984E3", "#3C40C6", "#5352ED", "#7D5FFF", "#A55EEA",
-    "#C56CF0", "#D980FA", "#E84393", "#FD79A8", "#FF7675", "#E17055",
-    "#D35400", "#E67E22", "#F39C12", "#B7950B", "#6AB04C", "#27AE60",
-    "#16A085", "#2980B9", "#3742FA", "#6C5CE7", "#8E44AD", "#9B59B6",
-    "#C0392B", "#E74C3C", "#FF4757", "#FF6348", "#FFA502", "#2ED573",
-  ];
 
   return (
     <div className="box-border flex h-full min-h-0 flex-col overflow-hidden pt-4">
@@ -374,9 +408,9 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
               className="w-full"
               disabled={!canUndo}
               onClick={() => dispatch({ type: "UNDO" })}
-              aria-label="Undo"
+              aria-label={t("floorEditor.toolbar.undo")}
             >
-              Undo
+              {t("floorEditor.toolbar.undo")}
             </Button>
             <Button
               variant="secondary"
@@ -384,19 +418,19 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
               className="w-full"
               disabled={!canRedo}
               onClick={() => dispatch({ type: "REDO" })}
-              aria-label="Redo"
+              aria-label={t("floorEditor.toolbar.redo")}
             >
-              Redo
+              {t("floorEditor.toolbar.redo")}
             </Button>
             {onSave && (
               <Button variant="primary" size="sm" className="w-full" onClick={() => void onSave(state.layout)}>
-                Save
+                {t("floorEditor.toolbar.save")}
               </Button>
             )}
             <Dropdown
               trigger={
                 <Button variant="secondary" size="sm" className="w-full">
-                  Add
+                  {t("floorEditor.toolbar.add")}
                 </Button>
               }
               placement="bottom-start"
@@ -413,7 +447,7 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
                     setIsAddOpen(false);
                   }}
                 >
-                  Add table
+                  {t("floorEditor.addMenu.table")}
                 </button>
                 <button
                   type="button"
@@ -423,7 +457,7 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
                     setIsAddOpen(false);
                   }}
                 >
-                  Add zone
+                  {t("floorEditor.addMenu.zone")}
                 </button>
                 <button
                   type="button"
@@ -433,7 +467,7 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
                     setIsAddOpen(false);
                   }}
                 >
-                  Add bar
+                  {t("floorEditor.addMenu.bar")}
                 </button>
                 <button
                   type="button"
@@ -443,7 +477,7 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
                     setIsAddOpen(false);
                   }}
                 >
-                  Add wall
+                  {t("floorEditor.addMenu.wall")}
                 </button>
                 <button
                   type="button"
@@ -453,7 +487,7 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
                     setIsAddOpen(false);
                   }}
                 >
-                  Add entrance
+                  {t("floorEditor.addMenu.entrance")}
                 </button>
               </div>
             </Dropdown>
@@ -519,7 +553,7 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
                           rotation: selectedElement.rotation,
                         });
                       }}
-                      aria-label={`Resize ${mode}`}
+                      aria-label={t("floorEditor.aria.resizeHandle", { mode })}
                     />
                   ))}
                 </div>
@@ -528,11 +562,11 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
           </div>
         </div>
         <aside className="mr-4 flex w-64 min-h-0 flex-shrink-0 flex-col gap-3 overflow-auto rounded-r-lg border-l border-border-default bg-surface-primary p-4">
-          <h3 className="text-sm font-semibold text-text-primary">Customize</h3>
+          <h3 className="text-sm font-semibold text-text-primary">{t("floorEditor.panel.title")}</h3>
           {selectedElement ? (
             <>
               <div className="flex flex-col gap-2">
-                <span className="text-xs text-text-secondary">Layer</span>
+                <span className="text-xs text-text-secondary">{t("floorEditor.panel.layer")}</span>
                 <div className="flex flex-wrap gap-2">
                   <Button
                     variant="secondary"
@@ -546,7 +580,7 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
                       });
                     }}
                   >
-                    Bring to front
+                    {t("floorEditor.panel.bringToFront")}
                   </Button>
                   <Button
                     variant="secondary"
@@ -560,7 +594,7 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
                       });
                     }}
                   >
-                    Send to back
+                    {t("floorEditor.panel.sendToBack")}
                   </Button>
                   <Button
                     variant="secondary"
@@ -572,7 +606,7 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
                       });
                     }}
                   >
-                    Forward
+                    {t("floorEditor.panel.forward")}
                   </Button>
                   <Button
                     variant="secondary"
@@ -584,14 +618,14 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
                       });
                     }}
                   >
-                    Backward
+                    {t("floorEditor.panel.backward")}
                   </Button>
                 </div>
               </div>
               {selectedElement.type === "zone" && (
                 <>
                   <label className="text-xs text-text-secondary">
-                    Name
+                    {t("floorEditor.panel.name")}
                     <input
                       type="text"
                       value={selectedElement.name}
@@ -605,9 +639,9 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
                     />
                   </label>
                   <label className="text-xs text-text-secondary">
-                    Color
+                    {t("floorEditor.panel.color")}
                     <div className="mt-1 flex flex-wrap gap-1">
-                      {ZONE_COLORS.map((hex) => (
+                      {zoneColors.map((hex) => (
                         <button
                           key={hex}
                           type="button"
@@ -619,7 +653,7 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
                           }
                           className="h-6 w-6 rounded border-2 border-border-default"
                           style={{ backgroundColor: hex }}
-                          aria-label={`Set color ${hex}`}
+                          aria-label={t("floorEditor.aria.setColor", { color: hex })}
                           title={hex}
                         />
                       ))}
@@ -630,7 +664,7 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
               {selectedElement.type === "table" && (
                 <>
                   <label className="text-xs text-text-secondary">
-                    Seats
+                    {t("floorEditor.panel.seats")}
                     <input
                       type="number"
                       min={1}
@@ -648,7 +682,7 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
               )}
               {selectedElement.type === "bar" && (
                 <label className="text-xs text-text-secondary">
-                  Label
+                  {t("floorEditor.panel.label")}
                   <input
                     type="text"
                     value={selectedElement.label ?? ""}
@@ -664,7 +698,7 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
               )}
               {selectedElement.type === "entrance" && (
                 <label className="text-xs text-text-secondary">
-                  Label
+                  {t("floorEditor.panel.label")}
                   <input
                     type="text"
                     value={selectedElement.label ?? ""}
@@ -679,20 +713,22 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
                 </label>
               )}
               <Button variant="danger" size="sm" onClick={removeSelectedElements}>
-                Delete
+                {t("floorEditor.panel.delete")}
               </Button>
             </>
           ) : hasMultiSelection ? (
             <>
-              <p className="text-sm text-text-tertiary">{selectedIds.length} items selected.</p>
+              <p className="text-sm text-text-tertiary">
+                {t("floorEditor.panel.multiSelected", { count: selectedIds.length })}
+              </p>
               <Button variant="danger" size="sm" onClick={removeSelectedElements}>
-                Delete selected
+                {t("floorEditor.panel.deleteSelected")}
               </Button>
             </>
           ) : isMultiSelectModifierPressed ? (
-            <p className="text-sm text-text-tertiary">Control mode: multi-select and move only.</p>
+            <p className="text-sm text-text-tertiary">{t("floorEditor.panel.multiSelectHint")}</p>
           ) : (
-            <p className="text-sm text-text-tertiary">Select an element on the canvas to customize it.</p>
+            <p className="text-sm text-text-tertiary">{t("floorEditor.panel.selectHint")}</p>
           )}
         </aside>
       </div>

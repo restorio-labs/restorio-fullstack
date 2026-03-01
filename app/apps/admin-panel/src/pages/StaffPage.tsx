@@ -1,16 +1,17 @@
+import { useI18n } from "@restorio/ui";
 import type { ReactElement } from "react";
 
 import { PageLayout } from "../layouts/PageLayout";
 
 export const StaffPage = (): ReactElement => {
+  const { t } = useI18n();
+
   return (
-    <PageLayout title="Staff Management" description="Manage kitchen, waiter, and other staff accounts">
+    <PageLayout title={t("staff.title")} description={t("staff.description")}>
       <div className="p-6">
         <div className="flex flex-col items-center justify-center min-h-[400px] border-2 border-dashed border-border-default rounded-lg">
-          <h2 className="text-lg font-medium text-text-secondary">Staff Management</h2>
-          <p className="mt-2 text-sm text-text-tertiary">
-            Add staff members and send activation links for kitchen panel, waiter panel, and other apps
-          </p>
+          <h2 className="text-lg font-medium text-text-secondary">{t("staff.placeholderTitle")}</h2>
+          <p className="mt-2 text-sm text-text-tertiary">{t("staff.placeholderDescription")}</p>
         </div>
       </div>
     </PageLayout>

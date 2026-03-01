@@ -1,4 +1,4 @@
-import { Dropdown } from "@restorio/ui";
+import { Dropdown, useI18n } from "@restorio/ui";
 import type { ReactElement } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -6,28 +6,29 @@ import { useNavigate } from "react-router-dom";
 import { useCurrentTenant } from "../../context/TenantContext";
 
 export const TenantSwitcher = (): ReactElement | null => {
+  const { t } = useI18n();
   const { tenants, tenantsState, selectedTenantId, selectedTenant, setSelectedTenantId } = useCurrentTenant();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
   if (tenantsState === "error") {
-    return <div className="text-sm text-status-error-text">Failed to load restaurants.</div>;
+    return <div className="text-sm text-status-error-text">{t("tenantSwitcher.loadError")}</div>;
   }
 
   if (tenantsState === "loading" || tenantsState === "idle") {
-    return <div className="text-sm text-text-tertiary">Loading restaurants...</div>;
+    return <div className="text-sm text-text-tertiary">{t("tenantSwitcher.loading")}</div>;
   }
 
   if (tenants.length === 0) {
     return (
       <div className="flex flex-col gap-2">
-        <div className="text-sm text-text-tertiary">No restaurants available.</div>
+        <div className="text-sm text-text-tertiary">{t("tenantSwitcher.empty")}</div>
         <button
           type="button"
           onClick={() => navigate("/restaurant-creator")}
           className="text-sm font-medium text-interactive-primary hover:underline"
         >
-          + Add new restaurant
+          {t("tenantSwitcher.addRestaurant")}
         </button>
       </div>
     );
@@ -42,7 +43,7 @@ export const TenantSwitcher = (): ReactElement | null => {
         className="w-full"
         trigger={
           <div className="flex w-full items-center justify-between rounded-lg border border-border-default bg-surface-primary px-5 py-4 text-base font-medium text-text-primary shadow-sm transition hover:bg-surface-secondary">
-            <span className="truncate">{selectedTenant?.name ?? "Select restaurant"}</span>
+            <span className="truncate">{selectedTenant?.name ?? t("tenantSwitcher.select")}</span>
             <svg
               className="ml-3 h-5 w-5 shrink-0 text-text-secondary"
               viewBox="0 0 24 24"
@@ -82,7 +83,7 @@ export const TenantSwitcher = (): ReactElement | null => {
               setIsOpen(false);
             }}
           >
-            + Add new restaurant
+            {t("tenantSwitcher.addRestaurant")}
           </button>
         </div>
       </Dropdown>

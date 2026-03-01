@@ -1,3 +1,4 @@
+import { useI18n } from "@restorio/ui";
 import type { ReactElement } from "react";
 import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -10,11 +11,13 @@ import { QRCodeLoadingError } from "../features/qr/QRCodeLoadingError";
 import { getTableQrUrl } from "../features/qr/tableQRCodes";
 
 export const TableQRCodePage = (): ReactElement => {
+  const { t } = useI18n();
   const { tableId } = useParams<{ tableId: string }>();
   const { tenantsState } = useCurrentTenant();
   const navigate = useNavigate();
 
   const tableNumber = tableId ? parseInt(tableId, 10) : null;
+  const resolvedTableNumber = tableNumber ?? 0;
 
   const { tenant, isLoading } = useSelectedTenantDetails();
   const qrUrl = useMemo(() => {
@@ -27,7 +30,7 @@ export const TableQRCodePage = (): ReactElement => {
   const qrDataUrl = useQRCodeDataUrl(qrUrl, {
     width: 1024,
     margin: 2,
-    errorMessage: tableNumber ? `Failed to generate QR code for table ${tableNumber}:` : undefined,
+    errorMessage: tableNumber ? t("tableQr.generateError", { table: resolvedTableNumber }) : undefined,
   });
 
   const handlePrint = (): void => {
@@ -41,7 +44,7 @@ export const TableQRCodePage = (): ReactElement => {
   const loadingError = QRCodeLoadingError({
     isLoading,
     isError: tenantsState === "error" || !tenant || !tableNumber,
-    errorMessage: "Failed to load table QR code.",
+    errorMessage: t("tableQr.loadError"),
     onGoBack: handleGoBack,
   });
 
@@ -51,7 +54,7 @@ export const TableQRCodePage = (): ReactElement => {
 
   return (
     <QRCodeDisplay
-      title={`Table ${tableNumber}`}
+      title={t("tableQr.title", { table: resolvedTableNumber })}
       qrDataUrl={qrDataUrl}
       subtitle={tenant!.name}
       onPrint={handlePrint}

@@ -1,5 +1,5 @@
 import type { FloorCanvas as FloorCanvasType, LoadingState, Tenant } from "@restorio/types";
-import { useToast } from "@restorio/ui";
+import { useI18n, useToast } from "@restorio/ui";
 import { useEffect, useState, type ReactElement } from "react";
 
 import { api } from "../api/client";
@@ -18,6 +18,7 @@ const getActiveCanvas = (tenant: Tenant): FloorCanvasType | undefined => {
 };
 
 export const FloorEditorPage = (): ReactElement => {
+  const { t } = useI18n();
   const { selectedTenantId, tenantsState } = useCurrentTenant();
 
   const [loadingState, setLoadingState] = useState<LoadingState>("loading");
@@ -60,9 +61,9 @@ export const FloorEditorPage = (): ReactElement => {
 
   if (tenantsState === "loading" || tenantsState === "idle" || loadingState === "loading") {
     return (
-      <PageLayout title="Floor layout" description="Loading...">
+      <PageLayout title={t("floorEditor.title")} description={t("floorEditor.loadingDescription")}>
         <div className="flex flex-1 items-center justify-center p-8">
-          <div className="text-sm text-text-tertiary">Loading restaurant...</div>
+          <div className="text-sm text-text-tertiary">{t("floorEditor.loadingRestaurant")}</div>
         </div>
       </PageLayout>
     );
@@ -70,9 +71,9 @@ export const FloorEditorPage = (): ReactElement => {
 
   if (!selectedTenantId || loadingState === "not-found" || !tenant) {
     return (
-      <PageLayout title="Floor layout" description="No restaurant selected">
+      <PageLayout title={t("floorEditor.title")} description={t("floorEditor.noRestaurantDescription")}>
         <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-text-tertiary">
-          Select a restaurant from the sidebar to edit its floor layout.
+          {t("floorEditor.noRestaurantMessage")}
         </div>
       </PageLayout>
     );
@@ -80,9 +81,9 @@ export const FloorEditorPage = (): ReactElement => {
 
   if (loadingState === "error") {
     return (
-      <PageLayout title="Floor layout" description="Error">
+      <PageLayout title={t("floorEditor.title")} description={t("floorEditor.errorDescription")}>
         <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-text-tertiary">
-          Failed to load restaurant. Please try again later.
+          {t("floorEditor.errorMessage")}
         </div>
       </PageLayout>
     );
@@ -99,7 +100,7 @@ export const FloorEditorPage = (): ReactElement => {
 
     try {
       await api.floorCanvases.create(tenant.id, {
-        name: "Floor 1",
+        name: t("floorEditor.defaultCanvasName"),
         width: 1000,
         height: 800,
         elements: [],
@@ -115,10 +116,10 @@ export const FloorEditorPage = (): ReactElement => {
 
   if (!hasCanvases) {
     return (
-      <PageLayout title="Floor layout" description={tenant.name}>
+      <PageLayout title={t("floorEditor.title")} description={tenant.name}>
         <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
           <p className="text-sm text-text-tertiary">
-            No floor layout exists for this restaurant yet. Create one to start designing.
+            {t("floorEditor.emptyMessage")}
           </p>
           <button
             type="button"
@@ -126,7 +127,7 @@ export const FloorEditorPage = (): ReactElement => {
             disabled={isCreatingCanvas}
             className="rounded-md bg-interactive-primary px-4 py-2 text-sm font-medium text-primary-inverse hover:bg-interactive-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus disabled:opacity-50"
           >
-            {isCreatingCanvas ? "Creating…" : "Create floor layout"}
+            {isCreatingCanvas ? t("floorEditor.creatingButton") : t("floorEditor.createButton")}
           </button>
         </div>
       </PageLayout>
@@ -143,15 +144,15 @@ export const FloorEditorPage = (): ReactElement => {
         height: layout.height,
         elements: layout.elements,
       });
-      showToast("success", "Layout saved", "Your floor layout changes were saved.");
+      showToast("success", t("floorEditor.saveSuccessTitle"), t("floorEditor.saveSuccessMessage"));
     } catch (error) {
       console.error("Failed to save layout:", error);
-      showToast("error", "Save failed", "Could not save floor layout. Please try again.");
+      showToast("error", t("floorEditor.saveErrorTitle"), t("floorEditor.saveErrorMessage"));
     }
   };
 
   return (
-    <PageLayout title={`Floor: ${activeCanvasForEditor.name}`} description={tenant.name}>
+    <PageLayout title={t("floorEditor.layoutTitle", { name: activeCanvasForEditor.name })} description={tenant.name}>
       <FloorLayoutEditorView initialLayout={activeCanvasForEditor} onSave={handleSave} />
     </PageLayout>
   );

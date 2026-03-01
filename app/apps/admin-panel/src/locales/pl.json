@@ -2,14 +2,233 @@
   "common": {
     "skipToContent": "Przejdź do głównej treści",
     "loading": "Ładowanie...",
-    "error": "Błąd"
+    "error": "Błąd",
+    "actions": {
+      "save": "Zapisz",
+      "saving": "Zapisywanie...",
+      "delete": "Usuń",
+      "deleteSelected": "Usuń wybrane",
+      "goBack": "Wstecz",
+      "print": "Drukuj",
+      "printQr": "Drukuj kod QR"
+    }
   },
   "app": {
-    "title": "Panel Administracyjny Restorio",
-    "comingSoon": "Panel administracyjny wkrótce...",
+    "title": "Panel Administratora Restorio",
+    "comingSoon": "Panel administracyjny już wkrótce...",
     "description": "Zarządzaj operacjami swojej restauracji"
   },
   "errors": {
     "rootElementNotFound": "Nie znaleziono elementu głównego"
+  },
+  "sidebar": {
+    "ariaLabel": "Nawigacja panelu administratora",
+    "sections": {
+      "floorLayout": "Układ sali",
+      "menu": "Menu",
+      "tools": "Narzędzia",
+      "settings": "Ustawienia"
+    },
+    "items": {
+      "label": "Widok",
+      "adminPanel": "Panel administratora",
+      "kitchenPanel": "Panel kuchni",
+      "waiterPanel": "Panel kelnera",
+      "floorEditor": "Edytor układu sali",
+      "menuCreator": "Kreator menu",
+      "pageConfigurator": "Konfigurator strony",
+      "qrCodeGenerator": "Generator kodów QR",
+      "paymentConfig": "Konfiguracja płatności",
+      "staff": "Personel"
+    },
+    "logoutLoading": "Wylogowywanie..."
+  },
+  "languageSwitcher": {
+    "label": "Język",
+    "options": {
+      "en": "Angielski",
+      "pl": "Polski",
+      "es": "Hiszpański",
+      "ar": "Arabski"
+    }
+  },
+  "tenantSwitcher": {
+    "loadError": "Nie udało się wczytać restauracji.",
+    "loading": "Wczytywanie restauracji...",
+    "empty": "Brak dostępnych restauracji.",
+    "addRestaurant": "+ Dodaj nową restaurację",
+    "select": "Wybierz restaurację"
+  },
+  "floorEditor": {
+    "title": "Układ sali",
+    "loadingDescription": "Ładowanie...",
+    "loadingRestaurant": "Ładowanie restauracji...",
+    "noRestaurantDescription": "Nie wybrano restauracji",
+    "noRestaurantMessage": "Wybierz restaurację z panelu bocznego, aby edytować jej układ sali.",
+    "errorDescription": "Błąd",
+    "errorMessage": "Nie udało się wczytać restauracji. Spróbuj ponownie później.",
+    "emptyMessage": "Dla tej restauracji nie utworzono jeszcze układu sali. Utwórz go, aby rozpocząć projektowanie.",
+    "createButton": "Utwórz układ sali",
+    "creatingButton": "Tworzenie...",
+    "layoutTitle": "Sala: {{name}}",
+    "defaultCanvasName": "Sala 1",
+    "saveSuccessTitle": "Układ zapisany",
+    "saveSuccessMessage": "Zmiany w układzie sali zostały zapisane.",
+    "saveErrorTitle": "Nie udało się zapisać",
+    "saveErrorMessage": "Nie można zapisać układu sali. Spróbuj ponownie.",
+    "toolbar": {
+      "undo": "Cofnij",
+      "redo": "Ponów",
+      "save": "Zapisz",
+      "add": "Dodaj"
+    },
+    "addMenu": {
+      "table": "Dodaj stolik",
+      "zone": "Dodaj strefę",
+      "bar": "Dodaj bar",
+      "wall": "Dodaj ścianę",
+      "entrance": "Dodaj wejście"
+    },
+    "panel": {
+      "title": "Dostosuj",
+      "layer": "Warstwa",
+      "bringToFront": "Przesuń na wierzch",
+      "sendToBack": "Przesuń na spód",
+      "forward": "Do przodu",
+      "backward": "Do tyłu",
+      "name": "Nazwa",
+      "color": "Kolor",
+      "seats": "Miejsca",
+      "label": "Etykieta",
+      "delete": "Usuń",
+      "deleteSelected": "Usuń zaznaczone",
+      "multiSelected": "Wybrano elementów: {{count}}.",
+      "multiSelectHint": "Tryb kontroli: tylko zaznaczanie i przesuwanie.",
+      "selectHint": "Wybierz element na płótnie, aby go dostosować."
+    },
+    "aria": {
+      "resizeHandle": "Zmień rozmiar {{mode}}",
+      "setColor": "Ustaw kolor {{color}}"
+    },
+    "zoneName": "Strefa {{number}}"
+  },
+  "menuCreator": {
+    "title": "Kreator menu",
+    "description": "Twórz i zarządzaj menu swoich restauracji",
+    "placeholderTitle": "Kreator menu",
+    "placeholderDescription": "Projektuj menu z kategoriami, pozycjami i cenami"
+  },
+  "menuConfigurator": {
+    "title": "Konfigurator strony",
+    "description": "Konfiguruj komponenty i układ stron restauracji",
+    "placeholderTitle": "Konfigurator strony menu",
+    "placeholderDescription": "Dostosuj sposób prezentacji menu klientom"
+  },
+  "payment": {
+    "title": "Konfiguracje płatności",
+    "description": "Skonfiguruj ustawienia operatora Przelewy24",
+    "errors": {
+      "loadRestaurants": "Nie udało się wczytać restauracji. Odśwież i spróbuj ponownie.",
+      "selectRestaurant": "Wybierz restaurację z rozwijanego menu w nagłówku.",
+      "updateFailed": "Nie udało się zaktualizować konfiguracji P24. Sprawdź identyfikator najemcy i spróbuj ponownie."
+    },
+    "selectedRestaurant": {
+      "title": "Wybrana restauracja",
+      "empty": "Nie wybrano restauracji."
+    },
+    "loadingRestaurants": "Wczytywanie restauracji...",
+    "fields": {
+      "merchantId": {
+        "label": "Identyfikator sprzedawcy",
+        "placeholder": "np. 123456",
+        "helper": "Identyfikator sprzedawcy Przelewy24 (maks. 6 cyfr)"
+      },
+      "apiKey": {
+        "label": "Klucz API P24",
+        "placeholder": "Wpisz klucz API Przelewy24",
+        "helper": "Maks. 32 znaki"
+      },
+      "crcKey": {
+        "label": "Klucz CRC P24",
+        "placeholder": "Wpisz klucz CRC Przelewy24",
+        "helper": "Maks. 16 znaków"
+      }
+    },
+    "success": "Konfiguracja P24 została zaktualizowana.",
+    "actions": {
+      "save": "Zapisz konfigurację",
+      "saving": "Zapisywanie..."
+    }
+  },
+  "qrGenerator": {
+    "title": "Generator kodów QR",
+    "description": "Generuj kody QR kierujące klientów do menu",
+    "loadingRestaurant": "Wczytywanie restauracji...",
+    "loadError": "Nie udało się wczytać restauracji. Spróbuj ponownie później.",
+    "selectRestaurant": "Wybierz restaurację z panelu bocznego, aby wygenerować jej kod QR.",
+    "loadTenantError": "Nie udało się wczytać danych najemcy. Spróbuj ponownie później.",
+    "pageTitle": "Kody QR dla {{name}}",
+    "batchDownload": "Pobierz zbiorczo kody QR",
+    "sectionTitle": "Kody QR",
+    "generatingMenu": "Generowanie kodu QR...",
+    "noTables": "Nie znaleziono stolików na aktywnym układzie sali. Dodaj stoliki w edytorze układu.",
+    "generatingTables": "Generowanie kodów QR dla {{count}} stolików..."
+  },
+  "qrPrint": {
+    "loadingRestaurant": "Wczytywanie restauracji...",
+    "loadError": "Nie udało się wczytać restauracji. Spróbuj ponownie później.",
+    "noRestaurant": "Nie wybrano restauracji.",
+    "backToGenerator": "Wróć do generatora kodów QR",
+    "noTablesTitle": "Nie znaleziono stolików w układzie sali.",
+    "noTablesAction": "Przejdź do edytora układu sali, aby dodać stoliki",
+    "goBack": "Wróć",
+    "print": "Drukuj",
+    "generating": "Generowanie kodów QR...",
+    "generatingTables": "Generowanie kodów QR dla {{count}} stolików..."
+  },
+  "qrDisplay": {
+    "goBack": "Wróć",
+    "print": "Drukuj kod QR",
+    "generating": "Generowanie kodu QR...",
+    "qrAlt": "Kod QR dla {{title}}"
+  },
+  "qrRow": {
+    "table": "Stolik {{table}}",
+    "restaurant": "Restauracja",
+    "qrAltTable": "Kod QR dla stolika {{table}}",
+    "qrAltRestaurant": "Kod QR restauracji",
+    "failed": "Nie udało się wygenerować kodu QR"
+  },
+  "qrLoadingError": {
+    "default": "Nie udało się wczytać kodu QR.",
+    "goBack": "Wróć do generatora kodów QR"
+  },
+  "restaurantsView": {
+    "add": "Dodaj restaurację",
+    "empty": "Nie znaleziono restauracji.",
+    "floorCount": "{{count}} sal(a)",
+    "ariaLabel": "Otwórz układ sali dla {{name}}"
+  },
+  "restaurantCreator": {
+    "title": "Kreator restauracji",
+    "description": "Twórz i konfiguruj nowe restauracje",
+    "placeholderTitle": "Kreator restauracji",
+    "placeholderDescription": "Twórz nowe restauracje dla swojej firmy"
+  },
+  "restaurantQr": {
+    "generateError": "Nie udało się wygenerować kodu QR dla restauracji:",
+    "loadError": "Nie udało się wczytać kodu QR restauracji.",
+    "subtitle": "Menu restauracji"
+  },
+  "staff": {
+    "title": "Zarządzanie personelem",
+    "description": "Zarządzaj kontami kuchni, kelnerów i innych pracowników",
+    "placeholderTitle": "Zarządzanie personelem",
+    "placeholderDescription": "Dodawaj pracowników i wysyłaj linki aktywacyjne do panelu kuchni, kelnera i innych aplikacji"
+  },
+  "tableQr": {
+    "generateError": "Nie udało się wygenerować kodu QR dla stolika {{table}}:",
+    "loadError": "Nie udało się wczytać kodu QR stolika.",
+    "title": "Stolik {{table}}"
   }
 }

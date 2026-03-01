@@ -1,4 +1,4 @@
-import { Button, Form, FormActions, Input } from "@restorio/ui";
+import { Button, Form, FormActions, Input, useI18n } from "@restorio/ui";
 import { type FormEvent, type ReactElement, useEffect, useState } from "react";
 
 import { api } from "../api/client";
@@ -8,6 +8,7 @@ import { PageLayout } from "../layouts/PageLayout";
 type SubmitState = "idle" | "submitting" | "success" | "error";
 
 export const PaymentConfigPage = (): ReactElement => {
+  const { t } = useI18n();
   const { selectedTenantId, selectedTenant, tenantsState } = useCurrentTenant();
   const [merchantId, setMerchantId] = useState("");
   const [apiKey, setApiKey] = useState("");
@@ -20,9 +21,9 @@ export const PaymentConfigPage = (): ReactElement => {
 
   useEffect(() => {
     if (tenantsState === "error") {
-      setErrorMessage("Failed to load restaurants. Please refresh and try again.");
+      setErrorMessage(t("payment.errors.loadRestaurants"));
     }
-  }, [tenantsState]);
+  }, [t, tenantsState]);
 
   useEffect(() => {
     setSubmitState((currentState) => (currentState === "idle" ? currentState : "idle"));
@@ -39,7 +40,7 @@ export const PaymentConfigPage = (): ReactElement => {
 
     if (!selectedTenantId) {
       setSubmitState("error");
-      setErrorMessage("Select a restaurant from the header dropdown.");
+      setErrorMessage(t("payment.errors.selectRestaurant"));
 
       return;
     }
@@ -57,31 +58,35 @@ export const PaymentConfigPage = (): ReactElement => {
       setSubmitState("success");
     } catch {
       setSubmitState("error");
-      setErrorMessage("Failed to update P24 configuration. Please verify the restaurant tenant ID and try again.");
+      setErrorMessage(t("payment.errors.updateFailed"));
     }
   };
 
   return (
-    <PageLayout title="Payment Configuration" description="Configure Przelewy24 payment provider settings">
+    <PageLayout title={t("payment.title")} description={t("payment.description")}>
       <div className="mx-auto max-w-lg p-6">
         <Form onSubmit={(e) => void handleSubmit(e)}>
           <div className="rounded-lg border border-border-default bg-surface-secondary px-4 py-3 text-sm">
-            <div className="font-medium text-text-primary">Selected restaurant</div>
+            <div className="font-medium text-text-primary">{t("payment.selectedRestaurant.title")}</div>
             <div className="mt-1 text-text-secondary">
-              {selectedTenant ? `${selectedTenant.name} (${selectedTenant.id})` : "No restaurant selected."}
+              {selectedTenant
+                ? `${selectedTenant.name} (${selectedTenant.id})`
+                : t("payment.selectedRestaurant.empty")}
             </div>
           </div>
-          {tenantsState === "loading" && <div className="text-xs text-text-tertiary">Loading restaurants...</div>}
+          {tenantsState === "loading" && (
+            <div className="text-xs text-text-tertiary">{t("payment.loadingRestaurants")}</div>
+          )}
           {tenantsState === "error" && (
             <div className="text-xs text-status-error-text">
-              Failed to load restaurants. Please refresh and try again.
+              {t("payment.errors.loadRestaurants")}
             </div>
           )}
 
           <Input
-            label="Merchant ID"
+            label={t("payment.fields.merchantId.label")}
             type="number"
-            placeholder="e.g. 123456"
+            placeholder={t("payment.fields.merchantId.placeholder")}
             value={merchantId}
             onChange={(e) => {
               setMerchantId(e.target.value);
@@ -89,51 +94,51 @@ export const PaymentConfigPage = (): ReactElement => {
             }}
             min={0}
             max={999999}
-            helperText="Przelewy24 merchant identifier (max 6 digits)"
+            helperText={t("payment.fields.merchantId.helper")}
             required
           />
 
           <Input
-            label="P24 API Key"
-            placeholder="Enter Przelewy24 API key"
+            label={t("payment.fields.apiKey.label")}
+            placeholder={t("payment.fields.apiKey.placeholder")}
             value={apiKey}
             onChange={(e) => {
               setApiKey(e.target.value);
               resetSubmitState();
             }}
             maxLength={32}
-            helperText="Max 32 characters"
+            helperText={t("payment.fields.apiKey.helper")}
             required
           />
 
           <Input
-            label="P24 CRC Key"
-            placeholder="Enter Przelewy24 CRC key"
+            label={t("payment.fields.crcKey.label")}
+            placeholder={t("payment.fields.crcKey.placeholder")}
             value={crcKey}
             onChange={(e) => {
               setCrcKey(e.target.value);
               resetSubmitState();
             }}
             maxLength={16}
-            helperText="Max 16 characters"
+            helperText={t("payment.fields.crcKey.helper")}
             required
           />
 
           {submitState === "success" && (
-            <div className="rounded-lg border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-700 dark:bg-green-900/20 dark:text-green-300">
-              P24 configuration updated successfully.
+            <div className="rounded-lg border border-status-success-border bg-status-success-background px-4 py-3 text-sm text-status-success-text">
+              {t("payment.success")}
             </div>
           )}
 
           {submitState === "error" && (
-            <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-700 dark:bg-red-900/20 dark:text-red-300">
+            <div className="rounded-lg border border-status-error-border bg-status-error-background px-4 py-3 text-sm text-status-error-text">
               {errorMessage}
             </div>
           )}
 
           <FormActions>
             <Button type="submit" disabled={!isFormValid || submitState === "submitting"}>
-              {submitState === "submitting" ? "Saving..." : "Save Configuration"}
+              {submitState === "submitting" ? t("payment.actions.saving") : t("payment.actions.save")}
             </Button>
           </FormActions>
         </Form>
