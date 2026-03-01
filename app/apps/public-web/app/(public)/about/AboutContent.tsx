@@ -1,23 +1,25 @@
 "use client";
 
 import { ContentContainer, Text } from "@restorio/ui";
+import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
 export const AboutContent = (): ReactElement => {
+  const t = useTranslations();
+
   return (
     <div className="py-16 md:py-24">
       {/* Header */}
       <div className="mb-16 border-b border-border-default pb-16">
         <ContentContainer maxWidth="lg" padding>
           <Text variant="caption" className="mb-4 font-semibold uppercase tracking-wider text-interactive-primary">
-            Our Mission
+            {t("about.mission.title")}
           </Text>
           <Text variant="h1" className="mb-6 text-4xl font-bold sm:text-5xl">
-            Empowering small restaurants with enterprise-grade tools.
+            {t("about.mission.subtitle")}
           </Text>
           <Text variant="body-lg" className="max-w-2xl text-text-secondary">
-            Restorio is an open-source, multi-tenant SaaS platform designed to bridge the gap between expensive
-            enterprise solutions and the needs of independent restaurant owners.
+            {t("about.mission.description")}
           </Text>
         </ContentContainer>
       </div>
@@ -29,35 +31,34 @@ export const AboutContent = (): ReactElement => {
             <div className="sticky top-24 space-y-8">
               <div>
                 <Text variant="h4" weight="bold" className="mb-4">
-                  Project Goals
+                  {t("about.goals.title")}
                 </Text>
                 <ul className="space-y-3 text-text-secondary">
                   <li className="flex items-center gap-2">
                     <span className="h-1.5 w-1.5 rounded-full bg-interactive-primary" />
-                    Waiterless Ordering
+                    {t("about.goals.waiterless.title")}
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="h-1.5 w-1.5 rounded-full bg-interactive-primary" />
-                    Multi-location Support
+                    {t("about.goals.multiLocation.title")}
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="h-1.5 w-1.5 rounded-full bg-interactive-primary" />
-                    Secure & Scalable
+                    {t("about.goals.secure.title")}
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="h-1.5 w-1.5 rounded-full bg-interactive-primary" />
-                    Cost Efficient
+                    {t("about.goals.costEfficient.title")}
                   </li>
                 </ul>
               </div>
 
               <div className="rounded-xl bg-surface-secondary p-6">
                 <Text variant="body-sm" weight="semibold" className="mb-2">
-                  Open Source
+                  {t("about.openSource.title")}
                 </Text>
                 <Text variant="caption" className="mb-4 text-text-secondary">
-                  This project is built as an academic engineer-degree project, focusing on modern architecture and best
-                  practices.
+                  {t("about.openSource.description")}
                 </Text>
               </div>
             </div>
@@ -67,51 +68,42 @@ export const AboutContent = (): ReactElement => {
           <div className="md:col-span-8 space-y-16">
             <section>
               <Text variant="h2" weight="bold" className="mb-6">
-                The Problem
+                {t("about.problem.title")}
               </Text>
               <div className="prose prose-lg text-text-secondary">
                 <p className="mb-4">
-                  Small restaurant owners often lack affordable, integrated digital tools. Existing solutions are either
-                  too expensive, closed-source, or overly complex for small businesses.
+                  {t("about.problem.description")}
                 </p>
-                <p>Restorio aims to fill this gap by providing a platform to:</p>
-                <ul className="list-disc pl-5 space-y-2 mt-4">
-                  <li>Present a modern restaurant website and menu</li>
-                  <li>Accept digital orders without waiter involvement</li>
-                  <li>Manage staff workflows and kitchen operations</li>
-                  <li>Integrate modern online payments</li>
-                  <li>Analyze sales and customer behavior</li>
-                </ul>
               </div>
             </section>
 
             <section>
               <Text variant="h2" weight="bold" className="mb-6">
-                Target Users
+                {t("about.users.title")}
               </Text>
               <div className="grid gap-6 sm:grid-cols-2">
                 <div className="rounded-xl border border-border-default p-6">
                   <Text variant="h4" weight="semibold" className="mb-2">
-                    Restaurant Owners
+                    {t("about.users.owners.title")}
                   </Text>
                   <Text variant="body-sm" className="text-text-secondary">
-                    Single or multi-location owners who need full control over their business operations and analytics.
+                    {t("about.users.owners.description")}
                   </Text>
                 </div>
                 <div className="rounded-xl border border-border-default p-6">
                   <Text variant="h4" weight="semibold" className="mb-2">
-                    Staff & Kitchen
+                    {t("about.users.staff.title")}
                   </Text>
                   <Text variant="body-sm" className="text-text-secondary">
-                    Waiters and kitchen staff who need real-time order updates and efficient workflow management tools.
+                    {t("about.users.staff.description")}
                   </Text>
                 </div>
                 <div className="rounded-xl border border-border-default p-6">
                   <Text variant="h4" weight="semibold" className="mb-2">
-                    End Customers
+                    {t("about.users.customers.title")}
                   </Text>
                   <Text variant="body-sm" className="text-text-secondary">
-                    Diners who want a seamless, anonymous ordering experience via QR codes without downloading apps.
+                    {t("about.users.customers.description")}
                   </Text>
                 </div>
               </div>
@@ -119,17 +111,14 @@ export const AboutContent = (): ReactElement => {
 
             <section>
               <Text variant="h2" weight="bold" className="mb-6">
-                Engineering Focus
-              </Text>
-              <Text variant="body-lg" className="mb-6 text-text-secondary">
-                Restorio emphasizes a robust, scalable architecture suitable for real-world production use.
+                {t("about.engineering.title")}
               </Text>
               <div className="space-y-4">
                 {[
-                  "Multi-tenant SaaS architecture",
-                  "Distributed systems (async processing, WebSockets)",
-                  "Modular backend design",
-                  "Security, RBAC, and regulatory compliance",
+                  t("about.engineering.frontend"),
+                  t("about.engineering.backend"),
+                  t("about.engineering.realtime"),
+                  t("about.engineering.deployment"),
                 ].map((item) => (
                   <div key={item} className="flex items-start gap-3">
                     <div className="mt-1.5 h-px w-8 bg-border-strong" />

@@ -1,5 +1,7 @@
 import { getThemeBootScript } from "@restorio/ui/theme-mode";
 import type { Metadata, Viewport } from "next";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import type { ReactElement, ReactNode } from "react";
 
 import { AppProviders } from "../src/wrappers/AppProviders";
@@ -33,11 +35,14 @@ interface RootLayoutProps {
   children: ReactNode;
 }
 
-export default function RootLayout({ children }: RootLayoutProps): ReactElement {
+export default async function RootLayout({ children }: RootLayoutProps): Promise<ReactElement> {
   const themeBootScript = getThemeBootScript();
+  const locale = await getLocale();
+  const messages = await getMessages();
+  const t = await getTranslations();
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         {/* Theme boot script must run before hydration - no user input */}
         {/* eslint-disable-next-line react/no-danger */}
@@ -48,9 +53,11 @@ export default function RootLayout({ children }: RootLayoutProps): ReactElement 
           href="#main-content"
           className="sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-interactive-primary focus:text-text-inverse focus:rounded-button focus-visible-ring focus:block focus:not-sr-only"
         >
-          Skip to main content
+          {t("common.skipToContent")}
         </a>
-        <AppProviders>{children}</AppProviders>
+        <NextIntlClientProvider messages={messages}>
+          <AppProviders>{children}</AppProviders>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

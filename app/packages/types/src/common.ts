@@ -1,4 +1,5 @@
 export type ParamTypes = Record<string | number | symbol, string | number | Date>;
+export type LoadingState = "loading" | "loaded" | "error" | "not-found";
 
 export interface SuccessResponse<T> {
   message?: string;

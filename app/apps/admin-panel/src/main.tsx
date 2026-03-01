@@ -1,9 +1,10 @@
-import { runThemeBootScript } from "@restorio/ui";
+import { createTranslator, runThemeBootScript } from "@restorio/ui";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
 import { App } from "./App";
 import { AppProviders } from "./wrappers/AppProviders";
+import { defaultMessages } from "./i18n/messages";
 import "./index.css";
 
 runThemeBootScript();
@@ -11,7 +12,9 @@ runThemeBootScript();
 const root = document.getElementById("root");
 
 if (!root) {
-  throw new Error("Root element not found");
+  const t = createTranslator(defaultMessages);
+
+  throw new Error(t("errors.rootElementNotFound"));
 }
 
 const reactRoot = createRoot(root);

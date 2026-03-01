@@ -13,12 +13,14 @@ import {
   type AuthRouteStatus,
 } from "@restorio/ui";
 import { getAppUrl, getEnvironmentFromEnv, LAST_VISITED_APP_STORAGE_KEY, getEnvMode } from "@restorio/utils";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import type { ReactElement } from "react";
 import { FaBolt, FaGlobe, FaMobileAlt } from "react-icons/fa";
 
 export const HomeContent = (): ReactElement => {
   const { authStatus }: { authStatus: AuthRouteStatus } = useAuthRoute();
+  const t = useTranslations();
 
   if (authStatus === "authenticated") {
     const envMode = getEnvMode();
@@ -45,21 +47,19 @@ export const HomeContent = (): ReactElement => {
               variant="h1"
               className="mb-6 max-w-4xl text-5xl font-extrabold tracking-tight sm:text-7xl flex flex-col items-center"
             >
-              <span>The Future of</span>
-              <span className="text-interactive-primary">Restaurant Management</span>
+              <span>{t("hero.title")}</span>
             </Text>
 
             <Text variant="body-lg" className="mb-10 max-w-2xl text-text-secondary">
-              A multi-tenant SaaS platform empowering restaurants with waiterless ordering, real-time kitchen updates,
-              and powerful analytics. Open source and built for scale.
+              {t("hero.subtitle")}
             </Text>
 
             <Stack direction="row" spacing="md" className="justify-center">
               <Button size="lg" variant="primary" className="min-w-[160px]">
-                Start Free Trial
+                {t("hero.cta.trial")}
               </Button>
               <Button size="lg" variant="secondary" className="min-w-[160px]">
-                View Demo
+                {t("hero.cta.demo")}
               </Button>
             </Stack>
 
@@ -69,9 +69,9 @@ export const HomeContent = (): ReactElement => {
                   {/* Placeholder for App Screenshot */}
                   <div className="text-center">
                     <Text variant="h3" weight="semibold">
-                      Dashboard Preview
+                      {t("hero.preview.title")}
                     </Text>
-                    <Text variant="body-sm">Interactive demo coming soon</Text>
+                    <Text variant="body-sm">{t("hero.preview.comingSoon")}</Text>
                   </div>
                 </div>
               </div>
@@ -85,36 +85,36 @@ export const HomeContent = (): ReactElement => {
         <ContentContainer maxWidth="xl" padding>
           <div className="mb-16 text-center">
             <Text variant="h2" weight="bold" className="mb-4">
-              Everything you need to run your restaurant
+              {t("features.title")}
             </Text>
             <Text variant="body-lg" className="text-text-secondary">
-              From QR code ordering to kitchen management, we've got you covered.
+              {t("features.subtitle")}
             </Text>
           </div>
 
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
             {[
               {
-                title: "Waiterless Ordering",
-                description: "Customers order directly from their tables via QR codes. No app download required.",
+                titleKey: "features.waiterless.title",
+                descriptionKey: "features.waiterless.description",
                 IconComponent: FaMobileAlt,
                 iconBackground: "bg-interactive-primary/10",
               },
               {
-                title: "Real-time Kitchen",
-                description: "Orders appear instantly on kitchen displays with WebSocket-powered updates.",
+                titleKey: "features.kitchen.title",
+                descriptionKey: "features.kitchen.description",
                 IconComponent: FaBolt,
                 iconBackground: "bg-interactive-secondary/10",
               },
               {
-                title: "Multi-Location",
-                description: "Manage multiple restaurants, menus, and staff from a single unified dashboard.",
+                titleKey: "features.multiLocation.title",
+                descriptionKey: "features.multiLocation.description",
                 IconComponent: FaGlobe,
                 iconBackground: "bg-surface-secondary",
               },
             ].map((feature) => (
               <div
-                key={feature.title}
+                key={feature.titleKey}
                 className={cn(
                   "group rounded-2xl border border-border-default bg-surface-primary p-8 transition-all hover:-translate-y-1 hover:shadow-lg",
                   feature.iconBackground,
@@ -126,10 +126,10 @@ export const HomeContent = (): ReactElement => {
                   className="mb-6 text-interactive-secondary transition-colors group-hover:text-interactive-primary"
                 />
                 <Text variant="h3" weight="semibold" className="mb-3">
-                  {feature.title}
+                  {t(feature.titleKey)}
                 </Text>
                 <Text variant="body-md" className="text-text-secondary">
-                  {feature.description}
+                  {t(feature.descriptionKey)}
                 </Text>
               </div>
             ))}
@@ -141,14 +141,14 @@ export const HomeContent = (): ReactElement => {
       <section className="mb-24 text-center">
         <ContentContainer maxWidth="md" padding>
           <Text variant="h2" weight="bold" className="mb-6">
-            Ready to modernize your restaurant?
+            {t("cta.title")}
           </Text>
           <Text variant="body-lg" className="mb-10 text-text-secondary">
-            Join hundreds of restaurants streamlining their operations with Restorio.
+            {t("cta.subtitle")}
           </Text>
           <Link href="/about">
             <Button size="lg" variant="primary">
-              Learn More About Us
+              {t("cta.button")}
             </Button>
           </Link>
         </ContentContainer>

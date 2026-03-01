@@ -1,18 +1,20 @@
 "use client";
 
 import { Button, Icon, NavItem, Text, ThemeSwitcher, Topbar } from "@restorio/ui";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type ReactElement, useEffect, useState } from "react";
 
-const navItems = [
-  { label: "Home", href: "/" },
-  { label: "About", href: "/about" },
-];
-
 export const Header = (): ReactElement => {
+  const t = useTranslations();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const navItems = [
+    { label: t("navigation.home"), href: "/" },
+    { label: t("navigation.about"), href: "/about" },
+  ];
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -29,7 +31,7 @@ export const Header = (): ReactElement => {
         <Link href="/" className="flex h-16 items-center gap-2 transition-opacity hover:opacity-90">
           <Icon isLogo size="full" logoBackground="transparent" wink />
           <Text variant="h4" weight="bold" className="hidden sm:block">
-            Restorio
+            {t("footer.brand")}
           </Text>
         </Link>
       }
@@ -38,7 +40,7 @@ export const Header = (): ReactElement => {
           <ThemeSwitcher className="h-9 px-3" />
           <span className="hidden sm:inline-block">
             <Button size="sm" variant="primary">
-              Get Started
+              {t("navigation.getStarted")}
             </Button>
           </span>
         </div>

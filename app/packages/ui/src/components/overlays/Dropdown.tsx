@@ -11,6 +11,7 @@ export interface DropdownProps {
   isOpen?: boolean;
   onOpenChange?: (isOpen: boolean) => void;
   className?: string;
+  closeOnSelect?: boolean;
 }
 
 export const Dropdown = ({
@@ -20,6 +21,7 @@ export const Dropdown = ({
   isOpen: controlledIsOpen,
   onOpenChange,
   className,
+  closeOnSelect = false,
 }: DropdownProps): ReactElement => {
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -83,6 +85,22 @@ export const Dropdown = ({
     }
   };
 
+  const handleMenuClick = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>): void => {
+      if (!closeOnSelect) {
+        return;
+      }
+
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("[data-dropdown-prevent-close='true']")) {
+        return;
+      }
+
+      setIsOpen(false);
+    },
+    [closeOnSelect, setIsOpen],
+  );
+
   return (
     <div className="relative inline-block" ref={triggerRef}>
       <div
@@ -105,6 +123,7 @@ export const Dropdown = ({
           )}
           role="menu"
           aria-orientation="vertical"
+          onClick={handleMenuClick}
         >
           {children}
         </div>

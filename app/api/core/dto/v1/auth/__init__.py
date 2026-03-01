@@ -69,3 +69,11 @@ class TenantSlugData(BaseDTO):
 
 class LoginResponseData(BaseDTO):
     at: str = Field(..., description="JWT access token")
+
+
+class AuthMeSessionData(BaseDTO):
+    sub: str = Field(..., description="User id")
+    tenant_ids: list[str] = Field(
+        default_factory=list, description="All tenant ids available to the user"
+    )
+    account_type: str = Field(..., description="Account type for the primary tenant")

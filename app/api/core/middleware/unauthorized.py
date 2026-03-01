@@ -7,7 +7,19 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
 
 from core.foundation.auth_cookies import get_access_token_from_request
+from core.foundation.infra.config import settings
 from core.foundation.security import security_service
+from core.middleware.cors import is_origin_allowed
+
+
+def _cors_headers_for_request(request: Request) -> dict[str, str]:
+    origin = request.headers.get("origin")
+    if origin is not None and is_origin_allowed(origin, settings.CORS_ORIGINS):
+        return {
+            "Access-Control-Allow-Origin": origin,
+            "Access-Control-Allow-Credentials": "true",
+        }
+    return {}
 
 
 class UnauthorizedMiddleware(BaseHTTPMiddleware):
@@ -47,6 +59,7 @@ class UnauthorizedMiddleware(BaseHTTPMiddleware):
             return JSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content={"message": "Unauthorized"},
+                headers=_cors_headers_for_request(request),
             )
 
         try:
@@ -55,6 +68,7 @@ class UnauthorizedMiddleware(BaseHTTPMiddleware):
             return JSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content={"message": "Unauthorized"},
+                headers=_cors_headers_for_request(request),
             )
 
         # Attach user to request context

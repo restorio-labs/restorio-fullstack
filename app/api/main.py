@@ -17,11 +17,13 @@ def create_application() -> FastAPI:
         openapi_url="/openapi.json" if settings.DEBUG else None,
     )
 
-    setup_cors(app=app, settings=settings)
     setup_exception_handlers(app=app, settings=settings)
 
     app.add_middleware(TimingMiddleware)
     app.add_middleware(UnauthorizedMiddleware)
+    # Keep CORS as the outermost middleware so short-circuit 401 responses
+    # from auth middleware still receive CORS headers.
+    setup_cors(app=app, settings=settings)
 
     @app.get("/")
     def read_root() -> dict[str, str]:

@@ -17,7 +17,7 @@ const variantStyles: Record<ButtonVariant, string> = {
   secondary:
     "bg-interactive-secondary text-text-primary hover:bg-interactive-secondaryHover active:bg-interactive-secondaryActive focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus",
   danger:
-    "bg-interactive-danger text-text-inverse hover:bg-interactive-dangerHover active:bg-interactive-dangerActive focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus",
+    "bg-interactive-danger hover:bg-interactive-dangerHover active:bg-interactive-dangerActive focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus shadow-[0px_8px_16px_rgba(239,43,45,0.35)]",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {

@@ -22,16 +22,14 @@ class FloorElementBaseResponseDTO(BaseDTO):
 
 class FloorTableElementResponseDTO(FloorElementBaseResponseDTO):
     type: Literal["table"] = "table"
-    table_number: str = Field(..., alias="tableNumber", serialization_alias="tableNumber")
+    table_number: int = Field(..., alias="tableNumber", serialization_alias="tableNumber")
     seats: int = Field(...)
-    table_id: str | None = Field(None, alias="tableId", serialization_alias="tableId")
 
 
 class FloorTableGroupElementResponseDTO(FloorElementBaseResponseDTO):
     type: Literal["tableGroup"] = "tableGroup"
-    table_numbers: list[str] = Field(..., alias="tableNumbers", serialization_alias="tableNumbers")
+    table_numbers: list[int] = Field(..., alias="tableNumbers", serialization_alias="tableNumbers")
     seats: int = Field(...)
-    table_ids: list[str] | None = Field(None, alias="tableIds", serialization_alias="tableIds")
 
 
 class FloorBarElementResponseDTO(FloorElementBaseResponseDTO):

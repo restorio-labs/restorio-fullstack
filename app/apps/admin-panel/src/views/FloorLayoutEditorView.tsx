@@ -1,16 +1,19 @@
 import type {
   ElementToAdd,
   FloorCanvas as FloorCanvasType,
+  FloorElement,
   FloorLayoutEditorState,
   LayoutHistoryAction,
 } from "@restorio/types";
-import { Button, FloorCanvas, useDragResize, type DragResizeMode, useSnapToGrid } from "@restorio/ui";
+import { Button, Dropdown, FloorCanvas, useDragResize, type DragResizeMode, useI18n, useSnapToGrid, useTheme } from "@restorio/ui";
 import type { ReactElement, Reducer } from "react";
-import { useCallback, useEffect, useReducer, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 
-import { createElementFromToAdd, layoutHistoryReducer } from "../features/floor/floorLayoutState";
+import { cloneFloorElement, createElementFromToAdd, layoutHistoryReducer } from "../features/floor/floorLayoutState";
 
 const GRID_CELL = 20;
+const MIN_CANVAS_WIDTH = 1000;
+const MIN_CANVAS_HEIGHT = 800;
 const HANDLE_SIZE = 12;
 const RESIZE_HANDLES: { mode: DragResizeMode; left: string; top: string; cursor: string }[] = [
   { mode: "resize-nw", left: "0", top: "0", cursor: "nwse-resize" },
@@ -23,10 +26,71 @@ const RESIZE_HANDLES: { mode: DragResizeMode; left: string; top: string; cursor:
   { mode: "resize-w", left: "0", top: "50%", cursor: "w-resize" },
 ];
 
+type ThemeColors = ReturnType<typeof useTheme>["colors"];
+
+const ZONE_COLOR_SELECTORS: Array<(colors: ThemeColors) => string> = [
+  (theme) => theme.status.success.background,
+  (theme) => theme.status.info.background,
+  (theme) => theme.status.warning.background,
+  (theme) => theme.status.error.background,
+  (theme) => theme.status.success.border,
+  (theme) => theme.status.info.border,
+  (theme) => theme.status.warning.border,
+  (theme) => theme.status.error.border,
+  (theme) => theme.interactive.primary,
+  (theme) => theme.interactive.primaryHover,
+  (theme) => theme.interactive.primaryActive,
+  (theme) => theme.interactive.secondary,
+  (theme) => theme.interactive.secondaryHover,
+  (theme) => theme.interactive.secondaryActive,
+  (theme) => theme.interactive.success,
+  (theme) => theme.interactive.successHover,
+  (theme) => theme.interactive.danger,
+  (theme) => theme.interactive.dangerHover,
+  (theme) => theme.background.secondary,
+  (theme) => theme.background.tertiary,
+];
+
 interface FloorLayoutEditorViewProps {
   initialLayout: FloorCanvasType;
   onSave?: (layout: FloorCanvasType) => void | Promise<void>;
 }
+
+const ensureMinimumCanvasSize = (layout: FloorCanvasType): FloorCanvasType => ({
+  ...layout,
+  width: Math.max(layout.width, MIN_CANVAS_WIDTH),
+  height: Math.max(layout.height, MIN_CANVAS_HEIGHT),
+});
+
+const clampElementBounds = (
+  bounds: { x: number; y: number; w: number; h: number; rotation?: number },
+  layout: FloorCanvasType,
+): { x: number; y: number; w: number; h: number; rotation?: number } => {
+  const width = Math.min(Math.max(GRID_CELL, bounds.w), layout.width);
+  const height = Math.min(Math.max(GRID_CELL, bounds.h), layout.height);
+  const maxX = Math.max(0, layout.width - width);
+  const maxY = Math.max(0, layout.height - height);
+
+  return {
+    ...bounds,
+    w: width,
+    h: height,
+    x: Math.min(Math.max(0, bounds.x), maxX),
+    y: Math.min(Math.max(0, bounds.y), maxY),
+  };
+};
+
+const isTextEditingTarget = (target: EventTarget | null): boolean => {
+  const element = target as HTMLElement | null;
+
+  if (!element) {
+    return false;
+  }
+
+  const { tagName } = element;
+
+  return element.isContentEditable || tagName === "INPUT" || tagName === "TEXTAREA" || tagName === "SELECT";
+};
 
 const getMaxZIndex = (elements: FloorCanvasType["elements"]): number =>
   elements.reduce((max, el) => Math.max(max, Number(el.zIndex ?? 0)), 0);
@@ -35,18 +99,67 @@ const getMinZIndex = (elements: FloorCanvasType["elements"]): number =>
   elements.reduce((min, el) => Math.min(min, Number(el.zIndex ?? 0)), 0);
 
 export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEditorViewProps): ReactElement => {
+  const { t } = useI18n();
+  const { colors } = useTheme();
+  const normalizedInitialLayout = ensureMinimumCanvasSize(initialLayout);
   const [state, dispatch] = useReducer<Reducer<FloorLayoutEditorState, LayoutHistoryAction>>(layoutHistoryReducer, {
-    layout: initialLayout,
-    history: [initialLayout],
+    layout: normalizedInitialLayout,
+    history: [normalizedInitialLayout],
     historyIndex: 0,
   });
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [clipboardElements, setClipboardElements] = useState<FloorElement[]>([]);
+  const [isMultiSelectModifierPressed, setIsMultiSelectModifierPressed] = useState(false);
+  const [activeDragMode, setActiveDragMode] = useState<DragResizeMode | null>(null);
 
   const { snapPoint, snapSize: snapGridSize } = useSnapToGrid(GRID_CELL);
   const onBoundsChange = useCallback(
     (id: string, bounds: { x: number; y: number; w: number; h: number; rotation?: number }) => {
-      dispatch({ type: "UPDATE_ELEMENT", payload: { id, bounds } });
+      const clampedBounds = clampElementBounds(bounds, state.layout);
+      const currentElement = state.layout.elements.find((element) => element.id === id);
+
+      if (!currentElement) {
+        return;
+      }
+
+      const isMultiMove = activeDragMode === "move" && selectedIds.length > 1 && selectedIds.includes(id);
+
+      if (!isMultiMove) {
+        dispatch({ type: "UPDATE_ELEMENT", payload: { id, bounds: clampedBounds } });
+
+        return;
+      }
+
+      const deltaX = clampedBounds.x - currentElement.x;
+      const deltaY = clampedBounds.y - currentElement.y;
+
+      if (deltaX === 0 && deltaY === 0) {
+        return;
+      }
+
+      selectedIds.forEach((selectedId) => {
+        const element = state.layout.elements.find((item) => item.id === selectedId);
+
+        if (!element) {
+          return;
+        }
+
+        const nextBounds = clampElementBounds(
+          {
+            x: element.x + deltaX,
+            y: element.y + deltaY,
+            w: element.w,
+            h: element.h,
+            rotation: element.rotation,
+          },
+          state.layout,
+        );
+
+        dispatch({ type: "UPDATE_ELEMENT", payload: { id: selectedId, bounds: nextBounds } });
+      });
     },
-    [],
+    [activeDragMode, selectedIds, state.layout],
   );
 
   const dragResize = useDragResize({
@@ -56,13 +169,137 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
     minWidth: GRID_CELL,
     minHeight: GRID_CELL,
   });
+  const { setSelectedId } = dragResize;
 
-  const [addTableCount, setAddTableCount] = useState(0);
   const [addZoneCount, setAddZoneCount] = useState(0);
 
+  const zoneColors = useMemo(() => {
+    const palette = ZONE_COLOR_SELECTORS.map((getColor) => getColor(colors)).filter(
+      (value): value is string => Boolean(value),
+    );
+
+    if (palette.length === 0) {
+      return [colors.status.info.background];
+    }
+
+    return Array.from(new Set(palette));
+  }, [colors]);
+
   useEffect(() => {
-    dispatch({ type: "SET_LAYOUT", payload: initialLayout });
-  }, [initialLayout]);
+    dispatch({ type: "SET_LAYOUT", payload: ensureMinimumCanvasSize(initialLayout) });
+    setSelectedIds([]);
+    setSelectedId(null);
+  }, [initialLayout, setSelectedId]);
+
+  useEffect(() => {
+    setSelectedIds((currentIds) =>
+      currentIds.filter((id) => state.layout.elements.some((element) => element.id === id)),
+    );
+  }, [state.layout.elements]);
+
+  const removeSelectedElements = useCallback(() => {
+    if (selectedIds.length === 0) {
+      return;
+    }
+
+    selectedIds.forEach((id) => {
+      dispatch({ type: "REMOVE_ELEMENT", payload: { id } });
+    });
+
+    setSelectedIds([]);
+    setSelectedId(null);
+  }, [selectedIds, setSelectedId]);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent): void => {
+      if (e.key === "Control" || e.key === "Meta") {
+        setIsMultiSelectModifierPressed(true);
+      }
+
+      if (isTextEditingTarget(e.target)) {
+        return;
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "c") {
+        if (selectedIds.length === 0) {
+          return;
+        }
+
+        e.preventDefault();
+        const selectedSet = new Set(selectedIds);
+        const copied = state.layout.elements.filter((element) => selectedSet.has(element.id));
+
+        setClipboardElements(copied);
+
+        return;
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "v") {
+        if (clipboardElements.length === 0) {
+          return;
+        }
+
+        e.preventDefault();
+        let nextTableNumber = state.layout.elements.reduce((max, element) => {
+          if (element.type !== "table") {
+            return max;
+          }
+
+          return Math.max(max, element.tableNumber);
+        }, 0);
+        const pasted = clipboardElements.map((element) => {
+          const copy = cloneFloorElement(element);
+          const withNumber = copy.type === "table" ? { ...copy, tableNumber: ++nextTableNumber } : copy;
+          const nextBounds = clampElementBounds(
+            {
+              x: element.x + Math.round(element.w / 2),
+              y: element.y,
+              w: withNumber.w,
+              h: withNumber.h,
+              rotation: withNumber.rotation,
+            },
+            state.layout,
+          );
+
+          return { ...withNumber, ...nextBounds };
+        });
+
+        pasted.forEach((element) => {
+          dispatch({
+            type: "ADD_ELEMENT",
+            payload: { element, x: element.x, y: element.y },
+          });
+        });
+        setSelectedIds(pasted.map((element) => element.id));
+        setSelectedId(pasted[0]?.id ?? null);
+
+        return;
+      }
+
+      if (e.key === "Delete" || e.key === "Backspace") {
+        if (selectedIds.length === 0) {
+          return;
+        }
+
+        e.preventDefault();
+        removeSelectedElements();
+      }
+    };
+
+    const onKeyUp = (e: KeyboardEvent): void => {
+      if (e.key === "Control" || e.key === "Meta") {
+        setIsMultiSelectModifierPressed(false);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+    };
+  }, [clipboardElements, removeSelectedElements, selectedIds, setSelectedId, state.layout]);
 
   const handleElementPointerDown = useCallback(
     (
@@ -71,17 +308,42 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
       mode: DragResizeMode,
       bounds: { x: number; y: number; w: number; h: number; rotation?: number },
     ) => {
+      if (isMultiSelectModifierPressed && mode !== "move") {
+        return;
+      }
+
+      if ((e.ctrlKey || e.metaKey) && mode === "move") {
+        setSelectedIds((currentIds) => {
+          const exists = currentIds.includes(id);
+          const nextIds = exists ? currentIds.filter((currentId) => currentId !== id) : [...currentIds, id];
+
+          setSelectedId(nextIds[0] ?? null);
+
+          return nextIds;
+        });
+
+        return;
+      }
+
+      if (!selectedIds.includes(id)) {
+        setSelectedIds([id]);
+      }
+
+      setActiveDragMode(mode);
       (e.target as HTMLElement).setPointerCapture(e.pointerId);
       dragResize.handlePointerDown(id, e, mode, bounds);
     },
-    [dragResize],
+    [dragResize, isMultiSelectModifierPressed, selectedIds, setSelectedId],
   );
 
   useEffect(() => {
     const onPointerMove = (e: PointerEvent): void => {
       dragResize.handlePointerMove(e as unknown as React.PointerEvent);
     };
-    const onPointerUp = (): void => dragResize.handlePointerUp();
+    const onPointerUp = (): void => {
+      setActiveDragMode(null);
+      dragResize.handlePointerUp();
+    };
 
     document.addEventListener("pointermove", onPointerMove);
     document.addEventListener("pointerup", onPointerUp);
@@ -106,88 +368,160 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
   );
 
   const handleAddTable = useCallback(() => {
-    setAddTableCount((c) => c + 1);
-    addElement({ type: "table", tableNumber: `T${addTableCount + 1}`, seats: 4 });
-  }, [addElement, addTableCount]);
+    const nextNumber = state.layout.elements.reduce((max, element) => {
+      if (element.type !== "table") {
+        return max;
+      }
+
+      return Math.max(max, typeof element.tableNumber === "number" ? element.tableNumber : 0);
+    }, 0);
+
+    addElement({ type: "table", seats: 4, tableNumber: nextNumber + 1 });
+  }, [addElement, state.layout.elements]);
 
   const handleAddZone = useCallback(() => {
     setAddZoneCount((c) => c + 1);
-    addElement({ type: "zone", name: `Zone ${addZoneCount + 1}` });
-  }, [addElement, addZoneCount]);
+    const paletteColor = zoneColors[(addZoneCount + zoneColors.length) % zoneColors.length] ?? zoneColors[0];
 
-  const selectedElement =
-    dragResize.selectedId != null ? state.layout.elements.find((el) => el.id === dragResize.selectedId) : null;
+    addElement({
+      type: "zone",
+      name: t("floorEditor.zoneName", { number: addZoneCount + 1 }),
+      color: paletteColor,
+    });
+  }, [addElement, addZoneCount, t, zoneColors]);
+
+  const selectedElements = state.layout.elements.filter((el) => selectedIds.includes(el.id));
+  const selectedElement = selectedElements.length === 1 ? selectedElements[0] : null;
+  const hasMultiSelection = selectedIds.length > 1;
 
   const canUndo = state.historyIndex > 0;
   const canRedo = state.historyIndex < state.history.length - 1;
 
-  // prettier-ignore
-  const ZONE_COLORS = [
-    "#FF6B6B", "#FF8E53", "#FFB703", "#FFD166", "#F4E409", "#C9F31D",
-    "#90EE02", "#4CD137", "#2ECC71", "#1ABC9C", "#00B894", "#00CEC9",
-    "#00A8FF", "#0984E3", "#3C40C6", "#5352ED", "#7D5FFF", "#A55EEA",
-    "#C56CF0", "#D980FA", "#E84393", "#FD79A8", "#FF7675", "#E17055",
-    "#D35400", "#E67E22", "#F39C12", "#B7950B", "#6AB04C", "#27AE60",
-    "#16A085", "#2980B9", "#3742FA", "#6C5CE7", "#8E44AD", "#9B59B6",
-    "#C0392B", "#E74C3C", "#FF4757", "#FF6348", "#FFA502", "#2ED573",
-  ];
-
   return (
-    <div className="flex h-full flex-col gap-4 p-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <Button
-          variant="secondary"
-          size="sm"
-          disabled={!canUndo}
-          onClick={() => dispatch({ type: "UNDO" })}
-          aria-label="Undo"
-        >
-          Undo
-        </Button>
-        <Button
-          variant="secondary"
-          size="sm"
-          disabled={!canRedo}
-          onClick={() => dispatch({ type: "REDO" })}
-          aria-label="Redo"
-        >
-          Redo
-        </Button>
-        <Button variant="secondary" size="sm" onClick={handleAddTable}>
-          Add table
-        </Button>
-        <Button variant="secondary" size="sm" onClick={handleAddZone}>
-          Add zone
-        </Button>
-        <Button variant="secondary" size="sm" onClick={() => addElement({ type: "bar" })}>
-          Add bar
-        </Button>
-        <Button variant="secondary" size="sm" onClick={() => addElement({ type: "wall" })}>
-          Add wall
-        </Button>
-        <Button variant="secondary" size="sm" onClick={() => addElement({ type: "entrance" })}>
-          Add entrance
-        </Button>
-        {onSave && (
-          <Button variant="primary" size="sm" onClick={() => void onSave(state.layout)}>
-            Save layout
-          </Button>
-        )}
-      </div>
+    <div className="box-border flex h-full min-h-0 flex-col overflow-hidden pt-4">
       <div className="flex flex-1 min-h-0">
-        <div className="flex min-w-0 flex-1 flex-col rounded-l-lg border border-border-default bg-background-secondary">
-          <div className="flex flex-1 items-center justify-center overflow-auto p-4">
+        <aside className="w-32 min-h-0 flex-shrink-0 p-4">
+          <div className="flex flex-col gap-2 center">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="w-full"
+              disabled={!canUndo}
+              onClick={() => dispatch({ type: "UNDO" })}
+              aria-label={t("floorEditor.toolbar.undo")}
+            >
+              {t("floorEditor.toolbar.undo")}
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="w-full"
+              disabled={!canRedo}
+              onClick={() => dispatch({ type: "REDO" })}
+              aria-label={t("floorEditor.toolbar.redo")}
+            >
+              {t("floorEditor.toolbar.redo")}
+            </Button>
+            {onSave && (
+              <Button variant="primary" size="sm" className="w-full" onClick={() => void onSave(state.layout)}>
+                {t("floorEditor.toolbar.save")}
+              </Button>
+            )}
+            <Dropdown
+              trigger={
+                <Button variant="secondary" size="sm" className="w-full">
+                  {t("floorEditor.toolbar.add")}
+                </Button>
+              }
+              placement="bottom-start"
+              isOpen={isAddOpen}
+              onOpenChange={setIsAddOpen}
+              className="min-w-[180px]"
+            >
+              <div className="p-1">
+                <button
+                  type="button"
+                  className="w-full rounded px-2 py-1.5 text-left text-sm text-text-primary hover:bg-surface-secondary"
+                  onClick={() => {
+                    handleAddTable();
+                    setIsAddOpen(false);
+                  }}
+                >
+                  {t("floorEditor.addMenu.table")}
+                </button>
+                <button
+                  type="button"
+                  className="w-full rounded px-2 py-1.5 text-left text-sm text-text-primary hover:bg-surface-secondary"
+                  onClick={() => {
+                    handleAddZone();
+                    setIsAddOpen(false);
+                  }}
+                >
+                  {t("floorEditor.addMenu.zone")}
+                </button>
+                <button
+                  type="button"
+                  className="w-full rounded px-2 py-1.5 text-left text-sm text-text-primary hover:bg-surface-secondary"
+                  onClick={() => {
+                    addElement({ type: "bar" });
+                    setIsAddOpen(false);
+                  }}
+                >
+                  {t("floorEditor.addMenu.bar")}
+                </button>
+                <button
+                  type="button"
+                  className="w-full rounded px-2 py-1.5 text-left text-sm text-text-primary hover:bg-surface-secondary"
+                  onClick={() => {
+                    addElement({ type: "wall" });
+                    setIsAddOpen(false);
+                  }}
+                >
+                  {t("floorEditor.addMenu.wall")}
+                </button>
+                <button
+                  type="button"
+                  className="w-full rounded px-2 py-1.5 text-left text-sm text-text-primary hover:bg-surface-secondary"
+                  onClick={() => {
+                    addElement({ type: "entrance" });
+                    setIsAddOpen(false);
+                  }}
+                >
+                  {t("floorEditor.addMenu.entrance")}
+                </button>
+              </div>
+            </Dropdown>
+          </div>
+        </aside>
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col rounded-l-lg border border-border-default bg-background-secondary">
+          <div className="flex flex-1 items-center justify-center overflow-auto p-2">
             <div className="relative" style={{ touchAction: "none" }}>
               <FloorCanvas
                 layout={state.layout}
                 showGrid
                 gridCellSize={GRID_CELL}
-                selectedElementId={dragResize.selectedId}
+                selectedElementId={selectedElement?.id ?? null}
                 interactive
                 onElementPointerDown={handleElementPointerDown}
-                onCanvasBackgroundPointerDown={() => dragResize.setSelectedId(null)}
+                onCanvasBackgroundPointerDown={() => {
+                  setSelectedIds([]);
+                  setSelectedId(null);
+                }}
               />
-              {selectedElement && (
+              {hasMultiSelection &&
+                selectedElements.map((element) => (
+                  <div
+                    key={`multi-select-${element.id}`}
+                    className="absolute left-0 top-0 z-20 pointer-events-none border-2 border-border-focus bg-transparent rounded-sm"
+                    style={{
+                      transform: `translate(${element.x}px, ${element.y}px)`,
+                      width: element.w,
+                      height: element.h,
+                    }}
+                    aria-hidden="true"
+                  />
+                ))}
+              {selectedElement && selectedIds.length === 1 && (
                 <div
                   className="absolute left-0 top-0 z-20 pointer-events-none"
                   style={{
@@ -219,7 +553,7 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
                           rotation: selectedElement.rotation,
                         });
                       }}
-                      aria-label={`Resize ${mode}`}
+                      aria-label={t("floorEditor.aria.resizeHandle", { mode })}
                     />
                   ))}
                 </div>
@@ -227,12 +561,12 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
             </div>
           </div>
         </div>
-        <aside className="w-64 flex-shrink-0 border-l border-border-default bg-surface-primary p-4 flex flex-col gap-3 overflow-auto rounded-r-lg">
-          <h3 className="text-sm font-semibold text-text-primary">Customize</h3>
+        <aside className="mr-4 flex w-64 min-h-0 flex-shrink-0 flex-col gap-3 overflow-auto rounded-r-lg border-l border-border-default bg-surface-primary p-4">
+          <h3 className="text-sm font-semibold text-text-primary">{t("floorEditor.panel.title")}</h3>
           {selectedElement ? (
             <>
               <div className="flex flex-col gap-2">
-                <span className="text-xs text-text-secondary">Layer</span>
+                <span className="text-xs text-text-secondary">{t("floorEditor.panel.layer")}</span>
                 <div className="flex flex-wrap gap-2">
                   <Button
                     variant="secondary"
@@ -246,7 +580,7 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
                       });
                     }}
                   >
-                    Bring to front
+                    {t("floorEditor.panel.bringToFront")}
                   </Button>
                   <Button
                     variant="secondary"
@@ -260,7 +594,7 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
                       });
                     }}
                   >
-                    Send to back
+                    {t("floorEditor.panel.sendToBack")}
                   </Button>
                   <Button
                     variant="secondary"
@@ -272,7 +606,7 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
                       });
                     }}
                   >
-                    Forward
+                    {t("floorEditor.panel.forward")}
                   </Button>
                   <Button
                     variant="secondary"
@@ -284,14 +618,14 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
                       });
                     }}
                   >
-                    Backward
+                    {t("floorEditor.panel.backward")}
                   </Button>
                 </div>
               </div>
               {selectedElement.type === "zone" && (
                 <>
                   <label className="text-xs text-text-secondary">
-                    Name
+                    {t("floorEditor.panel.name")}
                     <input
                       type="text"
                       value={selectedElement.name}
@@ -305,9 +639,9 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
                     />
                   </label>
                   <label className="text-xs text-text-secondary">
-                    Color
+                    {t("floorEditor.panel.color")}
                     <div className="mt-1 flex flex-wrap gap-1">
-                      {ZONE_COLORS.map((hex) => (
+                      {zoneColors.map((hex) => (
                         <button
                           key={hex}
                           type="button"
@@ -319,7 +653,7 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
                           }
                           className="h-6 w-6 rounded border-2 border-border-default"
                           style={{ backgroundColor: hex }}
-                          aria-label={`Set color ${hex}`}
+                          aria-label={t("floorEditor.aria.setColor", { color: hex })}
                           title={hex}
                         />
                       ))}
@@ -330,21 +664,7 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
               {selectedElement.type === "table" && (
                 <>
                   <label className="text-xs text-text-secondary">
-                    Table number
-                    <input
-                      type="text"
-                      value={selectedElement.tableNumber}
-                      onChange={(e) =>
-                        dispatch({
-                          type: "UPDATE_ELEMENT",
-                          payload: { id: selectedElement.id, tableNumber: e.target.value },
-                        })
-                      }
-                      className="mt-1 w-full rounded border border-border-default bg-background-primary px-2 py-1.5 text-text-primary"
-                    />
-                  </label>
-                  <label className="text-xs text-text-secondary">
-                    Seats
+                    {t("floorEditor.panel.seats")}
                     <input
                       type="number"
                       min={1}
@@ -362,7 +682,7 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
               )}
               {selectedElement.type === "bar" && (
                 <label className="text-xs text-text-secondary">
-                  Label
+                  {t("floorEditor.panel.label")}
                   <input
                     type="text"
                     value={selectedElement.label ?? ""}
@@ -378,7 +698,7 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
               )}
               {selectedElement.type === "entrance" && (
                 <label className="text-xs text-text-secondary">
-                  Label
+                  {t("floorEditor.panel.label")}
                   <input
                     type="text"
                     value={selectedElement.label ?? ""}
@@ -392,19 +712,23 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
                   />
                 </label>
               )}
-              <Button
-                variant="danger"
-                size="sm"
-                onClick={() => {
-                  dispatch({ type: "REMOVE_ELEMENT", payload: { id: selectedElement.id } });
-                  dragResize.setSelectedId(null);
-                }}
-              >
-                Remove
+              <Button variant="danger" size="sm" onClick={removeSelectedElements}>
+                {t("floorEditor.panel.delete")}
               </Button>
             </>
+          ) : hasMultiSelection ? (
+            <>
+              <p className="text-sm text-text-tertiary">
+                {t("floorEditor.panel.multiSelected", { count: selectedIds.length })}
+              </p>
+              <Button variant="danger" size="sm" onClick={removeSelectedElements}>
+                {t("floorEditor.panel.deleteSelected")}
+              </Button>
+            </>
+          ) : isMultiSelectModifierPressed ? (
+            <p className="text-sm text-text-tertiary">{t("floorEditor.panel.multiSelectHint")}</p>
           ) : (
-            <p className="text-sm text-text-tertiary">Select an element on the canvas to customize it.</p>
+            <p className="text-sm text-text-tertiary">{t("floorEditor.panel.selectHint")}</p>
           )}
         </aside>
       </div>

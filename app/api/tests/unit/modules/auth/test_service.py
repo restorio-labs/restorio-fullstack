@@ -387,6 +387,7 @@ async def test_login_success_returns_jwt_with_claims() -> None:
     assert decoded["sub"] == str(user.id)
     assert decoded["email"] == user.email
     assert decoded["tenant_id"] == str(tenant_id)
+    assert decoded["tenant_ids"] == [str(tenant_id)]
 
 
 @pytest.mark.asyncio
