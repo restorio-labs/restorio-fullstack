@@ -191,3 +191,67 @@ async def test_create_user_with_tenant_role_relationship() -> None:
     assert tenant_role.account_type == AccountType.OWNER
     assert tenant.owner_id == user.id
     assert user.tenant_id == tenant.id
+
+
+@pytest.mark.asyncio
+async def test_create_user_for_tenant_success() -> None:
+    session = FakeAsyncSession()
+    tenant_id = uuid4()
+
+    user, tenant_role = await user_service.create_user_for_tenant(
+        session=session,
+        email="kitchen@example.com",
+        password="StrongPass1!",
+        tenant_id=tenant_id,
+        account_type=AccountType.KITCHEN,
+    )
+
+    assert user.email == "kitchen@example.com"
+    assert user.is_active is False
+    assert user.force_password_change is False
+    assert user.tenant_id == tenant_id
+    assert user.password_hash != "StrongPass1!"
+    assert tenant_role.account_id == user.id
+    assert tenant_role.tenant_id == tenant_id
+    assert tenant_role.account_type == AccountType.KITCHEN
+
+
+@pytest.mark.asyncio
+async def test_create_user_for_tenant_can_force_password_change() -> None:
+    session = FakeAsyncSession()
+    tenant_id = uuid4()
+
+    user, _ = await user_service.create_user_for_tenant(
+        session=session,
+        email="waiter@example.com",
+        password="StrongPass1!",
+        tenant_id=tenant_id,
+        account_type=AccountType.WAITER,
+        force_password_change=True,
+    )
+
+    assert user.force_password_change is True
+
+
+@pytest.mark.asyncio
+async def test_create_user_for_tenant_duplicate_email() -> None:
+    session = FakeAsyncSession()
+    session.users.append(
+        User(
+            id=uuid4(),
+            email="existing@example.com",
+            password_hash="hashed",
+            is_active=True,
+        )
+    )
+
+    with pytest.raises(ConflictError) as exc_info:
+        await user_service.create_user_for_tenant(
+            session=session,
+            email="existing@example.com",
+            password="StrongPass1!",
+            tenant_id=uuid4(),
+            account_type=AccountType.WAITER,
+        )
+
+    assert "Email already registered" in str(exc_info.value)

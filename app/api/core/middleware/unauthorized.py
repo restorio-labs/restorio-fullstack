@@ -30,6 +30,7 @@ class UnauthorizedMiddleware(BaseHTTPMiddleware):
             or request.url.path.startswith("/api/v1/auth/login")
             or request.url.path.startswith("/api/v1/auth/register")
             or request.url.path.startswith("/api/v1/auth/activate")
+            or request.url.path.startswith("/api/v1/auth/set-password")
             or request.url.path.startswith("/api/v1/auth/resend-activation")
             or request.url.path.startswith("/api/v1/auth/refresh")
             or request.url.path.startswith("/api/v1/auth/logout")

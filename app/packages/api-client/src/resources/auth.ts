@@ -1,9 +1,13 @@
 import type {
   AuthMeData,
+  CreateStaffUserRequest,
+  DeleteUserData,
   LoginResponse,
   RefreshResponse,
   RegisterRequest,
   RegisterResponse,
+  StaffUserData,
+  SetActivationPasswordRequest,
   SuccessResponse,
   TenantSlugResponse,
 } from "@restorio/types";
@@ -27,12 +31,49 @@ export class AuthResource extends BaseResource {
   }
 
   /**
+   * Create staff user (kitchen/waiter).
+   */
+  createUser(data: CreateStaffUserRequest, signal?: AbortSignal): Promise<RegisterResponse> {
+    return this.client.post("createuser", data, { signal });
+  }
+
+  /**
+   * List current tenant staff users.
+   */
+  async listUsers(signal?: AbortSignal): Promise<StaffUserData[]> {
+    const { data } = await this.client.get<SuccessResponse<StaffUserData[]>>("users", { signal });
+
+    return data;
+  }
+
+  /**
+   * Delete staff user by id.
+   */
+  async deleteUser(userId: string, signal?: AbortSignal): Promise<DeleteUserData> {
+    const { data } = await this.client.delete<SuccessResponse<DeleteUserData>>(
+      `delete-user/${encodeURIComponent(userId)}`,
+      {
+        signal,
+      },
+    );
+
+    return data;
+  }
+
+  /**
    * Activate an account using the activation link id.
    */
   activate(activationId: string, signal?: AbortSignal): Promise<TenantSlugResponse> {
     const url = `auth/activate?activation_id=${encodeURIComponent(activationId)}`;
 
     return this.client.post(url, undefined, { signal });
+  }
+
+  /**
+   * Set activation password and complete account activation.
+   */
+  setActivationPassword(data: SetActivationPasswordRequest, signal?: AbortSignal): Promise<TenantSlugResponse> {
+    return this.client.post("auth/set-password", data, { signal });
   }
 
   /**
