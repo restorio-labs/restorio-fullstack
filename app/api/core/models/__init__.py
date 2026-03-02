@@ -14,6 +14,7 @@ from core.models.payment_request import CreatePaymentRequest, Przelewy24Register
 from core.models.restaurant_table import RestaurantTable
 from core.models.tenant import Tenant
 from core.models.tenant_role import TenantRole
+from core.models.transaction import Transaction
 from core.models.user import User
 
 __all__ = [
@@ -32,5 +33,6 @@ __all__ = [
     "Tenant",
     "TenantRole",
     "TenantStatus",
+    "Transaction",
     "User",
 ]
