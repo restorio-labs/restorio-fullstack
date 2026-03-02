@@ -4,12 +4,12 @@ import type { TenantSlugResponse } from "@restorio/types";
 import { Button, ContentContainer, Input, Text } from "@restorio/ui";
 import { getAppUrl, getEnvironmentFromEnv, getEnvSource, resolveNextEnvVar } from "@restorio/utils";
 import type { FormEvent, ReactElement } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { PasswordRules } from "../register/PasswordRules";
 
 import { api } from "@/api/client";
-import { checkPassword, isPasswordValid } from "@/lib/validation";
+import { getPasswordFieldsValidation } from "@/lib/passwordFieldsValidation";
 
 type Result = "loading" | "success" | "already_activated" | "expired" | "error" | "resend_sent" | "set_password";
 
@@ -27,23 +27,11 @@ export function ActivateContent(): ReactElement {
   const didRun = useRef(false);
 
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
-  const passwordChecks = useMemo(() => checkPassword(password), [password]);
-  const passwordValid = isPasswordValid(passwordChecks);
-  const passwordError = passwordSubmitted
-    ? password.trim().length === 0
-      ? "Password is required"
-      : !passwordValid
-        ? "Password does not meet the requirements"
-        : undefined
-    : undefined;
-  const confirmPasswordError = passwordSubmitted
-    ? confirmPassword.trim().length === 0
-      ? "Confirm your password"
-      : confirmPassword !== password
-        ? "Passwords do not match"
-        : undefined
-    : undefined;
-  const isPasswordFormValid = passwordValid && confirmPassword === password && confirmPassword.length > 0;
+  const { passwordChecks, passwordError, confirmPasswordError, isPasswordFormValid } = getPasswordFieldsValidation(
+    password,
+    confirmPassword,
+    passwordSubmitted,
+  );
 
   useEffect(() => {
     if (resendCooldownUntil <= 0) {
