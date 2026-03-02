@@ -8,7 +8,7 @@ import type {
 
 const nextId = (): string => `el-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
-export const createElementFromToAdd = (toAdd: ElementToAdd, _venueId?: string): FloorElement => {
+export const createElementFromToAdd = (toAdd: ElementToAdd, _tenantId?: string): FloorElement => {
   const id = nextId();
   const base = { id, x: 0, y: 0, w: 80, h: 80, zoneId: undefined };
 
@@ -75,7 +75,15 @@ export const layoutHistoryReducer = (
     }
     case "ADD_ELEMENT": {
       const { element, x, y } = action.payload;
-      const placed = { ...element, x, y, w: element.w || 80, h: element.h || 80 };
+      const maxZIndex = state.layout.elements.reduce((max, el) => Math.max(max, Number(el.zIndex ?? 0)), 0);
+      const placed = {
+        ...element,
+        x,
+        y,
+        w: element.w || 80,
+        h: element.h || 80,
+        zIndex: Number(element.zIndex ?? maxZIndex + 1),
+      };
       const elements = [...state.layout.elements, placed];
       const nextLayout = { ...state.layout, elements };
       const history = pushHistory(nextLayout);

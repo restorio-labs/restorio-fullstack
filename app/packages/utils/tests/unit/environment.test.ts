@@ -29,12 +29,12 @@ describe("APP_SLUGS", () => {
 
 describe("getAppUrl", () => {
   it("returns root production domain for public web", () => {
-    expect(getAppUrl(Environment.PRODUCTION, "public-web")).toBe("https://restorio.com");
+    expect(getAppUrl(Environment.PRODUCTION, "public-web")).toBe("https://restorio.org");
   });
 
   it("returns subdomain production urls for non-public apps", () => {
-    expect(getAppUrl(Environment.PRODUCTION, "admin-panel")).toBe("https://admin.restorio.com");
-    expect(getAppUrl(Environment.PRODUCTION, "mobile-app")).toBe("https://mobile.restorio.com");
+    expect(getAppUrl(Environment.PRODUCTION, "admin-panel")).toBe("https://admin.restorio.org");
+    expect(getAppUrl(Environment.PRODUCTION, "mobile-app")).toBe("https://mobile.restorio.org");
   });
 
   it("returns localhost urls for development", () => {
@@ -66,7 +66,7 @@ describe("getEnvironmentFromEnv", () => {
 
 describe("redirectTo", () => {
   it("returns the public web url for provided environment", () => {
-    expect(redirectTo(Environment.PRODUCTION)).toBe("https://restorio.com");
+    expect(redirectTo(Environment.PRODUCTION)).toBe("https://restorio.org");
     expect(redirectTo(Environment.LOCAL)).toBe("http://localhost:3000");
   });
 });

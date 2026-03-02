@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.dto.v1.floor_canvases import CreateFloorCanvasDTO, UpdateFloorCanvasDTO
-from core.exceptions import NotFoundError
+from core.exceptions import NotFoundResponse
 from core.models import FloorCanvas, Tenant
 from services.canvas_versioning import (
     archive_canvas_version,
@@ -42,7 +42,7 @@ class FloorCanvasService:
         canvas = result.scalar_one_or_none()
 
         if not canvas:
-            raise NotFoundError(self._RESOURCE, str(canvas_id))
+            raise NotFoundResponse(self._RESOURCE, str(canvas_id))
 
         return canvas
 
@@ -123,7 +123,7 @@ class FloorCanvasService:
 
         version_doc = await get_archived_version(canvas_id, version)
         if not version_doc:
-            raise NotFoundError(self._RESOURCE_VERSION, f"{canvas_id} v{version}")
+            raise NotFoundResponse(self._RESOURCE_VERSION, f"{canvas_id} v{version}")
 
         return version_doc
 
@@ -132,7 +132,7 @@ class FloorCanvasService:
         result = await session.execute(query)
         if not result.scalar_one_or_none():
             resource = "Tenant"
-            raise NotFoundError(resource, str(tenant_id))
+            raise NotFoundResponse(resource, str(tenant_id))
 
 
 floor_canvas_service = FloorCanvasService()

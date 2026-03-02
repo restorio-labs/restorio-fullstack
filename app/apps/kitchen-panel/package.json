@@ -21,7 +21,8 @@
     "@restorio/types": "workspace:*",
     "@restorio/api-client": "workspace:*",
     "@restorio/auth": "workspace:*",
-    "@restorio/ui": "workspace:*"
+    "@restorio/ui": "workspace:*",
+    "@restorio/utils": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^18.2.45",

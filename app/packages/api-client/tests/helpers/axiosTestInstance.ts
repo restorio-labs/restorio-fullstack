@@ -19,6 +19,7 @@ export function setupAxiosMock(): AxiosTestContext {
     put: vi.fn(),
     patch: vi.fn(),
     delete: vi.fn(),
+    request: vi.fn(),
     defaults: { headers: { common: {} } },
     interceptors: {
       request: {

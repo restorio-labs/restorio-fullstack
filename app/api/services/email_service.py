@@ -33,8 +33,9 @@ class EmailService:
         subject = f"Activate your {restaurant_name} account"
         html = f"""
         <p>Welcome to Restorio, {restaurant_name}!</p>
-        <p>Please activate your account:</p>
+        <p>Please activate your account by clicking the link below:</p>
         <p><a href="{activation_link}">Activate my account</a></p>
+        <p>If you did not request this activation, please ignore this email.</p>
         """
 
         await asyncio.to_thread(

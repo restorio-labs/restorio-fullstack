@@ -1,13 +1,19 @@
-import type { UpdateP24ConfigRequest, UpdateP24ConfigResponse } from "@restorio/types";
+import type { UpdateP24ConfigData, UpdateP24ConfigRequest, UpdatedResponse } from "@restorio/types";
 
 import { BaseResource } from "./base";
 
 export class PaymentsResource extends BaseResource {
-  updateP24Config(
+  async updateP24Config(
     tenantId: string,
     data: UpdateP24ConfigRequest,
     signal?: AbortSignal,
-  ): Promise<UpdateP24ConfigResponse> {
-    return this.client.put(`/payments/tenant/${tenantId}/p24-config`, data, { signal });
+  ): Promise<UpdateP24ConfigData> {
+    const response = await this.client.put<UpdatedResponse<UpdateP24ConfigData>>(
+      `/payments/tenant/${tenantId}/p24-config`,
+      data,
+      { signal },
+    );
+
+    return response.data;
   }
 }

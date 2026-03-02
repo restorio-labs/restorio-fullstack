@@ -19,7 +19,12 @@ class TenantResponseDTO(BaseDTO):
         alias="floorCanvases",
         serialization_alias="floorCanvases",
     )
-    created_at: datetime = Field(..., description="Timestamp when tenant was created")
+    created_at: datetime = Field(
+        ...,
+        alias="createdAt",
+        serialization_alias="createdAt",
+        description="Timestamp when tenant was created",
+    )
 
 
 class TenantSummaryResponseDTO(BaseDTO):
@@ -33,4 +38,9 @@ class TenantSummaryResponseDTO(BaseDTO):
     floor_canvas_count: int = Field(
         ..., alias="floorCanvasCount", serialization_alias="floorCanvasCount"
     )
-    created_at: datetime = Field(..., description="Timestamp when tenant was created")
+    created_at: datetime = Field(
+        ...,
+        alias="createdAt",
+        serialization_alias="createdAt",
+        description="Timestamp when tenant was created",
+    )

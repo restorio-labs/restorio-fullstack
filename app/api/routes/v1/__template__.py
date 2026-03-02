@@ -5,7 +5,7 @@ Best Practices:
 1. Use proper HTTP status codes (200, 201, 204, 400, 401, 403, 404, 409, 422, 500)
 2. Use response models: SuccessResponse, CreatedResponse, UpdatedResponse, DeletedResponse
 3. Use dependency injection for database connections
-4. Handle exceptions with custom exception classes (NotFoundError, ValidationError, etc.)
+4. Handle exceptions with custom exception classes (NotFoundResponse, ValidationError, etc.)
 5. Add proper type hints
 6. Document endpoints with docstrings
 """
@@ -62,7 +62,7 @@ async def get_item(
     # Example: Query database
     # item = await db.collection.find_one({"_id": item_id})
     # if not item:
-    #     raise NotFoundError("Item", item_id)
+    #     raise NotFoundResponse("Item", item_id)
 
     return SuccessResponse(
         message=f"Item {item_id} retrieved successfully",
@@ -101,7 +101,7 @@ async def update_item(
     # Example: Update in database
     # result = await db.collection.update_one({"_id": item_id}, {"$set": data})
     # if result.matched_count == 0:
-    #     raise NotFoundError("Item", item_id)
+    #     raise NotFoundResponse("Item", item_id)
     # updated_item = await db.collection.find_one({"_id": item_id})
 
     return UpdatedResponse(
@@ -123,7 +123,7 @@ async def delete_item(
     # Example: Delete from database
     # result = await db.collection.delete_one({"_id": item_id})
     # if result.deleted_count == 0:
-    #     raise NotFoundError("Item", item_id)
+    #     raise NotFoundResponse("Item", item_id)
 
     return DeletedResponse(
         message=f"Item {item_id} deleted successfully",

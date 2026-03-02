@@ -7,16 +7,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from core.dto.v1.tenants import CreateTenantDTO, UpdateTenantDTO
-from core.exceptions import NotFoundError
-from core.models import Tenant
+from core.exceptions import NotFoundResponse
+from core.models import Tenant, TenantRole
 
 
 class TenantService:
     _RESOURCE = "Tenant"
 
-    async def list_tenants(self, session: AsyncSession) -> list[Tenant]:
+    async def list_tenants(self, session: AsyncSession, user_id: UUID) -> list[Tenant]:
         query = (
             select(Tenant)
+            .join(TenantRole, TenantRole.tenant_id == Tenant.id)
+            .where(TenantRole.account_id == user_id)
             .options(selectinload(Tenant.floor_canvases))
             .order_by(Tenant.created_at.desc())
         )
@@ -33,7 +35,7 @@ class TenantService:
         tenant = result.scalar_one_or_none()
 
         if not tenant:
-            raise NotFoundError(self._RESOURCE, str(tenant_id))
+            raise NotFoundResponse(self._RESOURCE, str(tenant_id))
 
         return tenant
 
@@ -77,7 +79,7 @@ class TenantService:
         tenant = result.scalar_one_or_none()
 
         if not tenant:
-            raise NotFoundError(self._RESOURCE, str(tenant_id))
+            raise NotFoundResponse(self._RESOURCE, str(tenant_id))
 
         return tenant
 

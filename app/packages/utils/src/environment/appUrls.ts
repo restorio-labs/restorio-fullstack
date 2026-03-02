@@ -1,5 +1,10 @@
 import { Environment, type AppSlug, type EnvironmentType } from "@restorio/types";
 
+import { LAST_VISITED_APP_STORAGE_KEY } from "../storageKeys";
+
+import { getEnvSource } from "./getEnvSource";
+import { resolveNextEnvVar } from "./resolveNextEnvVar";
+
 const LOCAL_PORTS: Record<AppSlug, number> = {
   "public-web": 3000,
   "admin-panel": 3001,
@@ -8,7 +13,7 @@ const LOCAL_PORTS: Record<AppSlug, number> = {
   "mobile-app": 3003,
 };
 
-const PRODUCTION_DOMAIN = "restorio.com";
+const PRODUCTION_DOMAIN = "restorio.org";
 
 const subdomainFromSlug = (appSlug: AppSlug): string =>
   appSlug.replace("-panel", "").replace("-web", "").replace("-app", "");
@@ -37,4 +42,27 @@ export const getEnvironmentFromEnv = (mode: string): EnvironmentType => {
   }
 
   return Environment.LOCAL;
+};
+
+export const getEnvMode = (): string => {
+  const viteEnv =
+    typeof import.meta !== "undefined" ? (import.meta as { env?: Record<string, unknown> }).env : undefined;
+  const envSource = getEnvSource(viteEnv);
+
+  return resolveNextEnvVar(envSource, "ENV", "NODE_ENV") ?? "development";
+};
+
+export const getAppHref = (slug: AppSlug): string => {
+  const envMode = getEnvMode();
+
+  return getAppUrl(getEnvironmentFromEnv(envMode), slug);
+};
+
+export const goToApp = (slug: AppSlug): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  localStorage.setItem(LAST_VISITED_APP_STORAGE_KEY, slug);
+  window.location.href = getAppHref(slug);
 };

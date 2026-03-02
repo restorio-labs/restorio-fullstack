@@ -1,9 +1,12 @@
+import { runThemeBootScript } from "@restorio/ui";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
 import { App } from "./App";
 import { AppProviders } from "./wrappers/AppProviders";
 import "./index.css";
+
+runThemeBootScript();
 
 const root = document.getElementById("root");
 

@@ -19,6 +19,7 @@ export interface CanvasBounds {
 export interface FloorElementBase extends CanvasBounds {
   id: string;
   zoneId?: string;
+  zIndex?: number;
 }
 
 export interface FloorTableElement extends FloorElementBase {
@@ -100,6 +101,7 @@ export type LayoutHistoryAction =
         tableNumbers?: string[];
         seats?: number;
         label?: string;
+        zIndex?: number;
       };
     }
   | { type: "ADD_ELEMENT"; payload: { element: FloorElement; x: number; y: number } }

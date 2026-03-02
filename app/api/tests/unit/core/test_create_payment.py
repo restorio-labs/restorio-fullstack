@@ -1,6 +1,7 @@
 from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
+from fastapi import status
 import pytest
 
 from core.dto.v1.payments import CreateTransactionDTO

@@ -49,11 +49,11 @@ describe("PaymentConfigPage", () => {
   it("renders all form fields and submit button", () => {
     renderPage();
 
-    expect(screen.getByLabelText(/restaurant tenant/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/merchant id/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/p24 api key/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/p24 crc key/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /save configuration/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/restaurant tenant/i)).toBeDefined();
+    expect(screen.getByLabelText(/merchant id/i)).toBeDefined();
+    expect(screen.getByLabelText(/p24 api key/i)).toBeDefined();
+    expect(screen.getByLabelText(/p24 crc key/i)).toBeDefined();
+    expect(screen.getByRole("button", { name: /save configuration/i })).toBeDefined();
   });
 
   it("disables submit button when form is empty", () => {

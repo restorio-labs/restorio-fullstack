@@ -15,6 +15,11 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ["@restorio/ui", "react-icons"],
   },
+  async rewrites() {
+    const target = process.env.NEXT_PUBLIC_API_PROXY_TARGET ?? "http://localhost:8000";
+
+    return [{ source: "/api/:path*", destination: `${target}/api/:path*` }];
+  },
   turbopack: {},
   webpack: (config, { dev }) => {
     if (dev && config.watchOptions) {

@@ -1,6 +1,11 @@
-import type { ElementToAdd, FloorCanvas as FloorCanvasType, FloorLayoutEditorState } from "@restorio/types";
+import type {
+  ElementToAdd,
+  FloorCanvas as FloorCanvasType,
+  FloorLayoutEditorState,
+  LayoutHistoryAction,
+} from "@restorio/types";
 import { Button, FloorCanvas, useDragResize, type DragResizeMode, useSnapToGrid } from "@restorio/ui";
-import type { ReactElement } from "react";
+import type { ReactElement, Reducer } from "react";
 import { useCallback, useEffect, useReducer, useState } from "react";
 
 import { createElementFromToAdd, layoutHistoryReducer } from "../features/floor/floorLayoutState";
@@ -23,18 +28,20 @@ interface FloorLayoutEditorViewProps {
   onSave?: (layout: FloorCanvasType) => void | Promise<void>;
 }
 
-export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEditorViewProps): ReactElement => {
-  const [state, dispatch] = useReducer(
-    layoutHistoryReducer,
-    null,
-    (): FloorLayoutEditorState => ({
-      layout: initialLayout,
-      history: [initialLayout],
-      historyIndex: 0,
-    }),
-  );
+const getMaxZIndex = (elements: FloorCanvasType["elements"]): number =>
+  elements.reduce((max, el) => Math.max(max, Number(el.zIndex ?? 0)), 0);
 
-  const { snapPoint } = useSnapToGrid(GRID_CELL);
+const getMinZIndex = (elements: FloorCanvasType["elements"]): number =>
+  elements.reduce((min, el) => Math.min(min, Number(el.zIndex ?? 0)), 0);
+
+export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEditorViewProps): ReactElement => {
+  const [state, dispatch] = useReducer<Reducer<FloorLayoutEditorState, LayoutHistoryAction>>(layoutHistoryReducer, {
+    layout: initialLayout,
+    history: [initialLayout],
+    historyIndex: 0,
+  });
+
+  const { snapPoint, snapSize: snapGridSize } = useSnapToGrid(GRID_CELL);
   const onBoundsChange = useCallback(
     (id: string, bounds: { x: number; y: number; w: number; h: number; rotation?: number }) => {
       dispatch({ type: "UPDATE_ELEMENT", payload: { id, bounds } });
@@ -45,6 +52,7 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
   const dragResize = useDragResize({
     onBoundsChange,
     snap: (x, y) => snapPoint(x, y),
+    snapSize: (w, h) => snapGridSize(w, h),
     minWidth: GRID_CELL,
     minHeight: GRID_CELL,
   });
@@ -167,7 +175,7 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
         )}
       </div>
       <div className="flex flex-1 min-h-0">
-        <div className="flex min-w-0 flex-1 flex-col rounded-lg border border-border-default bg-background-secondary">
+        <div className="flex min-w-0 flex-1 flex-col rounded-l-lg border border-border-default bg-background-secondary">
           <div className="flex flex-1 items-center justify-center overflow-auto p-4">
             <div className="relative" style={{ touchAction: "none" }}>
               <FloorCanvas
@@ -219,10 +227,67 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
             </div>
           </div>
         </div>
-        <aside className="w-64 flex-shrink-0 border-l border-border-default bg-surface-primary p-4 flex flex-col gap-3 overflow-auto">
+        <aside className="w-64 flex-shrink-0 border-l border-border-default bg-surface-primary p-4 flex flex-col gap-3 overflow-auto rounded-r-lg">
           <h3 className="text-sm font-semibold text-text-primary">Customize</h3>
           {selectedElement ? (
             <>
+              <div className="flex flex-col gap-2">
+                <span className="text-xs text-text-secondary">Layer</span>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      const maxZIndex = getMaxZIndex(state.layout.elements);
+
+                      dispatch({
+                        type: "UPDATE_ELEMENT",
+                        payload: { id: selectedElement.id, zIndex: maxZIndex + 1 },
+                      });
+                    }}
+                  >
+                    Bring to front
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      const minZIndex = getMinZIndex(state.layout.elements);
+
+                      dispatch({
+                        type: "UPDATE_ELEMENT",
+                        payload: { id: selectedElement.id, zIndex: minZIndex - 1 },
+                      });
+                    }}
+                  >
+                    Send to back
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      dispatch({
+                        type: "UPDATE_ELEMENT",
+                        payload: { id: selectedElement.id, zIndex: Number(selectedElement.zIndex ?? 0) + 1 },
+                      });
+                    }}
+                  >
+                    Forward
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      dispatch({
+                        type: "UPDATE_ELEMENT",
+                        payload: { id: selectedElement.id, zIndex: Number(selectedElement.zIndex ?? 0) - 1 },
+                      });
+                    }}
+                  >
+                    Backward
+                  </Button>
+                </div>
+              </div>
               {selectedElement.type === "zone" && (
                 <>
                   <label className="text-xs text-text-secondary">

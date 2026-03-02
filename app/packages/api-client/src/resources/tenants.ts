@@ -1,33 +1,41 @@
-import type { Tenant, TenantSummary } from "@restorio/types";
+import type { CreatedResponse, SuccessResponse, Tenant, TenantSummary, UpdatedResponse } from "@restorio/types";
 
 import { BaseResource } from "./base";
 
 export class TenantsResource extends BaseResource {
   async list(signal?: AbortSignal): Promise<TenantSummary[]> {
-    const response = await this.client.get<{ message: string; data: TenantSummary[] }>("/tenants", {
-      signal,
-    });
+    const { data } = await this.client.get<SuccessResponse<TenantSummary[]>>("/tenants", { signal });
 
-    return response.data;
+    return data;
   }
 
   async get(tenantId: string, signal?: AbortSignal): Promise<Tenant> {
-    return this.client.get(`/tenants/${tenantId}`, { signal });
+    const { data } = await this.client.get<SuccessResponse<Tenant>>(`/tenants/${tenantId}`, {
+      signal,
+    });
+
+    return data;
   }
 
-  create(data: { name: string; slug: string; status?: string }, signal?: AbortSignal): Promise<Tenant> {
-    return this.client.post("/tenants", data, { signal });
+  async create(body: { name: string; slug: string; status?: string }, signal?: AbortSignal): Promise<Tenant> {
+    const { data } = await this.client.post<CreatedResponse<Tenant>>("/tenants", body, { signal });
+
+    return data;
   }
 
-  update(
+  async update(
     tenantId: string,
-    data: Partial<Pick<Tenant, "name" | "slug" | "status" | "activeLayoutVersionId">>,
+    body: Partial<Pick<Tenant, "name" | "slug" | "status" | "activeLayoutVersionId">>,
     signal?: AbortSignal,
   ): Promise<Tenant> {
-    return this.client.put(`/tenants/${tenantId}`, data, { signal });
+    const { data } = await this.client.put<UpdatedResponse<Tenant>>(`/tenants/${tenantId}`, body, {
+      signal,
+    });
+
+    return data;
   }
 
-  delete(tenantId: string, signal?: AbortSignal): Promise<void> {
-    return this.client.delete(`/tenants/${tenantId}`, { signal });
+  async delete(tenantId: string, signal?: AbortSignal): Promise<void> {
+    await this.client.delete(`/tenants/${tenantId}`, { signal });
   }
 }

@@ -5,16 +5,22 @@ from fastapi import Request
 from jose import JWTError, jwt
 
 from core.exceptions.http import UnauthorizedError
+from core.foundation.auth_cookies import get_access_token_from_request
 from core.foundation.infra.config import settings
 from core.foundation.logging.logger import logger
 
 
 async def get_current_user(self, request: Request) -> dict | None:
     auth_header = request.headers.get("Authorization")
-    if not auth_header or not auth_header.startswith("Bearer "):
+    token: str | None = None
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header.split(" ")[1]
+    else:
+        token = get_access_token_from_request(request)
+
+    if token is None:
         raise UnauthorizedError(message="Unauthorized")
 
-    token = auth_header.split(" ")[1]
     return self.decode_access_token(token=token)
 
 

@@ -12,29 +12,29 @@ describe("FloorCanvasesResource", () => {
 
   beforeEach(() => {
     client = {
-      get: vi.fn().mockResolvedValue(undefined),
-      post: vi.fn().mockResolvedValue(undefined),
-      put: vi.fn().mockResolvedValue(undefined),
+      get: vi.fn().mockResolvedValue({ data: [] }),
+      post: vi.fn().mockResolvedValue({ data: {} }),
+      put: vi.fn().mockResolvedValue({ data: {} }),
       delete: vi.fn().mockResolvedValue(undefined),
     };
 
     resource = new FloorCanvasesResource(client as ApiClient);
   });
 
-  it("list calls GET /venues/:venueId/canvases", async () => {
-    await resource.list("venue-1");
+  it("list calls GET /tenants/:tenantId/canvases", async () => {
+    await resource.list("tenant-1");
 
-    expect(client.get).toHaveBeenCalledWith("/venues/venue-1/canvases", { signal: undefined });
+    expect(client.get).toHaveBeenCalledWith("/tenants/tenant-1/canvases", { signal: undefined });
   });
 
-  it("get calls GET /venues/:venueId/canvases/:canvasId", async () => {
-    await resource.get("venue-1", "canvas-1");
+  it("get calls GET /tenants/:tenantId/canvases/:canvasId", async () => {
+    await resource.get("tenant-1", "canvas-1");
 
-    expect(client.get).toHaveBeenCalledWith("/venues/venue-1/canvases/canvas-1", { signal: undefined });
+    expect(client.get).toHaveBeenCalledWith("/tenants/tenant-1/canvases/canvas-1", { signal: undefined });
   });
 
-  it("create calls POST /venues/:venueId/canvases", async () => {
-    await resource.create("venue-1", {
+  it("create calls POST /tenants/:tenantId/canvases", async () => {
+    await resource.create("tenant-1", {
       name: "Dining Floor",
       width: 1200,
       height: 800,
@@ -42,7 +42,7 @@ describe("FloorCanvasesResource", () => {
     });
 
     expect(client.post).toHaveBeenCalledWith(
-      "/venues/venue-1/canvases",
+      "/tenants/tenant-1/canvases",
       {
         name: "Dining Floor",
         width: 1200,
@@ -53,22 +53,22 @@ describe("FloorCanvasesResource", () => {
     );
   });
 
-  it("update calls PUT /venues/:venueId/canvases/:canvasId", async () => {
-    await resource.update("venue-1", "canvas-1", {
+  it("update calls PUT /tenants/:tenantId/canvases/:canvasId", async () => {
+    await resource.update("tenant-1", "canvas-1", {
       name: "Dining Floor v2",
       width: 1000,
     });
 
     expect(client.put).toHaveBeenCalledWith(
-      "/venues/venue-1/canvases/canvas-1",
+      "/tenants/tenant-1/canvases/canvas-1",
       { name: "Dining Floor v2", width: 1000 },
       { signal: undefined },
     );
   });
 
-  it("delete calls DELETE /venues/:venueId/canvases/:canvasId", async () => {
-    await resource.delete("venue-1", "canvas-1");
+  it("delete calls DELETE /tenants/:tenantId/canvases/:canvasId", async () => {
+    await resource.delete("tenant-1", "canvas-1");
 
-    expect(client.delete).toHaveBeenCalledWith("/venues/venue-1/canvases/canvas-1", { signal: undefined });
+    expect(client.delete).toHaveBeenCalledWith("/tenants/tenant-1/canvases/canvas-1", { signal: undefined });
   });
 });

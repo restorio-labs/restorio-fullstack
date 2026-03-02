@@ -40,6 +40,16 @@ def test_get_security_service_returns_singleton() -> None:
     assert service is dependencies.security_service
 
 
+def test_get_user_service_returns_instance(monkeypatch: pytest.MonkeyPatch) -> None:
+    class DummyUserService:
+        def __init__(self, security: object) -> None:
+            self.security = security
+
+    monkeypatch.setattr(dependencies, "UserService", DummyUserService)
+    service = dependencies.get_user_service()
+    assert isinstance(service, DummyUserService)
+
+
 def test_get_auth_service_uses_passed_security(monkeypatch: pytest.MonkeyPatch) -> None:
     class DummyAuthService:
         def __init__(self, security: object) -> None:

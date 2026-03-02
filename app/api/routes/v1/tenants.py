@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Request, status
 
 from core.dto.v1 import (
     CreateFloorCanvasDTO,
@@ -20,6 +20,7 @@ from core.foundation.http.responses import (
     CreatedResponse,
     DeletedResponse,
     SuccessResponse,
+    UnauthenticatedResponse,
     UpdatedResponse,
 )
 from routes.v1.mappers.tenant_mappers import (
@@ -37,10 +38,20 @@ router = APIRouter()
     response_model=SuccessResponse[list[TenantSummaryResponseDTO]],
 )
 async def list_tenants(
+    request: Request,
     session: PostgresSession,
     service: TenantServiceDep,
 ) -> SuccessResponse[list[TenantSummaryResponseDTO]]:
-    tenants = await service.list_tenants(session)
+    user = getattr(request.state, "user", None)
+    if not isinstance(user, dict):
+        raise UnauthenticatedResponse(message="Unauthorized")
+
+    subject = user.get("sub")
+    if not isinstance(subject, str):
+        raise UnauthenticatedResponse(message="Unauthorized")
+
+    user_id = UUID(subject)
+    tenants = await service.list_tenants(session, user_id)
     return SuccessResponse(
         message="Tenants retrieved successfully",
         data=[tenant_to_summary(t) for t in tenants],

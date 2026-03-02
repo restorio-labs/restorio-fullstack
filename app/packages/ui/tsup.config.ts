@@ -3,7 +3,7 @@ import path from "path";
 import { defineConfig } from "tsup";
 
 export default defineConfig({
-  entry: ["src/index.ts", "src/theme/tailwindUtils.ts"],
+  entry: ["src/index.ts", "src/theme/tailwindUtils.ts", "src/theme/themeMode.ts"],
   format: ["esm", "cjs"],
   dts: true,
   sourcemap: true,

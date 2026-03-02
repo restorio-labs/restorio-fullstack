@@ -15,6 +15,7 @@
     "@types/node": "^22",
     "@restorio/types": "workspace:*",
     "@restorio/ui": "workspace:*",
+    "@restorio/utils": "workspace:*",
     "@restorio/auth": "workspace:*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
