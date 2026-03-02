@@ -1,3 +1,4 @@
+from datetime import date
 from decimal import Decimal
 from typing import Any
 
@@ -21,6 +22,13 @@ class CreateTransactionDTO(BaseDTO):
     email: str = Field(..., description="Payer email address")
     order: dict[str, Any] | None = Field(default=None, description="Order details")
     note: str | None = Field(default=None, description="Additional notes")
+
+
+class TransactionListQueryDTO(BaseDTO):
+    date_from: date | None = Field(default=None, description="Filter by start date")
+    date_to: date | None = Field(default=None, description="Filter by end date")
+    page: int = Field(default=1, ge=1, description="Page number")
+    pagination: int = Field(default=20, ge=1, le=100, description="Items per page")
 
 
 class UpdatePaymentDTO(BaseDTO):
