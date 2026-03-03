@@ -55,7 +55,7 @@ def get_tenant_id_from_request(request: Request) -> UUID:
 
 
 @router.post(
-    "/createuser",
+    "/create",
     status_code=status.HTTP_201_CREATED,
     response_model=CreatedResponse[RegisterCreatedData],
     summary="Create an inactive staff user",
