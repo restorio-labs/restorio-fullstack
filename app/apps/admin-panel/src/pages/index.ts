@@ -5,6 +5,7 @@ export { PaymentConfigPage } from "./PaymentConfigPage";
 export { QRCodeGeneratorPage } from "./QRCodeGeneratorPage";
 export { QRCodePrintPage } from "./QRCodePrintPage";
 export { RestaurantCreatorPage } from "./RestaurantCreatorPage";
+export { TenantProfilePage } from "./TenantProfilePage";
 export { RestaurantQRCodePage } from "./RestaurantQRCodePage";
 export { StaffPage } from "./StaffPage";
 export { TableQRCodePage } from "./TableQRCodePage";

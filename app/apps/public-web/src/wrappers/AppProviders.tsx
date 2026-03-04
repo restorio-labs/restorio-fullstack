@@ -1,17 +1,23 @@
 "use client";
 
-import { ThemeProvider } from "@restorio/ui";
+import { I18nProvider, ThemeProvider } from "@restorio/ui";
 import { THEME_STORAGE_KEY } from "@restorio/utils";
 import type { ReactNode } from "react";
+import { useLocale, useMessages } from "next-intl";
 
 interface AppProvidersProps {
   children: ReactNode;
 }
 
 export const AppProviders = ({ children }: AppProvidersProps): ReactNode => {
+  const locale = useLocale();
+  const messages = useMessages();
+
   return (
-    <ThemeProvider defaultMode="system" storageKey={THEME_STORAGE_KEY}>
-      {children}
-    </ThemeProvider>
+    <I18nProvider locale={locale} messages={messages}>
+      <ThemeProvider defaultMode="system" storageKey={THEME_STORAGE_KEY}>
+        {children}
+      </ThemeProvider>
+    </I18nProvider>
   );
 };

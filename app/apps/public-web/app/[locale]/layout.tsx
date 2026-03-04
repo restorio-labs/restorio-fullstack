@@ -1,12 +1,14 @@
 import { getThemeBootScript } from "@restorio/ui/theme-mode";
 import type { Metadata, Viewport } from "next";
-import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getMessages, getTranslations } from "next-intl/server";
+import { NextIntlClientProvider, hasLocale } from "next-intl";
+import { getMessages, getTranslations } from "next-intl/server";
+import { notFound } from "next/navigation";
 import type { ReactElement, ReactNode } from "react";
 
-import { AppProviders } from "../src/wrappers/AppProviders";
+import { routing } from "../../src/i18n/routing";
+import { AppProviders } from "../../src/wrappers/AppProviders";
 
-import "./globals.css";
+import "../globals.css";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -20,6 +22,11 @@ export const metadata: Metadata = {
     template: "%s | Restorio Platform",
   },
   description: "Restaurant Management Platform",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000"),
   openGraph: {
     type: "website",
@@ -33,13 +40,19 @@ export const metadata: Metadata = {
 
 interface RootLayoutProps {
   children: ReactNode;
+  params: Promise<{ locale: string }>;
 }
 
-export default async function RootLayout({ children }: RootLayoutProps): Promise<ReactElement> {
+export default async function RootLayout({ children, params }: RootLayoutProps): Promise<ReactElement> {
   const themeBootScript = getThemeBootScript();
-  const locale = await getLocale();
-  const messages = await getMessages();
-  const t = await getTranslations();
+  const { locale } = await params;
+
+  if (!hasLocale(routing.locales, locale)) {
+    notFound();
+  }
+
+  const messages = await getMessages({ locale });
+  const t = await getTranslations({ locale });
 
   return (
     <html lang={locale} suppressHydrationWarning>

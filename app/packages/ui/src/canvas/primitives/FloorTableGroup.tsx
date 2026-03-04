@@ -1,6 +1,7 @@
 import type { CanvasBounds, TableDisplayInfo, TableRuntimeState } from "@restorio/types";
 import type { ReactElement } from "react";
 
+import { useI18n } from "../../providers/I18nProvider";
 import { cn } from "../../utils";
 import { CanvasElement } from "../CanvasElement";
 
@@ -41,11 +42,12 @@ export const FloorTableGroup = ({
   "aria-label": ariaLabel,
   onPointerDown,
 }: FloorTableGroupProps): ReactElement => {
+  const { t } = useI18n();
   const tablesLabel = tableNumbers.join(", ");
   const guests = displayInfo?.guestCount;
   const orderStatus = displayInfo?.orderStatus;
   const needHelp = displayInfo?.needHelp;
-  const label = ariaLabel ?? `Tables ${tablesLabel}, ${seats} seats, ${state}`;
+  const label = ariaLabel ?? `${t("floorEditor.panel.name")} ${tablesLabel}, ${seats} ${t("floorEditor.panel.seats")}, ${state}`;
 
   return (
     <CanvasElement bounds={bounds} aria-label={label} role="img" onPointerDown={onPointerDown}>

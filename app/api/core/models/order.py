@@ -24,7 +24,6 @@ from core.models.enums import OrderStatus
 if TYPE_CHECKING:
     from core.models.order_item import OrderItem
     from core.models.payment import Payment
-    from core.models.restaurant_table import RestaurantTable
     from core.models.tenant import Tenant
 
 
@@ -37,10 +36,9 @@ class Order(Base):
         ForeignKey("tenants.id", ondelete="CASCADE"),
         nullable=False,
     )
-    table_id: Mapped[UUID] = mapped_column(
+    table_id: Mapped[UUID | None] = mapped_column(
         PGUUID(as_uuid=True),
-        ForeignKey("restaurant_tables.id", ondelete="RESTRICT"),
-        nullable=False,
+        nullable=True,
     )
     status: Mapped[OrderStatus] = mapped_column(
         Enum(
@@ -62,7 +60,6 @@ class Order(Base):
     )
 
     tenant: Mapped[Tenant] = relationship("Tenant", back_populates="orders")
-    table: Mapped[RestaurantTable] = relationship("RestaurantTable", back_populates="orders")
     order_items: Mapped[list[OrderItem]] = relationship(
         "OrderItem", back_populates="order", cascade="all, delete-orphan"
     )

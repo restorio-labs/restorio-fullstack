@@ -11,6 +11,7 @@ import {
 } from "@restorio/utils";
 import type { ReactElement } from "react";
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { api, setAccessToken } from "@/api/client";
 
@@ -39,6 +40,7 @@ export const LoginContent = (): ReactElement => {
   const [errorMessage, setErrorMessage] = useState("");
   const [view, setView] = useState<ViewState>("form");
   const [envMode] = useState(getEnvMode);
+  const t = useTranslations("login");
 
   const isFormValid = useMemo(() => email.trim().length > 0 && password.trim().length > 0, [email, password]);
 
@@ -100,7 +102,7 @@ export const LoginContent = (): ReactElement => {
           ? data.detail
           : typeof data?.message === "string" && data.message.trim().length > 0
             ? data.message
-            : "Login failed. Please check your email and password.";
+            : t("genericError");
 
       setErrorMessage(msg);
     } finally {
@@ -109,12 +111,25 @@ export const LoginContent = (): ReactElement => {
   };
 
   if (view === "choosing_app") {
-    return <ChooseApp onSelectApp={goToApp} />;
+    const chooseAppLabels = {
+      adminPanel: t("chooseApp.labels.adminPanel"),
+      kitchenPanel: t("chooseApp.labels.kitchenPanel"),
+      waiterPanel: t("chooseApp.labels.waiterPanel"),
+    };
+
+    return (
+      <ChooseApp
+        onSelectApp={goToApp}
+        labels={chooseAppLabels}
+        title={t("chooseApp.title")}
+        subtitle={t("chooseApp.subtitle")}
+      />
+    );
   }
 
   return (
     <>
-      <h1 className="mb-6 text-3xl font-bold text-text-primary">Log in</h1>
+      <h1 className="mb-6 text-3xl font-bold text-text-primary">{t("title")}</h1>
 
       {errorMessage && (
         <div className="mb-6 rounded-lg border border-status-error-border bg-status-error-surface px-4 py-3 text-sm text-status-error-text">
@@ -131,7 +146,7 @@ export const LoginContent = (): ReactElement => {
       >
         <FormField>
           <Input
-            label="Email"
+            label={t("email")}
             type="email"
             autoComplete="email"
             value={email}
@@ -142,7 +157,7 @@ export const LoginContent = (): ReactElement => {
 
         <FormField>
           <Input
-            label="Password"
+            label={t("password")}
             type="password"
             autoComplete="current-password"
             value={password}
@@ -153,7 +168,7 @@ export const LoginContent = (): ReactElement => {
 
         <FormActions align="stretch">
           <Button type="submit" size="lg" variant="primary" fullWidth disabled={!isFormValid || submitting}>
-            {submitting ? "Logging in..." : "Log in"}
+            {submitting ? t("submitting") : t("submit")}
           </Button>
         </FormActions>
       </Form>

@@ -13,6 +13,7 @@ from services.email_service import EmailService
 from services.external_client_service import ExternalClient
 from services.floor_canvas_service import FloorCanvasService
 from services.payment_service import P24Service
+from services.tenant_profile_service import TenantProfileService
 from services.tenant_service import TenantService
 from services.user_service import UserService
 
@@ -55,6 +56,10 @@ def get_p24_service() -> P24Service:
     return P24Service()
 
 
+def get_tenant_profile_service() -> TenantProfileService:
+    return TenantProfileService()
+
+
 def get_external_client() -> ExternalClient:
     return ExternalClient()
 
@@ -65,6 +70,7 @@ EmailServiceDep = Annotated[EmailService, Depends(get_email_service)]
 TenantServiceDep = Annotated[TenantService, Depends(get_tenant_service)]
 FloorCanvasServiceDep = Annotated[FloorCanvasService, Depends(get_floor_canvas_service)]
 P24ServiceDep = Annotated[P24Service, Depends(get_p24_service)]
+TenantProfileServiceDep = Annotated[TenantProfileService, Depends(get_tenant_profile_service)]
 ExternalClientDep = Annotated[ExternalClient, Depends(get_external_client)]
 UserServiceDep = Annotated[UserService, Depends(get_user_service)]
 

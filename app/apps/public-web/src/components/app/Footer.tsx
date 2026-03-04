@@ -6,76 +6,63 @@ import Link from "next/link";
 import type { ReactElement } from "react";
 
 export const Footer = (): ReactElement => {
-  const t = useTranslations();
+  const t = useTranslations("footer");
   const currentYear = new Date().getFullYear();
   const listLinkClassName = "text-sm text-text-secondary transition-colors hover:text-interactive-primary";
+  const footerSections = [
+    {
+      title: t("sections.product"),
+      links: [
+        { href: "#", label: t("navigation.features") },
+        { href: "#", label: t("navigation.pricing") },
+        { href: "#", label: t("navigation.demo") },
+      ],
+    },
+    {
+      title: t("sections.company"),
+      links: [
+        { href: "/about", label: t("navigation.about") },
+        { href: "#", label: t("navigation.privacy") },
+        { href: "#", label: t("navigation.terms") },
+      ],
+    },
+  ];
 
   return (
     <footer className="border-t border-border-default bg-surface-secondary py-12">
       <ContentContainer maxWidth="2xl" padding>
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
-          <div className="col-span-1 md:col-span-2">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-4">
+          <div className="col-span-1 sm:col-span-2 md:col-span-2">
             <div className="mb-4 flex items-center gap-2">
               <div className="h-6 w-6 rounded bg-interactive-primary" />
               <Text variant="h4" weight="bold">
-                {t("footer.brand")}
+                {t("brand")}
               </Text>
             </div>
             <Text variant="body-sm" className="max-w-xs text-text-secondary">
-              {t("footer.description")}
+              {t("description")}
             </Text>
           </div>
-          <div className="grid grid-cols-2 gap-8 md:col-span-2">
-            <div>
+          {footerSections.map((section) => (
+            <div key={section.title} className="col-span-1">
               <Text variant="body-sm" weight="semibold" className="mb-4 uppercase tracking-wider text-text-primary">
-                {t("footer.sections.product")}
+                {section.title}
               </Text>
               <ul className="space-y-2">
-                <li>
-                  <Link href="#" className={listLinkClassName}>
-                    {t("navigation.features")}
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className={listLinkClassName}>
-                    {t("navigation.pricing")}
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className={listLinkClassName}>
-                    {t("navigation.demo")}
-                  </Link>
-                </li>
+                {section.links.map((link) => (
+                  <li key={link.label}>
+                    <Link href={link.href} className={listLinkClassName}>
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
-
-            <div>
-              <Text variant="body-sm" weight="semibold" className="mb-4 uppercase tracking-wider text-text-primary">
-                {t("footer.sections.company")}
-              </Text>
-              <ul className="space-y-2">
-                <li>
-                  <Link href="/about" className={listLinkClassName}>
-                    {t("navigation.about")}
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className={listLinkClassName}>
-                    {t("navigation.privacy")}
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className={listLinkClassName}>
-                    {t("navigation.terms")}
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
+          ))}
         </div>
         <div className="mt-12 border-t border-border-default pt-8">
           <Text variant="body-sm" className="text-center text-text-tertiary">
-            {t("footer.copyright", { year: currentYear })}
+            {t("copyright", { year: currentYear })}
           </Text>
         </div>
       </ContentContainer>

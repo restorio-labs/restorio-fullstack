@@ -20,5 +20,9 @@
       "es": "الإسبانية",
       "ar": "العربية"
     }
+  },
+  "floorEditor": {
+    "tableLabel": "طاولة {{number}}",
+    "tableGroupLabel": "طاولات {{numbers}}"
   }
 }

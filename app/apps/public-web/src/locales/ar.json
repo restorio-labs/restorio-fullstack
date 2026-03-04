@@ -9,6 +9,44 @@
     "title": "منصة Restorio",
     "description": "منصة إدارة المطاعم"
   },
+  "login": {
+    "title": "تسجيل الدخول",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "submit": "تسجيل الدخول",
+    "submitting": "جارٍ تسجيل الدخول...",
+    "genericError": "فشل تسجيل الدخول. يرجى التحقق من البريد الإلكتروني وكلمة المرور."
+  },
+  "register": {
+    "title": "إنشاء حساب",
+    "success": "تم إنشاء الحساب بنجاح. تحقق من بريدك الإلكتروني للمتابعة.",
+    "button": "تسجيل",
+    "fields": {
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "confirmPassword": "تأكيد كلمة المرور",
+      "restaurantName": "اسم المطعم",
+      "terms": "أوافق على الشروط والأحكام"
+    },
+    "errors": {
+      "emailRequired": "البريد الإلكتروني مطلوب",
+      "emailInvalid": "يرجى إدخال بريد إلكتروني صالح",
+      "passwordRequired": "كلمة المرور مطلوبة",
+      "passwordInvalid": "كلمة المرور لا تستوفي المتطلبات",
+      "confirmPasswordRequired": "يرجى تأكيد كلمة المرور",
+      "confirmPasswordMismatch": "كلمتا المرور غير متطابقتين",
+      "restaurantNameRequired": "اسم المطعم مطلوب",
+      "termsRequired": "يجب الموافقة على الشروط والأحكام",
+      "generic": "تعذر إنشاء الحساب. يرجى المحاولة مرة أخرى."
+    },
+    "passwordRules": {
+      "minLength": "- 8 أحرف على الأقل",
+      "lowercase": "- حرف صغير واحد",
+      "uppercase": "- حرف كبير واحد",
+      "number": "- رقم واحد",
+      "special": "- رمز خاص واحد"
+    }
+  },
   "navigation": {
     "home": "الرئيسية",
     "about": "حول",
@@ -115,6 +153,14 @@
       "product": "المنتج",
       "company": "الشركة"
     },
-    "copyright": "© {{year}} منصة Restorio. مشروع أكاديمي مفتوح المصدر."
+    "navigation": {
+      "features": "الميزات",
+      "pricing": "الأسعار",
+      "demo": "عرض توضيحي",
+      "about": "حول",
+      "privacy": "الخصوصية",
+      "terms": "الشروط"
+    },
+    "copyright": "© {year} منصة Restorio. مشروع أكاديمي مفتوح المصدر."
   }
 }

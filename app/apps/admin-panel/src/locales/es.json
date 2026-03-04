@@ -19,6 +19,13 @@
       "pl": "Polaco",
       "es": "Español",
       "ar": "Árabe"
-    }
+    },
+    "aria": {
+      "resizeHandle": "Redimensionar {{mode}}",
+      "setColor": "Establecer color {{color}}"
+    },
+    "zoneName": "Zona {{number}}",
+    "tableLabel": "Mesa {{number}}",
+    "tableGroupLabel": "Mesas {{numbers}}"
   }
 }

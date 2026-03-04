@@ -18,6 +18,7 @@ class NotFoundResponse(BaseHTTPException):
         if identifier:
             message = f"{resource} with id '{identifier}' not found"
         super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
             message=message,
         )
 

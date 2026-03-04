@@ -38,6 +38,7 @@
       "menuCreator": "Kreator menu",
       "pageConfigurator": "Konfigurator strony",
       "qrCodeGenerator": "Generator kodów QR",
+      "tenantProfile": "Profil lokalu",
       "paymentConfig": "Konfiguracja płatności",
       "staff": "Personel"
     },
@@ -83,11 +84,11 @@
       "add": "Dodaj"
     },
     "addMenu": {
-      "table": "Dodaj stolik",
-      "zone": "Dodaj strefę",
-      "bar": "Dodaj bar",
-      "wall": "Dodaj ścianę",
-      "entrance": "Dodaj wejście"
+      "table": "Stolik",
+      "zone": "Strefę",
+      "bar": "Bar",
+      "wall": "Ścianę",
+      "entrance": "Wejście"
     },
     "panel": {
       "title": "Dostosuj",
@@ -110,7 +111,9 @@
       "resizeHandle": "Zmień rozmiar {{mode}}",
       "setColor": "Ustaw kolor {{color}}"
     },
-    "zoneName": "Strefa {{number}}"
+    "zoneName": "Strefa {{number}}",
+    "tableLabel": "Stolik {{number}}",
+    "tableGroupLabel": "Stoliki {{numbers}}"
   },
   "menuCreator": {
     "title": "Kreator menu",
@@ -130,28 +133,37 @@
     "errors": {
       "loadRestaurants": "Nie udało się wczytać restauracji. Odśwież i spróbuj ponownie.",
       "selectRestaurant": "Wybierz restaurację z rozwijanego menu w nagłówku.",
-      "updateFailed": "Nie udało się zaktualizować konfiguracji P24. Sprawdź identyfikator najemcy i spróbuj ponownie."
-    },
-    "selectedRestaurant": {
-      "title": "Wybrana restauracja",
-      "empty": "Nie wybrano restauracji."
+      "updateFailed": "Nie udało się zaktualizować konfiguracji P24. Sprawdź identyfikator lokalu i spróbuj ponownie.",
+      "validationFailed": "Popraw zaznaczone pola i spróbuj ponownie."
     },
     "loadingRestaurants": "Wczytywanie restauracji...",
     "fields": {
       "merchantId": {
         "label": "Identyfikator sprzedawcy",
         "placeholder": "np. 123456",
-        "helper": "Identyfikator sprzedawcy Przelewy24 (maks. 6 cyfr)"
+        "helper": "Identyfikator sprzedawcy Przelewy24 (maks. 6 cyfr)",
+        "error": "Identyfikator sprzedawcy musi być między 0 a 999999"
       },
       "apiKey": {
         "label": "Klucz API P24",
         "placeholder": "Wpisz klucz API Przelewy24",
-        "helper": "Maks. 32 znaki"
+        "helper": "Maks. 32 znaki",
+        "error": "Klucz API jest wymagany (maks. 32 znaki)"
       },
       "crcKey": {
         "label": "Klucz CRC P24",
         "placeholder": "Wpisz klucz CRC Przelewy24",
-        "helper": "Maks. 16 znaków"
+        "helper": "Maks. 16 znaków",
+        "error": "Klucz CRC jest wymagany (maks. 16 znaków)"
+      },
+      "p24Merchantid": {
+        "error": "Identyfikator sprzedawcy musi być między 0 a 999999"
+      },
+      "p24Api": {
+        "error": "Klucz API jest wymagany (maks. 32 znaki)"
+      },
+      "p24Crc": {
+        "error": "Klucz CRC jest wymagany (maks. 16 znaków)"
       }
     },
     "success": "Konfiguracja P24 została zaktualizowana.",
@@ -225,6 +237,144 @@
     "description": "Zarządzaj kontami kuchni, kelnerów i innych pracowników",
     "placeholderTitle": "Zarządzanie personelem",
     "placeholderDescription": "Dodawaj pracowników i wysyłaj linki aktywacyjne do panelu kuchni, kelnera i innych aplikacji"
+  },
+  "tenantProfile": {
+    "title": "Profil lokalu",
+    "description": "Zarządzaj danymi firmowymi, kontaktowymi i mediami społecznościowymi najemcy",
+    "loadingTenants": "Wczytywanie najemców...",
+    "loadingProfile": "Wczytywanie profilu...",
+    "selectedTenant": {
+      "title": "Wybrana restauracja",
+      "empty": "Nie wybrano restauracji."
+    },
+    "sections": {
+      "company": "Dane firmy",
+      "contact": "Kontakt z restauracją",
+      "address": "Adres",
+      "owner": "Dane właściciela",
+      "contactPerson": "Osoba kontaktowa",
+      "socials": "Media społecznościowe"
+    },
+    "fields": {
+      "nip": {
+        "label": "NIP",
+        "placeholder": "np. 1234567890",
+        "helper": "Numer identyfikacji podatkowej (dokładnie 10 cyfr)",
+        "error": "NIP musi składać się z dokładnie 10 cyfr"
+      },
+      "companyName": {
+        "label": "Nazwa firmy",
+        "placeholder": "Oficjalna zarejestrowana nazwa firmy",
+        "error": "Nazwa firmy jest wymagana"
+      },
+      "logoUrl": {
+        "label": "URL logo",
+        "placeholder": "https://example.com/logo.png",
+        "error": "Nieprawidłowy URL logo"
+      },
+      "contactEmail": {
+        "label": "Email kontaktowy",
+        "placeholder": "restauracja@example.com",
+        "error": "Email kontaktowy jest wymagany"
+      },
+      "phone": {
+        "label": "Telefon",
+        "placeholder": "+48 123 456 789",
+        "error": "Numer telefonu jest wymagany"
+      },
+      "addressStreet": {
+        "label": "Ulica",
+        "placeholder": "ul. Marszałkowska 1",
+        "error": "Ulica jest wymagana"
+      },
+      "addressCity": {
+        "label": "Miasto",
+        "placeholder": "Warszawa",
+        "error": "Miasto jest wymagane"
+      },
+      "addressPostalCode": {
+        "label": "Kod pocztowy",
+        "placeholder": "00-001",
+        "helper": "Format polski: XX-XXX",
+        "error": "Kod pocztowy musi być w formacie XX-XXX"
+      },
+      "addressCountry": {
+        "label": "Kraj",
+        "placeholder": "Polska",
+        "error": "Kraj jest wymagany"
+      },
+      "ownerFirstName": {
+        "label": "Imię",
+        "placeholder": "Jan",
+        "error": "Imię właściciela jest wymagane"
+      },
+      "ownerLastName": {
+        "label": "Nazwisko",
+        "placeholder": "Kowalski",
+        "error": "Nazwisko właściciela jest wymagane"
+      },
+      "ownerEmail": {
+        "label": "Email",
+        "placeholder": "wlasciciel@example.com",
+        "error": "Nieprawidłowy email właściciela"
+      },
+      "ownerPhone": {
+        "label": "Telefon",
+        "placeholder": "+48 123 456 789",
+        "error": "Nieprawidłowy numer telefonu właściciela"
+      },
+      "contactPersonFirstName": {
+        "label": "Imię",
+        "placeholder": "Anna",
+        "error": "Nieprawidłowe imię osoby kontaktowej"
+      },
+      "contactPersonLastName": {
+        "label": "Nazwisko",
+        "placeholder": "Nowak",
+        "error": "Nieprawidłowe nazwisko osoby kontaktowej"
+      },
+      "contactPersonEmail": {
+        "label": "Email",
+        "placeholder": "kontakt@example.com",
+        "error": "Nieprawidłowy email osoby kontaktowej"
+      },
+      "contactPersonPhone": {
+        "label": "Telefon",
+        "placeholder": "+48 123 456 789",
+        "error": "Nieprawidłowy numer telefonu osoby kontaktowej"
+      },
+      "socialFacebook": {
+        "label": "Facebook",
+        "placeholder": "https://facebook.com/twojarestauracja",
+        "error": "Nieprawidłowy URL Facebooka"
+      },
+      "socialInstagram": {
+        "label": "Instagram",
+        "placeholder": "https://instagram.com/twojarestauracja",
+        "error": "Nieprawidłowy URL Instagrama"
+      },
+      "socialTiktok": {
+        "label": "TikTok",
+        "placeholder": "https://tiktok.com/@twojarestauracja",
+        "error": "Nieprawidłowy URL TikToka"
+      },
+      "socialWebsite": {
+        "label": "Strona www",
+        "placeholder": "https://twojarestauracja.pl",
+        "error": "Nieprawidłowy URL strony www"
+      }
+    },
+    "errors": {
+      "loadTenants": "Nie udało się wczytać najemców. Odśwież i spróbuj ponownie.",
+      "selectTenant": "Wybierz najemcę z rozwijanego menu w nagłówku.",
+      "saveFailed": "Nie udało się zapisać profilu lokalu. Spróbuj ponownie.",
+      "validationFailed": "Popraw zaznaczone pola i spróbuj ponownie."
+    },
+    "success": "Profil lokalu został zapisany.",
+    "actions": {
+      "save": "Zapisz profil",
+      "saving": "Zapisywanie..."
+    }
   },
   "tableQr": {
     "generateError": "Nie udało się wygenerować kodu QR dla stolika {{table}}:",

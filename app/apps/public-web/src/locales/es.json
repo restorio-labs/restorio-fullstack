@@ -9,6 +9,44 @@
     "title": "Plataforma Restorio",
     "description": "Plataforma de Gestión de Restaurantes"
   },
+  "login": {
+    "title": "Iniciar sesión",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "submit": "Iniciar sesión",
+    "submitting": "Iniciando sesión...",
+    "genericError": "Error al iniciar sesión. Verifica tu correo y contraseña."
+  },
+  "register": {
+    "title": "Crea tu cuenta",
+    "success": "Cuenta creada correctamente. Revisa tu correo para continuar.",
+    "button": "Registrarse",
+    "fields": {
+      "email": "Correo electrónico",
+      "password": "Contraseña",
+      "confirmPassword": "Confirmar contraseña",
+      "restaurantName": "Nombre del restaurante",
+      "terms": "Acepto los términos y condiciones"
+    },
+    "errors": {
+      "emailRequired": "El correo electrónico es obligatorio",
+      "emailInvalid": "Introduce un correo electrónico válido",
+      "passwordRequired": "La contraseña es obligatoria",
+      "passwordInvalid": "La contraseña no cumple los requisitos",
+      "confirmPasswordRequired": "Confirma tu contraseña",
+      "confirmPasswordMismatch": "Las contraseñas no coinciden",
+      "restaurantNameRequired": "El nombre del restaurante es obligatorio",
+      "termsRequired": "Debes aceptar los términos y condiciones",
+      "generic": "No se pudo crear la cuenta. Inténtalo de nuevo."
+    },
+    "passwordRules": {
+      "minLength": "- Al menos 8 caracteres",
+      "lowercase": "- 1 letra minúscula",
+      "uppercase": "- 1 letra mayúscula",
+      "number": "- 1 número",
+      "special": "- 1 carácter especial"
+    }
+  },
   "navigation": {
     "home": "Inicio",
     "about": "Acerca de",
@@ -115,6 +153,14 @@
       "product": "Producto",
       "company": "Empresa"
     },
-    "copyright": "© {{year}} Plataforma Restorio. Proyecto Académico de Código Abierto."
+    "navigation": {
+      "features": "Características",
+      "pricing": "Precios",
+      "demo": "Demo",
+      "about": "Acerca de",
+      "privacy": "Privacidad",
+      "terms": "Términos"
+    },
+    "copyright": "© {year} Plataforma Restorio. Proyecto Académico de Código Abierto."
   }
 }

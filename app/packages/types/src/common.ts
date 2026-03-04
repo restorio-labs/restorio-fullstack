@@ -15,3 +15,7 @@ export interface UpdatedResponse<T> {
   message: string;
   data: T;
 }
+
+export interface ValidationErrorResponse {
+  fields: string[];
+}

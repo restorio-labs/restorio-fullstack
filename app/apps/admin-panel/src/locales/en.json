@@ -38,6 +38,7 @@
       "menuCreator": "Menu Creator",
       "pageConfigurator": "Page Configurator",
       "qrCodeGenerator": "QR Code Generator",
+      "tenantProfile": "Profile",
       "paymentConfig": "Payment Config",
       "staff": "Staff"
     },
@@ -110,7 +111,9 @@
       "resizeHandle": "Resize {{mode}}",
       "setColor": "Set color {{color}}"
     },
-    "zoneName": "Zone {{number}}"
+    "zoneName": "Zone {{number}}",
+    "tableLabel": "Table {{number}}",
+    "tableGroupLabel": "Tables {{numbers}}"
   },
   "menuCreator": {
     "title": "Menu Creator",
@@ -130,7 +133,8 @@
     "errors": {
       "loadRestaurants": "Failed to load restaurants. Please refresh and try again.",
       "selectRestaurant": "Select a restaurant from the header dropdown.",
-      "updateFailed": "Failed to update P24 configuration. Please verify the restaurant tenant ID and try again."
+      "updateFailed": "Failed to update P24 configuration. Please verify the restaurant tenant ID and try again.",
+      "validationFailed": "Please fix the highlighted fields and try again."
     },
     "selectedRestaurant": {
       "title": "Selected restaurant",
@@ -141,17 +145,29 @@
       "merchantId": {
         "label": "Merchant ID",
         "placeholder": "e.g. 123456",
-        "helper": "Przelewy24 merchant identifier (max 6 digits)"
+        "helper": "Przelewy24 merchant identifier (max 6 digits)",
+        "error": "Merchant ID must be between 0 and 999999"
       },
       "apiKey": {
         "label": "P24 API Key",
         "placeholder": "Enter Przelewy24 API key",
-        "helper": "Max 32 characters"
+        "helper": "Max 32 characters",
+        "error": "API key is required (max 32 characters)"
       },
       "crcKey": {
         "label": "P24 CRC Key",
         "placeholder": "Enter Przelewy24 CRC key",
-        "helper": "Max 16 characters"
+        "helper": "Max 16 characters",
+        "error": "CRC key is required (max 16 characters)"
+      },
+      "p24Merchantid": {
+        "error": "Merchant ID must be between 0 and 999999"
+      },
+      "p24Api": {
+        "error": "API key is required (max 32 characters)"
+      },
+      "p24Crc": {
+        "error": "CRC key is required (max 16 characters)"
       }
     },
     "success": "P24 configuration updated successfully.",
@@ -221,14 +237,146 @@
     "subtitle": "Restaurant Menu"
   },
   "staff": {
-    "title": "Staff Management",
-    "description": "Manage kitchen, waiter, and other staff accounts",
-    "placeholderTitle": "Staff Management",
-    "placeholderDescription": "Add staff members and send activation links for kitchen panel, waiter panel, and other apps"
-  },
-  "tableQr": {
     "generateError": "Failed to generate QR code for table {{table}}:",
     "loadError": "Failed to load table QR code.",
     "title": "Table {{table}}"
+  },
+  "tenantProfile": {
+    "title": "Tenant Profile",
+    "description": "Manage company details, contact information, and social media for your tenant",
+    "loadingTenants": "Loading tenants...",
+    "loadingProfile": "Loading profile...",
+    "selectedTenant": {
+      "title": "Selected tenant",
+      "empty": "No tenant selected."
+    },
+    "sections": {
+      "company": "Company Details",
+      "contact": "Restaurant Contact",
+      "address": "Address",
+      "owner": "Owner Details",
+      "contactPerson": "Contact Person",
+      "socials": "Social Media"
+    },
+    "fields": {
+      "nip": {
+        "label": "NIP",
+        "placeholder": "e.g. 1234567890",
+        "helper": "Tax identification number (exactly 10 digits)",
+        "error": "NIP must be exactly 10 digits"
+      },
+      "companyName": {
+        "label": "Company Name",
+        "placeholder": "Official registered company name",
+        "error": "Company name is required"
+      },
+      "logoUrl": {
+        "label": "Logo URL",
+        "placeholder": "https://example.com/logo.png",
+        "error": "Invalid logo URL"
+      },
+      "contactEmail": {
+        "label": "Contact Email",
+        "placeholder": "restaurant@example.com",
+        "error": "Contact email is required"
+      },
+      "phone": {
+        "label": "Phone",
+        "placeholder": "+48 123 456 789",
+        "error": "Phone number is required"
+      },
+      "addressStreet": {
+        "label": "Street",
+        "placeholder": "123 Main St",
+        "error": "Street address is required"
+      },
+      "addressCity": {
+        "label": "City",
+        "placeholder": "Warsaw",
+        "error": "City is required"
+      },
+      "addressPostalCode": {
+        "label": "Postal Code",
+        "placeholder": "00-001",
+        "helper": "Polish format: XX-XXX",
+        "error": "Postal code must be in XX-XXX format"
+      },
+      "addressCountry": {
+        "label": "Country",
+        "placeholder": "Poland",
+        "error": "Country is required"
+      },
+      "ownerFirstName": {
+        "label": "First Name",
+        "placeholder": "John",
+        "error": "Owner first name is required"
+      },
+      "ownerLastName": {
+        "label": "Last Name",
+        "placeholder": "Smith",
+        "error": "Owner last name is required"
+      },
+      "ownerEmail": {
+        "label": "Email",
+        "placeholder": "owner@example.com",
+        "error": "Invalid owner email"
+      },
+      "ownerPhone": {
+        "label": "Phone",
+        "placeholder": "+48 123 456 789",
+        "error": "Invalid owner phone number"
+      },
+      "contactPersonFirstName": {
+        "label": "First Name",
+        "placeholder": "Jane",
+        "error": "Invalid contact person first name"
+      },
+      "contactPersonLastName": {
+        "label": "Last Name",
+        "placeholder": "Doe",
+        "error": "Invalid contact person last name"
+      },
+      "contactPersonEmail": {
+        "label": "Email",
+        "placeholder": "contact@example.com",
+        "error": "Invalid contact person email"
+      },
+      "contactPersonPhone": {
+        "label": "Phone",
+        "placeholder": "+48 123 456 789",
+        "error": "Invalid contact person phone number"
+      },
+      "socialFacebook": {
+        "label": "Facebook",
+        "placeholder": "https://facebook.com/yourrestaurant",
+        "error": "Invalid Facebook URL"
+      },
+      "socialInstagram": {
+        "label": "Instagram",
+        "placeholder": "https://instagram.com/yourrestaurant",
+        "error": "Invalid Instagram URL"
+      },
+      "socialTiktok": {
+        "label": "TikTok",
+        "placeholder": "https://tiktok.com/@yourrestaurant",
+        "error": "Invalid TikTok URL"
+      },
+      "socialWebsite": {
+        "label": "Website",
+        "placeholder": "https://yourrestaurant.com",
+        "error": "Invalid website URL"
+      }
+    },
+    "errors": {
+      "loadTenants": "Failed to load tenants. Please refresh and try again.",
+      "selectTenant": "Select a tenant from the header dropdown.",
+      "saveFailed": "Failed to save tenant profile. Please try again.",
+      "validationFailed": "Please fix the highlighted fields and try again."
+    },
+    "success": "Tenant profile saved successfully.",
+    "actions": {
+      "save": "Save Profile",
+      "saving": "Saving..."
+    }
   }
 }

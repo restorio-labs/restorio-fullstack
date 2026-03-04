@@ -24,14 +24,17 @@ class DeletedResponse(BaseModel):
     message: str = "Resource deleted successfully"
 
 
-class ErrorResponse(BaseModel):
+class ExceptionHandlerResponse(BaseModel):
     message: str
     details: dict | None = None
 
 
+class ErrorResponse(BaseModel):
+    details: dict | None = None
+
+
 class ValidationErrorResponse(BaseModel):
-    message: str = "Validation failed"
-    errors: list[dict[str, str]]
+    fields: list[str]
 
 
 class PaginatedResponse[T](BaseModel):
@@ -60,32 +63,32 @@ class PaginatedResponse[T](BaseModel):
 
 
 class UnauthenticatedResponse(BaseModel):
-    message: str = "Unauthenticated"
+    pass
 
 
 class UnauthorizedResponse(BaseModel):
-    message: str = "Unauthorized"
+    pass
 
 
 class NotFoundResponse(BaseModel):
-    message: str = "Not found"
+    pass
 
 
 class ConflictResponse(BaseModel):
-    message: str = "Conflict"
+    pass
 
 
 class BadRequestResponse(BaseModel):
-    message: str = "Bad request"
+    pass
 
 
 class GoneResponse(BaseModel):
-    message: str = "Gone"
+    pass
 
 
 class TooManyRequestsResponse(BaseModel):
-    message: str = "Too many requests"
+    pass
 
 
 class ServiceUnavailableResponse(BaseModel):
-    message: str = "Service unavailable"
+    pass

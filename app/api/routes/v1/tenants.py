@@ -5,7 +5,9 @@ from fastapi import APIRouter, Request, status
 from core.dto.v1 import (
     CreateFloorCanvasDTO,
     CreateTenantDTO,
+    CreateTenantProfileDTO,
     FloorCanvasResponseDTO,
+    TenantProfileResponseDTO,
     TenantResponseDTO,
     TenantSummaryResponseDTO,
     UpdateFloorCanvasDTO,
@@ -14,6 +16,7 @@ from core.dto.v1 import (
 from core.foundation.dependencies import (
     FloorCanvasServiceDep,
     PostgresSession,
+    TenantProfileServiceDep,
     TenantServiceDep,
 )
 from core.foundation.http.responses import (
@@ -28,6 +31,7 @@ from routes.v1.mappers.tenant_mappers import (
     tenant_to_response,
     tenant_to_summary,
 )
+from routes.v1.mappers.tenant_profile_mappers import tenant_profile_to_response
 
 router = APIRouter()
 
@@ -306,4 +310,59 @@ async def get_canvas_version(
     return SuccessResponse(
         message="Canvas version retrieved successfully",
         data=version_data,
+    )
+
+
+@router.get(
+    "/{tenant_id}/profile",
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessResponse[TenantProfileResponseDTO | None],
+    summary="Get tenant profile by tenant ID",
+    description="Get tenant profile by tenant ID",
+    response_description="Tenant profile retrieved successfully",
+)
+async def get_tenant_profile(
+    tenant_id: UUID,
+    session: PostgresSession,
+    service: TenantProfileServiceDep,
+) -> SuccessResponse[TenantProfileResponseDTO | None]:
+    profile = await service.get_by_tenant(session, tenant_id)
+    if not profile:
+        return SuccessResponse(
+            message="Tenant profile not yet created",
+            data=None,
+        )
+    return SuccessResponse(
+        message="Tenant profile retrieved successfully",
+        data=tenant_profile_to_response(profile),
+    )
+
+
+@router.put(
+    "/{tenant_id}/profile",
+    status_code=status.HTTP_200_OK,
+    response_model=UpdatedResponse[TenantProfileResponseDTO]
+    | CreatedResponse[TenantProfileResponseDTO],
+    summary="Create or update tenant profile",
+    description="Create or update tenant profile for a tenant (upsert)",
+    response_description="Tenant profile saved successfully",
+)
+async def upsert_tenant_profile(
+    tenant_id: UUID,
+    request: CreateTenantProfileDTO,
+    session: PostgresSession,
+    service: TenantProfileServiceDep,
+) -> UpdatedResponse[TenantProfileResponseDTO] | CreatedResponse[TenantProfileResponseDTO]:
+    profile, created = await service.upsert(session, tenant_id, request)
+    response_data = tenant_profile_to_response(profile)
+
+    if created:
+        return CreatedResponse(
+            message="Tenant profile created successfully",
+            data=response_data,
+        )
+
+    return UpdatedResponse(
+        message="Tenant profile updated successfully",
+        data=response_data,
     )

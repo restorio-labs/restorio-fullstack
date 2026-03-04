@@ -1,6 +1,7 @@
 "use client";
 
 import { Button, Checkbox, Form, FormActions, FormField, Input } from "@restorio/ui";
+import { useTranslations } from "next-intl";
 import { useMemo, useState, type ReactElement } from "react";
 
 import { PasswordRules } from "./PasswordRules";
@@ -18,37 +19,38 @@ export const RegisterContent = (): ReactElement => {
   const [submitted, setSubmitted] = useState(false);
   const [feedbackStatus, setFeedbackStatus] = useState<"success" | "error" | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState("");
+  const t = useTranslations("register");
 
   const passwordChecks = useMemo(() => checkPassword(password), [password]);
   const passwordValid = isPasswordValid(passwordChecks);
 
   const emailError = submitted
     ? email.trim().length === 0
-      ? "Email is required"
+      ? t("errors.emailRequired")
       : !isEmailValid(email)
-        ? "Enter a valid email address"
+        ? t("errors.emailInvalid")
         : undefined
     : undefined;
 
   const passwordError = submitted
     ? password.trim().length === 0
-      ? "Password is required"
+      ? t("errors.passwordRequired")
       : !passwordValid
-        ? "Password does not meet the requirements"
+        ? t("errors.passwordInvalid")
         : undefined
     : undefined;
 
   const confirmPasswordError = submitted
     ? confirmPassword.trim().length === 0
-      ? "Confirm your password"
+      ? t("errors.confirmPasswordRequired")
       : confirmPassword !== password
-        ? "Passwords do not match"
+        ? t("errors.confirmPasswordMismatch")
         : undefined
     : undefined;
 
   const restaurantNameError =
-    submitted && restaurantName.trim().length === 0 ? "Restaurant name is required" : undefined;
-  const termsError = submitted && !acceptTerms ? "You must accept the terms and conditions" : undefined;
+    submitted && restaurantName.trim().length === 0 ? t("errors.restaurantNameRequired") : undefined;
+  const termsError = submitted && !acceptTerms ? t("errors.termsRequired") : undefined;
 
   const isFormValid =
     isEmailValid(email) &&
@@ -76,7 +78,7 @@ export const RegisterContent = (): ReactElement => {
       });
 
       setFeedbackStatus("success");
-      setFeedbackMessage(String(response.message));
+      setFeedbackMessage(String(response.message ?? t("success")));
       setSubmitted(false);
     } catch (err: unknown) {
       interface AxiosErrorData {
@@ -85,7 +87,7 @@ export const RegisterContent = (): ReactElement => {
       const data =
         err && typeof err === "object" && "response" in err ? (err as AxiosErrorData).response?.data : undefined;
 
-      let apiMessage = "Unable to create account. Please try again.";
+      let apiMessage = t("errors.generic");
 
       if (typeof data?.detail === "string" && data.detail.trim().length > 0) {
         apiMessage = data.detail;
@@ -101,7 +103,7 @@ export const RegisterContent = (): ReactElement => {
 
   return (
     <>
-      <h1 className="mb-6 text-3xl font-bold">Register your account</h1>
+      <h1 className="mb-6 text-3xl font-bold">{t("title")}</h1>
       {feedbackStatus && (
         <div
           className={`mb-6 rounded-lg border px-4 py-3 text-sm ${
@@ -123,7 +125,7 @@ export const RegisterContent = (): ReactElement => {
       >
         <FormField>
           <Input
-            label="Email"
+            label={t("fields.email")}
             type="email"
             autoComplete="email"
             value={email}
@@ -136,7 +138,7 @@ export const RegisterContent = (): ReactElement => {
         <FormField>
           <div className="relative">
             <Input
-              label="Password"
+              label={t("fields.password")}
               type="password"
               autoComplete="new-password"
               value={password}
@@ -152,7 +154,7 @@ export const RegisterContent = (): ReactElement => {
 
         <FormField>
           <Input
-            label="Confirm password"
+            label={t("fields.confirmPassword")}
             type="password"
             autoComplete="new-password"
             value={confirmPassword}
@@ -164,7 +166,7 @@ export const RegisterContent = (): ReactElement => {
 
         <FormField>
           <Input
-            label="Restaurant name"
+            label={t("fields.restaurantName")}
             type="text"
             autoComplete="organization"
             value={restaurantName}
@@ -176,7 +178,7 @@ export const RegisterContent = (): ReactElement => {
 
         <FormField>
           <Checkbox
-            label="I accept the terms and conditions"
+            label={t("fields.terms")}
             checked={acceptTerms}
             onChange={(event) => setAcceptTerms(event.target.checked)}
             error={termsError}
@@ -186,7 +188,7 @@ export const RegisterContent = (): ReactElement => {
 
         <FormActions align="stretch">
           <Button type="submit" size="lg" variant="primary" fullWidth disabled={!isFormValid}>
-            Register
+            {t("button")}
           </Button>
         </FormActions>
       </Form>

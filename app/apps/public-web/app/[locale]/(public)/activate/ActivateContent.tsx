@@ -62,13 +62,9 @@ export function ActivateContent(): ReactElement {
 
     const run = async (): Promise<void> => {
       try {
-        /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call,
-           @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
         const body = await api.auth.activate(id);
 
         setResult((body.message === "Account already activated" ? "already_activated" : "success") as Result);
-        /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call,
-           @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
       } catch (err: unknown) {
         interface AxiosErrorShape {
           response?: { status?: number; data?: { message?: string; detail?: string } };

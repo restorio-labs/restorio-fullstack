@@ -29,7 +29,20 @@ export const HomeContent = (): ReactElement => {
       window.location.href = getAppUrl(getEnvironmentFromEnv(envMode), slug);
     };
 
-    return <ChooseApp onSelectApp={goToApp} />;
+    const chooseAppLabels = {
+      adminPanel: t("chooseApp.labels.adminPanel"),
+      kitchenPanel: t("chooseApp.labels.kitchenPanel"),
+      waiterPanel: t("chooseApp.labels.waiterPanel"),
+    };
+
+    return (
+      <ChooseApp
+        onSelectApp={goToApp}
+        labels={chooseAppLabels}
+        title={t("chooseApp.title")}
+        subtitle={t("chooseApp.subtitle")}
+      />
+    );
   }
 
   return (
@@ -45,9 +58,10 @@ export const HomeContent = (): ReactElement => {
           <div className="flex flex-col items-center text-center">
             <Text
               variant="h1"
-              className="mb-6 max-w-4xl text-5xl font-extrabold tracking-tight sm:text-7xl flex flex-col items-center"
+              align="center"
+              className="mb-6 max-w-4xl text-5xl font-extrabold tracking-tight sm:text-7xl"
             >
-              <span>{t("hero.title")}</span>
+              {t("hero.title")}
             </Text>
 
             <Text variant="body-lg" className="mb-10 max-w-2xl text-text-secondary">

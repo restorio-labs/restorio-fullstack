@@ -9,6 +9,44 @@
     "title": "Platforma Restorio",
     "description": "Platforma Zarządzania Restauracją"
   },
+  "login": {
+    "title": "Zaloguj się",
+    "email": "Adres e-mail",
+    "password": "Hasło",
+    "submit": "Zaloguj się",
+    "submitting": "Logowanie...",
+    "genericError": "Logowanie nie powiodło się. Sprawdź e-mail i hasło."
+  },
+  "register": {
+    "title": "Zarejestruj konto",
+    "success": "Konto utworzone pomyślnie. Sprawdź e-mail, aby kontynuować.",
+    "button": "Zarejestruj się",
+    "fields": {
+      "email": "Adres e-mail",
+      "password": "Hasło",
+      "confirmPassword": "Potwierdź hasło",
+      "restaurantName": "Nazwa restauracji",
+      "terms": "Akceptuję regulamin"
+    },
+    "errors": {
+      "emailRequired": "Adres e-mail jest wymagany",
+      "emailInvalid": "Podaj prawidłowy adres e-mail",
+      "passwordRequired": "Hasło jest wymagane",
+      "passwordInvalid": "Hasło nie spełnia wymagań",
+      "confirmPasswordRequired": "Potwierdź hasło",
+      "confirmPasswordMismatch": "Hasła nie są takie same",
+      "restaurantNameRequired": "Nazwa restauracji jest wymagana",
+      "termsRequired": "Musisz zaakceptować regulamin",
+      "generic": "Nie udało się utworzyć konta. Spróbuj ponownie."
+    },
+    "passwordRules": {
+      "minLength": "- Co najmniej 8 znaków",
+      "lowercase": "- 1 mała litera",
+      "uppercase": "- 1 wielka litera",
+      "number": "- 1 cyfra",
+      "special": "- 1 znak specjalny"
+    }
+  },
   "navigation": {
     "home": "Start",
     "about": "O nas",
@@ -18,6 +56,22 @@
     "privacy": "Prywatność",
     "terms": "Warunki",
     "getStarted": "Rozpocznij"
+  },
+  "sidebar": {
+    "items": {
+      "adminPanel": "Panel administracyjny",
+      "kitchenPanel": "Panel kuchni",
+      "waiterPanel": "Panel kelnerski"
+    }
+  },
+  "chooseApp": {
+    "title": "Jesteś zalogowany",
+    "subtitle": "Wybierz, dokąd chcesz przejść dalej.",
+    "labels": {
+      "adminPanel": "Panel administracyjny",
+      "kitchenPanel": "Panel kuchni",
+      "waiterPanel": "Panel kelnerski"
+    }
   },
   "hero": {
     "title": "Przyszłość Zarządzania Restauracją",
@@ -115,6 +169,14 @@
       "product": "Produkt",
       "company": "Firma"
     },
-    "copyright": "© {{year}} Platforma Restorio. Akademicki Projekt Open Source."
+    "navigation": {
+      "features": "Funkcje",
+      "pricing": "Cennik",
+      "demo": "Demo",
+      "about": "O nas",
+      "privacy": "Prywatność",
+      "terms": "Warunki"
+    },
+    "copyright": "© {year} Platforma Restorio. Akademicki Projekt Open Source."
   }
 }

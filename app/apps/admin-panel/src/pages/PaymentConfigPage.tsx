@@ -3,9 +3,10 @@ import { type FormEvent, type ReactElement, useEffect, useState } from "react";
 
 import { api } from "../api/client";
 import { useCurrentTenant } from "../context/TenantContext";
+import { useValidationErrors } from "../hooks/useValidationErrors";
 import { PageLayout } from "../layouts/PageLayout";
 
-type SubmitState = "idle" | "submitting" | "success" | "error";
+type SubmitState = "idle" | "submitting" | "success" | "error" | "validation";
 
 export const PaymentConfigPage = (): ReactElement => {
   const { t } = useI18n();
@@ -15,6 +16,7 @@ export const PaymentConfigPage = (): ReactElement => {
   const [crcKey, setCrcKey] = useState("");
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const { getFieldError, setFromResponse, clearErrors } = useValidationErrors();
 
   const isFormValid =
     (selectedTenantId ?? "").trim() !== "" && merchantId.trim() !== "" && apiKey.trim() !== "" && crcKey.trim() !== "";
@@ -33,6 +35,7 @@ export const PaymentConfigPage = (): ReactElement => {
     if (submitState !== "idle") {
       setSubmitState("idle");
     }
+    clearErrors();
   };
 
   const handleSubmit = async (e: FormEvent): Promise<void> => {
@@ -56,9 +59,15 @@ export const PaymentConfigPage = (): ReactElement => {
       });
 
       setSubmitState("success");
-    } catch {
-      setSubmitState("error");
-      setErrorMessage(t("payment.errors.updateFailed"));
+    } catch (err) {
+      const isValidation = setFromResponse(err, "payment.fields");
+      if (isValidation) {
+        setSubmitState("validation");
+        setErrorMessage(t("payment.errors.validationFailed"));
+      } else {
+        setSubmitState("error");
+        setErrorMessage(t("payment.errors.updateFailed"));
+      }
     }
   };
 
@@ -66,7 +75,7 @@ export const PaymentConfigPage = (): ReactElement => {
     <PageLayout title={t("payment.title")} description={t("payment.description")}>
       <div className="mx-auto max-w-lg p-6">
         <Form onSubmit={(e) => void handleSubmit(e)}>
-          <div className="rounded-lg border border-border-default bg-surface-secondary px-4 py-3 text-sm">
+          {/* <div className="rounded-lg border border-border-default bg-surface-secondary px-4 py-3 text-sm">
             <div className="font-medium text-text-primary">{t("payment.selectedRestaurant.title")}</div>
             <div className="mt-1 text-text-secondary">
               {selectedTenant
@@ -81,7 +90,7 @@ export const PaymentConfigPage = (): ReactElement => {
             <div className="text-xs text-status-error-text">
               {t("payment.errors.loadRestaurants")}
             </div>
-          )}
+          )} */}
 
           <Input
             label={t("payment.fields.merchantId.label")}
@@ -95,6 +104,7 @@ export const PaymentConfigPage = (): ReactElement => {
             min={0}
             max={999999}
             helperText={t("payment.fields.merchantId.helper")}
+            error={getFieldError("p24Merchantid")}
             required
           />
 
@@ -108,6 +118,7 @@ export const PaymentConfigPage = (): ReactElement => {
             }}
             maxLength={32}
             helperText={t("payment.fields.apiKey.helper")}
+            error={getFieldError("p24Api")}
             required
           />
 
@@ -121,6 +132,7 @@ export const PaymentConfigPage = (): ReactElement => {
             }}
             maxLength={16}
             helperText={t("payment.fields.crcKey.helper")}
+            error={getFieldError("p24Crc")}
             required
           />
 
@@ -130,7 +142,7 @@ export const PaymentConfigPage = (): ReactElement => {
             </div>
           )}
 
-          {submitState === "error" && (
+          {(submitState === "error" || submitState === "validation") && (
             <div className="rounded-lg border border-status-error-border bg-status-error-background px-4 py-3 text-sm text-status-error-text">
               {errorMessage}
             </div>

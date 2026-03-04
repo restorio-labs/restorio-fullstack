@@ -75,6 +75,15 @@ export const AdminSidebar = (): ReactElement => {
         <NavSection aria-label={t("sidebar.sections.settings")}>
           <NavItem
             as={Link}
+            to="/profile"
+            href="/profile"
+            active={isActive("/profile")}
+            role="menuitem"
+          >
+            {t("sidebar.items.tenantProfile")}
+          </NavItem>
+          <NavItem
+            as={Link}
             to="/payment-config"
             href="/payment-config"
             active={isActive("/payment-config")}
@@ -109,6 +118,11 @@ export const AdminSidebar = (): ReactElement => {
               variant="dropdown"
               value="admin-panel"
               onSelectApp={goToApp}
+              labels={{
+                adminPanel: t("sidebar.items.adminPanel"),
+                kitchenPanel: t("sidebar.items.kitchenPanel"),
+                waiterPanel: t("sidebar.items.waiterPanel"),
+              }}
               ariaLabel={t("sidebar.items.label")}
               className="w-auto"
             />

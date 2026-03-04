@@ -1,5 +1,4 @@
 import type { AppSlug } from "@restorio/types";
-import { useI18n } from "@restorio/ui";
 import type { ReactElement } from "react";
 
 import { cn } from "../utils";
@@ -8,19 +7,36 @@ import { Button, Text } from "./primitives";
 
 const CHOOSE_APP_SLUGS: AppSlug[] = ["admin-panel", "kitchen-panel", "waiter-panel"];
 
+export interface ChooseAppLabels {
+  adminPanel: string;
+  kitchenPanel: string;
+  waiterPanel: string;
+}
+
 export interface ChooseAppProps {
   onSelectApp: (slug: AppSlug) => void;
+  labels: ChooseAppLabels;
   variant?: "buttons" | "dropdown";
   value?: AppSlug;
   ariaLabel?: string;
   className?: string;
+  title?: string;
+  subtitle?: string;
 }
 
-export const ChooseApp = ({ onSelectApp, variant = "buttons", value, ariaLabel, className }: ChooseAppProps): ReactElement => {
-  const { t } = useI18n();
+export const ChooseApp = ({
+  onSelectApp,
+  labels,
+  variant = "buttons",
+  value,
+  ariaLabel,
+  className,
+  title = "You’re logged in",
+  subtitle = "Choose where you want to go next.",
+}: ChooseAppProps): ReactElement => {
   const items = CHOOSE_APP_SLUGS.map((slug) => ({
     slug,
-    label: t(`sidebar.items.${slug === "admin-panel" ? "adminPanel" : slug === "kitchen-panel" ? "kitchenPanel" : "waiterPanel"}`),
+    label: slug === "admin-panel" ? labels.adminPanel : slug === "kitchen-panel" ? labels.kitchenPanel : labels.waiterPanel,
   }));
   if (variant === "dropdown") {
     return (
@@ -54,11 +70,11 @@ export const ChooseApp = ({ onSelectApp, variant = "buttons", value, ariaLabel, 
 
   return (
     <div className={cn("text-center", className)}>
-      <Text variant="h2" weight="bold" className="mb-3">
-        You’re logged in
+      <Text variant="h2" weight="bold" className="mt-4 mb-3 text-center">
+        {title}
       </Text>
-      <Text variant="body-lg" className="mb-8 text-text-secondary">
-        Choose where you want to go next.
+      <Text variant="body-lg" className="mb-5 text-text-secondary text-center">
+        {subtitle}
       </Text>
 
       <div className="mx-auto grid max-w-md grid-cols-1 gap-3">

@@ -14,6 +14,7 @@ import {
   QRCodeGeneratorPage,
   QRCodePrintPage,
   RestaurantCreatorPage,
+  TenantProfilePage,
   RestaurantQRCodePage,
   StaffPage,
   TableQRCodePage,
@@ -59,6 +60,7 @@ export const App = (): ReactElement => {
           <Route path="/menu-page-configurator" element={<MenuPageConfiguratorPage />} />
           <Route path="/qr-code-generator" element={<QRCodeGeneratorPage />} />
           <Route path="/payment-config" element={<PaymentConfigPage />} />
+          <Route path="/profile" element={<TenantProfilePage />} />
           <Route path="/staff" element={<StaffPage />} />
         </Route>
         <Route path="/qr-code/table/:tableId" element={<TableQRCodePage />} />

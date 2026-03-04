@@ -11,8 +11,8 @@ from core.models.order import Order
 from core.models.order_item import OrderItem
 from core.models.payment import Payment
 from core.models.payment_request import CreatePaymentRequest, Przelewy24RegisterRequest
-from core.models.restaurant_table import RestaurantTable
 from core.models.tenant import Tenant
+from core.models.tenant_profile import TenantProfile
 from core.models.tenant_role import TenantRole
 from core.models.user import User
 
@@ -28,8 +28,8 @@ __all__ = [
     "PaymentProvider",
     "PaymentStatus",
     "Przelewy24RegisterRequest",
-    "RestaurantTable",
     "Tenant",
+    "TenantProfile",
     "TenantRole",
     "TenantStatus",
     "User",
