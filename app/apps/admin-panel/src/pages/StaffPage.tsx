@@ -12,14 +12,6 @@ interface StaffUser {
   accessLevel: AccessLevel;
 }
 
-interface StaffApiClient {
-  list: () => Promise<{ id: string; email: string; account_type: string }[]>;
-  create: (payload: { email: string; access_level: AccessLevel }) => Promise<unknown>;
-  delete: (userId: string) => Promise<unknown>;
-}
-
-const staffApi = api.users as unknown as StaffApiClient;
-
 const isValidEmail = (value: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 
 const toAccessLevel = (value: unknown): AccessLevel | null => {
@@ -54,7 +46,7 @@ export const StaffPage = (): ReactElement => {
       setIsLoadingUsers(true);
 
       try {
-        const loadedUsers = await staffApi.list();
+        const loadedUsers = await api.users.list();
         const parsedUsers = loadedUsers
           .map((user): StaffUser | null => {
             const accessLevel = toAccessLevel(user.account_type);
@@ -102,7 +94,7 @@ export const StaffPage = (): ReactElement => {
     };
 
     try {
-      await staffApi.create(payload);
+      await api.users.create(payload);
 
       setUsers((prevUsers) => [
         {
@@ -134,7 +126,7 @@ export const StaffPage = (): ReactElement => {
     setDeletingUserId(userId);
 
     try {
-      await staffApi.delete(userId);
+      await api.users.delete(userId);
 
       setUsers((previous) => previous.filter((user) => user.id !== userId));
       setPendingDeleteUserId(null);

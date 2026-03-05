@@ -55,7 +55,7 @@ def get_tenant_id_from_request(request: Request) -> UUID:
 
 
 @router.post(
-    "/create",
+    "/",
     status_code=status.HTTP_201_CREATED,
     response_model=CreatedResponse[RegisterCreatedData],
     summary="Create an inactive staff user",
@@ -110,7 +110,7 @@ async def create_user(
 
 
 @router.get(
-    "/users",
+    "/",
     status_code=status.HTTP_200_OK,
     response_model=SuccessResponse[list[dict[str, str]]],
     summary="List tenant staff users",
@@ -148,7 +148,7 @@ async def list_users(
 
 
 @router.delete(
-    "/delete-user/{user_id}",
+    "/{user_id}",
     status_code=status.HTTP_200_OK,
     response_model=SuccessResponse[dict[str, str]],
     summary="Delete staff user",
