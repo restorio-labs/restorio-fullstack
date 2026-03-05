@@ -1,14 +1,17 @@
 "use client";
 
 import type { TenantSlugResponse } from "@restorio/types";
-import { Button, ContentContainer, Text } from "@restorio/ui";
+import { Button, ContentContainer, Input, Text } from "@restorio/ui";
 import { getAppUrl, getEnvironmentFromEnv, getEnvSource, resolveNextEnvVar } from "@restorio/utils";
-import type { ReactElement } from "react";
+import type { FormEvent, ReactElement } from "react";
 import { useEffect, useRef, useState } from "react";
 
-import { api } from "@/api/client";
+import { PasswordRules } from "../register/PasswordRules";
 
-type Result = "loading" | "success" | "already_activated" | "expired" | "error" | "resend_sent";
+import { api } from "@/api/client";
+import { getPasswordFieldsValidation } from "@/lib/passwordFieldsValidation";
+
+type Result = "loading" | "success" | "already_activated" | "expired" | "error" | "resend_sent" | "set_password";
 
 export function ActivateContent(): ReactElement {
   const [result, setResult] = useState<Result>("loading");
@@ -16,9 +19,19 @@ export function ActivateContent(): ReactElement {
   const [activationId, setActivationId] = useState("");
   const [resendLoading, setResendLoading] = useState(false);
   const [resendCooldownUntil, setResendCooldownUntil] = useState(0);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPasswordRules, setShowPasswordRules] = useState(false);
+  const [passwordSubmitted, setPasswordSubmitted] = useState(false);
+  const [isSettingPassword, setIsSettingPassword] = useState(false);
   const didRun = useRef(false);
 
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
+  const { passwordChecks, passwordError, confirmPasswordError, isPasswordFormValid } = getPasswordFieldsValidation(
+    password,
+    confirmPassword,
+    passwordSubmitted,
+  );
 
   useEffect(() => {
     if (resendCooldownUntil <= 0) {
@@ -63,6 +76,14 @@ export function ActivateContent(): ReactElement {
     const run = async (): Promise<void> => {
       try {
         const body = await api.auth.activate(id);
+
+        const requiresPasswordChange = body.data.requires_password_change === true;
+
+        if (requiresPasswordChange) {
+          setResult("set_password");
+
+          return;
+        }
 
         setResult((body.message === "Account already activated" ? "already_activated" : "success") as Result);
       } catch (err: unknown) {
@@ -117,6 +138,52 @@ export function ActivateContent(): ReactElement {
     void run();
   };
 
+  const handleSetPassword = (event: FormEvent<HTMLFormElement>): void => {
+    event.preventDefault();
+    setPasswordSubmitted(true);
+    setErrorMessage("");
+
+    if (!activationId || !isPasswordFormValid) {
+      return;
+    }
+
+    setIsSettingPassword(true);
+
+    const run = async (): Promise<void> => {
+      try {
+        await (
+          api.auth.setActivationPassword as (payload: {
+            activation_id: string;
+            password: string;
+          }) => Promise<TenantSlugResponse>
+        )({
+          activation_id: activationId,
+          password,
+        });
+
+        setResult("success");
+      } catch (err: unknown) {
+        interface AxiosErrorShape {
+          response?: { status?: number; data?: { message?: string; detail?: string } };
+        }
+        const axiosErr = err && typeof err === "object" && "response" in err ? (err as AxiosErrorShape) : undefined;
+        const status = axiosErr?.response?.status;
+        const msg = axiosErr?.response?.data?.message ?? axiosErr?.response?.data?.detail;
+
+        if (status === 410) {
+          setErrorMessage(msg ?? "Activation link has expired.");
+          setResult("expired");
+        } else {
+          setErrorMessage(msg ?? "Failed to set password. Please try again.");
+        }
+      } finally {
+        setIsSettingPassword(false);
+      }
+    };
+
+    void run();
+  };
+
   const resendOnCooldown = cooldownSeconds > 0;
 
   const viteEnv =
@@ -128,7 +195,7 @@ export function ActivateContent(): ReactElement {
 
   return (
     <div className="py-16 md:py-24">
-      <ContentContainer maxWidth="md" padding>
+      <ContentContainer maxWidth={result === "set_password" ? "full" : "md"} padding>
         <div className="rounded-2xl border border-border-default bg-surface-primary p-8 text-center">
           {result === "loading" && (
             <>
@@ -200,6 +267,46 @@ export function ActivateContent(): ReactElement {
                     ? `Resend activation link (${cooldownSeconds}s)`
                     : "Resend activation link"}
               </Button>
+            </>
+          )}
+
+          {result === "set_password" && (
+            <>
+              <Text variant="h2" weight="bold" className="mb-4">
+                Set your password
+              </Text>
+              <Text variant="body-lg" className="mb-6 text-text-secondary">
+                Before activation, set a password for your account.
+              </Text>
+              <form className="w-full space-y-4 text-left" onSubmit={handleSetPassword}>
+                <div className="relative">
+                  <Input
+                    label="Password"
+                    type="password"
+                    autoComplete="new-password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    onFocus={() => setShowPasswordRules(true)}
+                    onBlur={() => setShowPasswordRules(false)}
+                    error={passwordError}
+                    required
+                  />
+                  {showPasswordRules && <PasswordRules checks={passwordChecks} />}
+                </div>
+                <Input
+                  label="Repeat password"
+                  type="password"
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  error={confirmPasswordError}
+                  required
+                />
+                {errorMessage && <p className="text-sm text-status-error-text">{errorMessage}</p>}
+                <Button type="submit" variant="primary" fullWidth disabled={!isPasswordFormValid || isSettingPassword}>
+                  {isSettingPassword ? "Saving..." : "Save password and activate"}
+                </Button>
+              </form>
             </>
           )}
 

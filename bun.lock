@@ -232,7 +232,6 @@
       "version": "1.0.0",
       "dependencies": {
         "@restorio/types": "workspace:*",
-        "@restorio/ui": "workspace:*",
         "@restorio/utils": "workspace:*",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",

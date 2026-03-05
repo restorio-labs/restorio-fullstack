@@ -4,6 +4,7 @@ import type {
   RefreshResponse,
   RegisterRequest,
   RegisterResponse,
+  SetActivationPasswordRequest,
   SuccessResponse,
   TenantSlugResponse,
 } from "@restorio/types";
@@ -33,6 +34,13 @@ export class AuthResource extends BaseResource {
     const url = `auth/activate?activation_id=${encodeURIComponent(activationId)}`;
 
     return this.client.post(url, undefined, { signal });
+  }
+
+  /**
+   * Set activation password and complete account activation.
+   */
+  setActivationPassword(data: SetActivationPasswordRequest, signal?: AbortSignal): Promise<TenantSlugResponse> {
+    return this.client.post("auth/set-password", data, { signal });
   }
 
   /**

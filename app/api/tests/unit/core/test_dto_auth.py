@@ -2,10 +2,13 @@ from pydantic import ValidationError as PydanticValidationError
 import pytest
 
 from core.dto.v1.auth import (
+    ActivateResponseData,
+    CreateUserDTO,
     LoginResponseData,
     RegisterCreatedData,
     RegisterDTO,
     RegisterResponseDTO,
+    SetPasswordDTO,
     TenantSlugData,
 )
 from core.exceptions import ValidationError
@@ -68,6 +71,45 @@ class TestRegisterDTO:
         assert "special" in exc_info.value.detail
 
 
+class TestCreateUserDTO:
+    def test_valid_staff_access_level(self) -> None:
+        dto = CreateUserDTO(
+            email="waiter@example.com",
+            access_level="waiter",
+        )
+        assert dto.email == "waiter@example.com"
+        assert dto.access_level.value == "waiter"
+
+    def test_invalid_access_level_raises_validation_error(self) -> None:
+        with pytest.raises(ValidationError) as exc_info:
+            CreateUserDTO(
+                email="owner@example.com",
+                access_level="owner",
+            )
+        assert "waiter or kitchen" in exc_info.value.detail
+
+
+class TestSetPasswordDTO:
+    def test_valid_set_password(self) -> None:
+        dto = SetPasswordDTO(
+            activation_id="c0d2d1ef-7edb-4b95-95f3-39f791ac4adf",
+            password="SecurePass1!",
+        )
+        assert str(dto.activation_id) == "c0d2d1ef-7edb-4b95-95f3-39f791ac4adf"
+        assert dto.password == "SecurePass1!"
+
+    def test_password_complexity_validation(self) -> None:
+        with pytest.raises(ValidationError) as exc_info:
+            SetPasswordDTO(
+                activation_id="c0d2d1ef-7edb-4b95-95f3-39f791ac4adf",
+                password="weakpass",
+            )
+        assert (
+            "uppercase" in exc_info.value.detail.lower()
+            or "number" in exc_info.value.detail.lower()
+        )
+
+
 class TestRegisterCreatedData:
     def test_valid_creation(self) -> None:
         dto = RegisterCreatedData(
@@ -113,6 +155,13 @@ class TestTenantSlugData:
     def test_valid_slug(self) -> None:
         dto = TenantSlugData(tenant_slug="my-restaurant")
         assert dto.tenant_slug == "my-restaurant"
+
+
+class TestActivateResponseData:
+    def test_defaults(self) -> None:
+        dto = ActivateResponseData(tenant_slug="my-restaurant")
+        assert dto.tenant_slug == "my-restaurant"
+        assert dto.requires_password_change is False
 
 
 class TestLoginResponseData:

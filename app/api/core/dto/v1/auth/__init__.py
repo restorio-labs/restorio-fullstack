@@ -1,8 +1,9 @@
 import re
+from uuid import UUID
 
 from pydantic import EmailStr, Field, field_validator
 
-from core.dto.v1.common import BaseDTO
+from core.dto.v1.common import AccountType, BaseDTO
 from core.exceptions import ValidationError
 
 _MIN_PASSWORD_LENGTH = 8
@@ -16,6 +17,25 @@ _ERROR_MESSAGES = {
 }
 
 
+def _validate_password_complexity(value: str) -> str:
+    if len(value) < _MIN_PASSWORD_LENGTH:
+        msg = _ERROR_MESSAGES["password_length"]
+        raise ValidationError(message=msg)
+    if not re.search(r"[a-z]", value):
+        msg = _ERROR_MESSAGES["password_lowercase"]
+        raise ValidationError(message=msg)
+    if not re.search(r"[A-Z]", value):
+        msg = _ERROR_MESSAGES["password_uppercase"]
+        raise ValidationError(message=msg)
+    if not re.search(r"[0-9]", value):
+        msg = _ERROR_MESSAGES["password_number"]
+        raise ValidationError(message=msg)
+    if not _PASSWORD_SPECIAL.search(value):
+        msg = _ERROR_MESSAGES["password_special"]
+        raise ValidationError(message=msg)
+    return value
+
+
 class RegisterDTO(BaseDTO):
     email: EmailStr = Field(..., description="User email address")
     password: str = Field(..., min_length=8, max_length=128, description="User password")
@@ -24,22 +44,30 @@ class RegisterDTO(BaseDTO):
     @field_validator("password")
     @classmethod
     def password_complexity(cls, value: str) -> str:
-        if len(value) < _MIN_PASSWORD_LENGTH:
-            msg = _ERROR_MESSAGES["password_length"]
-            raise ValidationError(message=msg)
-        if not re.search(r"[a-z]", value):
-            msg = _ERROR_MESSAGES["password_lowercase"]
-            raise ValidationError(message=msg)
-        if not re.search(r"[A-Z]", value):
-            msg = _ERROR_MESSAGES["password_uppercase"]
-            raise ValidationError(message=msg)
-        if not re.search(r"[0-9]", value):
-            msg = _ERROR_MESSAGES["password_number"]
-            raise ValidationError(message=msg)
-        if not _PASSWORD_SPECIAL.search(value):
-            msg = _ERROR_MESSAGES["password_special"]
+        return _validate_password_complexity(value)
+
+
+class CreateUserDTO(BaseDTO):
+    email: EmailStr = Field(..., description="User email address")
+    access_level: AccountType = Field(..., description="Access level (waiter, kitchen)")
+
+    @field_validator("access_level")
+    @classmethod
+    def only_staff_access_levels(cls, value: AccountType) -> AccountType:
+        if value not in {AccountType.WAITER, AccountType.KITCHEN}:
+            msg = "Access level must be waiter or kitchen"
             raise ValidationError(message=msg)
         return value
+
+
+class SetPasswordDTO(BaseDTO):
+    activation_id: UUID = Field(..., description="Activation link ID")
+    password: str = Field(..., min_length=8, max_length=128, description="New password")
+
+    @field_validator("password")
+    @classmethod
+    def password_complexity(cls, value: str) -> str:
+        return _validate_password_complexity(value)
 
 
 class RegisterCreatedData(BaseDTO):
@@ -65,6 +93,13 @@ class RegisterResponseDTO(BaseDTO):
 
 class TenantSlugData(BaseDTO):
     tenant_slug: str = Field(..., description="Tenant slug")
+
+
+class ActivateResponseData(BaseDTO):
+    tenant_slug: str = Field(..., description="Tenant slug")
+    requires_password_change: bool = Field(
+        default=False, description="Whether user must set password first"
+    )
 
 
 class LoginResponseData(BaseDTO):

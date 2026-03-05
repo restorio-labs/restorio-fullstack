@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from core.models.order import Order
     from core.models.tenant_profile import TenantProfile
     from core.models.tenant_role import TenantRole
+    from core.models.transaction import Transaction
 
 
 class Tenant(Base):
@@ -64,4 +65,7 @@ class Tenant(Base):
     )
     tenant_profile: Mapped[TenantProfile | None] = relationship(
         "TenantProfile", back_populates="tenant", uselist=False, cascade="all, delete-orphan"
+    )
+    transactions: Mapped[list[Transaction]] = relationship(
+        "Transaction", back_populates="tenant", cascade="all, delete-orphan"
     )

@@ -2,12 +2,13 @@
 
 import { Button, Checkbox, Form, FormActions, FormField, Input } from "@restorio/ui";
 import { useTranslations } from "next-intl";
-import { useMemo, useState, type ReactElement } from "react";
+import { useState, type ReactElement } from "react";
 
 import { PasswordRules } from "./PasswordRules";
 
 import { api } from "@/api/client";
-import { checkPassword, isEmailValid, isPasswordValid } from "@/lib/validation";
+import { getPasswordFieldsValidation } from "@/lib/passwordFieldsValidation";
+import { isEmailValid } from "@/lib/validation";
 
 export const RegisterContent = (): ReactElement => {
   const [email, setEmail] = useState("");
@@ -21,8 +22,11 @@ export const RegisterContent = (): ReactElement => {
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const t = useTranslations("register");
 
-  const passwordChecks = useMemo(() => checkPassword(password), [password]);
-  const passwordValid = isPasswordValid(passwordChecks);
+  const { passwordChecks, passwordValid, isPasswordFormValid } = getPasswordFieldsValidation(
+    password,
+    confirmPassword,
+    submitted,
+  );
 
   const emailError = submitted
     ? email.trim().length === 0
@@ -52,13 +56,7 @@ export const RegisterContent = (): ReactElement => {
     submitted && restaurantName.trim().length === 0 ? t("errors.restaurantNameRequired") : undefined;
   const termsError = submitted && !acceptTerms ? t("errors.termsRequired") : undefined;
 
-  const isFormValid =
-    isEmailValid(email) &&
-    passwordValid &&
-    confirmPassword === password &&
-    confirmPassword.length > 0 &&
-    restaurantName.trim().length > 0 &&
-    acceptTerms;
+  const isFormValid = isEmailValid(email) && isPasswordFormValid && restaurantName.trim().length > 0 && acceptTerms;
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();

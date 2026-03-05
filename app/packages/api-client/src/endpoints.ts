@@ -9,6 +9,7 @@ import {
   OrdersResource,
   AuthResource,
   PaymentsResource,
+  UserResource,
 } from "./resources";
 
 /**
@@ -25,6 +26,7 @@ export class RestorioApi {
   public readonly tables: TablesResource;
   public readonly tenants: TenantsResource;
   public readonly floorCanvases: FloorCanvasesResource;
+  public readonly users: UserResource;
 
   constructor(private client: ApiClient) {
     this.auth = new AuthResource(this.client);
@@ -36,5 +38,6 @@ export class RestorioApi {
     this.orders = new OrdersResource(this.client);
     this.tables = new TablesResource(this.client);
     this.tenants = new TenantsResource(this.client);
+    this.users = new UserResource(this.client);
   }
 }
