@@ -235,8 +235,41 @@
   "staff": {
     "title": "Zarządzanie personelem",
     "description": "Zarządzaj kontami kuchni, kelnerów i innych pracowników",
-    "placeholderTitle": "Zarządzanie personelem",
-    "placeholderDescription": "Dodawaj pracowników i wysyłaj linki aktywacyjne do panelu kuchni, kelnera i innych aplikacji"
+    "accessLevels": {
+      "kitchen": "Kuchnia",
+      "waiter": "Kelner"
+    },
+    "toggleForm": {
+      "show": "Dodaj użytkownika",
+      "hide": "Anuluj"
+    },
+    "form": {
+      "emailLabel": "Email",
+      "accessLabel": "Poziom dostępu",
+      "submit": "Utwórz użytkownika",
+      "submitting": "Tworzenie..."
+    },
+    "list": {
+      "title": "Wszyscy użytkownicy",
+      "loading": "Ładowanie użytkowników...",
+      "empty": "Brak użytkowników."
+    },
+    "validation": {
+      "invalidEmail": "Podaj prawidłowy adres e-mail."
+    },
+    "feedback": {
+      "createSuccess": "Użytkownik utworzony. Link aktywacyjny zostanie wkrótce wysłany.",
+      "createError": "Nie udało się utworzyć użytkownika.",
+      "deleteSuccess": "Użytkownik został usunięty.",
+      "deleteError": "Nie udało się usunąć użytkownika."
+    },
+    "delete": {
+      "button": "Usuń użytkownika",
+      "confirmTitle": "Usunąć tego użytkownika?",
+      "cancel": "Anuluj",
+      "confirm": "Potwierdź",
+      "deleting": "Usuwanie..."
+    }
   },
   "tenantProfile": {
     "title": "Profil lokalu",

@@ -237,9 +237,43 @@
     "subtitle": "Restaurant Menu"
   },
   "staff": {
-    "generateError": "Failed to generate QR code for table {{table}}:",
-    "loadError": "Failed to load table QR code.",
-    "title": "Table {{table}}"
+    "title": "Staff Management",
+    "description": "Manage kitchen, waiter, and other staff accounts",
+    "accessLevels": {
+      "kitchen": "Kitchen",
+      "waiter": "Waiter"
+    },
+    "toggleForm": {
+      "show": "Add user",
+      "hide": "Cancel"
+    },
+    "form": {
+      "emailLabel": "Email",
+      "accessLabel": "Access level",
+      "submit": "Create user",
+      "submitting": "Creating..."
+    },
+    "list": {
+      "title": "All users",
+      "loading": "Loading users...",
+      "empty": "No users yet."
+    },
+    "validation": {
+      "invalidEmail": "Enter a valid email address."
+    },
+    "feedback": {
+      "createSuccess": "User created. Activation email should be sent shortly.",
+      "createError": "Unable to create user.",
+      "deleteSuccess": "User deleted successfully.",
+      "deleteError": "Unable to delete user."
+    },
+    "delete": {
+      "button": "Delete user",
+      "confirmTitle": "Delete this user?",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "deleting": "Deleting..."
+    }
   },
   "tenantProfile": {
     "title": "Tenant Profile",
