@@ -1,10 +1,18 @@
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from fastapi import APIRouter, Request, Response, status
 
-from core.dto.v1.auth import LoginResponseData, RegisterCreatedData, RegisterDTO, TenantSlugData
+from core.dto.v1.auth import (
+    ActivateResponseData,
+    LoginResponseData,
+    RegisterCreatedData,
+    RegisterDTO,
+    SetPasswordDTO,
+    TenantSlugData,
+)
 from core.dto.v1.users import UserLoginDTO
+from core.exceptions import BadRequestError, GoneError, NotFoundResponse
 from core.exceptions.http import UnauthorizedError
 from core.foundation.auth_cookies import (
     clear_auth_cookies,
@@ -22,6 +30,7 @@ from core.foundation.http.responses import CreatedResponse, SuccessResponse, Una
 from core.foundation.infra.config import settings
 from core.models.activation_link import ActivationLink
 from core.models.enums import AccountType
+from core.models.tenant import Tenant
 from core.models.user import User
 
 router = APIRouter()
@@ -123,7 +132,7 @@ async def register(
 @router.post(
     "/activate",
     status_code=status.HTTP_200_OK,
-    response_model=SuccessResponse[TenantSlugData],
+    response_model=SuccessResponse[ActivateResponseData],
     summary="Activate a tenant account",
     description="Activate a tenant account",
     response_description="Tenant activated successfully",
@@ -134,18 +143,37 @@ async def activate(
     response: Response,
     session: PostgresSession,
     auth_service: AuthServiceDep,
-) -> SuccessResponse[TenantSlugData]:
+) -> SuccessResponse[ActivateResponseData]:
+    activation_link = await session.get(ActivationLink, activation_id)
+    if activation_link is None:
+        msg = "Activation link not found"
+        raise NotFoundResponse(msg, str(activation_id))
+
+    user = await session.get(User, activation_link.user_id)
+    if user is None:
+        msg = "Account"
+        raise NotFoundResponse(msg, "activation link")
+
+    if activation_link.used_at is None and user.force_password_change and not user.is_active:
+        tenant = await session.get(Tenant, activation_link.tenant_id)
+        if tenant is None:
+            msg = "Account"
+            raise NotFoundResponse(msg, "activation link")
+        return SuccessResponse(
+            data=ActivateResponseData(tenant_slug=tenant.slug, requires_password_change=True),
+            message="Password change required",
+        )
+
     tenant, already_activated = await auth_service.activate_account(
         session=session, activation_id=activation_id
     )
 
-    activation_link = await session.get(ActivationLink, activation_id)
     if activation_link is not None:
-        user = await session.get(User, activation_link.user_id)
-        if user is not None:
+        activated_user = await session.get(User, activation_link.user_id)
+        if activated_user is not None:
             token_data = {
-                "sub": str(user.id),
-                "email": user.email,
+                "sub": str(activated_user.id),
+                "email": activated_user.email,
                 "tenant_id": str(tenant.id),
                 "account_type": AccountType.OWNER.value,
             }
@@ -161,10 +189,80 @@ async def activate(
                 refresh_token=refresh_token,
             )
     return SuccessResponse(
-        data=TenantSlugData(tenant_slug=tenant.slug),
+        data=ActivateResponseData(tenant_slug=tenant.slug, requires_password_change=False),
         message="Account already activated"
         if already_activated
         else "Account activated successfully",
+    )
+
+
+@router.post(
+    "/set-password",
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessResponse[ActivateResponseData],
+    summary="Set password and activate account",
+    description="Set password for activation link and activate account",
+    response_description="Password set and account activated successfully",
+)
+async def set_password(
+    data: SetPasswordDTO,
+    request: Request,
+    response: Response,
+    session: PostgresSession,
+    auth_service: AuthServiceDep,
+) -> SuccessResponse[ActivateResponseData]:
+    activation_link = await session.get(ActivationLink, data.activation_id)
+    if activation_link is None:
+        msg = "Activation link not found"
+        raise NotFoundResponse(msg, str(data.activation_id))
+
+    now = datetime.now(tz=UTC)
+    if activation_link.expires_at < now:
+        msg = "Activation link has expired"
+        raise GoneError(msg)
+    if activation_link.used_at is not None:
+        msg = "Account already activated"
+        raise BadRequestError(msg)
+
+    user = await session.get(User, activation_link.user_id)
+    if user is None:
+        msg = "Account"
+        raise NotFoundResponse(msg, "activation link")
+
+    user.password_hash = auth_service.security.hash_password(data.password)
+    user.force_password_change = False
+
+    tenant, _ = await auth_service.activate_account(
+        session=session,
+        activation_id=data.activation_id,
+    )
+
+    access_token = await auth_service.login(
+        session=session,
+        email=user.email,
+        password=data.password,
+    )
+    payload = auth_service.security.decode_access_token(access_token)
+    token_data = {
+        "sub": payload.get("sub"),
+        "email": payload.get("email"),
+        "tenant_id": payload.get("tenant_id"),
+        "account_type": payload.get("account_type"),
+    }
+    refresh_token = auth_service.security.create_access_token(
+        {**token_data, "type": "refresh"},
+        expires_delta=timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
+    )
+    set_auth_cookies(
+        response=response,
+        request=request,
+        access_token=access_token,
+        refresh_token=refresh_token,
+    )
+
+    return SuccessResponse(
+        data=ActivateResponseData(tenant_slug=tenant.slug, requires_password_change=False),
+        message="Password set and account activated successfully",
     )
 
 

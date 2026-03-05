@@ -19,11 +19,32 @@ export interface RegisterResponse {
 
 export interface TenantSlugData {
   tenant_slug: string;
+  requires_password_change?: boolean;
 }
 
 export interface TenantSlugResponse {
   message: string;
   data: TenantSlugData;
+}
+
+export interface SetActivationPasswordRequest {
+  activation_id: string;
+  password: string;
+}
+
+export interface CreateStaffUserRequest {
+  email: string;
+  access_level: "kitchen" | "waiter";
+}
+
+export interface StaffUserData {
+  id: string;
+  email: string;
+  account_type: "kitchen" | "waiter";
+}
+
+export interface DeleteUserData {
+  deleted_user_id: string;
 }
 
 export interface AuthMeData {

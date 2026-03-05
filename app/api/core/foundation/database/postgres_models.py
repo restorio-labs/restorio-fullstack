@@ -34,6 +34,7 @@ class User(BaseModel):
     email: EmailStr
     account_type: AccountType = AccountType.OWNER
     is_active: bool = True
+    force_password_change: bool = False
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
@@ -44,6 +45,7 @@ class UserCreate(BaseModel):
     password_hash: str
     account_type: AccountType = AccountType.OWNER
     is_active: bool = True
+    force_password_change: bool = False
 
 
 class RestaurantTable(BaseModel):

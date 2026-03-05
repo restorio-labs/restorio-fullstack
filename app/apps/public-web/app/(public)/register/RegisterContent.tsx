@@ -1,12 +1,13 @@
 "use client";
 
 import { Button, Checkbox, Form, FormActions, FormField, Input } from "@restorio/ui";
-import { useMemo, useState, type ReactElement } from "react";
+import { useState, type ReactElement } from "react";
 
 import { PasswordRules } from "./PasswordRules";
 
 import { api } from "@/api/client";
-import { checkPassword, isEmailValid, isPasswordValid } from "@/lib/validation";
+import { getPasswordFieldsValidation } from "@/lib/passwordFieldsValidation";
+import { isEmailValid } from "@/lib/validation";
 
 export const RegisterContent = (): ReactElement => {
   const [email, setEmail] = useState("");
@@ -19,8 +20,11 @@ export const RegisterContent = (): ReactElement => {
   const [feedbackStatus, setFeedbackStatus] = useState<"success" | "error" | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState("");
 
-  const passwordChecks = useMemo(() => checkPassword(password), [password]);
-  const passwordValid = isPasswordValid(passwordChecks);
+  const { passwordChecks, passwordError, confirmPasswordError, isPasswordFormValid } = getPasswordFieldsValidation(
+    password,
+    confirmPassword,
+    submitted,
+  );
 
   const emailError = submitted
     ? email.trim().length === 0
@@ -30,33 +34,11 @@ export const RegisterContent = (): ReactElement => {
         : undefined
     : undefined;
 
-  const passwordError = submitted
-    ? password.trim().length === 0
-      ? "Password is required"
-      : !passwordValid
-        ? "Password does not meet the requirements"
-        : undefined
-    : undefined;
-
-  const confirmPasswordError = submitted
-    ? confirmPassword.trim().length === 0
-      ? "Confirm your password"
-      : confirmPassword !== password
-        ? "Passwords do not match"
-        : undefined
-    : undefined;
-
   const restaurantNameError =
     submitted && restaurantName.trim().length === 0 ? "Restaurant name is required" : undefined;
   const termsError = submitted && !acceptTerms ? "You must accept the terms and conditions" : undefined;
 
-  const isFormValid =
-    isEmailValid(email) &&
-    passwordValid &&
-    confirmPassword === password &&
-    confirmPassword.length > 0 &&
-    restaurantName.trim().length > 0 &&
-    acceptTerms;
+  const isFormValid = isEmailValid(email) && isPasswordFormValid && restaurantName.trim().length > 0 && acceptTerms;
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
