@@ -15,7 +15,14 @@
     "password": "Hasło",
     "submit": "Zaloguj się",
     "submitting": "Logowanie...",
-    "genericError": "Logowanie nie powiodło się. Sprawdź e-mail i hasło."
+    "genericError": "Logowanie nie powiodło się. Sprawdź e-mail i hasło.",
+    "errors": {
+      "emailRequired": "Adres e-mail jest wymagany",
+      "emailInvalid": "Podaj prawidłowy adres e-mail",
+      "passwordRequired": "Hasło jest wymagane",
+      "passwordInvalid": "Hasło nie spełnia wymagań",
+      "passwordMinLength": "Hasło musi mieć co najmniej {min} znaków"
+    }
   },
   "register": {
     "title": "Zarejestruj konto",

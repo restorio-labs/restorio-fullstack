@@ -13,10 +13,10 @@ export default getRequestConfig(async ({ requestLocale }) => {
     notFound();
   }
 
-  const messagesModule = (await import(`../locales/${locale}.json`)) as Record<string, unknown>;
+  const messagesModule = (await import(`../locales/${locale}.json`)) as { default: Record<string, unknown> };
 
   return {
     locale,
-    messages: JSON.parse(JSON.stringify(messagesModule)),
+    messages: messagesModule.default,
   };
 });

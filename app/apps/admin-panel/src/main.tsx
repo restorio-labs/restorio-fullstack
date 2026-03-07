@@ -3,8 +3,8 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
 import { App } from "./App";
-import { AppProviders } from "./wrappers/AppProviders";
 import { defaultMessages } from "./i18n/messages";
+import { AppProviders } from "./wrappers/AppProviders";
 import "./index.css";
 
 runThemeBootScript();

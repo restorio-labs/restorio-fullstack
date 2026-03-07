@@ -1,19 +1,14 @@
 import { LogoutButton } from "@restorio/auth";
 import { ChooseApp, LanguageDropdown, ThemeSwitcher, NavItem, NavSection, Sidebar, useI18n } from "@restorio/ui";
-import { goToApp, getAppUrl, getEnvironmentFromEnv } from "@restorio/utils";
+import { goToApp } from "@restorio/utils";
 import type { ReactElement } from "react";
 import { useCallback, useId } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 import { api } from "../../api/client";
-import { TenantSwitcher } from "../tenant/TenantSwitcher";
+import { PUBLIC_WEB_URL } from "../../config";
 import { supportedLocales } from "../../i18n/messages";
-
-const ENV = import.meta.env as unknown as Record<string, unknown>;
-const envMode = typeof ENV.ENV === "string" ? ENV.ENV : "development";
-const publicWebUrlEnv = typeof ENV.VITE_PUBLIC_WEB_URL === "string" ? ENV.VITE_PUBLIC_WEB_URL : undefined;
-
-const PUBLIC_WEB_URL: string = publicWebUrlEnv ?? getAppUrl(getEnvironmentFromEnv(envMode), "public-web");
+import { TenantSwitcher } from "../tenant/TenantSwitcher";
 
 export const AdminSidebar = (): ReactElement => {
   const { t, locale, setLocale } = useI18n();
@@ -73,13 +68,7 @@ export const AdminSidebar = (): ReactElement => {
         </NavSection>
 
         <NavSection aria-label={t("sidebar.sections.settings")}>
-          <NavItem
-            as={Link}
-            to="/profile"
-            href="/profile"
-            active={isActive("/profile")}
-            role="menuitem"
-          >
+          <NavItem as={Link} to="/profile" href="/profile" active={isActive("/profile")} role="menuitem">
             {t("sidebar.items.tenantProfile")}
           </NavItem>
           <NavItem

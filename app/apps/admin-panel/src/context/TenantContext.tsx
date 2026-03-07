@@ -1,4 +1,5 @@
 import type { Tenant, TenantSummary } from "@restorio/types";
+import { useQuery } from "@tanstack/react-query";
 import { TENANT_STORAGE_KEY } from "@restorio/utils";
 import type { ReactElement, ReactNode } from "react";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
@@ -25,11 +26,11 @@ interface TenantProviderProps {
   children: ReactNode;
 }
 
+export const tenantDetailsQueryKey = (tenantId: string): readonly string[] => ["tenant", tenantId];
+
 export const TenantProvider = ({ children }: TenantProviderProps): ReactElement => {
   const { tenants, state, refresh } = useTenants();
   const [selectedTenantId, setSelectedTenantIdState] = useState<string | null>(null);
-  const [selectedTenantDetails, setSelectedTenantDetails] = useState<Tenant | null>(null);
-  const [selectedTenantDetailsState, setSelectedTenantDetailsState] = useState<TenantsState>("idle");
 
   useEffect(() => {
     const storedTenantId = localStorage.getItem(TENANT_STORAGE_KEY);
@@ -55,43 +56,13 @@ export const TenantProvider = ({ children }: TenantProviderProps): ReactElement 
     setSelectedTenantIdState(fallbackTenantId);
   }, [state, selectedTenantId, tenants]);
 
-  useEffect(() => {
-    if (state !== "loaded" || !selectedTenantId) {
-      setSelectedTenantDetails(null);
-      setSelectedTenantDetailsState(state === "error" ? "error" : "idle");
+  const shouldFetchDetails = state === "loaded" && selectedTenantId !== null;
 
-      return;
-    }
-
-    let cancelled = false;
-
-    setSelectedTenantDetails(null);
-    setSelectedTenantDetailsState("loading");
-
-    const fetchTenant = async (): Promise<void> => {
-      try {
-        const data = await api.tenants.get(selectedTenantId);
-
-        if (!cancelled) {
-          setSelectedTenantDetails(data);
-          setSelectedTenantDetailsState("loaded");
-        }
-      } catch (error) {
-        console.error("Failed to fetch tenant:", error);
-
-        if (!cancelled) {
-          setSelectedTenantDetails(null);
-          setSelectedTenantDetailsState("error");
-        }
-      }
-    };
-
-    void fetchTenant();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedTenantId, state]);
+  const { data: selectedTenantDetails = null, status: detailsStatus } = useQuery({
+    queryKey: tenantDetailsQueryKey(selectedTenantId ?? ""),
+    queryFn: () => api.tenants.get(selectedTenantId!),
+    enabled: shouldFetchDetails,
+  });
 
   useEffect(() => {
     if (selectedTenantId) {
@@ -112,7 +83,8 @@ export const TenantProvider = ({ children }: TenantProviderProps): ReactElement 
     [selectedTenantId, tenants],
   );
 
-  const isSelectedTenantLoading = state === "idle" || state === "loading" || selectedTenantDetailsState === "loading";
+  const isSelectedTenantLoading =
+    state === "idle" || state === "loading" || (shouldFetchDetails && detailsStatus === "pending");
 
   const value = useMemo<TenantContextValue>(
     () => ({

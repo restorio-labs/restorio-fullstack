@@ -15,7 +15,14 @@
     "password": "Password",
     "submit": "Log in",
     "submitting": "Logging in...",
-    "genericError": "Login failed. Please check your email and password."
+    "genericError": "Login failed. Please check your email and password.",
+    "errors": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Enter a valid email address",
+      "passwordRequired": "Password is required",
+      "passwordInvalid": "Password does not meet the requirements",
+      "passwordMinLength": "Password must be at least {min} characters"
+    }
   },
   "register": {
     "title": "Register your account",

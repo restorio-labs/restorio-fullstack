@@ -5,7 +5,16 @@ import type {
   FloorLayoutEditorState,
   LayoutHistoryAction,
 } from "@restorio/types";
-import { Button, Dropdown, FloorCanvas, useDragResize, type DragResizeMode, useI18n, useSnapToGrid, useTheme } from "@restorio/ui";
+import {
+  Button,
+  Dropdown,
+  FloorCanvas,
+  useDragResize,
+  type DragResizeMode,
+  useI18n,
+  useSnapToGrid,
+  useTheme,
+} from "@restorio/ui";
 import type { ReactElement, Reducer } from "react";
 import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 
@@ -28,27 +37,27 @@ const RESIZE_HANDLES: { mode: DragResizeMode; left: string; top: string; cursor:
 
 type ThemeColors = ReturnType<typeof useTheme>["colors"];
 
-const ZONE_COLOR_SELECTORS: Array<(colors: ThemeColors) => string> = [
-  (theme) => theme.status.success.background,
-  (theme) => theme.status.info.background,
-  (theme) => theme.status.warning.background,
-  (theme) => theme.status.error.background,
-  (theme) => theme.status.success.border,
-  (theme) => theme.status.info.border,
-  (theme) => theme.status.warning.border,
-  (theme) => theme.status.error.border,
-  (theme) => theme.interactive.primary,
-  (theme) => theme.interactive.primaryHover,
-  (theme) => theme.interactive.primaryActive,
-  (theme) => theme.interactive.secondary,
-  (theme) => theme.interactive.secondaryHover,
-  (theme) => theme.interactive.secondaryActive,
-  (theme) => theme.interactive.success,
-  (theme) => theme.interactive.successHover,
-  (theme) => theme.interactive.danger,
-  (theme) => theme.interactive.dangerHover,
-  (theme) => theme.background.secondary,
-  (theme) => theme.background.tertiary,
+const ZONE_COLOR_SELECTORS: ((colors: ThemeColors) => string)[] = [
+  (theme): string => theme.status.success.background,
+  (theme): string => theme.status.info.background,
+  (theme): string => theme.status.warning.background,
+  (theme): string => theme.status.error.background,
+  (theme): string => theme.status.success.border,
+  (theme): string => theme.status.info.border,
+  (theme): string => theme.status.warning.border,
+  (theme): string => theme.status.error.border,
+  (theme): string => theme.interactive.primary,
+  (theme): string => theme.interactive.primaryHover,
+  (theme): string => theme.interactive.primaryActive,
+  (theme): string => theme.interactive.secondary,
+  (theme): string => theme.interactive.secondaryHover,
+  (theme): string => theme.interactive.secondaryActive,
+  (theme): string => theme.interactive.success,
+  (theme): string => theme.interactive.successHover,
+  (theme): string => theme.interactive.danger,
+  (theme): string => theme.interactive.dangerHover,
+  (theme): string => theme.background.secondary,
+  (theme): string => theme.background.tertiary,
 ];
 
 interface FloorLayoutEditorViewProps {
@@ -174,8 +183,8 @@ export const FloorLayoutEditorView = ({ initialLayout, onSave }: FloorLayoutEdit
   const [addZoneCount, setAddZoneCount] = useState(0);
 
   const zoneColors = useMemo(() => {
-    const palette = ZONE_COLOR_SELECTORS.map((getColor) => getColor(colors)).filter(
-      (value): value is string => Boolean(value),
+    const palette = ZONE_COLOR_SELECTORS.map((getColor) => getColor(colors)).filter((value): value is string =>
+      Boolean(value),
     );
 
     if (palette.length === 0) {

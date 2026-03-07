@@ -7,8 +7,8 @@ import { useState, type ReactElement } from "react";
 import { PasswordRules } from "./PasswordRules";
 
 import { api } from "@/api/client";
-import { getPasswordFieldsValidation } from "@/lib/passwordFieldsValidation";
-import { isEmailValid } from "@/lib/validation";
+import { getPasswordFieldsValidation } from "@/services/passwordFieldsValidation";
+import { isEmailValid } from "@/services/validation";
 
 export const RegisterContent = (): ReactElement => {
   const [email, setEmail] = useState("");
@@ -76,7 +76,7 @@ export const RegisterContent = (): ReactElement => {
       });
 
       setFeedbackStatus("success");
-      setFeedbackMessage(String(response.message ?? t("success")));
+      setFeedbackMessage(String(response.message));
       setSubmitted(false);
     } catch (err: unknown) {
       interface AxiosErrorData {

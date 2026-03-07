@@ -1,6 +1,28 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export type ViewMode = "sliding" | "all";
+
+interface ViewModeState {
+  viewModes: Record<string, ViewMode>;
+  setViewMode: (tenantId: string, mode: ViewMode) => void;
+}
+
+const useViewModeStore = create<ViewModeState>()(
+  persist(
+    (set) => ({
+      viewModes: {},
+      setViewMode: (tenantId, mode) =>
+        set((state) => ({
+          viewModes: { ...state.viewModes, [tenantId]: mode },
+        })),
+    }),
+    {
+      name: "kitchen-panel:viewMode",
+    },
+  ),
+);
 
 export interface UseViewModeReturn {
   viewMode: ViewMode;
@@ -8,23 +30,14 @@ export interface UseViewModeReturn {
 }
 
 export const useViewMode = (tenantId: string): UseViewModeReturn => {
-  const storageKey = `kitchen-panel:tenant:${tenantId}:viewMode`;
-  const [viewMode, setViewMode] = useState<ViewMode>("sliding");
-
-  useEffect(() => {
-    const storedViewMode = localStorage.getItem(storageKey) as ViewMode | null;
-
-    if (storedViewMode === "sliding" || storedViewMode === "all") {
-      setViewMode(storedViewMode);
-    }
-  }, [storageKey]);
+  const viewMode = useViewModeStore((state) => state.viewModes[tenantId] ?? "sliding");
+  const setViewMode = useViewModeStore((state) => state.setViewMode);
 
   const toggleViewMode = useCallback((): void => {
     const nextMode: ViewMode = viewMode === "sliding" ? "all" : "sliding";
 
-    setViewMode(nextMode);
-    localStorage.setItem(storageKey, nextMode);
-  }, [viewMode, storageKey]);
+    setViewMode(tenantId, nextMode);
+  }, [viewMode, tenantId, setViewMode]);
 
   return {
     viewMode,

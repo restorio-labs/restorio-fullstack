@@ -21,11 +21,7 @@ export const QRCodeRow = ({ tableId, qrDataUrl }: QRCodeRowProps): ReactElement 
       {qrDataUrl ? (
         <img
           src={qrDataUrl}
-          alt={
-            tableId !== undefined
-              ? t("qrRow.qrAltTable", { table: tableId })
-              : t("qrRow.qrAltRestaurant")
-          }
+          alt={tableId !== undefined ? t("qrRow.qrAltTable", { table: tableId }) : t("qrRow.qrAltRestaurant")}
           className="h-auto w-full max-w-[160px] print:max-w-[180px]"
         />
       ) : (

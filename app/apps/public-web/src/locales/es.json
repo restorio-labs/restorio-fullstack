@@ -15,7 +15,14 @@
     "password": "Contraseña",
     "submit": "Iniciar sesión",
     "submitting": "Iniciando sesión...",
-    "genericError": "Error al iniciar sesión. Verifica tu correo y contraseña."
+    "genericError": "Error al iniciar sesión. Verifica tu correo y contraseña.",
+    "errors": {
+      "emailRequired": "El correo electrónico es obligatorio",
+      "emailInvalid": "Introduce un correo electrónico válido",
+      "passwordRequired": "La contraseña es obligatoria",
+      "passwordInvalid": "La contraseña no cumple los requisitos",
+      "passwordMinLength": "La contraseña debe tener al menos {min} caracteres"
+    }
   },
   "register": {
     "title": "Crea tu cuenta",

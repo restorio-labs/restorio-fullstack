@@ -23,6 +23,7 @@
     "check": "prettier --check \"**/*.{ts,tsx,json,md}\" && eslint . --ext ts,tsx"
   },
   "dependencies": {
+    "@restorio/api-client": "workspace:*",
     "@restorio/types": "workspace:*",
     "@restorio/utils": "workspace:*",
     "@restorio/ui": "workspace:*",
@@ -34,6 +35,8 @@
     "@testing-library/jest-dom": "^6.1.5",
     "@testing-library/react": "^14.1.2",
     "@vitest/ui": "^4.0.16",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
     "jsdom": "^27.4.0",
     "tsup": "^8.5.1",
     "typescript": "^5.9",

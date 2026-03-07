@@ -1,12 +1,14 @@
+import type { TenantProfile } from "@restorio/types";
 import { Button, Form, FormActions, Input, useI18n } from "@restorio/ui";
-import { type FormEvent, type ReactElement, useCallback, useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { ReactElement } from "react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 
 import { api } from "../api/client";
 import { useCurrentTenant } from "../context/TenantContext";
 import { useValidationErrors } from "../hooks/useValidationErrors";
 import { PageLayout } from "../layouts/PageLayout";
-
-type SubmitState = "idle" | "loading" | "submitting" | "success" | "error" | "validation";
 
 interface ProfileFormData {
   nip: string;
@@ -56,127 +58,119 @@ const EMPTY_FORM: ProfileFormData = {
   socialWebsite: "",
 };
 
+const profileQueryKey = (tenantId: string): readonly string[] => ["tenant-profile", tenantId];
+
+const toFormData = (profile: TenantProfile): ProfileFormData => ({
+  nip: profile.nip,
+  companyName: profile.companyName,
+  logoUrl: profile.logoUrl ?? "",
+  contactEmail: profile.contactEmail,
+  phone: profile.phone,
+  addressStreet: profile.addressStreet,
+  addressCity: profile.addressCity,
+  addressPostalCode: profile.addressPostalCode,
+  addressCountry: profile.addressCountry,
+  ownerFirstName: profile.ownerFirstName,
+  ownerLastName: profile.ownerLastName,
+  ownerEmail: profile.ownerEmail ?? "",
+  ownerPhone: profile.ownerPhone ?? "",
+  contactPersonFirstName: profile.contactPersonFirstName ?? "",
+  contactPersonLastName: profile.contactPersonLastName ?? "",
+  contactPersonEmail: profile.contactPersonEmail ?? "",
+  contactPersonPhone: profile.contactPersonPhone ?? "",
+  socialFacebook: profile.socialFacebook ?? "",
+  socialInstagram: profile.socialInstagram ?? "",
+  socialTiktok: profile.socialTiktok ?? "",
+  socialWebsite: profile.socialWebsite ?? "",
+});
+
 export const TenantProfilePage = (): ReactElement => {
   const { t } = useI18n();
   const { selectedTenant } = useCurrentTenant();
-  const [formData, setFormData] = useState<ProfileFormData>(EMPTY_FORM);
-  const [submitState, setSubmitState] = useState<SubmitState>("idle");
+  const queryClient = useQueryClient();
+  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error" | "validation">("idle");
   const { getFieldError, setFromResponse, clearErrors } = useValidationErrors();
 
-  const updateField = useCallback(
-    (field: keyof ProfileFormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      setFormData((prev) => ({ ...prev, [field]: e.target.value }));
-      setSubmitState((s) => (s === "idle" || s === "loading" ? s : "idle"));
-      clearErrors();
-    },
-    [clearErrors],
-  );
+  const tenantId = selectedTenant?.id ?? null;
+
+  const { data: profile, isLoading: isLoadingProfile } = useQuery({
+    queryKey: profileQueryKey(tenantId ?? ""),
+    queryFn: () => api.tenantProfiles.get(tenantId!),
+    enabled: tenantId !== null,
+  });
+
+  const {
+    register,
+    handleSubmit,
+    formState: { isValid },
+    reset,
+  } = useForm<ProfileFormData>({
+    defaultValues: EMPTY_FORM,
+    mode: "onChange",
+  });
 
   useEffect(() => {
-    if (!selectedTenant) {
-      setFormData(EMPTY_FORM);
-      return;
+    if (profile) {
+      reset(toFormData(profile));
+    } else {
+      reset(EMPTY_FORM);
     }
 
-    let cancelled = false;
-    setSubmitState("loading");
+    setSubmitStatus("idle");
+    clearErrors();
+  }, [profile, reset, clearErrors]);
 
-    const fetchProfile = async (): Promise<void> => {
-      try {
-        const profile = await api.tenantProfiles.get(selectedTenant.id);
-        if (cancelled) return;
-
-        setFormData({
-          nip: profile.nip,
-          companyName: profile.companyName,
-          logoUrl: profile.logoUrl ?? "",
-          contactEmail: profile.contactEmail,
-          phone: profile.phone,
-          addressStreet: profile.addressStreet,
-          addressCity: profile.addressCity,
-          addressPostalCode: profile.addressPostalCode,
-          addressCountry: profile.addressCountry,
-          ownerFirstName: profile.ownerFirstName,
-          ownerLastName: profile.ownerLastName,
-          ownerEmail: profile.ownerEmail ?? "",
-          ownerPhone: profile.ownerPhone ?? "",
-          contactPersonFirstName: profile.contactPersonFirstName ?? "",
-          contactPersonLastName: profile.contactPersonLastName ?? "",
-          contactPersonEmail: profile.contactPersonEmail ?? "",
-          contactPersonPhone: profile.contactPersonPhone ?? "",
-          socialFacebook: profile.socialFacebook ?? "",
-          socialInstagram: profile.socialInstagram ?? "",
-          socialTiktok: profile.socialTiktok ?? "",
-          socialWebsite: profile.socialWebsite ?? "",
-        });
-        setSubmitState("idle");
-      } catch {
-        if (!cancelled) {
-          setFormData(EMPTY_FORM);
-          setSubmitState("idle");
-        }
+  const saveMutation = useMutation({
+    mutationFn: async (values: ProfileFormData) => {
+      if (!tenantId) {
+        throw new Error("No tenant selected");
       }
-    };
 
-    void fetchProfile();
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedTenant]);
-
-  const isFormValid =
-    (selectedTenant?.id ?? "").trim() !== "" &&
-    /^\d{10}$/.test(formData.nip) &&
-    formData.companyName.trim() !== "" &&
-    formData.contactEmail.trim() !== "" &&
-    formData.phone.trim() !== "" &&
-    formData.addressStreet.trim() !== "" &&
-    formData.addressCity.trim() !== "" &&
-    /^\d{2}-\d{3}$/.test(formData.addressPostalCode) &&
-    formData.ownerFirstName.trim() !== "" &&
-    formData.ownerLastName.trim() !== "";
-
-  const handleSubmit = async (e: FormEvent): Promise<void> => {
-    e.preventDefault();
-
-    if (!selectedTenant) {
-      setSubmitState("error");
-      return;
-    }
-
-    setSubmitState("submitting");
-
-    try {
-      await api.tenantProfiles.save(selectedTenant.id, {
-        nip: formData.nip.trim(),
-        company_name: formData.companyName.trim(),
-        logo_url: formData.logoUrl.trim() || null,
-        contact_email: formData.contactEmail.trim(),
-        phone: formData.phone.trim(),
-        address_street: formData.addressStreet.trim(),
-        address_city: formData.addressCity.trim(),
-        address_postal_code: formData.addressPostalCode.trim(),
-        address_country: formData.addressCountry.trim() || "Polska",
-        owner_first_name: formData.ownerFirstName.trim(),
-        owner_last_name: formData.ownerLastName.trim(),
-        owner_email: formData.ownerEmail.trim() || null,
-        owner_phone: formData.ownerPhone.trim() || null,
-        contact_person_first_name: formData.contactPersonFirstName.trim() || null,
-        contact_person_last_name: formData.contactPersonLastName.trim() || null,
-        contact_person_email: formData.contactPersonEmail.trim() || null,
-        contact_person_phone: formData.contactPersonPhone.trim() || null,
-        social_facebook: formData.socialFacebook.trim() || null,
-        social_instagram: formData.socialInstagram.trim() || null,
-        social_tiktok: formData.socialTiktok.trim() || null,
-        social_website: formData.socialWebsite.trim() || null,
+      return api.tenantProfiles.save(tenantId, {
+        nip: values.nip.trim(),
+        company_name: values.companyName.trim(),
+        logo_url: values.logoUrl.trim() || null,
+        contact_email: values.contactEmail.trim(),
+        phone: values.phone.trim(),
+        address_street: values.addressStreet.trim(),
+        address_city: values.addressCity.trim(),
+        address_postal_code: values.addressPostalCode.trim(),
+        address_country: values.addressCountry.trim() || "Polska",
+        owner_first_name: values.ownerFirstName.trim(),
+        owner_last_name: values.ownerLastName.trim(),
+        owner_email: values.ownerEmail.trim() || null,
+        owner_phone: values.ownerPhone.trim() || null,
+        contact_person_first_name: values.contactPersonFirstName.trim() || null,
+        contact_person_last_name: values.contactPersonLastName.trim() || null,
+        contact_person_email: values.contactPersonEmail.trim() || null,
+        contact_person_phone: values.contactPersonPhone.trim() || null,
+        social_facebook: values.socialFacebook.trim() || null,
+        social_instagram: values.socialInstagram.trim() || null,
+        social_tiktok: values.socialTiktok.trim() || null,
+        social_website: values.socialWebsite.trim() || null,
       });
+    },
+    onSuccess: () => {
+      setSubmitStatus("success");
 
-      setSubmitState("success");
-    } catch (err) {
+      if (tenantId) {
+        void queryClient.invalidateQueries({ queryKey: profileQueryKey(tenantId) });
+      }
+    },
+    onError: (err: unknown) => {
       const isValidation = setFromResponse(err, "tenantProfile.fields");
-      setSubmitState(isValidation ? "validation" : "error");
-    }
+
+      setSubmitStatus(isValidation ? "validation" : "error");
+    },
+  });
+
+  const onSubmit = (values: ProfileFormData): void => {
+    setSubmitStatus("idle");
+    clearErrors();
+    saveMutation.mutate(values);
   };
+
+  const isFormDisabled = !tenantId || !isValid || isLoadingProfile || saveMutation.isPending;
 
   return (
     <PageLayout
@@ -184,21 +178,21 @@ export const TenantProfilePage = (): ReactElement => {
       description={t("tenantProfile.description")}
       headerActions={
         <FormActions>
-          <Button type="submit" form="tenant-profile-form">
-            {submitState === "submitting" ? t("tenantProfile.actions.saving") : t("tenantProfile.actions.save")}
+          <Button type="submit" form="tenant-profile-form" disabled={isFormDisabled}>
+            {saveMutation.isPending ? t("tenantProfile.actions.saving") : t("tenantProfile.actions.save")}
           </Button>
         </FormActions>
       }
     >
       <div className="mx-auto max-w-5xl p-6">
-        <Form id="tenant-profile-form" onSubmit={(e) => void handleSubmit(e)}>
-          {submitState === "loading" && (
+        <Form id="tenant-profile-form" onSubmit={handleSubmit(onSubmit)}>
+          {isLoadingProfile && (
             <div className="text-xs text-text-tertiary">{t("tenantProfile.loadingProfile")}</div>
           )}
-          {submitState === "error" && (
+          {submitStatus === "error" && (
             <div className="text-xs text-status-error-text">{t("tenantProfile.errors.saveFailed")}</div>
           )}
-          {submitState === "validation" && (
+          {submitStatus === "validation" && (
             <div className="text-xs text-status-error-text">{t("tenantProfile.errors.validationFailed")}</div>
           )}
 
@@ -211,29 +205,24 @@ export const TenantProfilePage = (): ReactElement => {
                 <Input
                   label={t("tenantProfile.fields.nip.label")}
                   placeholder={t("tenantProfile.fields.nip.placeholder")}
-                  value={formData.nip}
-                  onChange={updateField("nip")}
                   maxLength={10}
                   helperText={t("tenantProfile.fields.nip.helper")}
                   error={getFieldError("nip")}
-                  required
+                  {...register("nip", { required: true, pattern: /^\d{10}$/ })}
                 />
                 <Input
                   label={t("tenantProfile.fields.companyName.label")}
                   placeholder={t("tenantProfile.fields.companyName.placeholder")}
-                  value={formData.companyName}
-                  onChange={updateField("companyName")}
                   maxLength={255}
                   error={getFieldError("companyName")}
-                  required
+                  {...register("companyName", { required: true })}
                 />
                 <Input
                   label={t("tenantProfile.fields.logoUrl.label")}
                   placeholder={t("tenantProfile.fields.logoUrl.placeholder")}
-                  value={formData.logoUrl}
-                  onChange={updateField("logoUrl")}
                   maxLength={512}
                   error={getFieldError("logoUrl")}
+                  {...register("logoUrl")}
                 />
               </div>
             </fieldset>
@@ -247,21 +236,17 @@ export const TenantProfilePage = (): ReactElement => {
                   label={t("tenantProfile.fields.contactEmail.label")}
                   type="email"
                   placeholder={t("tenantProfile.fields.contactEmail.placeholder")}
-                  value={formData.contactEmail}
-                  onChange={updateField("contactEmail")}
                   maxLength={255}
                   error={getFieldError("contactEmail")}
-                  required
+                  {...register("contactEmail", { required: true })}
                 />
                 <Input
                   label={t("tenantProfile.fields.phone.label")}
                   type="tel"
                   placeholder={t("tenantProfile.fields.phone.placeholder")}
-                  value={formData.phone}
-                  onChange={updateField("phone")}
                   maxLength={20}
                   error={getFieldError("phone")}
-                  required
+                  {...register("phone", { required: true })}
                 />
               </div>
             </fieldset>
@@ -274,40 +259,33 @@ export const TenantProfilePage = (): ReactElement => {
                 <Input
                   label={t("tenantProfile.fields.addressStreet.label")}
                   placeholder={t("tenantProfile.fields.addressStreet.placeholder")}
-                  value={formData.addressStreet}
-                  onChange={updateField("addressStreet")}
                   maxLength={255}
                   error={getFieldError("addressStreet")}
-                  required
+                  {...register("addressStreet", { required: true })}
                 />
                 <div className="grid grid-cols-2 gap-4">
                   <Input
                     label={t("tenantProfile.fields.addressCity.label")}
                     placeholder={t("tenantProfile.fields.addressCity.placeholder")}
-                    value={formData.addressCity}
-                    onChange={updateField("addressCity")}
                     maxLength={100}
                     error={getFieldError("addressCity")}
-                    required
+                    {...register("addressCity", { required: true })}
                   />
                   <Input
                     label={t("tenantProfile.fields.addressPostalCode.label")}
                     placeholder={t("tenantProfile.fields.addressPostalCode.placeholder")}
-                    value={formData.addressPostalCode}
-                    onChange={updateField("addressPostalCode")}
                     maxLength={6}
                     helperText={t("tenantProfile.fields.addressPostalCode.helper")}
                     error={getFieldError("addressPostalCode")}
-                    required
+                    {...register("addressPostalCode", { required: true, pattern: /^\d{2}-\d{3}$/ })}
                   />
                 </div>
                 <Input
                   label={t("tenantProfile.fields.addressCountry.label")}
                   placeholder={t("tenantProfile.fields.addressCountry.placeholder")}
-                  value={formData.addressCountry}
-                  onChange={updateField("addressCountry")}
                   maxLength={100}
                   error={getFieldError("addressCountry")}
+                  {...register("addressCountry")}
                 />
               </div>
             </fieldset>
@@ -321,20 +299,16 @@ export const TenantProfilePage = (): ReactElement => {
                   <Input
                     label={t("tenantProfile.fields.ownerFirstName.label")}
                     placeholder={t("tenantProfile.fields.ownerFirstName.placeholder")}
-                    value={formData.ownerFirstName}
-                    onChange={updateField("ownerFirstName")}
                     maxLength={100}
                     error={getFieldError("ownerFirstName")}
-                    required
+                    {...register("ownerFirstName", { required: true })}
                   />
                   <Input
                     label={t("tenantProfile.fields.ownerLastName.label")}
                     placeholder={t("tenantProfile.fields.ownerLastName.placeholder")}
-                    value={formData.ownerLastName}
-                    onChange={updateField("ownerLastName")}
                     maxLength={100}
                     error={getFieldError("ownerLastName")}
-                    required
+                    {...register("ownerLastName", { required: true })}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -342,19 +316,17 @@ export const TenantProfilePage = (): ReactElement => {
                     label={t("tenantProfile.fields.ownerEmail.label")}
                     type="email"
                     placeholder={t("tenantProfile.fields.ownerEmail.placeholder")}
-                    value={formData.ownerEmail}
-                    onChange={updateField("ownerEmail")}
                     maxLength={255}
                     error={getFieldError("ownerEmail")}
+                    {...register("ownerEmail")}
                   />
                   <Input
                     label={t("tenantProfile.fields.ownerPhone.label")}
                     type="tel"
                     placeholder={t("tenantProfile.fields.ownerPhone.placeholder")}
-                    value={formData.ownerPhone}
-                    onChange={updateField("ownerPhone")}
                     maxLength={20}
                     error={getFieldError("ownerPhone")}
+                    {...register("ownerPhone")}
                   />
                 </div>
               </div>
@@ -369,18 +341,16 @@ export const TenantProfilePage = (): ReactElement => {
                   <Input
                     label={t("tenantProfile.fields.contactPersonFirstName.label")}
                     placeholder={t("tenantProfile.fields.contactPersonFirstName.placeholder")}
-                    value={formData.contactPersonFirstName}
-                    onChange={updateField("contactPersonFirstName")}
                     maxLength={100}
                     error={getFieldError("contactPersonFirstName")}
+                    {...register("contactPersonFirstName")}
                   />
                   <Input
                     label={t("tenantProfile.fields.contactPersonLastName.label")}
                     placeholder={t("tenantProfile.fields.contactPersonLastName.placeholder")}
-                    value={formData.contactPersonLastName}
-                    onChange={updateField("contactPersonLastName")}
                     maxLength={100}
                     error={getFieldError("contactPersonLastName")}
+                    {...register("contactPersonLastName")}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -388,19 +358,17 @@ export const TenantProfilePage = (): ReactElement => {
                     label={t("tenantProfile.fields.contactPersonEmail.label")}
                     type="email"
                     placeholder={t("tenantProfile.fields.contactPersonEmail.placeholder")}
-                    value={formData.contactPersonEmail}
-                    onChange={updateField("contactPersonEmail")}
                     maxLength={255}
                     error={getFieldError("contactPersonEmail")}
+                    {...register("contactPersonEmail")}
                   />
                   <Input
                     label={t("tenantProfile.fields.contactPersonPhone.label")}
                     type="tel"
                     placeholder={t("tenantProfile.fields.contactPersonPhone.placeholder")}
-                    value={formData.contactPersonPhone}
-                    onChange={updateField("contactPersonPhone")}
                     maxLength={20}
                     error={getFieldError("contactPersonPhone")}
+                    {...register("contactPersonPhone")}
                   />
                 </div>
               </div>
@@ -414,40 +382,36 @@ export const TenantProfilePage = (): ReactElement => {
                 <Input
                   label={t("tenantProfile.fields.socialFacebook.label")}
                   placeholder={t("tenantProfile.fields.socialFacebook.placeholder")}
-                  value={formData.socialFacebook}
-                  onChange={updateField("socialFacebook")}
                   maxLength={512}
                   error={getFieldError("socialFacebook")}
+                  {...register("socialFacebook")}
                 />
                 <Input
                   label={t("tenantProfile.fields.socialInstagram.label")}
                   placeholder={t("tenantProfile.fields.socialInstagram.placeholder")}
-                  value={formData.socialInstagram}
-                  onChange={updateField("socialInstagram")}
                   maxLength={512}
                   error={getFieldError("socialInstagram")}
+                  {...register("socialInstagram")}
                 />
                 <Input
                   label={t("tenantProfile.fields.socialTiktok.label")}
                   placeholder={t("tenantProfile.fields.socialTiktok.placeholder")}
-                  value={formData.socialTiktok}
-                  onChange={updateField("socialTiktok")}
                   maxLength={512}
                   error={getFieldError("socialTiktok")}
+                  {...register("socialTiktok")}
                 />
                 <Input
                   label={t("tenantProfile.fields.socialWebsite.label")}
                   placeholder={t("tenantProfile.fields.socialWebsite.placeholder")}
-                  value={formData.socialWebsite}
-                  onChange={updateField("socialWebsite")}
                   maxLength={512}
                   error={getFieldError("socialWebsite")}
+                  {...register("socialWebsite")}
                 />
               </div>
             </fieldset>
           </div>
 
-          {submitState === "success" && (
+          {submitStatus === "success" && (
             <div className="rounded-lg border border-status-success-border bg-status-success-background px-4 py-3 text-sm text-status-success-text">
               {t("tenantProfile.success")}
             </div>

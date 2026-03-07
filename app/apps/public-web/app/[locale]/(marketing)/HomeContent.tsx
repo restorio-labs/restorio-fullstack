@@ -13,8 +13,8 @@ import {
   type AuthRouteStatus,
 } from "@restorio/ui";
 import { getAppUrl, getEnvironmentFromEnv, LAST_VISITED_APP_STORAGE_KEY, getEnvMode } from "@restorio/utils";
-import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 import { FaBolt, FaGlobe, FaMobileAlt } from "react-icons/fa";
 

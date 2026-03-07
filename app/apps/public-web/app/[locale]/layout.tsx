@@ -1,8 +1,8 @@
 import { getThemeBootScript } from "@restorio/ui/theme-mode";
 import type { Metadata, Viewport } from "next";
+import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
-import { notFound } from "next/navigation";
 import type { ReactElement, ReactNode } from "react";
 
 import { routing } from "../../src/i18n/routing";

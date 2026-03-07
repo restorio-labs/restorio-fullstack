@@ -1,63 +1,31 @@
 import type { TenantSummary } from "@restorio/types";
-import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback } from "react";
 
 import { api } from "../api/client";
 
 type TenantsState = "idle" | "loading" | "loaded" | "error";
 
-let cachedTenants: TenantSummary[] | null = null;
-let loadPromise: Promise<TenantSummary[]> | null = null;
+export const tenantsQueryKey = ["tenants"] as const;
 
 export const useTenants = (): {
   tenants: TenantSummary[];
   state: TenantsState;
   refresh: () => void;
 } => {
-  const [state, setState] = useState<TenantsState>("idle");
-  const [tenants, setTenants] = useState<TenantSummary[]>([]);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (cachedTenants) {
-      setTenants(cachedTenants);
-      setState("loaded");
+  const { data, status } = useQuery({
+    queryKey: tenantsQueryKey,
+    queryFn: () => api.tenants.list(),
+  });
 
-      return;
-    }
+  const state: TenantsState =
+    status === "pending" ? "loading" : status === "error" ? "error" : "loaded";
 
-    setState("loading");
+  const refresh = useCallback((): void => {
+    void queryClient.invalidateQueries({ queryKey: tenantsQueryKey });
+  }, [queryClient]);
 
-    if (!loadPromise) {
-      loadPromise = api.tenants.list();
-    }
-
-    void loadPromise
-      .then((data) => {
-        cachedTenants = data;
-        setTenants(data);
-        setState("loaded");
-      })
-      .catch(() => {
-        setState("error");
-      });
-  }, []);
-
-  const refresh = (): void => {
-    cachedTenants = null;
-    loadPromise = null;
-    setState("loading");
-
-    loadPromise = api.tenants.list();
-
-    void loadPromise
-      .then((data) => {
-        cachedTenants = data;
-        setTenants(data);
-        setState("loaded");
-      })
-      .catch(() => {
-        setState("error");
-      });
-  };
-
-  return { tenants, state, refresh };
+  return { tenants: data ?? [], state, refresh };
 };

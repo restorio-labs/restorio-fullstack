@@ -22,7 +22,7 @@
     "allowJs": true
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/**/*"],
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules", "vite.config.ts", "vitest.config.ts"],
   "references": [
     { "path": "../../packages/types" },
     { "path": "../../packages/auth" },

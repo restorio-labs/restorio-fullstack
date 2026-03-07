@@ -1,5 +1,7 @@
 import { Button, Input, Select, useI18n } from "@restorio/ui";
-import { type FormEvent, type ReactElement, useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { isEmailValid } from "@restorio/utils";
+import { type FormEvent, type ReactElement, useMemo, useState } from "react";
 
 import { api } from "../api/client";
 import { PageLayout } from "../layouts/PageLayout";
@@ -12,8 +14,6 @@ interface StaffUser {
   accessLevel: AccessLevel;
 }
 
-const isValidEmail = (value: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
-
 const toAccessLevel = (value: unknown): AccessLevel | null => {
   if (value === "kitchen" || value === "waiter") {
     return value;
@@ -22,17 +22,38 @@ const toAccessLevel = (value: unknown): AccessLevel | null => {
   return null;
 };
 
+const staffQueryKey = ["staff-users"] as const;
+
+const parseUsers = (rawUsers: { id: string; email: string; account_type: unknown }[]): StaffUser[] =>
+  rawUsers
+    .map((user): StaffUser | null => {
+      const level = toAccessLevel(user.account_type);
+
+      if (level === null) {
+        return null;
+      }
+
+      return { id: user.id, email: user.email, accessLevel: level };
+    })
+    .filter((user): user is StaffUser => user !== null);
+
 export const StaffPage = (): ReactElement => {
   const { t } = useI18n();
+  const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [email, setEmail] = useState("");
   const [accessLevel, setAccessLevel] = useState<AccessLevel>("kitchen");
-  const [users, setUsers] = useState<StaffUser[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
   const [pendingDeleteUserId, setPendingDeleteUserId] = useState<string | null>(null);
-  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
+  const { data: users = [], isLoading: isLoadingUsers } = useQuery({
+    queryKey: staffQueryKey,
+    queryFn: async () => {
+      const raw = await api.users.list();
+
+      return parseUsers(raw);
+    },
+  });
 
   const accessOptions = useMemo(
     () => [
@@ -42,42 +63,41 @@ export const StaffPage = (): ReactElement => {
     [t],
   );
 
-  useEffect(() => {
-    const loadUsers = async (): Promise<void> => {
-      setIsLoadingUsers(true);
+  const createMutation = useMutation({
+    mutationFn: (payload: { email: string; access_level: AccessLevel }) => api.users.create(payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: staffQueryKey });
+      setEmail("");
+      setAccessLevel("kitchen");
+      setShowForm(false);
+      setFeedback({ type: "success", message: t("staff.feedback.createSuccess") });
+    },
+    onError: (error: unknown) => {
+      const message =
+        error instanceof Error && error.message.trim() !== "" ? error.message : t("staff.feedback.createError");
 
-      try {
-        const loadedUsers = await api.users.list();
-        const parsedUsers = loadedUsers
-          .map((user): StaffUser | null => {
-            const accessLevel = toAccessLevel(user.account_type);
+      setFeedback({ type: "error", message });
+    },
+  });
 
-            if (accessLevel === null) {
-              return null;
-            }
+  const deleteMutation = useMutation({
+    mutationFn: (userId: string) => api.users.delete(userId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: staffQueryKey });
+      setPendingDeleteUserId(null);
+      setFeedback({ type: "success", message: t("staff.feedback.deleteSuccess") });
+    },
+    onError: (error: unknown) => {
+      const message =
+        error instanceof Error && error.message.trim() !== "" ? error.message : t("staff.feedback.deleteError");
 
-            return {
-              id: user.id,
-              email: user.email,
-              accessLevel,
-            };
-          })
-          .filter((user): user is StaffUser => user !== null);
+      setFeedback({ type: "error", message });
+    },
+  });
 
-        setUsers(parsedUsers);
-      } catch {
-        setUsers([]);
-      } finally {
-        setIsLoadingUsers(false);
-      }
-    };
+  const isFormValid = isEmailValid(email);
 
-    void loadUsers();
-  }, []);
-
-  const isFormValid = isValidEmail(email);
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
     setFeedback(null);
 
@@ -87,64 +107,16 @@ export const StaffPage = (): ReactElement => {
       return;
     }
 
-    setIsSubmitting(true);
-
-    const payload = {
-      email: email.trim(),
-      access_level: accessLevel,
-    };
-
-    try {
-      await api.users.create(payload);
-
-      setUsers((prevUsers) => [
-        {
-          id: crypto.randomUUID(),
-          email: email.trim(),
-          accessLevel,
-        },
-        ...prevUsers.filter((user) => user.email.toLowerCase() !== email.trim().toLowerCase()),
-      ]);
-      setEmail("");
-      setAccessLevel("kitchen");
-      setShowForm(false);
-      setFeedback({ type: "success", message: t("staff.feedback.createSuccess") });
-    } catch (error: unknown) {
-      const message =
-        error instanceof Error && error.message.trim() !== ""
-          ? error.message
-          : t("staff.feedback.createError");
-
-      setFeedback({ type: "error", message });
-    } finally {
-      setIsSubmitting(false);
-    }
+    createMutation.mutate({ email: email.trim(), access_level: accessLevel });
   };
 
-  const handleDeleteUser = async (userId: string): Promise<void> => {
-    if (deletingUserId !== null) {
+  const handleDeleteUser = (userId: string): void => {
+    if (deleteMutation.isPending) {
       return;
     }
 
     setFeedback(null);
-    setDeletingUserId(userId);
-
-    try {
-      await api.users.delete(userId);
-
-      setUsers((previous) => previous.filter((user) => user.id !== userId));
-      setPendingDeleteUserId(null);
-      setFeedback({ type: "success", message: t("staff.feedback.deleteSuccess") });
-    } catch (error: unknown) {
-      const message =
-        error instanceof Error && error.message.trim() !== ""
-          ? error.message
-          : t("staff.feedback.deleteError");
-
-      setFeedback({ type: "error", message });
-    } finally {
-      setDeletingUserId(null);
-    }
+    deleteMutation.mutate(userId);
   };
 
   return (
@@ -181,8 +153,8 @@ export const StaffPage = (): ReactElement => {
                 options={accessOptions}
               />
               <div className="md:self-end">
-                <Button type="submit" disabled={!isFormValid || isSubmitting}>
-                  {isSubmitting ? t("staff.form.submitting") : t("staff.form.submit")}
+                <Button type="submit" disabled={!isFormValid || createMutation.isPending}>
+                  {createMutation.isPending ? t("staff.form.submitting") : t("staff.form.submit")}
                 </Button>
               </div>
             </form>
@@ -207,7 +179,9 @@ export const StaffPage = (): ReactElement => {
           </div>
           <div className="px-4">
             {isLoadingUsers && <p className="text-sm text-text-tertiary">{t("staff.list.loading")}</p>}
-            {!isLoadingUsers && users.length === 0 && <p className="text-sm text-text-tertiary">{t("staff.list.empty")}</p>}
+            {!isLoadingUsers && users.length === 0 && (
+              <p className="text-sm text-text-tertiary">{t("staff.list.empty")}</p>
+            )}
             {!isLoadingUsers && users.length > 0 && (
               <ul className="m-0 list-none divide-y divide-border-default p-0">
                 {users.map((user) => (
@@ -222,12 +196,12 @@ export const StaffPage = (): ReactElement => {
                           type="button"
                           size="sm"
                           variant="danger"
-                          disabled={deletingUserId === user.id}
+                          disabled={deleteMutation.isPending && deleteMutation.variables === user.id}
                           onClick={() => {
                             setPendingDeleteUserId((current) => (current === user.id ? null : user.id));
                           }}
                         >
-                          {deletingUserId === user.id ? t("staff.delete.deleting") : t("staff.delete.button")}
+                          {deleteMutation.isPending && deleteMutation.variables === user.id ? t("staff.delete.deleting") : t("staff.delete.button")}
                         </Button>
                         {pendingDeleteUserId === user.id && (
                           <div className="absolute bottom-full right-0 z-10 mb-2 w-64 rounded-md border border-border-default bg-surface-primary p-3 shadow-lg">
@@ -247,10 +221,8 @@ export const StaffPage = (): ReactElement => {
                                 type="button"
                                 size="sm"
                                 variant="danger"
-                                disabled={deletingUserId === user.id}
-                                onClick={() => {
-                                  void handleDeleteUser(user.id);
-                                }}
+                                disabled={deleteMutation.isPending && deleteMutation.variables === user.id}
+                                onClick={() => handleDeleteUser(user.id)}
                               >
                                 {t("staff.delete.confirm")}
                               </Button>

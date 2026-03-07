@@ -92,6 +92,7 @@ export const Dropdown = ({
       }
 
       const target = event.target as HTMLElement | null;
+
       if (target?.closest("[data-dropdown-prevent-close='true']")) {
         return;
       }

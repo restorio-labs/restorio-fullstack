@@ -36,15 +36,17 @@ export const RestaurantQRCodePage = (): ReactElement => {
     navigate("/qr-code-generator");
   };
 
-  const loadingError = QRCodeLoadingError({
-    isLoading,
-    isError: tenantsState === "error" || !tenant,
-    errorMessage: t("restaurantQr.loadError"),
-    onGoBack: handleGoBack,
-  });
+  const showLoadingError = isLoading || tenantsState === "error" || !tenant;
 
-  if (loadingError) {
-    return loadingError;
+  if (showLoadingError) {
+    return (
+      <QRCodeLoadingError
+        isLoading={isLoading}
+        isError={tenantsState === "error" || !tenant}
+        errorMessage={t("restaurantQr.loadError")}
+        onGoBack={handleGoBack}
+      />
+    );
   }
 
   return (

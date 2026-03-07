@@ -1,8 +1,8 @@
 "use client";
 
 import { ContentContainer, Text } from "@restorio/ui";
-import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
 export const Footer = (): ReactElement => {

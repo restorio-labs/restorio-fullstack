@@ -1,6 +1,5 @@
 "use client";
 
-import type { TenantSlugResponse } from "@restorio/types";
 import { Button, ContentContainer, Input, Text } from "@restorio/ui";
 import { getAppUrl, getEnvironmentFromEnv, getEnvSource, resolveNextEnvVar } from "@restorio/utils";
 import type { FormEvent, ReactElement } from "react";
@@ -9,7 +8,14 @@ import { useEffect, useRef, useState } from "react";
 import { PasswordRules } from "../register/PasswordRules";
 
 import { api } from "@/api/client";
-import { getPasswordFieldsValidation } from "@/lib/passwordFieldsValidation";
+import { getPasswordFieldsValidation } from "@/services/passwordFieldsValidation";
+
+const viteEnv =
+  typeof import.meta !== "undefined" ? (import.meta as { env?: Record<string, unknown> }).env : undefined;
+const envSource = getEnvSource(viteEnv);
+const envMode = resolveNextEnvVar(envSource, "ENV", "NODE_ENV") ?? "development";
+const adminPanelUrlEnv = resolveNextEnvVar(envSource, "VITE_ADMIN_PANEL_URL", "NEXT_PUBLIC_ADMIN_PANEL_URL");
+const adminPanelUrl = adminPanelUrlEnv ?? getAppUrl(getEnvironmentFromEnv(envMode), "admin-panel");
 
 type Result = "loading" | "success" | "already_activated" | "expired" | "error" | "resend_sent" | "set_password";
 
@@ -115,7 +121,7 @@ export function ActivateContent(): ReactElement {
 
     const run = async (): Promise<void> => {
       try {
-        await (api.auth.resendActivation as (id: string) => Promise<TenantSlugResponse>)(activationId);
+        await api.auth.resendActivation(activationId);
         setResult("resend_sent");
       } catch (err: unknown) {
         interface AxiosErrorShape {
@@ -151,12 +157,7 @@ export function ActivateContent(): ReactElement {
 
     const run = async (): Promise<void> => {
       try {
-        await (
-          api.auth.setActivationPassword as (payload: {
-            activation_id: string;
-            password: string;
-          }) => Promise<TenantSlugResponse>
-        )({
+        await api.auth.setActivationPassword({
           activation_id: activationId,
           password,
         });
@@ -185,13 +186,6 @@ export function ActivateContent(): ReactElement {
   };
 
   const resendOnCooldown = cooldownSeconds > 0;
-
-  const viteEnv =
-    typeof import.meta !== "undefined" ? (import.meta as { env?: Record<string, unknown> }).env : undefined;
-  const envSource = getEnvSource(viteEnv);
-  const envMode = resolveNextEnvVar(envSource, "ENV", "NODE_ENV") ?? "development";
-  const adminPanelUrlEnv = resolveNextEnvVar(envSource, "VITE_ADMIN_PANEL_URL", "NEXT_PUBLIC_ADMIN_PANEL_URL");
-  const adminPanelUrl = adminPanelUrlEnv ?? getAppUrl(getEnvironmentFromEnv(envMode), "admin-panel");
 
   return (
     <div className="py-16 md:py-24">

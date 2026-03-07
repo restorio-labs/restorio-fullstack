@@ -41,15 +41,17 @@ export const TableQRCodePage = (): ReactElement => {
     navigate("/qr-code-generator");
   };
 
-  const loadingError = QRCodeLoadingError({
-    isLoading,
-    isError: tenantsState === "error" || !tenant || !tableNumber,
-    errorMessage: t("tableQr.loadError"),
-    onGoBack: handleGoBack,
-  });
+  const showLoadingError = isLoading || tenantsState === "error" || !tenant || !tableNumber;
 
-  if (loadingError) {
-    return loadingError;
+  if (showLoadingError) {
+    return (
+      <QRCodeLoadingError
+        isLoading={isLoading}
+        isError={tenantsState === "error" || !tenant || !tableNumber}
+        errorMessage={t("tableQr.loadError")}
+        onGoBack={handleGoBack}
+      />
+    );
   }
 
   return (

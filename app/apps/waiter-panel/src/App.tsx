@@ -1,8 +1,9 @@
 import type { ReactElement } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
+import { PageLayout } from "@restorio/ui";
+
 import { AppLayout } from "./layouts/AppLayout";
-import { PageLayout } from "./layouts/PageLayout";
 
 const RestaurantsPage = (): ReactElement => {
   return (

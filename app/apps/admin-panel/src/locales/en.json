@@ -42,6 +42,10 @@
       "paymentConfig": "Payment Config",
       "staff": "Staff"
     },
+    "mobile": {
+      "openMenu": "Open navigation menu",
+      "closeMenu": "Close navigation menu"
+    },
     "logoutLoading": "Logging out..."
   },
   "languageSwitcher": {
@@ -77,6 +81,8 @@
     "saveSuccessMessage": "Your floor layout changes were saved.",
     "saveErrorTitle": "Save failed",
     "saveErrorMessage": "Could not save floor layout. Please try again.",
+    "mobileUnavailableTitle": "Floor editor unavailable on mobile",
+    "mobileUnavailableMessage": "Use a tablet or desktop device to edit floor layouts in the admin panel.",
     "toolbar": {
       "undo": "Undo",
       "redo": "Redo",

@@ -1,57 +1,82 @@
 "use client";
 
-import type { AppSlug, LoginResponse } from "@restorio/types";
+import { APP_SLUGS, type AppSlug, type LoginResponse } from "@restorio/types";
 import { Button, ChooseApp, Form, FormActions, FormField, Input } from "@restorio/ui";
 import {
-  getAppUrl,
-  getEnvironmentFromEnv,
-  getEnvSource,
+  getApiErrorData,
+  getApiErrorMessage,
+  getApiValidationFieldLeafs,
   LAST_VISITED_APP_STORAGE_KEY,
-  resolveNextEnvVar,
+  getAppHref,
+  goToApp,
 } from "@restorio/utils";
+import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 import { useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
 
 import { api, setAccessToken } from "@/api/client";
+import { isEmailValid, MIN_PASSWORD_LENGTH } from "@/services/validation";
 
 type ViewState = "form" | "choosing_app";
+type LoginField = "email" | "password";
+type LoginFieldErrors = Partial<Record<LoginField, string>>;
 
 const isAppSlug = (value: string): value is AppSlug => {
-  const slugs: readonly AppSlug[] = ["public-web", "admin-panel", "kitchen-panel", "waiter-panel", "mobile-app"];
-
-  return (slugs as readonly string[]).includes(value);
+  return (APP_SLUGS as readonly string[]).includes(value);
 };
 
-const getEnvMode = (): string => {
-  const viteEnv =
-    typeof import.meta !== "undefined" ? (import.meta as { env?: Record<string, unknown> }).env : undefined;
-  const envSource = getEnvSource(viteEnv);
+const extractFieldErrors = (data: unknown, t: ReturnType<typeof useTranslations>): LoginFieldErrors => {
+  const errors: LoginFieldErrors = {};
+  const fieldLeafs = new Set(getApiValidationFieldLeafs(data));
 
-  return resolveNextEnvVar(envSource, "ENV", "NODE_ENV") ?? "development";
+  if (fieldLeafs.has("email")) {
+    errors.email = t("login.errors.emailInvalid");
+  }
+
+  if (fieldLeafs.has("password")) {
+    errors.password = t("login.errors.passwordInvalid");
+  }
+
+  return errors;
 };
-
-const appUrl = (envMode: string, slug: AppSlug): string => getAppUrl(getEnvironmentFromEnv(envMode), slug);
 
 export const LoginContent = (): ReactElement => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<LoginFieldErrors>({});
   const [view, setView] = useState<ViewState>("form");
-  const [envMode] = useState(getEnvMode);
-  const t = useTranslations("login");
+  const t = useTranslations();
 
-  const isFormValid = useMemo(() => email.trim().length > 0 && password.trim().length > 0, [email, password]);
+  const passwordValid = useMemo(() => password.trim().length >= MIN_PASSWORD_LENGTH, [password]);
+  const isFormValid = useMemo(() => isEmailValid(email) && passwordValid, [email, passwordValid]);
 
-  const goToApp = (slug: AppSlug): void => {
-    localStorage.setItem(LAST_VISITED_APP_STORAGE_KEY, slug);
-    window.location.href = appUrl(envMode, slug);
-  };
+  const emailError = fieldErrors.email
+    ? fieldErrors.email
+    : submitted
+      ? email.trim().length === 0
+        ? t("login.errors.emailRequired")
+        : !isEmailValid(email)
+          ? t("login.errors.emailInvalid")
+          : undefined
+      : undefined;
+  const passwordError = fieldErrors.password
+    ? fieldErrors.password
+    : submitted
+      ? password.trim().length === 0
+        ? t("login.errors.passwordRequired")
+        : !passwordValid
+          ? t("login.errors.passwordMinLength", { min: MIN_PASSWORD_LENGTH })
+          : undefined
+      : undefined;
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
+    setSubmitted(true);
     setErrorMessage("");
+    setFieldErrors({});
 
     if (!isFormValid || submitting) {
       return;
@@ -68,7 +93,7 @@ export const LoginContent = (): ReactElement => {
       const rlvp = localStorage.getItem(LAST_VISITED_APP_STORAGE_KEY);
 
       if (typeof rlvp === "string" && isAppSlug(rlvp) && rlvp !== "public-web") {
-        window.location.href = appUrl(envMode, rlvp);
+        window.location.href = getAppHref(rlvp);
 
         return;
       }
@@ -78,33 +103,29 @@ export const LoginContent = (): ReactElement => {
       const role = me.accountType;
 
       if (role === "kitchen") {
-        window.location.href = appUrl(envMode, "kitchen-panel");
+        window.location.href = getAppHref("kitchen-panel");
 
         return;
       }
 
       if (role === "waiter") {
-        window.location.href = appUrl(envMode, "waiter-panel");
+        window.location.href = getAppHref("waiter-panel");
 
         return;
       }
 
       setView("choosing_app");
     } catch (err: unknown) {
-      interface AxiosErrorShape {
-        response?: { data?: { message?: string; detail?: string } };
+      const data = getApiErrorData(err);
+      const extractedFieldErrors = extractFieldErrors(data, t);
+      const hasFieldErrors = Object.keys(extractedFieldErrors).length > 0;
+      const apiMessage = getApiErrorMessage(data);
+
+      if (hasFieldErrors) {
+        setFieldErrors(extractedFieldErrors);
       }
 
-      const data =
-        err && typeof err === "object" && "response" in err ? (err as AxiosErrorShape).response?.data : undefined;
-      const msg =
-        typeof data?.detail === "string" && data.detail.trim().length > 0
-          ? data.detail
-          : typeof data?.message === "string" && data.message.trim().length > 0
-            ? data.message
-            : t("genericError");
-
-      setErrorMessage(msg);
+      setErrorMessage(apiMessage ?? (hasFieldErrors ? "" : t("login.genericError")));
     } finally {
       setSubmitting(false);
     }
@@ -119,7 +140,7 @@ export const LoginContent = (): ReactElement => {
 
     return (
       <ChooseApp
-        onSelectApp={goToApp}
+        onSelectApp={(slug) => goToApp(slug)}
         labels={chooseAppLabels}
         title={t("chooseApp.title")}
         subtitle={t("chooseApp.subtitle")}
@@ -129,7 +150,7 @@ export const LoginContent = (): ReactElement => {
 
   return (
     <>
-      <h1 className="mb-6 text-3xl font-bold text-text-primary">{t("title")}</h1>
+      <h1 className="mb-6 text-3xl font-bold text-text-primary">{t("login.title")}</h1>
 
       {errorMessage && (
         <div className="mb-6 rounded-lg border border-status-error-border bg-status-error-surface px-4 py-3 text-sm text-status-error-text">
@@ -146,29 +167,43 @@ export const LoginContent = (): ReactElement => {
       >
         <FormField>
           <Input
-            label={t("email")}
+            label={t("login.email")}
             type="email"
             autoComplete="email"
             value={email}
-            onChange={(event) => setEmail(event.target.value)}
+            onChange={(event) => {
+              setEmail(event.target.value);
+
+              if (fieldErrors.email) {
+                setFieldErrors((prev) => ({ ...prev, email: undefined }));
+              }
+            }}
+            error={emailError}
             required
           />
         </FormField>
 
         <FormField>
           <Input
-            label={t("password")}
+            label={t("login.password")}
             type="password"
             autoComplete="current-password"
             value={password}
-            onChange={(event) => setPassword(event.target.value)}
+            onChange={(event) => {
+              setPassword(event.target.value);
+
+              if (fieldErrors.password) {
+                setFieldErrors((prev) => ({ ...prev, password: undefined }));
+              }
+            }}
+            error={passwordError}
             required
           />
         </FormField>
 
         <FormActions align="stretch">
           <Button type="submit" size="lg" variant="primary" fullWidth disabled={!isFormValid || submitting}>
-            {submitting ? t("submitting") : t("submit")}
+            {submitting ? t("login.submitting") : t("login.submit")}
           </Button>
         </FormActions>
       </Form>

@@ -1,6 +1,6 @@
+import { redirect } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { getLocale } from "next-intl/server";
-import { redirect } from "next/navigation";
 
 import { routing } from "../src/i18n/routing";
 

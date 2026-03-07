@@ -71,9 +71,7 @@ export const AboutContent = (): ReactElement => {
                 {t("about.problem.title")}
               </Text>
               <div className="prose prose-lg text-text-secondary">
-                <p className="mb-4">
-                  {t("about.problem.description")}
-                </p>
+                <p className="mb-4">{t("about.problem.description")}</p>
               </div>
             </section>
 

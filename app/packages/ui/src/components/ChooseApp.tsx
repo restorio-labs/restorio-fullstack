@@ -2,6 +2,7 @@ import type { AppSlug } from "@restorio/types";
 import type { ReactElement } from "react";
 
 import { cn } from "../utils";
+
 import { Dropdown } from "./overlays";
 import { Button, Text } from "./primitives";
 
@@ -36,8 +37,10 @@ export const ChooseApp = ({
 }: ChooseAppProps): ReactElement => {
   const items = CHOOSE_APP_SLUGS.map((slug) => ({
     slug,
-    label: slug === "admin-panel" ? labels.adminPanel : slug === "kitchen-panel" ? labels.kitchenPanel : labels.waiterPanel,
+    label:
+      slug === "admin-panel" ? labels.adminPanel : slug === "kitchen-panel" ? labels.kitchenPanel : labels.waiterPanel,
   }));
+
   if (variant === "dropdown") {
     return (
       <div className={cn("flex w-full justify-end", className)}>
@@ -51,17 +54,19 @@ export const ChooseApp = ({
           className="min-w-[100px]"
         >
           <div className="p-1">
-            {items.filter(({ slug }) => slug !== value).map(({ slug, label }) => (
-              <button
-                key={slug}
-                type="button"
-                className="w-full rounded px-2 py-1.5 text-left text-xs text-text-primary hover:bg-surface-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-border-focus"
-                onClick={() => onSelectApp(slug)}
-                aria-label={ariaLabel}
-              >
-                {label}
-              </button>
-            ))}
+            {items
+              .filter(({ slug }) => slug !== value)
+              .map(({ slug, label }) => (
+                <button
+                  key={slug}
+                  type="button"
+                  className="w-full rounded px-2 py-1.5 text-left text-xs text-text-primary hover:bg-surface-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-border-focus"
+                  onClick={() => onSelectApp(slug)}
+                  aria-label={ariaLabel}
+                >
+                  {label}
+                </button>
+              ))}
           </div>
         </Dropdown>
       </div>

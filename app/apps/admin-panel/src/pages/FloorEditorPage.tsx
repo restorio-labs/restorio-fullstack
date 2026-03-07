@@ -1,9 +1,10 @@
-import type { FloorCanvas as FloorCanvasType, LoadingState, Tenant } from "@restorio/types";
-import { useI18n, useToast } from "@restorio/ui";
-import { useEffect, useState, type ReactElement } from "react";
+import type { FloorCanvas as FloorCanvasType, Tenant } from "@restorio/types";
+import { useBreakpoint, useI18n, useToast } from "@restorio/ui";
+import { useQueryClient } from "@tanstack/react-query";
+import { useState, type ReactElement } from "react";
 
 import { api } from "../api/client";
-import { useCurrentTenant } from "../context/TenantContext";
+import { tenantDetailsQueryKey, useCurrentTenant } from "../context/TenantContext";
 import { PageLayout } from "../layouts/PageLayout";
 import { FloorLayoutEditorView } from "../views/FloorLayoutEditorView";
 
@@ -19,47 +20,27 @@ const getActiveCanvas = (tenant: Tenant): FloorCanvasType | undefined => {
 
 export const FloorEditorPage = (): ReactElement => {
   const { t } = useI18n();
-  const { selectedTenantId, tenantsState } = useCurrentTenant();
+  const isTabletUp = useBreakpoint("md");
+  const { selectedTenantId, selectedTenantDetails: tenant, tenantsState, isSelectedTenantLoading } = useCurrentTenant();
+  const queryClient = useQueryClient();
 
-  const [loadingState, setLoadingState] = useState<LoadingState>("loading");
-  const [tenant, setTenant] = useState<Tenant | null>(null);
   const [isCreatingCanvas, setIsCreatingCanvas] = useState(false);
   const { showToast } = useToast();
 
-  useEffect(() => {
-    if (tenantsState !== "loaded") {
-      return;
-    }
+  if (!isTabletUp) {
+    return (
+      <PageLayout title={t("floorEditor.title")}>
+        <div className="flex flex-1 items-center justify-center p-8">
+          <div className="max-w-md rounded-lg border border-border-default bg-surface-primary p-6 text-center">
+            <h2 className="text-lg font-semibold text-text-primary">{t("floorEditor.mobileUnavailableTitle")}</h2>
+            <p className="mt-2 text-sm text-text-secondary">{t("floorEditor.mobileUnavailableMessage")}</p>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
 
-    if (!selectedTenantId) {
-      setLoadingState("not-found");
-
-      return;
-    }
-
-    setLoadingState("loading");
-
-    const fetchTenant = async (): Promise<void> => {
-      try {
-        const data = await api.tenants.get(selectedTenantId);
-
-        setTenant(data);
-        setLoadingState("loaded");
-      } catch (error) {
-        const httpError = error as { response?: { status?: number } };
-
-        if (httpError.response?.status === 404) {
-          setLoadingState("not-found");
-        } else {
-          setLoadingState("error");
-        }
-      }
-    };
-
-    void fetchTenant();
-  }, [selectedTenantId, tenantsState]);
-
-  if (tenantsState === "loading" || tenantsState === "idle" || loadingState === "loading") {
+  if (tenantsState === "loading" || tenantsState === "idle" || isSelectedTenantLoading) {
     return (
       <PageLayout title={t("floorEditor.title")} description={t("floorEditor.loadingDescription")}>
         <div className="flex flex-1 items-center justify-center p-8">
@@ -69,7 +50,7 @@ export const FloorEditorPage = (): ReactElement => {
     );
   }
 
-  if (!selectedTenantId || loadingState === "not-found" || !tenant) {
+  if (!selectedTenantId || !tenant) {
     return (
       <PageLayout title={t("floorEditor.title")} description={t("floorEditor.noRestaurantDescription")}>
         <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-text-tertiary">
@@ -79,7 +60,7 @@ export const FloorEditorPage = (): ReactElement => {
     );
   }
 
-  if (loadingState === "error") {
+  if (tenantsState === "error") {
     return (
       <PageLayout title={t("floorEditor.title")} description={t("floorEditor.errorDescription")}>
         <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-text-tertiary">
@@ -90,6 +71,10 @@ export const FloorEditorPage = (): ReactElement => {
   }
 
   const hasCanvases = tenant.floorCanvases.length > 0;
+
+  const invalidateTenantDetails = (): void => {
+    void queryClient.invalidateQueries({ queryKey: tenantDetailsQueryKey(tenant.id) });
+  };
 
   const handleCreateCanvas = async (): Promise<void> => {
     if (isCreatingCanvas) {
@@ -106,9 +91,7 @@ export const FloorEditorPage = (): ReactElement => {
         elements: [],
       });
 
-      const updated = await api.tenants.get(tenant.id);
-
-      setTenant(updated);
+      invalidateTenantDetails();
     } finally {
       setIsCreatingCanvas(false);
     }
@@ -118,9 +101,7 @@ export const FloorEditorPage = (): ReactElement => {
     return (
       <PageLayout title={t("floorEditor.title")} description={tenant.name}>
         <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
-          <p className="text-sm text-text-tertiary">
-            {t("floorEditor.emptyMessage")}
-          </p>
+          <p className="text-sm text-text-tertiary">{t("floorEditor.emptyMessage")}</p>
           <button
             type="button"
             onClick={() => void handleCreateCanvas()}
@@ -145,6 +126,7 @@ export const FloorEditorPage = (): ReactElement => {
         elements: layout.elements,
       });
       showToast("success", t("floorEditor.saveSuccessTitle"), t("floorEditor.saveSuccessMessage"));
+      invalidateTenantDetails();
     } catch (error) {
       console.error("Failed to save layout:", error);
       showToast("error", t("floorEditor.saveErrorTitle"), t("floorEditor.saveErrorMessage"));

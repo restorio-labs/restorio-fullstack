@@ -6,7 +6,7 @@ export interface PasswordChecks {
   special: boolean;
 }
 
-const MIN_PASSWORD_LENGTH = 8;
+export const MIN_PASSWORD_LENGTH = 8;
 const SPECIAL_CHARS = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/;
 
 export const checkPassword = (value: string): PasswordChecks => ({
@@ -20,6 +20,4 @@ export const checkPassword = (value: string): PasswordChecks => ({
 export const isPasswordValid = (checks: PasswordChecks): boolean =>
   checks.minLength && checks.lowercase && checks.uppercase && checks.number && checks.special;
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-export const isEmailValid = (value: string): boolean => value.trim().length > 0 && EMAIL_REGEX.test(value.trim());
+export { isEmailValid } from "@restorio/utils";

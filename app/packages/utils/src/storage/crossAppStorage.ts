@@ -69,9 +69,19 @@ const readBackupStorage = (): Record<string, string> => {
       return {};
     }
 
-    const parsed = JSON.parse(stored) as Record<string, string>;
+    const parsed: unknown = JSON.parse(stored);
 
-    return typeof parsed === "object" && parsed ? parsed : {};
+    if (typeof parsed !== "object" || parsed === null) {
+      return {};
+    }
+
+    return Object.entries(parsed).reduce<Record<string, string>>((acc, [key, value]) => {
+      if (typeof value === "string") {
+        acc[key] = value;
+      }
+
+      return acc;
+    }, {});
   } catch {
     return {};
   }

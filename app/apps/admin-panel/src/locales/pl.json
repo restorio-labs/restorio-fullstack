@@ -42,6 +42,10 @@
       "paymentConfig": "Konfiguracja płatności",
       "staff": "Personel"
     },
+    "mobile": {
+      "openMenu": "Otwórz menu nawigacji",
+      "closeMenu": "Zamknij menu nawigacji"
+    },
     "logoutLoading": "Wylogowywanie..."
   },
   "languageSwitcher": {
@@ -77,6 +81,8 @@
     "saveSuccessMessage": "Zmiany w układzie sali zostały zapisane.",
     "saveErrorTitle": "Nie udało się zapisać",
     "saveErrorMessage": "Nie można zapisać układu sali. Spróbuj ponownie.",
+    "mobileUnavailableTitle": "Edytor układu sali niedostępny na telefonie",
+    "mobileUnavailableMessage": "Aby edytować układ sali w panelu administratora, użyj tabletu lub komputera.",
     "toolbar": {
       "undo": "Cofnij",
       "redo": "Ponów",

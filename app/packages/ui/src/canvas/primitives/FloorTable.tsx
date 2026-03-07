@@ -46,7 +46,8 @@ export const FloorTable = ({
   const guests = displayInfo?.guestCount;
   const orderStatus = displayInfo?.orderStatus;
   const needHelp = displayInfo?.needHelp;
-  const label = ariaLabel ?? `${t("floorEditor.panel.name")} ${tableNumber}, ${seats} ${t("floorEditor.panel.seats")}, ${state}`;
+  const label =
+    ariaLabel ?? `${t("floorEditor.panel.name")} ${tableNumber}, ${seats} ${t("floorEditor.panel.seats")}, ${state}`;
 
   return (
     <CanvasElement bounds={bounds} aria-label={label} role="img" onPointerDown={onPointerDown}>

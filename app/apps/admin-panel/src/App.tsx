@@ -1,9 +1,9 @@
 import { AuthGuard } from "@restorio/auth";
-import { getAppUrl, getEnvironmentFromEnv } from "@restorio/utils";
 import type { ReactElement } from "react";
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 
 import { api } from "./api/client";
+import { AUTH_REVALIDATE_INTERVAL_MS, PUBLIC_WEB_URL } from "./config";
 import { AdminSidebar } from "./features/sidebar/AdminSidebar";
 import { AppLayout } from "./layouts/AppLayout";
 import {
@@ -19,22 +19,6 @@ import {
   StaffPage,
   TableQRCodePage,
 } from "./pages";
-
-const ENV = import.meta.env as unknown as Record<string, unknown>;
-const envMode = typeof ENV.ENV === "string" ? ENV.ENV : "development";
-const publicWebUrlEnv = typeof ENV.VITE_PUBLIC_WEB_URL === "string" ? ENV.VITE_PUBLIC_WEB_URL : undefined;
-
-const PUBLIC_WEB_URL: string = publicWebUrlEnv ?? getAppUrl(getEnvironmentFromEnv(envMode), "public-web");
-const AUTH_REVALIDATE_INTERVAL_MS = ((): number => {
-  const envValue =
-    typeof ENV.VITE_AUTH_REVALIDATE_INTERVAL_MS === "string" ? Number(ENV.VITE_AUTH_REVALIDATE_INTERVAL_MS) : undefined;
-
-  if (Number.isFinite(envValue) && envValue !== undefined && envValue > 0) {
-    return envValue;
-  }
-
-  return 15 * 60 * 1000; // default to 15 minutes
-})();
 
 const AdminShell = (): ReactElement => {
   return (

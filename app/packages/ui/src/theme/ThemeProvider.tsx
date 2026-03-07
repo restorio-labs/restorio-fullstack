@@ -1,8 +1,8 @@
+import { getCrossAppValue, setCrossAppValue } from "@restorio/utils";
 import { createContext, useContext, useEffect, useState, useMemo } from "react";
 
 import { colorTokens } from "../tokens/colors";
 import type { ThemeMode, ThemeOverride, Direction } from "../tokens/types";
-import { getCrossAppValue, setCrossAppValue } from "@restorio/utils";
 
 import { generateCSSVariables } from "./cssVariables";
 

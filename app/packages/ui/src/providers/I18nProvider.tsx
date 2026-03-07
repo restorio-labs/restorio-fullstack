@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useMemo } from "react";
 import type { ReactElement, ReactNode } from "react";
 
-export type TranslationValues = Record<string, string | number>;
+export type TranslationValues = Record<string, string | number | undefined>;
 export type Messages = Record<string, unknown>;
 
 interface I18nContextValue {

@@ -46,35 +46,41 @@ export const useTableQRCodes = (
     setIsGenerating(true);
 
     const generateQRCodes = async (): Promise<void> => {
-      for (const tableId of tables) {
-        if (isCancelled()) {
-          break;
-        }
+      const entries = tables.map((tableId) => ({
+        tableId,
+        url: getTableQrUrl(tenant.slug, tableId),
+      }));
 
-        const url = getTableQrUrl(tenant.slug, tableId);
-
-        try {
+      const results = await Promise.allSettled(
+        entries.map(async ({ tableId, url }) => {
           const qrDataUrl = await toDataURL(url, { width, margin });
 
-          if (!isCancelled()) {
-            setTableQRCodes((prev) => [...prev, { tableId, url, qrDataUrl }]);
-          }
-        } catch (error) {
-          if (options?.errorMessage) {
-            console.error(options.errorMessage, error);
-          } else {
-            console.error(`Failed to generate QR code for table ${tableId}:`, error);
-          }
+          return { tableId, url, qrDataUrl };
+        }),
+      );
 
-          if (!isCancelled()) {
-            setTableQRCodes((prev) => [...prev, { tableId, url, qrDataUrl: null }]);
-          }
+      if (isCancelled()) {
+        return;
+      }
+
+      const codes: TableQRCode[] = results.map((result, index) => {
+        if (result.status === "fulfilled") {
+          return result.value;
         }
-      }
 
-      if (!isCancelled()) {
-        setIsGenerating(false);
-      }
+        const { tableId, url } = entries[index];
+
+        if (options?.errorMessage) {
+          console.error(options.errorMessage, result.reason);
+        } else {
+          console.error(`Failed to generate QR code for table ${tableId}:`, result.reason);
+        }
+
+        return { tableId, url, qrDataUrl: null };
+      });
+
+      setTableQRCodes(codes);
+      setIsGenerating(false);
     };
 
     void generateQRCodes();

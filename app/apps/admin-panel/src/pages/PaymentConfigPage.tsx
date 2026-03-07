@@ -1,25 +1,36 @@
 import { Button, Form, FormActions, Input, useI18n } from "@restorio/ui";
-import { type FormEvent, type ReactElement, useEffect, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import type { ReactElement } from "react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 
 import { api } from "../api/client";
 import { useCurrentTenant } from "../context/TenantContext";
 import { useValidationErrors } from "../hooks/useValidationErrors";
 import { PageLayout } from "../layouts/PageLayout";
 
-type SubmitState = "idle" | "submitting" | "success" | "error" | "validation";
+interface PaymentFormValues {
+  merchantId: string;
+  apiKey: string;
+  crcKey: string;
+}
 
 export const PaymentConfigPage = (): ReactElement => {
   const { t } = useI18n();
-  const { selectedTenantId, selectedTenant, tenantsState } = useCurrentTenant();
-  const [merchantId, setMerchantId] = useState("");
-  const [apiKey, setApiKey] = useState("");
-  const [crcKey, setCrcKey] = useState("");
-  const [submitState, setSubmitState] = useState<SubmitState>("idle");
+  const { selectedTenantId, tenantsState } = useCurrentTenant();
+  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error" | "validation">("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const { getFieldError, setFromResponse, clearErrors } = useValidationErrors();
 
-  const isFormValid =
-    (selectedTenantId ?? "").trim() !== "" && merchantId.trim() !== "" && apiKey.trim() !== "" && crcKey.trim() !== "";
+  const {
+    register,
+    handleSubmit,
+    formState: { isValid },
+    reset,
+  } = useForm<PaymentFormValues>({
+    defaultValues: { merchantId: "", apiKey: "", crcKey: "" },
+    mode: "onChange",
+  });
 
   useEffect(() => {
     if (tenantsState === "error") {
@@ -28,131 +39,106 @@ export const PaymentConfigPage = (): ReactElement => {
   }, [t, tenantsState]);
 
   useEffect(() => {
-    setSubmitState((currentState) => (currentState === "idle" ? currentState : "idle"));
-  }, [selectedTenantId]);
-
-  const resetSubmitState = (): void => {
-    if (submitState !== "idle") {
-      setSubmitState("idle");
-    }
+    setSubmitStatus("idle");
     clearErrors();
-  };
+    reset();
+  }, [clearErrors, reset, selectedTenantId]);
 
-  const handleSubmit = async (e: FormEvent): Promise<void> => {
-    e.preventDefault();
+  const submitMutation = useMutation({
+    mutationFn: async (values: PaymentFormValues) => {
+      if (!selectedTenantId) {
+        throw new Error(t("payment.errors.selectRestaurant"));
+      }
 
-    if (!selectedTenantId) {
-      setSubmitState("error");
-      setErrorMessage(t("payment.errors.selectRestaurant"));
-
-      return;
-    }
-
-    setSubmitState("submitting");
-    setErrorMessage("");
-
-    try {
-      await api.payments.updateP24Config(selectedTenantId.trim(), {
-        p24_merchantid: Number(merchantId),
-        p24_api: apiKey.trim(),
-        p24_crc: crcKey.trim(),
+      return api.payments.updateP24Config(selectedTenantId.trim(), {
+        p24_merchantid: Number(values.merchantId),
+        p24_api: values.apiKey.trim(),
+        p24_crc: values.crcKey.trim(),
       });
-
-      setSubmitState("success");
-    } catch (err) {
+    },
+    onSuccess: () => {
+      setSubmitStatus("success");
+      setErrorMessage("");
+    },
+    onError: (err: unknown) => {
       const isValidation = setFromResponse(err, "payment.fields");
+
       if (isValidation) {
-        setSubmitState("validation");
+        setSubmitStatus("validation");
         setErrorMessage(t("payment.errors.validationFailed"));
       } else {
-        setSubmitState("error");
-        setErrorMessage(t("payment.errors.updateFailed"));
+        setSubmitStatus("error");
+        setErrorMessage(
+          err instanceof Error && err.message.trim() !== ""
+            ? err.message
+            : t("payment.errors.updateFailed"),
+        );
       }
-    }
+    },
+  });
+
+  const onSubmit = (values: PaymentFormValues): void => {
+    setSubmitStatus("idle");
+    clearErrors();
+    submitMutation.mutate(values);
   };
 
-  return (
-    <PageLayout title={t("payment.title")} description={t("payment.description")}>
-      <div className="mx-auto max-w-lg p-6">
-        <Form onSubmit={(e) => void handleSubmit(e)}>
-          {/* <div className="rounded-lg border border-border-default bg-surface-secondary px-4 py-3 text-sm">
-            <div className="font-medium text-text-primary">{t("payment.selectedRestaurant.title")}</div>
-            <div className="mt-1 text-text-secondary">
-              {selectedTenant
-                ? `${selectedTenant.name} (${selectedTenant.id})`
-                : t("payment.selectedRestaurant.empty")}
-            </div>
-          </div>
-          {tenantsState === "loading" && (
-            <div className="text-xs text-text-tertiary">{t("payment.loadingRestaurants")}</div>
-          )}
-          {tenantsState === "error" && (
-            <div className="text-xs text-status-error-text">
-              {t("payment.errors.loadRestaurants")}
-            </div>
-          )} */}
+  const isFormDisabled = !selectedTenantId || !isValid || submitMutation.isPending;
 
+  return (
+    <PageLayout
+      title={t("payment.title")}
+      description={t("payment.description")}
+      headerActions={
+        <FormActions>
+          <Button type="submit" form="payment-config-form" disabled={isFormDisabled}>
+            {submitMutation.isPending ? t("payment.actions.saving") : t("payment.actions.save")}
+          </Button>
+        </FormActions>
+      }
+    >
+      <div className="mx-auto max-w-lg p-6">
+        <Form id="payment-config-form" onSubmit={handleSubmit(onSubmit)}>
           <Input
             label={t("payment.fields.merchantId.label")}
             type="number"
             placeholder={t("payment.fields.merchantId.placeholder")}
-            value={merchantId}
-            onChange={(e) => {
-              setMerchantId(e.target.value);
-              resetSubmitState();
-            }}
             min={0}
             max={999999}
             helperText={t("payment.fields.merchantId.helper")}
             error={getFieldError("p24Merchantid")}
-            required
+            {...register("merchantId", { required: true })}
           />
 
           <Input
             label={t("payment.fields.apiKey.label")}
             placeholder={t("payment.fields.apiKey.placeholder")}
-            value={apiKey}
-            onChange={(e) => {
-              setApiKey(e.target.value);
-              resetSubmitState();
-            }}
             maxLength={32}
             helperText={t("payment.fields.apiKey.helper")}
             error={getFieldError("p24Api")}
-            required
+            {...register("apiKey", { required: true })}
           />
 
           <Input
             label={t("payment.fields.crcKey.label")}
             placeholder={t("payment.fields.crcKey.placeholder")}
-            value={crcKey}
-            onChange={(e) => {
-              setCrcKey(e.target.value);
-              resetSubmitState();
-            }}
             maxLength={16}
             helperText={t("payment.fields.crcKey.helper")}
             error={getFieldError("p24Crc")}
-            required
+            {...register("crcKey", { required: true })}
           />
 
-          {submitState === "success" && (
+          {submitStatus === "success" && (
             <div className="rounded-lg border border-status-success-border bg-status-success-background px-4 py-3 text-sm text-status-success-text">
               {t("payment.success")}
             </div>
           )}
 
-          {(submitState === "error" || submitState === "validation") && (
+          {(submitStatus === "error" || submitStatus === "validation") && (
             <div className="rounded-lg border border-status-error-border bg-status-error-background px-4 py-3 text-sm text-status-error-text">
               {errorMessage}
             </div>
           )}
-
-          <FormActions>
-            <Button type="submit" disabled={!isFormValid || submitState === "submitting"}>
-              {submitState === "submitting" ? t("payment.actions.saving") : t("payment.actions.save")}
-            </Button>
-          </FormActions>
         </Form>
       </div>
     </PageLayout>
