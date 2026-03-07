@@ -76,7 +76,7 @@ export const Modal = ({
 
   return (
     <div
-      className="fixed inset-0 z-modal-backdrop flex items-center justify-center p-4 bg-surface-overlay"
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-surface-overlay p-4"
       onClick={handleOverlayClick}
       role="dialog"
       aria-modal="true"
@@ -85,7 +85,7 @@ export const Modal = ({
       <div
         ref={modalRef}
         className={cn(
-          "relative w-full bg-surface-primary rounded-lg shadow-lg z-modal",
+          "relative z-[1001] w-full rounded-lg bg-surface-primary shadow-lg",
           "focus:outline-none",
           sizeStyles[size],
           className,

@@ -3,16 +3,19 @@ import { ChooseApp, LanguageDropdown, ThemeSwitcher, NavItem, NavSection, Sideba
 import { goToApp } from "@restorio/utils";
 import type { ReactElement } from "react";
 import { useCallback, useId } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { api } from "../../api/client";
 import { PUBLIC_WEB_URL } from "../../config";
 import { supportedLocales } from "../../i18n/messages";
 import { TenantSwitcher } from "../tenant/TenantSwitcher";
 
+const FLOOR_EDITOR_NAVIGATION_EVENT = "restorio:floor-editor-navigation-attempt";
+
 export const AdminSidebar = (): ReactElement => {
   const { t, locale, setLocale } = useI18n();
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const languageSelectId = useId();
 
   const isActive = (path: string): boolean => {
@@ -27,6 +30,31 @@ export const AdminSidebar = (): ReactElement => {
     await api.auth.logout();
   }, []);
 
+  const handleRouteNavigation = useCallback(
+    (event: React.MouseEvent, path: string): void => {
+      if (pathname === "/" && pathname !== path) {
+        const navigationEvent = new CustomEvent(FLOOR_EDITOR_NAVIGATION_EVENT, {
+          detail: { path },
+          cancelable: true,
+        });
+        const wasBlocked = !window.dispatchEvent(navigationEvent);
+
+        if (wasBlocked) {
+          event.preventDefault();
+
+          return;
+        }
+
+        navigate(path);
+
+        return;
+      }
+
+      navigate(path);
+    },
+    [navigate, pathname],
+  );
+
   return (
     <Sidebar aria-label={t("sidebar.ariaLabel")} variant="persistent" className="flex flex-col h-full">
       <div className="px-4 py-4 border-b border-border-default">
@@ -35,21 +63,27 @@ export const AdminSidebar = (): ReactElement => {
 
       <div className="flex flex-col gap-2 py-2">
         <NavSection aria-label={t("sidebar.sections.floorLayout")}>
-          <NavItem as={Link} to="/" href="/" active={isActive("/")} role="menuitem">
+          <NavItem as={Link} to="/" active={isActive("/")} role="menuitem" onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/")}>
             {t("sidebar.items.floorEditor")}
           </NavItem>
         </NavSection>
 
         <NavSection aria-label={t("sidebar.sections.menu")}>
-          <NavItem as={Link} to="/menu-creator" href="/menu-creator" active={isActive("/menu-creator")} role="menuitem">
+          <NavItem
+            as={Link}
+            to="/menu-creator"
+            active={isActive("/menu-creator")}
+            role="menuitem"
+            onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/menu-creator")}
+          >
             {t("sidebar.items.menuCreator")}
           </NavItem>
           <NavItem
             as={Link}
-            to="/menu-page-configurator"
-            href="/menu-page-configurator"
-            active={isActive("/menu-page-configurator")}
+            to="/main-page-configurator"
+            active={isActive("/main-page-configurator")}
             role="menuitem"
+            onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/main-page-configurator")}
           >
             {t("sidebar.items.pageConfigurator")}
           </NavItem>
@@ -59,28 +93,28 @@ export const AdminSidebar = (): ReactElement => {
           <NavItem
             as={Link}
             to="/qr-code-generator"
-            href="/qr-code-generator"
             active={isActive("/qr-code-generator")}
             role="menuitem"
+            onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/qr-code-generator")}
           >
             {t("sidebar.items.qrCodeGenerator")}
           </NavItem>
         </NavSection>
 
         <NavSection aria-label={t("sidebar.sections.settings")}>
-          <NavItem as={Link} to="/profile" href="/profile" active={isActive("/profile")} role="menuitem">
+          <NavItem as={Link} to="/profile" active={isActive("/profile")} role="menuitem" onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/profile")}>
             {t("sidebar.items.tenantProfile")}
           </NavItem>
           <NavItem
             as={Link}
             to="/payment-config"
-            href="/payment-config"
             active={isActive("/payment-config")}
             role="menuitem"
+            onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/payment-config")}
           >
             {t("sidebar.items.paymentConfig")}
           </NavItem>
-          <NavItem as={Link} to="/staff" href="/staff" active={isActive("/staff")} role="menuitem">
+          <NavItem as={Link} to="/staff" active={isActive("/staff")} role="menuitem" onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/staff")}>
             {t("sidebar.items.staff")}
           </NavItem>
         </NavSection>

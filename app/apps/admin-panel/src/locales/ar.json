@@ -22,7 +22,39 @@
     }
   },
   "floorEditor": {
+    "defaultCanvasNameBase": "الطابق",
+    "renamingButton": "جارٍ تغيير الاسم...",
+    "deletingButton": "جارٍ الحذف...",
+    "renameSuccessTitle": "تمت إعادة تسمية الطابق",
+    "renameSuccessMessage": "تم تحديث اسم الطابق.",
+    "renameErrorTitle": "فشل تغيير الاسم",
+    "renameErrorMessage": "تعذّر تغيير اسم هذا الطابق. حاول مرة أخرى.",
+    "deleteSuccessTitle": "تم حذف الطابق",
+    "deleteSuccessMessage": "تم حذف الطابق.",
+    "deleteErrorTitle": "فشل الحذف",
+    "deleteErrorMessage": "تعذّر حذف هذا الطابق. حاول مرة أخرى.",
+    "floorSelector": {
+      "label": "الطابق",
+      "addFloor": "إضافة طابق",
+      "renameLabel": "اسم الطابق",
+      "renameFloor": "إعادة تسمية الطابق",
+      "deleteFloor": "حذف الطابق"
+    },
+    "panel": {
+      "seats": "المقاعد",
+      "tableCustomLabel": "تسمية الطاولة"
+    },
+    "unsavedChanges": {
+      "title": "لم تحفظ التغييرات",
+      "message": "لديك تغييرات غير محفوظة في هذا الطابق. إذا بدّلت الآن فستفقد التغييرات.",
+      "keepEditing": "متابعة التحرير",
+      "discard": "تجاهل التغييرات"
+    },
     "tableLabel": "طاولة {{number}}",
     "tableGroupLabel": "طاولات {{numbers}}"
+  },
+  "qrGenerator": {
+    "noTables": "لم يتم العثور على طاولات في أي طابق.",
+    "noTablesOnFloor": "لا توجد طاولات في هذا الطابق."
   }
 }

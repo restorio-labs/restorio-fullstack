@@ -1,6 +1,9 @@
 from typing import TypeVar
 
+from fastapi import status
 from pydantic import BaseModel
+
+from core.exceptions.http import BaseHTTPException
 
 T = TypeVar("T")
 
@@ -62,12 +65,20 @@ class PaginatedResponse[T](BaseModel):
         )
 
 
-class UnauthenticatedResponse(BaseModel):
-    pass
+class UnauthenticatedResponse(BaseHTTPException):
+    def __init__(self, message: str = "Unauthorized") -> None:
+        super().__init__(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            message=message,
+        )
 
 
-class UnauthorizedResponse(BaseModel):
-    pass
+class UnauthorizedResponse(BaseHTTPException):
+    def __init__(self, message: str = "Unauthorized") -> None:
+        super().__init__(
+            status_code=status.HTTP_403_FORBIDDEN,
+            message=message,
+        )
 
 
 class NotFoundResponse(BaseModel):

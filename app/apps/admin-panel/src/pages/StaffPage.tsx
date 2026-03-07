@@ -4,6 +4,7 @@ import { isEmailValid } from "@restorio/utils";
 import { type FormEvent, type ReactElement, useMemo, useState } from "react";
 
 import { api } from "../api/client";
+import { useCurrentTenant } from "../context/TenantContext";
 import { PageLayout } from "../layouts/PageLayout";
 
 type AccessLevel = "kitchen" | "waiter";
@@ -12,6 +13,7 @@ interface StaffUser {
   id: string;
   email: string;
   accessLevel: AccessLevel;
+  isActive: boolean;
 }
 
 const toAccessLevel = (value: unknown): AccessLevel | null => {
@@ -24,7 +26,7 @@ const toAccessLevel = (value: unknown): AccessLevel | null => {
 
 const staffQueryKey = ["staff-users"] as const;
 
-const parseUsers = (rawUsers: { id: string; email: string; account_type: unknown }[]): StaffUser[] =>
+const parseUsers = (rawUsers: { id: string; email: string; is_active: boolean; account_type: unknown }[]): StaffUser[] =>
   rawUsers
     .map((user): StaffUser | null => {
       const level = toAccessLevel(user.account_type);
@@ -33,12 +35,13 @@ const parseUsers = (rawUsers: { id: string; email: string; account_type: unknown
         return null;
       }
 
-      return { id: user.id, email: user.email, accessLevel: level };
+      return { id: user.id, email: user.email, accessLevel: level, isActive: user.is_active };
     })
     .filter((user): user is StaffUser => user !== null);
 
 export const StaffPage = (): ReactElement => {
   const { t } = useI18n();
+  const { selectedTenantId } = useCurrentTenant();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [email, setEmail] = useState("");
@@ -47,12 +50,17 @@ export const StaffPage = (): ReactElement => {
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   const { data: users = [], isLoading: isLoadingUsers } = useQuery({
-    queryKey: staffQueryKey,
+    queryKey: [...staffQueryKey, selectedTenantId ?? ""],
     queryFn: async () => {
-      const raw = await api.users.list();
+      if (!selectedTenantId) {
+        return [];
+      }
+
+      const raw = await api.users.list(selectedTenantId);
 
       return parseUsers(raw);
     },
+    enabled: selectedTenantId !== null,
   });
 
   const accessOptions = useMemo(
@@ -188,6 +196,15 @@ export const StaffPage = (): ReactElement => {
                   <li key={user.id} className="flex items-center justify-between py-3">
                     <span className="text-sm text-text-primary">{user.email}</span>
                     <div className="flex items-center gap-3">
+                      <span
+                        className={`text-xs font-medium ${
+                          user.isActive
+                            ? "text-green-700 dark:text-green-400"
+                            : "text-amber-700 dark:text-amber-400"
+                        }`}
+                      >
+                        {user.isActive ? t("staff.status.active") : t("staff.status.inactive")}
+                      </span>
                       <span className="text-xs uppercase tracking-wide text-text-tertiary">
                         {t(`staff.accessLevels.${user.accessLevel}`)}
                       </span>

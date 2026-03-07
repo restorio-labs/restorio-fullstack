@@ -19,8 +19,11 @@ export class UserResource extends BaseResource {
   /**
    * List current tenant staff users.
    */
-  async list(signal?: AbortSignal): Promise<StaffUserData[]> {
-    const { data } = await this.client.get<SuccessResponse<StaffUserData[]>>("users", { signal });
+  async list(tenantId: string, signal?: AbortSignal): Promise<StaffUserData[]> {
+    const { data } = await this.client.get<SuccessResponse<StaffUserData[]>>(
+      `users/${encodeURIComponent(tenantId)}`,
+      { signal }
+    );
 
     return data;
   }

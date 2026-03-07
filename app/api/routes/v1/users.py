@@ -1,5 +1,3 @@
-import secrets
-import string
 from uuid import UUID
 
 from fastapi import APIRouter, Request, status
@@ -23,35 +21,22 @@ from core.models.user import User
 router = APIRouter()
 
 
-def generate_temporary_password(length: int = 24) -> str:
-    lowercase = string.ascii_lowercase
-    uppercase = string.ascii_uppercase
-    digits = string.digits
-    special = "!@#$%^&*()_+-=[]{}|;:,.<>?"
-    pool = lowercase + uppercase + digits + special
-
-    required = [
-        secrets.choice(lowercase),
-        secrets.choice(uppercase),
-        secrets.choice(digits),
-        secrets.choice(special),
-    ]
-    remaining = [secrets.choice(pool) for _ in range(max(0, length - len(required)))]
-    candidate = required + remaining
-    secrets.SystemRandom().shuffle(candidate)
-    return "".join(candidate)
-
-
 def get_tenant_id_from_request(request: Request) -> UUID:
     user = getattr(request.state, "user", None)
     if not isinstance(user, dict):
         raise UnauthenticatedResponse(message="Unauthorized")
 
     tenant_id_value = user.get("tenant_id")
-    if not isinstance(tenant_id_value, str) or tenant_id_value == "":
-        raise UnauthenticatedResponse(message="Unauthorized")
+    if isinstance(tenant_id_value, str) and tenant_id_value != "":
+        return UUID(tenant_id_value)
 
-    return UUID(tenant_id_value)
+    tenant_ids_value = user.get("tenant_ids")
+    if isinstance(tenant_ids_value, list):
+        for tenant_id_item in tenant_ids_value:
+            if isinstance(tenant_id_item, str) and tenant_id_item != "":
+                return UUID(tenant_id_item)
+
+    raise UnauthenticatedResponse(message="Unauthorized")
 
 
 @router.post(
@@ -74,7 +59,7 @@ async def create_user(
     if tenant is None:
         raise UnauthenticatedResponse(message="Unauthorized")
 
-    temp_password = generate_temporary_password()
+    temp_password = user_service.generate_temporary_password()
     created_user, _ = await user_service.create_user_for_tenant(
         session=session,
         email=data.email,
@@ -110,20 +95,18 @@ async def create_user(
 
 
 @router.get(
-    "/",
+    "/{tenant_id}",
     status_code=status.HTTP_200_OK,
-    response_model=SuccessResponse[list[dict[str, str]]],
+    response_model=SuccessResponse[list[dict[str, str | bool]]],
     summary="List tenant staff users",
     description="List waiter and kitchen users for current tenant",
 )
-async def list_users(
-    request: Request,
+async def list_tenant_users(
+    tenant_id: UUID,
     session: PostgresSession,
-) -> SuccessResponse[list[dict[str, str]]]:
-    tenant_id = get_tenant_id_from_request(request)
-
+) -> SuccessResponse[list[dict[str, str | bool]]]:
     stmt = (
-        select(User.id, User.email, TenantRole.account_type)
+        select(User.id, User.email, User.is_active, TenantRole.account_type)
         .join(TenantRole, TenantRole.account_id == User.id)
         .where(
             TenantRole.tenant_id == tenant_id,
@@ -136,10 +119,17 @@ async def list_users(
         {
             "id": str(user_id),
             "email": email,
+            "is_active": is_active,
             "account_type": account_type.value,
         }
-        for user_id, email, account_type in rows.all()
+        for user_id, email, is_active, account_type in rows.all()
     ]
+
+    if len(users) == 0:
+        return SuccessResponse(
+            message="No users found for this tenant",
+            data=[],
+        )
 
     return SuccessResponse(
         message="Users retrieved successfully",

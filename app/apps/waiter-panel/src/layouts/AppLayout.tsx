@@ -1,4 +1,4 @@
-import { AppShell } from "@restorio/ui";
+import { BaseAppLayout } from "@restorio/ui";
 import type { ReactNode } from "react";
 
 interface AppLayoutProps {
@@ -8,9 +8,5 @@ interface AppLayoutProps {
 }
 
 export const AppLayout = ({ children, header, footer }: AppLayoutProps): ReactNode => {
-  return (
-    <AppShell header={header} footer={footer}>
-      {children}
-    </AppShell>
-  );
+  return <BaseAppLayout header={header} footer={footer}>{children}</BaseAppLayout>;
 };

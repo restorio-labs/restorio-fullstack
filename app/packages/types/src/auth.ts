@@ -40,6 +40,7 @@ export interface CreateStaffUserRequest {
 export interface StaffUserData {
   id: string;
   email: string;
+  is_active: boolean;
   account_type: "kitchen" | "waiter";
 }
 

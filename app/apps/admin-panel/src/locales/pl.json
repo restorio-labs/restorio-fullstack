@@ -77,12 +77,30 @@
     "creatingButton": "Tworzenie...",
     "layoutTitle": "Sala: {{name}}",
     "defaultCanvasName": "Sala 1",
+    "defaultCanvasNameBase": "Sala",
     "saveSuccessTitle": "Układ zapisany",
     "saveSuccessMessage": "Zmiany w układzie sali zostały zapisane.",
     "saveErrorTitle": "Nie udało się zapisać",
     "saveErrorMessage": "Nie można zapisać układu sali. Spróbuj ponownie.",
+    "renameSuccessTitle": "Zmieniono nazwę sali",
+    "renameSuccessMessage": "Nazwa sali została zaktualizowana.",
+    "renameErrorTitle": "Nie udało się zmienić nazwy",
+    "renameErrorMessage": "Nie można zmienić nazwy tej sali. Spróbuj ponownie.",
+    "renamingButton": "Zmienianie nazwy...",
+    "deleteSuccessTitle": "Sala usunięta",
+    "deleteSuccessMessage": "Sala została usunięta.",
+    "deleteErrorTitle": "Nie udało się usunąć",
+    "deleteErrorMessage": "Nie można usunąć tej sali. Spróbuj ponownie.",
+    "deletingButton": "Usuwanie...",
     "mobileUnavailableTitle": "Edytor układu sali niedostępny na telefonie",
     "mobileUnavailableMessage": "Aby edytować układ sali w panelu administratora, użyj tabletu lub komputera.",
+    "floorSelector": {
+      "label": "Sala",
+      "addFloor": "Dodaj salę",
+      "renameLabel": "Nazwa sali",
+      "renameFloor": "Zmień nazwę sali",
+      "deleteFloor": "Usuń salę"
+    },
     "toolbar": {
       "undo": "Cofnij",
       "redo": "Ponów",
@@ -106,12 +124,19 @@
       "name": "Nazwa",
       "color": "Kolor",
       "seats": "Miejsca",
+      "tableCustomLabel": "Etykieta stolika",
       "label": "Etykieta",
       "delete": "Usuń",
       "deleteSelected": "Usuń zaznaczone",
       "multiSelected": "Wybrano elementów: {{count}}.",
       "multiSelectHint": "Tryb kontroli: tylko zaznaczanie i przesuwanie.",
       "selectHint": "Wybierz element na płótnie, aby go dostosować."
+    },
+    "unsavedChanges": {
+      "title": "Nie zapisano zmian",
+      "message": "Masz niezapisane zmiany na tej sali. Jeśli przełączysz się teraz, zmiany zostaną utracone.",
+      "keepEditing": "Kontynuuj edycję",
+      "discard": "Odrzuć zmiany"
     },
     "aria": {
       "resizeHandle": "Zmień rozmiar {{mode}}",
@@ -189,7 +214,8 @@
     "batchDownload": "Pobierz zbiorczo kody QR",
     "sectionTitle": "Kody QR",
     "generatingMenu": "Generowanie kodu QR...",
-    "noTables": "Nie znaleziono stolików na aktywnym układzie sali. Dodaj stoliki w edytorze układu.",
+    "noTables": "Nie znaleziono stolików na żadnej sali. Dodaj stoliki w edytorze układu.",
+    "noTablesOnFloor": "Brak stolików na tej sali.",
     "generatingTables": "Generowanie kodów QR dla {{count}} stolików..."
   },
   "qrPrint": {
@@ -241,6 +267,10 @@
   "staff": {
     "title": "Zarządzanie personelem",
     "description": "Zarządzaj kontami kuchni, kelnerów i innych pracowników",
+    "status": {
+      "active": "Aktywne",
+      "inactive": "Oczekuje na aktywację"
+    },
     "accessLevels": {
       "kitchen": "Kuchnia",
       "waiter": "Kelner"

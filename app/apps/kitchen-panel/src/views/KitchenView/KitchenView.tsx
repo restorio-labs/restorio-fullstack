@@ -63,7 +63,7 @@ export const KitchenView = (): ReactElement => {
   const useHorizontalLayout = (isTablet && isLandscape && viewMode === "sliding") || viewMode === "sliding";
 
   const statusConfig = useMemo(() => statusConfigRaw, []);
-  const statusKeys = useMemo(() => Object.keys(statusConfig) as StatusKey[], [statusConfig]);
+  const statusKeys = useMemo(() => Object.keys(statusConfig) as (keyof typeof statusConfig)[], [statusConfig]);
 
   const boardRef = useColumnNavigation(statusKeys, useHorizontalLayout);
 

@@ -24,6 +24,7 @@ class FloorTableElementResponseDTO(FloorElementBaseResponseDTO):
     type: Literal["table"] = "table"
     table_number: int = Field(..., alias="tableNumber", serialization_alias="tableNumber")
     seats: int = Field(...)
+    label: str | None = Field(None)
 
 
 class FloorTableGroupElementResponseDTO(FloorElementBaseResponseDTO):

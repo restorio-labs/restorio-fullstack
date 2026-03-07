@@ -22,7 +22,7 @@ def _tenant_to_response(tenant: Tenant) -> TenantResponseDTO:
     )
 
 
-@router.put("/tenant/{tenant_id}/p24-config", status_code=status.HTTP_200_OK)
+@router.put("/tenants/{tenant_id}/p24-config", status_code=status.HTTP_200_OK)
 async def update_p24_config(
     tenant_id: UUID,
     request: UpdateP24ConfigDTO,

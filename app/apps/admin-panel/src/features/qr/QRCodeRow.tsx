@@ -5,9 +5,10 @@ import { Link } from "react-router-dom";
 interface QRCodeRowProps {
   tableId?: number;
   qrDataUrl: string | null;
+  subtitle?: string;
 }
 
-export const QRCodeRow = ({ tableId, qrDataUrl }: QRCodeRowProps): ReactElement => {
+export const QRCodeRow = ({ tableId, qrDataUrl, subtitle }: QRCodeRowProps): ReactElement => {
   const { t } = useI18n();
 
   return (
@@ -15,9 +16,12 @@ export const QRCodeRow = ({ tableId, qrDataUrl }: QRCodeRowProps): ReactElement 
       to={tableId !== undefined ? `/qr-code/table/${tableId}` : "/qr-code/restaurant"}
       className="flex items-center justify-between gap-4 rounded-lg border border-border-default bg-surface-primary p-4 transition-colors hover:bg-surface-secondary print:break-inside-avoid print:border-2 print:border-black"
     >
-      <h3 className="text-lg font-semibold text-text-primary print:text-2xl">
-        {tableId !== undefined ? t("qrRow.table", { table: tableId }) : t("qrRow.restaurant")}
-      </h3>
+      <div className="flex flex-col gap-1">
+        <h3 className="text-lg font-semibold text-text-primary print:text-2xl">
+          {tableId !== undefined ? t("qrRow.table", { table: tableId }) : t("qrRow.restaurant")}
+        </h3>
+        {subtitle ? <p className="text-sm text-text-secondary print:text-base">{subtitle}</p> : null}
+      </div>
       {qrDataUrl ? (
         <img
           src={qrDataUrl}

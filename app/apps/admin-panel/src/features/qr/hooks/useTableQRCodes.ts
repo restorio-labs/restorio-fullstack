@@ -2,9 +2,11 @@ import type { Tenant } from "@restorio/types";
 import { toDataURL } from "qrcode";
 import { useEffect, useState } from "react";
 
-import { getTableQrUrl } from "../tableQRCodes";
+import { getTableQrUrl, type TenantFloorTableEntry } from "../tableQRCodes";
 
 export interface TableQRCode {
+  canvasId: string;
+  floorName: string;
   tableId: number;
   url: string;
   qrDataUrl: string | null;
@@ -23,7 +25,7 @@ interface UseTableQRCodesResult {
 
 export const useTableQRCodes = (
   tenant: Tenant | null,
-  tables: number[],
+  tables: TenantFloorTableEntry[],
   options?: UseTableQRCodesOptions,
 ): UseTableQRCodesResult => {
   const [tableQRCodes, setTableQRCodes] = useState<TableQRCode[]>([]);
@@ -46,16 +48,18 @@ export const useTableQRCodes = (
     setIsGenerating(true);
 
     const generateQRCodes = async (): Promise<void> => {
-      const entries = tables.map((tableId) => ({
+      const entries = tables.map(({ canvasId, floorName, tableId }) => ({
+        canvasId,
+        floorName,
         tableId,
         url: getTableQrUrl(tenant.slug, tableId),
       }));
 
       const results = await Promise.allSettled(
-        entries.map(async ({ tableId, url }) => {
+        entries.map(async ({ canvasId, floorName, tableId, url }) => {
           const qrDataUrl = await toDataURL(url, { width, margin });
 
-          return { tableId, url, qrDataUrl };
+          return { canvasId, floorName, tableId, url, qrDataUrl };
         }),
       );
 
@@ -68,7 +72,7 @@ export const useTableQRCodes = (
           return result.value;
         }
 
-        const { tableId, url } = entries[index];
+        const { canvasId, floorName, tableId, url } = entries[index];
 
         if (options?.errorMessage) {
           console.error(options.errorMessage, result.reason);
@@ -76,7 +80,7 @@ export const useTableQRCodes = (
           console.error(`Failed to generate QR code for table ${tableId}:`, result.reason);
         }
 
-        return { tableId, url, qrDataUrl: null };
+        return { canvasId, floorName, tableId, url, qrDataUrl: null };
       });
 
       setTableQRCodes(codes);

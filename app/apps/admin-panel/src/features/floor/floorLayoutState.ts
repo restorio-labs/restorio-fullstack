@@ -1,12 +1,58 @@
 import type {
   ElementToAdd,
   FloorLayoutEditorState,
-  LayoutHistoryAction,
   FloorCanvas,
   FloorElement,
 } from "@restorio/types";
 
 const nextId = (): string => `el-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+
+const renumberTables = (elements: FloorElement[]): FloorElement[] => {
+  const tableIdsInOrder = elements
+    .filter((element): element is Extract<FloorElement, { type: "table" }> => element.type === "table")
+    .sort((left, right) => left.tableNumber - right.tableNumber)
+    .map((element) => element.id);
+
+  if (tableIdsInOrder.length === 0) {
+    return elements;
+  }
+
+  const nextTableNumbers = new Map(tableIdsInOrder.map((id, index) => [id, index + 1]));
+
+  return elements.map((element) => {
+    if (element.type !== "table") {
+      return element;
+    }
+
+    return {
+      ...element,
+      tableNumber: nextTableNumbers.get(element.id) ?? element.tableNumber,
+    };
+  });
+};
+
+export type FloorEditorHistoryAction =
+  | { type: "SET_LAYOUT"; payload: FloorCanvas }
+  | {
+      type: "UPDATE_ELEMENT";
+      payload: {
+        id: string;
+        bounds?: { x: number; y: number; w: number; h: number; rotation?: number };
+        color?: string;
+        name?: string;
+        tableNumbers?: string[];
+        seats?: number;
+        tableLabel?: string;
+        label?: string;
+        zIndex?: number;
+        recordHistory?: boolean;
+      };
+    }
+  | { type: "ADD_ELEMENT"; payload: { element: FloorElement; x: number; y: number } }
+  | { type: "REMOVE_ELEMENT"; payload: { id: string } }
+  | { type: "COMMIT_LAYOUT" }
+  | { type: "UNDO" }
+  | { type: "REDO" };
 
 export const cloneFloorElement = (element: FloorElement): FloorElement => ({
   ...element,
@@ -24,6 +70,7 @@ export const createElementFromToAdd = (toAdd: ElementToAdd, _tenantId?: string):
         type: "table",
         tableNumber: toAdd.tableNumber ?? 0,
         seats: toAdd.seats,
+        label: toAdd.label,
       };
     case "tableGroup":
       return {
@@ -54,7 +101,7 @@ export const createElementFromToAdd = (toAdd: ElementToAdd, _tenantId?: string):
 
 export const layoutHistoryReducer = (
   state: FloorLayoutEditorState,
-  action: LayoutHistoryAction,
+  action: FloorEditorHistoryAction,
 ): FloorLayoutEditorState => {
   const maxHistory = 50;
   const pushHistory = (layout: FloorCanvas): FloorCanvas[] => {
@@ -72,9 +119,30 @@ export const layoutHistoryReducer = (
       };
     }
     case "UPDATE_ELEMENT": {
-      const { id, bounds, ...rest } = action.payload;
-      const elements = state.layout.elements.map((el) => (el.id === id ? { ...el, ...(bounds ?? {}), ...rest } : el));
-      const nextLayout = { ...state.layout, elements };
+      const applyElementUpdate = (): FloorCanvas => {
+        const { id, bounds, recordHistory: _recordHistory, tableLabel, ...rest } = action.payload;
+        const elements = state.layout.elements.map((el) => {
+          if (el.id !== id) {
+            return el;
+          }
+
+          const tablePatch = el.type === "table" && tableLabel !== undefined ? { label: tableLabel } : {};
+
+          return { ...el, ...(bounds ?? {}), ...rest, ...tablePatch };
+        });
+
+        return { ...state.layout, elements };
+      };
+
+      const nextLayout = applyElementUpdate();
+
+      if (action.payload.recordHistory === false) {
+        return {
+          ...state,
+          layout: nextLayout,
+        };
+      }
+
       const history = pushHistory(nextLayout);
 
       return {
@@ -105,12 +173,25 @@ export const layoutHistoryReducer = (
       };
     }
     case "REMOVE_ELEMENT": {
-      const elements = state.layout.elements.filter((el) => el.id !== action.payload.id);
+      const elements = renumberTables(state.layout.elements.filter((el) => el.id !== action.payload.id));
       const nextLayout = { ...state.layout, elements };
       const history = pushHistory(nextLayout);
 
       return {
         layout: nextLayout,
+        history,
+        historyIndex: history.length - 1,
+      };
+    }
+    case "COMMIT_LAYOUT": {
+      if (state.history[state.historyIndex] === state.layout) {
+        return state;
+      }
+
+      const history = pushHistory(state.layout);
+
+      return {
+        ...state,
         history,
         historyIndex: history.length - 1,
       };

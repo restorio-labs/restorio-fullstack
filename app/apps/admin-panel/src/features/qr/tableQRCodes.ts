@@ -1,18 +1,38 @@
 import type { FloorTableElement, Tenant } from "@restorio/types";
 import { getAppHref } from "@restorio/utils";
 
-export const getTenantTablesFromActiveCanvas = (tenant: Tenant): number[] => {
-  if (tenant.floorCanvases.length === 0) {
-    return [];
-  }
+export interface TenantFloorTablesGroup {
+  canvasId: string;
+  floorName: string;
+  tables: number[];
+}
 
-  const activeCanvas =
-    tenant.floorCanvases.find((canvas) => canvas.id === tenant.activeLayoutVersionId) ?? tenant.floorCanvases[0];
-  const tableElements = activeCanvas.elements.filter(
-    (element): element is FloorTableElement => element.type === "table",
+export interface TenantFloorTableEntry {
+  canvasId: string;
+  floorName: string;
+  tableId: number;
+}
+
+export const getTenantTablesByFloor = (tenant: Tenant): TenantFloorTablesGroup[] => {
+  return tenant.floorCanvases.map((canvas) => {
+    const tableElements = canvas.elements.filter((element): element is FloorTableElement => element.type === "table");
+
+    return {
+      canvasId: canvas.id,
+      floorName: canvas.name,
+      tables: tableElements.map((element) => element.tableNumber).sort((a, b) => a - b),
+    };
+  });
+};
+
+export const getTenantTableEntries = (tenant: Tenant): TenantFloorTableEntry[] => {
+  return getTenantTablesByFloor(tenant).flatMap((floor) =>
+    floor.tables.map((tableId) => ({
+      canvasId: floor.canvasId,
+      floorName: floor.floorName,
+      tableId,
+    })),
   );
-
-  return tableElements.map((element) => element.tableNumber).sort((a, b) => a - b);
 };
 
 export const getTableQrUrl = (tenantSlug: string, tableId: number): string => {

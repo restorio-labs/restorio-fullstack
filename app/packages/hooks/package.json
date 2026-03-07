@@ -1,5 +1,5 @@
 {
-  "name": "@restorio/services",
+  "name": "@restorio/hooks",
   "version": "1.0.0",
   "private": true,
   "type": "module",

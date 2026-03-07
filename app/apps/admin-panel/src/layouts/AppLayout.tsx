@@ -12,14 +12,14 @@ interface AppLayoutProps {
 
 export const AppLayout = ({ children, header, footer, sidebar }: AppLayoutProps): ReactNode => {
   const { t } = useI18n();
-  const isTabletUp = useBreakpoint("md");
+  const isDesktopUp = useBreakpoint("lg");
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const { pathname } = useLocation();
   const mobileMenuId = useId();
 
   useEffect(() => {
     setIsMobileSidebarOpen(false);
-  }, [pathname, isTabletUp]);
+  }, [pathname, isDesktopUp]);
 
   return (
     <>
@@ -29,11 +29,11 @@ export const AppLayout = ({ children, header, footer, sidebar }: AppLayoutProps)
       >
         {t("common.skipToContent")}
       </a>
-      <AppShell header={header} footer={footer} sidebar={isTabletUp ? sidebar : undefined}>
+      <AppShell header={header} footer={footer} sidebar={isDesktopUp ? sidebar : undefined}>
         <main id="main-content">{children}</main>
       </AppShell>
 
-      {!isTabletUp && sidebar && (
+      {!isDesktopUp && sidebar && (
         <>
           <button
             type="button"

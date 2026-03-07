@@ -6,11 +6,10 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from core.exceptions import BaseHTTPException
-from core.foundation.http.responses import ValidationErrorResponse, ExceptionHandlerResponse
+from core.foundation.http.responses import ExceptionHandlerResponse, ValidationErrorResponse
 from core.foundation.infra.config import Settings
 
 logger = logging.getLogger(__name__)
-
 
 
 def setup_exception_handlers(app: FastAPI, settings: Settings) -> None:
@@ -48,7 +47,7 @@ def setup_exception_handlers(app: FastAPI, settings: Settings) -> None:
         logger.error("Unhandled exception: %s\n%s", exc, traceback.format_exc())
         if settings.DEBUG:
             return JSONResponse(
-                status_code=exc.status_code,
+                status_code=getattr(exc, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR),
                 content=ExceptionHandlerResponse(
                     message="An unexpected error occurred",
                     details={"type": type(exc).__name__},

@@ -77,12 +77,30 @@
     "creatingButton": "Creating...",
     "layoutTitle": "Floor: {{name}}",
     "defaultCanvasName": "Floor 1",
+    "defaultCanvasNameBase": "Floor",
     "saveSuccessTitle": "Layout saved",
     "saveSuccessMessage": "Your floor layout changes were saved.",
     "saveErrorTitle": "Save failed",
     "saveErrorMessage": "Could not save floor layout. Please try again.",
+    "renameSuccessTitle": "Floor renamed",
+    "renameSuccessMessage": "The floor name was updated.",
+    "renameErrorTitle": "Rename failed",
+    "renameErrorMessage": "Could not rename this floor. Please try again.",
+    "renamingButton": "Renaming...",
+    "deleteSuccessTitle": "Floor deleted",
+    "deleteSuccessMessage": "The floor was deleted.",
+    "deleteErrorTitle": "Delete failed",
+    "deleteErrorMessage": "Could not delete this floor. Please try again.",
+    "deletingButton": "Deleting...",
     "mobileUnavailableTitle": "Floor editor unavailable on mobile",
     "mobileUnavailableMessage": "Use a tablet or desktop device to edit floor layouts in the admin panel.",
+    "floorSelector": {
+      "label": "Floor",
+      "addFloor": "Add floor",
+      "renameLabel": "Floor name",
+      "renameFloor": "Rename floor",
+      "deleteFloor": "Delete floor"
+    },
     "toolbar": {
       "undo": "Undo",
       "redo": "Redo",
@@ -106,12 +124,19 @@
       "name": "Name",
       "color": "Color",
       "seats": "Seats",
+      "tableCustomLabel": "Table label",
       "label": "Label",
       "delete": "Delete",
       "deleteSelected": "Delete selected",
       "multiSelected": "{{count}} items selected.",
       "multiSelectHint": "Control mode: multi-select and move only.",
       "selectHint": "Select an element on the canvas to customize it."
+    },
+    "unsavedChanges": {
+      "title": "You did not save the changes",
+      "message": "You have unsaved changes on this floor. If you switch floors now, your changes will be lost.",
+      "keepEditing": "Keep editing",
+      "discard": "Discard changes"
     },
     "aria": {
       "resizeHandle": "Resize {{mode}}",
@@ -193,7 +218,8 @@
     "batchDownload": "Batch Download Table QR Codes",
     "sectionTitle": "QR Codes",
     "generatingMenu": "Generating QR code...",
-    "noTables": "No tables found in the active floor canvas. Add tables in Floor Editor to generate table QR codes.",
+    "noTables": "No tables found in any floor. Add tables in Floor Editor to generate table QR codes.",
+    "noTablesOnFloor": "No tables on this floor.",
     "generatingTables": "Generating QR codes for {{count}} tables..."
   },
   "qrPrint": {
@@ -245,6 +271,10 @@
   "staff": {
     "title": "Staff Management",
     "description": "Manage kitchen, waiter, and other staff accounts",
+    "status": {
+      "active": "Activated",
+      "inactive": "Pending activation"
+    },
     "accessLevels": {
       "kitchen": "Kitchen",
       "waiter": "Waiter"

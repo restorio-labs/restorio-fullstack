@@ -9,7 +9,7 @@ import { useQRCodeDataUrl } from "../features/qr/hooks/useQRCodeDataUrl";
 import { useSelectedTenantDetails } from "../features/qr/hooks/useSelectedTenantDetails";
 import { useTableQRCodes } from "../features/qr/hooks/useTableQRCodes";
 import { QRCodeRow } from "../features/qr/QRCodeRow";
-import { getTenantTablesFromActiveCanvas } from "../features/qr/tableQRCodes";
+import { getTenantTableEntries, getTenantTablesByFloor } from "../features/qr/tableQRCodes";
 import { PageLayout } from "../layouts/PageLayout";
 
 export const QRCodeGeneratorPage = (): ReactElement => {
@@ -25,12 +25,20 @@ export const QRCodeGeneratorPage = (): ReactElement => {
     return `${getAppHref("mobile-app")}/${tenant.slug}`;
   }, [tenant]);
 
+  const floorGroups = useMemo(() => {
+    if (!tenant) {
+      return [];
+    }
+
+    return getTenantTablesByFloor(tenant);
+  }, [tenant]);
+
   const tables = useMemo(() => {
     if (!tenant) {
       return [];
     }
 
-    return getTenantTablesFromActiveCanvas(tenant);
+    return getTenantTableEntries(tenant);
   }, [tenant]);
 
   const menuQrDataUrl = useQRCodeDataUrl(menuUrl, {
@@ -118,10 +126,30 @@ export const QRCodeGeneratorPage = (): ReactElement => {
                   {t("qrGenerator.generatingTables", { count: tables.length })}
                 </p>
               )}
-              <div className="flex flex-col gap-3">
-                {tableQRCodes.map((qrCode) => (
-                  <QRCodeRow key={qrCode.tableId} tableId={qrCode.tableId} qrDataUrl={qrCode.qrDataUrl} />
-                ))}
+              <div className="flex flex-col gap-6">
+                {floorGroups.map((floorGroup) => {
+                  const floorQRCodes = tableQRCodes.filter((qrCode) => qrCode.canvasId === floorGroup.canvasId);
+
+                  return (
+                    <section key={floorGroup.canvasId} className="flex flex-col gap-3">
+                      <h3 className="text-lg font-semibold text-text-primary">{floorGroup.floorName}</h3>
+                      {floorQRCodes.length === 0 ? (
+                        <p className="text-sm text-text-tertiary">{t("qrGenerator.noTablesOnFloor")}</p>
+                      ) : (
+                        <div className="flex flex-col gap-3">
+                          {floorQRCodes.map((qrCode) => (
+                            <QRCodeRow
+                              key={`${qrCode.canvasId}-${qrCode.tableId}`}
+                              tableId={qrCode.tableId}
+                              qrDataUrl={qrCode.qrDataUrl}
+                              subtitle={qrCode.floorName}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </section>
+                  );
+                })}
               </div>
             </>
           )}

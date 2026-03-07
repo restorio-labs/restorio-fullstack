@@ -11,7 +11,7 @@ router = APIRouter()
 
 
 @router.get(
-    "",
+    "/transactions",
     status_code=status.HTTP_200_OK,
     response_model=PaginatedResponse[TransactionListItemDTO],
 )

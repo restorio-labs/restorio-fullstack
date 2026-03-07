@@ -2,7 +2,9 @@ from typing import Any
 
 from fastapi import APIRouter, status
 
-from core.dto.v1.payments import CreateTransactionDTO
+from core.dto.v1.payments import (
+    CreateTransactionDTO,
+)
 from core.foundation.dependencies import (
     ExternalClientDep,
     P24ServiceDep,
@@ -16,7 +18,7 @@ router = APIRouter()
 
 
 @router.post(
-    "",
+    "/create",
     status_code=status.HTTP_201_CREATED,
     response_model=CreatedResponse[dict[str, Any]],
 )

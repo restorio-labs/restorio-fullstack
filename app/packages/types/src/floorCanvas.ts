@@ -26,6 +26,7 @@ export interface FloorTableElement extends FloorElementBase {
   type: "table";
   tableNumber: number;
   seats: number;
+  label?: string;
 }
 
 export interface FloorTableGroupElement extends FloorElementBase {
@@ -79,7 +80,7 @@ export interface FloorLayoutEditorState {
 }
 
 export type ElementToAdd =
-  | { type: "table"; seats: number; tableNumber?: number }
+  | { type: "table"; seats: number; tableNumber?: number; label?: string }
   | { type: "tableGroup"; tableNumbers: string[]; seats: number }
   | { type: "bar"; label?: string }
   | { type: "zone"; name: string; color?: string }
@@ -97,11 +98,14 @@ export type LayoutHistoryAction =
         name?: string;
         tableNumbers?: string[];
         seats?: number;
+        tableLabel?: string;
         label?: string;
         zIndex?: number;
+        recordHistory?: boolean;
       };
     }
   | { type: "ADD_ELEMENT"; payload: { element: FloorElement; x: number; y: number } }
   | { type: "REMOVE_ELEMENT"; payload: { id: string } }
+  | { type: "COMMIT_LAYOUT" }
   | { type: "UNDO" }
   | { type: "REDO" };

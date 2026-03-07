@@ -19,6 +19,7 @@ class FloorTableElementDTO(FloorElementBaseDTO):
     type: Literal["table"] = "table"
     table_number: int = Field(..., alias="tableNumber", description="Table display number")
     seats: int = Field(..., gt=0, description="Number of seats")
+    label: str | None = Field(None, description="Table label")
 
 
 class FloorTableGroupElementDTO(FloorElementBaseDTO):

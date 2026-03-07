@@ -9,7 +9,9 @@
 
 ### 1.1 `AppLayout` — Duplicated Across 4 Apps ⚠️ HIGH PRIORITY
 
-Every app has its own `AppLayout` wrapper around `AppShell`:
+**Status:** Partially addressed — shared `BaseAppLayout` now exists in `@restorio/ui` and is used by `kitchen-panel`, `mobile-app`, and `waiter-panel`. The `admin-panel` layout still contains its own mobile-sidebar behavior and remains the main local variant.
+
+Every app previously had its own `AppLayout` wrapper around `AppShell`:
 
 | App | File | Extra Logic |
 |---|---|---|
@@ -19,7 +21,7 @@ Every app has its own `AppLayout` wrapper around `AppShell`:
 | `waiter-panel` | `layouts/AppLayout.tsx` | Minimal (16 lines) |
 | `mobile-app` | `layouts/AppLayout.tsx` | Minimal (24 lines) |
 
-**Recommendation:** Extract a `BaseAppLayout` to `@restorio/ui` accepting `header`, `footer`, `sidebar`, and `skipLabel` props. The mobile sidebar toggle in `admin-panel` is the only legitimate local variation.
+**Remaining work:** Fold the `admin-panel` layout onto the shared base where practical, while preserving the mobile sidebar toggle behavior.
 
 ---
 
@@ -77,16 +79,11 @@ alias: {
 
 ---
 
-### 2.2 `waiter-panel` — Restaurant List and Floor Never Connected ⚠️ HIGH PRIORITY
+### 2.2 `waiter-panel` — Restaurant List and Floor Never Connected 
 
-`waiter-panel/src/App.tsx` has:
-```tsx
-<div className="p-6 text-sm text-text-tertiary">
-  Floor runtime is not yet connected to live restaurants.
-</div>
-```
+**Status:** Fixed — `waiter-panel/src/App.tsx` now loads tenants through `api.tenants.list()`, links to `/restaurants/:restaurantId`, fetches tenant details with `api.tenants.get()`, and renders `FloorRuntimeView` for the selected restaurant.
 
-`FloorRuntimeView` exists but is never rendered by any route.
+**Remaining work:** Polish UI and handle edge cases.
 
 ---
 
@@ -150,6 +147,8 @@ const handlePointerMove = useCallback(
 
 ### 4.1 `FloorLayoutEditorView` — Extremely Large Component (~750 lines) ⚠️ HIGH PRIORITY
 
+**Status:** Partially addressed — `FloorLayoutEditorView` has been reduced substantially by extracting `FloorEditorToolbar`, `FloorEditorCanvas`, `FloorEditorInspector`, shared editor constants/helpers in `features/floor/editorShared.ts`, and keyboard/clipboard handling into `useFloorEditorKeyboard`.
+
 Responsibilities mixed in a single component:
 - layout editing logic
 - history reducer
@@ -183,16 +182,7 @@ features/floor
  │   ├ floorHistoryManager
 ```
 
-This would shrink `FloorLayoutEditorView` to ~150 lines.
-
----
-
-
-### 4.3 `public-web` Routes Split Between `(public)` and `(marketing)` Without Clear Rationale
-
-`/about` is in `(public)` but it is clearly marketing content. `/activate` is in `(public)` but serves a transactional flow.
-
-**Recommendation:** Define and document the grouping rule: `(marketing)` = SEO-facing pages, `(public)` = auth/transactional pages, or restructure accordingly.
+**Remaining work:** Continue extracting state orchestration and drag/selection coordination hooks if deeper decomposition is still desired. The reducer/history behavior remains local and intact.
 
 ---
 
@@ -345,12 +335,12 @@ If `useTheme` returns a new `colors` object reference on every render, `zoneColo
 ### Immediate (block or high risk):
 2. ✅ ~~Fix `ActivateContent` type casts~~ **DONE**
 4. Implement or remove `mobile-app` (currently non-functional)
-5. Connect `waiter-panel` floor runtime to live restaurants
+5. ✅ ~~Connect `waiter-panel` floor runtime to live restaurants~~ **DONE**
 6. ✅ ~~Implement placeholder creator pages in `admin-panel` or mark as WIP~~ **WIP LABELED**
 
 ### Short-term cleanup:
 7. ✅ ~~Centralize ENV config~~ **DONE for admin-panel**, extend to other apps
-8. Deduplicate `AppLayout` / `AppProviders` (✅ `PageLayout` wrappers removed)
+8. Deduplicate `AppLayout` / `AppProviders` (✅ `PageLayout` wrappers removed, ✅ shared `BaseAppLayout` extracted for simple apps)
 
 ### Medium-term improvements:
 12. ✅ ~~Split `FloorLayoutEditorView`~~ **Recommended but not started**
@@ -362,4 +352,4 @@ If `useTheme` returns a new `colors` object reference on every render, `zoneColo
 
 ---
 
-**Estimated Remaining Work:** ~23 items across architecture, bugs, testing, and cleanup
+**Estimated Remaining Work:** ~20 items across architecture, bugs, testing, and cleanup

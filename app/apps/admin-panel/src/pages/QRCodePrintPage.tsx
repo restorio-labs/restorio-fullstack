@@ -6,19 +6,27 @@ import { Link } from "react-router-dom";
 import { useCurrentTenant } from "../context/TenantContext";
 import { useSelectedTenantDetails } from "../features/qr/hooks/useSelectedTenantDetails";
 import { useTableQRCodes } from "../features/qr/hooks/useTableQRCodes";
-import { getTenantTablesFromActiveCanvas } from "../features/qr/tableQRCodes";
+import { getTenantTableEntries, getTenantTablesByFloor } from "../features/qr/tableQRCodes";
 
 export const QRCodePrintPage = (): ReactElement => {
   const { t } = useI18n();
   const { tenantsState } = useCurrentTenant();
   const { tenant, isLoading } = useSelectedTenantDetails();
 
+  const floorGroups = useMemo(() => {
+    if (!tenant) {
+      return [];
+    }
+
+    return getTenantTablesByFloor(tenant);
+  }, [tenant]);
+
   const tables = useMemo(() => {
     if (!tenant) {
       return [];
     }
 
-    return getTenantTablesFromActiveCanvas(tenant);
+    return getTenantTableEntries(tenant);
   }, [tenant]);
 
   const { tableQRCodes, isGenerating } = useTableQRCodes(tenant, tables, {
@@ -93,25 +101,40 @@ export const QRCodePrintPage = (): ReactElement => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 print:grid-cols-3">
-        {tableQRCodes.map((qrCode) => (
-          <div key={qrCode.tableId} className="flex flex-col items-center p-2 print:break-inside-avoid">
-            {qrCode.qrDataUrl ? (
-              <img
-                src={qrCode.qrDataUrl}
-                alt={t("qrRow.qrAltTable", { table: qrCode.tableId })}
-                className="h-auto w-full max-w-[360px]"
-              />
-            ) : (
-              <div className="flex h-[360px] w-full max-w-[360px] items-center justify-center text-sm text-text-tertiary">
-                {t("qrRow.failed")}
+      <div className="flex flex-col gap-8">
+        {floorGroups.map((floorGroup) => {
+          const floorQRCodes = tableQRCodes.filter((qrCode) => qrCode.canvasId === floorGroup.canvasId);
+
+          if (floorQRCodes.length === 0) {
+            return null;
+          }
+
+          return (
+            <section key={floorGroup.canvasId} className="flex flex-col gap-4 print:break-inside-avoid">
+              <h2 className="text-xl font-semibold text-text-primary print:text-3xl">{floorGroup.floorName}</h2>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 print:grid-cols-3">
+                {floorQRCodes.map((qrCode) => (
+                  <div key={`${qrCode.canvasId}-${qrCode.tableId}`} className="flex flex-col items-center p-2 print:break-inside-avoid">
+                    {qrCode.qrDataUrl ? (
+                      <img
+                        src={qrCode.qrDataUrl}
+                        alt={t("qrRow.qrAltTable", { table: qrCode.tableId })}
+                        className="h-auto w-full max-w-[360px]"
+                      />
+                    ) : (
+                      <div className="flex h-[360px] w-full max-w-[360px] items-center justify-center text-sm text-text-tertiary">
+                        {t("qrRow.failed")}
+                      </div>
+                    )}
+                    <h3 className="mt-4 text-lg font-semibold text-text-primary print:text-2xl">
+                      {t("qrRow.table", { table: qrCode.tableId })}
+                    </h3>
+                  </div>
+                ))}
               </div>
-            )}
-            <h3 className="mt-4 text-lg font-semibold text-text-primary print:text-2xl">
-              {t("qrRow.table", { table: qrCode.tableId })}
-            </h3>
-          </div>
-        ))}
+            </section>
+          );
+        })}
       </div>
     </div>
   );
