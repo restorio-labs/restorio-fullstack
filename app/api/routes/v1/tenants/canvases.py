@@ -24,7 +24,6 @@ from routes.v1.mappers.tenant_mappers import (
 router = APIRouter()
 
 
-
 @router.get(
     "/{tenant_id}/canvases",
     status_code=status.HTTP_200_OK,
@@ -188,4 +187,3 @@ async def get_canvas_version(
         message="Canvas version retrieved successfully",
         data=version_data,
     )
-

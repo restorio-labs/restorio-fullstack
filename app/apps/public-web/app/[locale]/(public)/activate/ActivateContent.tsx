@@ -10,8 +10,7 @@ import { PasswordRules } from "../register/PasswordRules";
 import { api } from "@/api/client";
 import { getPasswordFieldsValidation } from "@/services/passwordFieldsValidation";
 
-const viteEnv =
-  typeof import.meta !== "undefined" ? (import.meta as { env?: Record<string, unknown> }).env : undefined;
+const viteEnv = typeof import.meta !== "undefined" ? (import.meta as { env?: Record<string, unknown> }).env : undefined;
 const envSource = getEnvSource(viteEnv);
 const envMode = resolveNextEnvVar(envSource, "ENV", "NODE_ENV") ?? "development";
 const adminPanelUrlEnv = resolveNextEnvVar(envSource, "VITE_ADMIN_PANEL_URL", "NEXT_PUBLIC_ADMIN_PANEL_URL");

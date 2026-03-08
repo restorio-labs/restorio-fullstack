@@ -8,5 +8,9 @@ interface AppLayoutProps {
 }
 
 export const AppLayout = ({ children, header, footer }: AppLayoutProps): ReactNode => {
-  return <BaseAppLayout header={header} footer={footer}>{children}</BaseAppLayout>;
+  return (
+    <BaseAppLayout header={header} footer={footer}>
+      {children}
+    </BaseAppLayout>
+  );
 };

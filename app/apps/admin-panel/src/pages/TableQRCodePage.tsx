@@ -58,7 +58,7 @@ export const TableQRCodePage = (): ReactElement => {
     <QRCodeDisplay
       title={t("tableQr.title", { table: resolvedTableNumber })}
       qrDataUrl={qrDataUrl}
-      subtitle={tenant!.name}
+      subtitle={tenant.name}
       onPrint={handlePrint}
       onGoBack={handleGoBack}
       isPrintDisabled={!qrDataUrl}

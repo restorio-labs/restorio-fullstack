@@ -20,7 +20,6 @@ from core.foundation.http.responses import (
     UpdatedResponse,
 )
 from routes.v1.mappers.tenant_mappers import (
-    floor_canvas_to_response,
     tenant_to_response,
     tenant_to_summary,
 )
@@ -138,4 +137,3 @@ async def delete_tenant(
 ) -> DeletedResponse:
     await service.delete_tenant(session, tenant_id)
     return DeletedResponse(message=f"Tenant {tenant_id} deleted successfully")
-

@@ -1,6 +1,6 @@
 import type { Tenant, TenantSummary } from "@restorio/types";
-import { useQuery } from "@tanstack/react-query";
 import { TENANT_STORAGE_KEY } from "@restorio/utils";
+import { useQuery } from "@tanstack/react-query";
 import type { ReactElement, ReactNode } from "react";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 

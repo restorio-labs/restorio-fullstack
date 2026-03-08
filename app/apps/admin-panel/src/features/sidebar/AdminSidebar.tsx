@@ -63,7 +63,13 @@ export const AdminSidebar = (): ReactElement => {
 
       <div className="flex flex-col gap-2 py-2">
         <NavSection aria-label={t("sidebar.sections.floorLayout")}>
-          <NavItem as={Link} to="/" active={isActive("/")} role="menuitem" onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/")}>
+          <NavItem
+            as={Link}
+            to="/"
+            active={isActive("/")}
+            role="menuitem"
+            onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/")}
+          >
             {t("sidebar.items.floorEditor")}
           </NavItem>
         </NavSection>
@@ -102,7 +108,13 @@ export const AdminSidebar = (): ReactElement => {
         </NavSection>
 
         <NavSection aria-label={t("sidebar.sections.settings")}>
-          <NavItem as={Link} to="/profile" active={isActive("/profile")} role="menuitem" onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/profile")}>
+          <NavItem
+            as={Link}
+            to="/profile"
+            active={isActive("/profile")}
+            role="menuitem"
+            onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/profile")}
+          >
             {t("sidebar.items.tenantProfile")}
           </NavItem>
           <NavItem
@@ -114,7 +126,13 @@ export const AdminSidebar = (): ReactElement => {
           >
             {t("sidebar.items.paymentConfig")}
           </NavItem>
-          <NavItem as={Link} to="/staff" active={isActive("/staff")} role="menuitem" onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/staff")}>
+          <NavItem
+            as={Link}
+            to="/staff"
+            active={isActive("/staff")}
+            role="menuitem"
+            onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/staff")}
+          >
             {t("sidebar.items.staff")}
           </NavItem>
         </NavSection>

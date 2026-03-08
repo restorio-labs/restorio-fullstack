@@ -114,7 +114,10 @@ export const QRCodePrintPage = (): ReactElement => {
               <h2 className="text-xl font-semibold text-text-primary print:text-3xl">{floorGroup.floorName}</h2>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 print:grid-cols-3">
                 {floorQRCodes.map((qrCode) => (
-                  <div key={`${qrCode.canvasId}-${qrCode.tableId}`} className="flex flex-col items-center p-2 print:break-inside-avoid">
+                  <div
+                    key={`${qrCode.canvasId}-${qrCode.tableId}`}
+                    className="flex flex-col items-center p-2 print:break-inside-avoid"
+                  >
                     {qrCode.qrDataUrl ? (
                       <img
                         src={qrCode.qrDataUrl}

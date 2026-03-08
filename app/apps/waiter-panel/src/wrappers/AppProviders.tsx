@@ -1,6 +1,6 @@
-import { QueryClientProvider } from "@tanstack/react-query";
 import { I18nProvider, ThemeProvider } from "@restorio/ui";
 import { THEME_STORAGE_KEY } from "@restorio/utils";
+import { QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { BrowserRouter } from "react-router-dom";

@@ -1,9 +1,4 @@
-import type {
-  ElementToAdd,
-  FloorLayoutEditorState,
-  FloorCanvas,
-  FloorElement,
-} from "@restorio/types";
+import type { ElementToAdd, FloorLayoutEditorState, FloorCanvas, FloorElement } from "@restorio/types";
 
 const nextId = (): string => `el-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 

@@ -2,8 +2,8 @@ import type { FloorCanvas as FloorCanvasType, FloorElement } from "@restorio/typ
 import { Button, useI18n } from "@restorio/ui";
 import type { Dispatch, ReactElement } from "react";
 
-import type { FloorEditorHistoryAction } from "../floorLayoutState";
 import { getMaxZIndex, getMinZIndex } from "../editorShared";
+import type { FloorEditorHistoryAction } from "../floorLayoutState";
 
 interface FloorEditorInspectorProps {
   layout: FloorCanvasType;
@@ -206,7 +206,9 @@ export const FloorEditorInspector = ({
         </>
       ) : hasMultiSelection ? (
         <>
-          <p className="text-sm text-text-tertiary">{t("floorEditor.panel.multiSelected", { count: selectedIds.length })}</p>
+          <p className="text-sm text-text-tertiary">
+            {t("floorEditor.panel.multiSelected", { count: selectedIds.length })}
+          </p>
           <Button variant="danger" size="sm" onClick={onRemoveSelected}>
             {t("floorEditor.panel.deleteSelected")}
           </Button>

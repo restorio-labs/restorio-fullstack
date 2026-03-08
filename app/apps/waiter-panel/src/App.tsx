@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import type { TenantSummary } from "@restorio/types";
 import { PageLayout } from "@restorio/ui";
+import { useQuery } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 import { Link, Navigate, Route, Routes, useParams } from "react-router-dom";
 
@@ -9,7 +9,12 @@ import { AppLayout } from "./layouts/AppLayout";
 import { FloorRuntimeView } from "./views/FloorRuntimeView";
 
 const RestaurantsPage = (): ReactElement => {
-  const { data: restaurants = [], isLoading, isError, error } = useQuery({
+  const {
+    data: restaurants = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ["waiter-panel", "tenants"],
     queryFn: () => api.tenants.list(),
   });
@@ -48,7 +53,12 @@ const RestaurantsPage = (): ReactElement => {
 
 const FloorPage = (): ReactElement => {
   const { restaurantId } = useParams<{ restaurantId: string }>();
-  const { data: venue, isLoading, isError, error } = useQuery({
+  const {
+    data: venue,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ["waiter-panel", "tenant", restaurantId],
     queryFn: () => api.tenants.get(restaurantId ?? ""),
     enabled: typeof restaurantId === "string" && restaurantId.trim() !== "",

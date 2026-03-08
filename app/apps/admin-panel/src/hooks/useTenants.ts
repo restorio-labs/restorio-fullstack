@@ -20,8 +20,7 @@ export const useTenants = (): {
     queryFn: () => api.tenants.list(),
   });
 
-  const state: TenantsState =
-    status === "pending" ? "loading" : status === "error" ? "error" : "loaded";
+  const state: TenantsState = status === "pending" ? "loading" : status === "error" ? "error" : "loaded";
 
   const refresh = useCallback((): void => {
     void queryClient.invalidateQueries({ queryKey: tenantsQueryKey });

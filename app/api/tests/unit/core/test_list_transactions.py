@@ -1,12 +1,12 @@
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
 import pytest
+from routes.v1.payments.list_transactions import list_transactions
 
 from core.dto.v1.payments import TransactionListItemDTO, TransactionListQueryDTO
 from core.foundation.http.responses import PaginatedResponse
-from routes.v1.payments.list_transactions import list_transactions
 
 
 def _make_transaction(**overrides):
@@ -30,7 +30,7 @@ def _make_transaction(**overrides):
         "p24_order_id": None,
         "order": {"items": [{"name": "Pizza", "qty": 1}]},
         "note": "Test note",
-        "created_at": datetime(2025, 6, 15, 12, 0, 0, tzinfo=timezone.utc),
+        "created_at": datetime(2025, 6, 15, 12, 0, 0, tzinfo=UTC),
     }
     defaults.update(overrides)
     mock = Mock()
@@ -71,11 +71,11 @@ async def test_list_transactions_returns_paginated_response(
     )
 
     assert isinstance(result, PaginatedResponse)
-    assert result.total == 3
+    assert result.total == 3  # noqa: PLR2004
     assert result.page == 1
-    assert result.page_size == 20
+    assert result.page_size == 20  # noqa: PLR2004
     assert result.total_pages == 1
-    assert len(result.items) == 3
+    assert len(result.items) == 3  # noqa: PLR2004
 
     mock_p24_service.get_transactions_page.assert_called_once_with(
         mock_session,
@@ -125,11 +125,11 @@ async def test_list_transactions_with_custom_pagination(tenant_id, mock_session,
         query=TransactionListQueryDTO(page=3, pagination=5),
     )
 
-    assert result.page == 3
-    assert result.page_size == 5
-    assert result.total == 25
-    assert result.total_pages == 5
-    assert len(result.items) == 5
+    assert result.page == 3  # noqa: PLR2004
+    assert result.page_size == 5  # noqa: PLR2004
+    assert result.total == 25  # noqa: PLR2004
+    assert result.total_pages == 5  # noqa: PLR2004
+    assert len(result.items) == 5  # noqa: PLR2004
 
     mock_p24_service.get_transactions_page.assert_called_once_with(
         mock_session,
@@ -165,8 +165,8 @@ async def test_list_transactions_maps_dto_fields(tenant_id, mock_session, mock_p
     item = result.items[0]
     assert isinstance(item, TransactionListItemDTO)
     assert item.session_id == txn.session_id
-    assert item.p24_order_id == 987654
-    assert item.amount == 5000
+    assert item.p24_order_id == 987654  # noqa: PLR2004
+    assert item.amount == 5000  # noqa: PLR2004
     assert item.email == "payer@example.com"
     assert item.status == 1
     assert item.description == "Zamówienie #42"

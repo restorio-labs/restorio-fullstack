@@ -4,11 +4,19 @@ import type {
   FloorElement,
   FloorLayoutEditorState,
 } from "@restorio/types";
-import { Button, useBreakpoint, useDragResize, type DragResizeMode, useI18n, useMediaQuery, useSnapToGrid, useTheme } from "@restorio/ui";
+import {
+  Button,
+  useBreakpoint,
+  useDragResize,
+  type DragResizeMode,
+  useI18n,
+  useMediaQuery,
+  useSnapToGrid,
+  useTheme,
+} from "@restorio/ui";
 import type { PointerEvent as ReactPointerEvent, ReactElement, Reducer } from "react";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 
-import { createElementFromToAdd, layoutHistoryReducer, type FloorEditorHistoryAction } from "../features/floor/floorLayoutState";
 import { FloorEditorCanvas } from "../features/floor/components/FloorEditorCanvas";
 import { FloorEditorInspector } from "../features/floor/components/FloorEditorInspector";
 import { FloorEditorToolbar } from "../features/floor/components/FloorEditorToolbar";
@@ -18,6 +26,11 @@ import {
   clampElementBounds,
   ensureMinimumCanvasSize,
 } from "../features/floor/editorShared";
+import {
+  createElementFromToAdd,
+  layoutHistoryReducer,
+  type FloorEditorHistoryAction,
+} from "../features/floor/floorLayoutState";
 import { useFloorEditorKeyboard } from "../features/floor/hooks/useFloorEditorKeyboard";
 
 interface FloorLayoutEditorViewProps {
@@ -40,11 +53,14 @@ export const FloorLayoutEditorView = ({
   const isDesktopUp = useBreakpoint("lg");
   const isTabletUp = useMediaQuery("(min-width: 650px)");
   const normalizedInitialLayout = ensureMinimumCanvasSize(initialLayout);
-  const [state, dispatch] = useReducer<Reducer<FloorLayoutEditorState, FloorEditorHistoryAction>>(layoutHistoryReducer, {
-    layout: normalizedInitialLayout,
-    history: [normalizedInitialLayout],
-    historyIndex: 0,
-  });
+  const [state, dispatch] = useReducer<Reducer<FloorLayoutEditorState, FloorEditorHistoryAction>>(
+    layoutHistoryReducer,
+    {
+      layout: normalizedInitialLayout,
+      history: [normalizedInitialLayout],
+      historyIndex: 0,
+    },
+  );
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [clipboardElements, setClipboardElements] = useState<FloorElement[]>([]);
@@ -285,7 +301,18 @@ export const FloorLayoutEditorView = ({
         className=""
       />
     ),
-    [addElement, canRedo, canUndo, dispatch, handleAddTable, handleAddZone, isAddOpen, isDesktopUp, onSave, state.layout],
+    [
+      addElement,
+      canRedo,
+      canUndo,
+      dispatch,
+      handleAddTable,
+      handleAddZone,
+      isAddOpen,
+      isDesktopUp,
+      onSave,
+      state.layout,
+    ],
   );
 
   const headerSaveAction = useMemo(() => {

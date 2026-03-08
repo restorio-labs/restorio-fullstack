@@ -69,9 +69,7 @@ export const PaymentConfigPage = (): ReactElement => {
       } else {
         setSubmitStatus("error");
         setErrorMessage(
-          err instanceof Error && err.message.trim() !== ""
-            ? err.message
-            : t("payment.errors.updateFailed"),
+          err instanceof Error && err.message.trim() !== "" ? err.message : t("payment.errors.updateFailed"),
         );
       }
     },

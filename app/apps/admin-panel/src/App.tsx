@@ -1,6 +1,6 @@
 import { AuthGuard } from "@restorio/auth";
 import type { ReactElement } from "react";
-import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
+import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 
 import { api } from "./api/client";
 import { AUTH_REVALIDATE_INTERVAL_MS, PUBLIC_WEB_URL } from "./config";

@@ -14,6 +14,7 @@ import {
 import { useCallback, useMemo, type ReactElement } from "react";
 import { useParams } from "react-router-dom";
 
+import { statusConfig as statusConfigRaw } from "../../config/orderStatuses";
 import {
   DragOverlay,
   DropPlaceholder,
@@ -27,7 +28,6 @@ import {
   type UseOrdersStateReturn,
 } from "../../features/orders";
 import { useRestaurantSelection, useTenantRestaurants } from "../../features/restaurants";
-import { statusConfig as statusConfigRaw } from "../../config/orderStatuses";
 import { orders as initialOrders } from "../../mocks/orders";
 
 const getRestaurantLabel = (restaurant: Restaurant): string => {

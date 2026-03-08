@@ -51,7 +51,7 @@ export const RestaurantQRCodePage = (): ReactElement => {
 
   return (
     <QRCodeDisplay
-      title={tenant!.name}
+      title={tenant.name}
       qrDataUrl={qrDataUrl}
       subtitle={t("restaurantQr.subtitle")}
       onPrint={handlePrint}

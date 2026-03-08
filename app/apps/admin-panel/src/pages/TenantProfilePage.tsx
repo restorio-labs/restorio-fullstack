@@ -186,9 +186,7 @@ export const TenantProfilePage = (): ReactElement => {
     >
       <div className="mx-auto max-w-5xl p-6">
         <Form id="tenant-profile-form" onSubmit={handleSubmit(onSubmit)}>
-          {isLoadingProfile && (
-            <div className="text-xs text-text-tertiary">{t("tenantProfile.loadingProfile")}</div>
-          )}
+          {isLoadingProfile && <div className="text-xs text-text-tertiary">{t("tenantProfile.loadingProfile")}</div>}
           {submitStatus === "error" && (
             <div className="text-xs text-status-error-text">{t("tenantProfile.errors.saveFailed")}</div>
           )}

@@ -1,4 +1,3 @@
-import { QueryClientProvider } from "@tanstack/react-query";
 import { I18nProvider, ThemeProvider, ToastProvider } from "@restorio/ui";
 import {
   LANGUAGE_LOCALE_STORAGE_KEY,
@@ -7,6 +6,7 @@ import {
   setCrossAppValue,
   THEME_STORAGE_KEY,
 } from "@restorio/utils";
+import { QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { BrowserRouter } from "react-router-dom";

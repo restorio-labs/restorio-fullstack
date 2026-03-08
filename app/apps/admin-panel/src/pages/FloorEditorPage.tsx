@@ -55,7 +55,9 @@ export const FloorEditorPage = (): ReactElement => {
     }
 
     const activeCanvas = getActiveCanvas(tenant);
-    const hasSelectedCanvas = selectedCanvasId ? tenant.floorCanvases.some((canvas) => canvas.id === selectedCanvasId) : false;
+    const hasSelectedCanvas = selectedCanvasId
+      ? tenant.floorCanvases.some((canvas) => canvas.id === selectedCanvasId)
+      : false;
 
     if (hasSelectedCanvas) {
       return;
@@ -91,6 +93,7 @@ export const FloorEditorPage = (): ReactElement => {
     }
 
     const selectedCanvas = tenant.floorCanvases.find((canvas) => canvas.id === selectedCanvasId);
+
     setFloorNameDraft(selectedCanvas?.name ?? "");
   }, [selectedCanvasId, tenant]);
 
@@ -101,7 +104,7 @@ export const FloorEditorPage = (): ReactElement => {
 
     const handleNavigationAttempt = (event: Event): void => {
       const customEvent = event as CustomEvent<FloorEditorNavigationAttemptDetail>;
-      const nextPath = customEvent.detail?.path;
+      const nextPath = customEvent.detail.path;
 
       if (!nextPath) {
         return;
@@ -143,19 +146,22 @@ export const FloorEditorPage = (): ReactElement => {
     return `${baseName} ${index}`;
   }, [t, tenant]);
 
-  const handleCanvasSelectionChange = useCallback((nextCanvasId: string) => {
-    if (nextCanvasId === selectedCanvasId) {
-      return;
-    }
+  const handleCanvasSelectionChange = useCallback(
+    (nextCanvasId: string) => {
+      if (nextCanvasId === selectedCanvasId) {
+        return;
+      }
 
-    if (isDirty) {
-      setPendingCanvasId(nextCanvasId);
+      if (isDirty) {
+        setPendingCanvasId(nextCanvasId);
 
-      return;
-    }
+        return;
+      }
 
-    setSelectedCanvasId(nextCanvasId);
-  }, [isDirty, selectedCanvasId]);
+      setSelectedCanvasId(nextCanvasId);
+    },
+    [isDirty, selectedCanvasId],
+  );
 
   const handleDiscardPendingCanvasChange = useCallback(() => {
     if (!pendingCanvasId) {
@@ -177,11 +183,13 @@ export const FloorEditorPage = (): ReactElement => {
 
   const handleDiscardNavigation = useCallback(() => {
     setPendingCanvasId(null);
+
     if (!pendingNavigationPath) {
       return;
     }
 
     const nextPath = pendingNavigationPath;
+
     setPendingNavigationPath(null);
     setIsDirty(false);
     navigate(nextPath);
@@ -223,38 +231,44 @@ export const FloorEditorPage = (): ReactElement => {
     }
   }, [buildNextCanvasName, handleSetActiveCanvas, isCreatingCanvas, refreshTenantDetails, tenant]);
 
-  const handleSave = useCallback(async (layout: FloorCanvasType): Promise<void> => {
-    if (!tenant) {
-      return;
-    }
+  const handleSave = useCallback(
+    async (layout: FloorCanvasType): Promise<void> => {
+      if (!tenant) {
+        return;
+      }
 
-    setIsSavingCanvas(true);
+      setIsSavingCanvas(true);
 
-    try {
-      await api.floorCanvases.update(tenant.id, layout.id, {
-        name: floorNameDraft.trim() || layout.name,
-        width: layout.width,
-        height: layout.height,
-        elements: layout.elements,
-      });
-      await handleSetActiveCanvas(layout.id);
-      await refreshTenantDetails();
-      setSelectedCanvasId(layout.id);
-      setIsDirty(false);
-      showToast("success", t("floorEditor.saveSuccessTitle"), t("floorEditor.saveSuccessMessage"));
-    } catch (error) {
-      console.error("Failed to save layout:", error);
-      showToast("error", t("floorEditor.saveErrorTitle"), t("floorEditor.saveErrorMessage"));
-    } finally {
-      setIsSavingCanvas(false);
-    }
-  }, [floorNameDraft, handleSetActiveCanvas, refreshTenantDetails, showToast, t, tenant]);
+      try {
+        await api.floorCanvases.update(tenant.id, layout.id, {
+          name: floorNameDraft.trim() || layout.name,
+          width: layout.width,
+          height: layout.height,
+          elements: layout.elements,
+        });
+        await handleSetActiveCanvas(layout.id);
+        await refreshTenantDetails();
+        setSelectedCanvasId(layout.id);
+        setIsDirty(false);
+        showToast("success", t("floorEditor.saveSuccessTitle"), t("floorEditor.saveSuccessMessage"));
+      } catch (error) {
+        console.error("Failed to save layout:", error);
+        showToast("error", t("floorEditor.saveErrorTitle"), t("floorEditor.saveErrorMessage"));
+      } finally {
+        setIsSavingCanvas(false);
+      }
+    },
+    [floorNameDraft, handleSetActiveCanvas, refreshTenantDetails, showToast, t, tenant],
+  );
 
   const activeCanvasForEditor = tenant
-    ? tenant.floorCanvases.find((canvas) => canvas.id === selectedCanvasId) ?? getActiveCanvas(tenant) ?? null
+    ? (tenant.floorCanvases.find((canvas) => canvas.id === selectedCanvasId) ?? getActiveCanvas(tenant) ?? null)
     : null;
-  const isFirstFloor = tenant && activeCanvasForEditor ? tenant.floorCanvases[0]?.id === activeCanvasForEditor.id : false;
-  const isFloorNameChanged = activeCanvasForEditor ? floorNameDraft.trim() !== "" && floorNameDraft.trim() !== activeCanvasForEditor.name : false;
+  const isFirstFloor =
+    tenant && activeCanvasForEditor ? tenant.floorCanvases[0]?.id === activeCanvasForEditor.id : false;
+  const isFloorNameChanged = activeCanvasForEditor
+    ? floorNameDraft.trim() !== "" && floorNameDraft.trim() !== activeCanvasForEditor.name
+    : false;
   const canManageFloor = !isSavingCanvas && !isCreatingCanvas && !isDeletingCanvas;
 
   const handleDeleteCanvas = useCallback(async (): Promise<void> => {
@@ -283,7 +297,16 @@ export const FloorEditorPage = (): ReactElement => {
     } finally {
       setIsDeletingCanvas(false);
     }
-  }, [activeCanvasForEditor, canManageFloor, handleSetActiveCanvas, isFirstFloor, refreshTenantDetails, showToast, t, tenant]);
+  }, [
+    activeCanvasForEditor,
+    canManageFloor,
+    handleSetActiveCanvas,
+    isFirstFloor,
+    refreshTenantDetails,
+    showToast,
+    t,
+    tenant,
+  ]);
 
   const floorSelector = activeCanvasForEditor ? (
     <div className="flex flex-wrap items-center gap-3">
@@ -312,10 +335,22 @@ export const FloorEditorPage = (): ReactElement => {
           disabled={!canManageFloor}
         />
       </label>
-      <Button type="button" variant="secondary" size="sm" onClick={() => void handleCreateCanvas()} disabled={!canManageFloor}>
+      <Button
+        type="button"
+        variant="secondary"
+        size="sm"
+        onClick={() => void handleCreateCanvas()}
+        disabled={!canManageFloor}
+      >
         {isCreatingCanvas ? t("floorEditor.creatingButton") : t("floorEditor.floorSelector.addFloor")}
       </Button>
-      <Button type="button" variant="danger" size="sm" onClick={() => void handleDeleteCanvas()} disabled={isFirstFloor || !canManageFloor || isDirty || isFloorNameChanged}>
+      <Button
+        type="button"
+        variant="danger"
+        size="sm"
+        onClick={() => void handleDeleteCanvas()}
+        disabled={isFirstFloor || !canManageFloor || isDirty || isFloorNameChanged}
+      >
         {isDeletingCanvas ? t("floorEditor.deletingButton") : t("floorEditor.floorSelector.deleteFloor")}
       </Button>
     </div>

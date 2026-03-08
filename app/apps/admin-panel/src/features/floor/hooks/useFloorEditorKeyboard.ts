@@ -2,8 +2,8 @@ import type { FloorCanvas as FloorCanvasType, FloorElement } from "@restorio/typ
 import type { Dispatch, SetStateAction } from "react";
 import { useEffect } from "react";
 
-import { cloneFloorElement, type FloorEditorHistoryAction } from "../floorLayoutState";
 import { clampElementBounds, isTextEditingTarget } from "../editorShared";
+import { cloneFloorElement, type FloorEditorHistoryAction } from "../floorLayoutState";
 
 interface UseFloorEditorKeyboardOptions {
   layout: FloorCanvasType;

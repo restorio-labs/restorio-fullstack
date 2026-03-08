@@ -1,6 +1,5 @@
 import type { FloorCanvas as FloorCanvasType } from "@restorio/types";
-import type { DragResizeMode } from "@restorio/ui";
-import type { useTheme } from "@restorio/ui";
+import type { DragResizeMode, useTheme } from "@restorio/ui";
 
 export const GRID_CELL = 20;
 export const MIN_CANVAS_WIDTH = 1000;

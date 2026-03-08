@@ -1,6 +1,6 @@
 import { Button, Input, Select, useI18n } from "@restorio/ui";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { isEmailValid } from "@restorio/utils";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useMemo, useState } from "react";
 
 import { api } from "../api/client";
@@ -26,7 +26,9 @@ const toAccessLevel = (value: unknown): AccessLevel | null => {
 
 const staffQueryKey = ["staff-users"] as const;
 
-const parseUsers = (rawUsers: { id: string; email: string; is_active: boolean; account_type: unknown }[]): StaffUser[] =>
+const parseUsers = (
+  rawUsers: { id: string; email: string; is_active: boolean; account_type: unknown }[],
+): StaffUser[] =>
   rawUsers
     .map((user): StaffUser | null => {
       const level = toAccessLevel(user.account_type);
@@ -198,9 +200,7 @@ export const StaffPage = (): ReactElement => {
                     <div className="flex items-center gap-3">
                       <span
                         className={`text-xs font-medium ${
-                          user.isActive
-                            ? "text-green-700 dark:text-green-400"
-                            : "text-amber-700 dark:text-amber-400"
+                          user.isActive ? "text-green-700 dark:text-green-400" : "text-amber-700 dark:text-amber-400"
                         }`}
                       >
                         {user.isActive ? t("staff.status.active") : t("staff.status.inactive")}
@@ -218,7 +218,9 @@ export const StaffPage = (): ReactElement => {
                             setPendingDeleteUserId((current) => (current === user.id ? null : user.id));
                           }}
                         >
-                          {deleteMutation.isPending && deleteMutation.variables === user.id ? t("staff.delete.deleting") : t("staff.delete.button")}
+                          {deleteMutation.isPending && deleteMutation.variables === user.id
+                            ? t("staff.delete.deleting")
+                            : t("staff.delete.button")}
                         </Button>
                         {pendingDeleteUserId === user.id && (
                           <div className="absolute bottom-full right-0 z-10 mb-2 w-64 rounded-md border border-border-default bg-surface-primary p-3 shadow-lg">
