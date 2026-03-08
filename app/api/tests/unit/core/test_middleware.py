@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.testclient import TestClient
 import pytest
 
 from core.foundation.infra.config import Settings
@@ -15,6 +16,38 @@ def test_setup_cors_adds_middleware() -> None:
     setup_cors(app=app, settings=settings)
 
     assert any(isinstance(m.cls, type) and m.cls is CORSMiddleware for m in app.user_middleware)
+
+
+def test_setup_cors_always_includes_local_admin_origin() -> None:
+    app = FastAPI()
+    settings = Settings(CORS_ORIGINS=["http://example.com"])
+    setup_cors(app=app, settings=settings)
+
+    @app.get("/")
+    async def root() -> Response:
+        return Response(content="ok")
+
+    client = TestClient(app)
+    response = client.get("/", headers={"Origin": "http://localhost:3001"})
+
+    assert response.headers.get("access-control-allow-origin") == "http://localhost:3001"
+
+
+def test_cors_headers_present_on_unauthorized_response() -> None:
+    app = FastAPI()
+    settings = Settings(CORS_ORIGINS=["http://localhost:3001"])
+    app.add_middleware(UnauthorizedMiddleware)
+    setup_cors(app=app, settings=settings)
+
+    @app.get("/")
+    async def protected_route() -> Response:
+        return Response(content="ok")
+
+    client = TestClient(app)
+    response = client.get("/", headers={"Origin": "http://localhost:3001"})
+
+    assert response.status_code == 401  # noqa: PLR2004
+    assert response.headers.get("access-control-allow-origin") == "http://localhost:3001"
 
 
 @pytest.mark.asyncio

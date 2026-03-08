@@ -1,161 +1,142 @@
-import { Button, Form, FormActions, Input } from "@restorio/ui";
-import { type FormEvent, type ReactElement, useEffect, useMemo, useState } from "react";
+import { Button, Form, FormActions, Input, useI18n } from "@restorio/ui";
+import { useMutation } from "@tanstack/react-query";
+import type { ReactElement } from "react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 
 import { api } from "../api/client";
-import { useTenants } from "../hooks/useTenants";
+import { useCurrentTenant } from "../context/TenantContext";
+import { useValidationErrors } from "../hooks/useValidationErrors";
 import { PageLayout } from "../layouts/PageLayout";
 
-type SubmitState = "idle" | "submitting" | "success" | "error";
+interface PaymentFormValues {
+  merchantId: string;
+  apiKey: string;
+  crcKey: string;
+}
 
 export const PaymentConfigPage = (): ReactElement => {
-  const [tenantId, setTenantId] = useState("");
-  const [tenantQuery, setTenantQuery] = useState("");
-  const { tenants, state } = useTenants();
-  const [merchantId, setMerchantId] = useState("");
-  const [apiKey, setApiKey] = useState("");
-  const [crcKey, setCrcKey] = useState("");
-  const [submitState, setSubmitState] = useState<SubmitState>("idle");
+  const { t } = useI18n();
+  const { selectedTenantId, tenantsState } = useCurrentTenant();
+  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error" | "validation">("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const { getFieldError, setFromResponse, clearErrors } = useValidationErrors();
 
-  const isFormValid =
-    tenantId.trim() !== "" && merchantId.trim() !== "" && apiKey.trim() !== "" && crcKey.trim() !== "";
-
-  const tenantOptions = useMemo(
-    () =>
-      tenants.map((tenant) => ({
-        id: tenant.id,
-        display: `${tenant.name} (${tenant.slug}) - ${tenant.id}`,
-      })),
-    [tenants],
-  );
+  const {
+    register,
+    handleSubmit,
+    formState: { isValid },
+    reset,
+  } = useForm<PaymentFormValues>({
+    defaultValues: { merchantId: "", apiKey: "", crcKey: "" },
+    mode: "onChange",
+  });
 
   useEffect(() => {
-    if (state === "error") {
-      setErrorMessage("Failed to load restaurants. You can still paste a tenant ID.");
+    if (tenantsState === "error") {
+      setErrorMessage(t("payment.errors.loadRestaurants"));
     }
-  }, [state]);
+  }, [t, tenantsState]);
 
-  const resetSubmitState = (): void => {
-    if (submitState !== "idle") {
-      setSubmitState("idle");
-    }
-  };
+  useEffect(() => {
+    setSubmitStatus("idle");
+    clearErrors();
+    reset();
+  }, [clearErrors, reset, selectedTenantId]);
 
-  const handleTenantChange = (value: string): void => {
-    setTenantQuery(value);
-    const matchedOption = tenantOptions.find((option) => option.display === value);
+  const submitMutation = useMutation({
+    mutationFn: async (values: PaymentFormValues) => {
+      if (!selectedTenantId) {
+        throw new Error(t("payment.errors.selectRestaurant"));
+      }
 
-    if (matchedOption) {
-      setTenantId(matchedOption.id);
-    } else {
-      setTenantId(value);
-    }
-
-    resetSubmitState();
-  };
-
-  const handleSubmit = async (e: FormEvent): Promise<void> => {
-    e.preventDefault();
-    setSubmitState("submitting");
-    setErrorMessage("");
-
-    try {
-      await api.payments.updateP24Config(tenantId.trim(), {
-        p24_merchantid: Number(merchantId),
-        p24_api: apiKey.trim(),
-        p24_crc: crcKey.trim(),
+      return api.payments.updateP24Config(selectedTenantId.trim(), {
+        p24_merchantid: Number(values.merchantId),
+        p24_api: values.apiKey.trim(),
+        p24_crc: values.crcKey.trim(),
       });
+    },
+    onSuccess: () => {
+      setSubmitStatus("success");
+      setErrorMessage("");
+    },
+    onError: (err: unknown) => {
+      const isValidation = setFromResponse(err, "payment.fields");
 
-      setSubmitState("success");
-    } catch {
-      setSubmitState("error");
-      setErrorMessage("Failed to update P24 configuration. Please verify the restaurant tenant ID and try again.");
-    }
+      if (isValidation) {
+        setSubmitStatus("validation");
+        setErrorMessage(t("payment.errors.validationFailed"));
+      } else {
+        setSubmitStatus("error");
+        setErrorMessage(
+          err instanceof Error && err.message.trim() !== "" ? err.message : t("payment.errors.updateFailed"),
+        );
+      }
+    },
+  });
+
+  const onSubmit = (values: PaymentFormValues): void => {
+    setSubmitStatus("idle");
+    clearErrors();
+    submitMutation.mutate(values);
   };
+
+  const isFormDisabled = !selectedTenantId || !isValid || submitMutation.isPending;
 
   return (
-    <PageLayout title="Payment Configuration" description="Configure Przelewy24 payment provider settings">
+    <PageLayout
+      title={t("payment.title")}
+      description={t("payment.description")}
+      headerActions={
+        <FormActions>
+          <Button type="submit" form="payment-config-form" disabled={isFormDisabled}>
+            {submitMutation.isPending ? t("payment.actions.saving") : t("payment.actions.save")}
+          </Button>
+        </FormActions>
+      }
+    >
       <div className="mx-auto max-w-lg p-6">
-        <Form onSubmit={(e) => void handleSubmit(e)}>
+        <Form id="payment-config-form" onSubmit={handleSubmit(onSubmit)}>
           <Input
-            label="Restaurant Tenant"
-            placeholder="Search by restaurant name or paste tenant ID"
-            value={tenantQuery}
-            onChange={(e) => handleTenantChange(e.target.value)}
-            list="tenant-options"
-            helperText="Select from dropdown or paste a tenant UUID"
-            required
-          />
-          <datalist id="tenant-options">
-            {tenantOptions.map((option) => (
-              <option key={option.id} value={option.display} />
-            ))}
-          </datalist>
-          {state === "loading" && <div className="text-xs text-text-tertiary">Loading restaurants...</div>}
-          {state === "error" && (
-            <div className="text-xs text-status-error-text">
-              Failed to load restaurants. You can still paste a tenant ID.
-            </div>
-          )}
-
-          <Input
-            label="Merchant ID"
+            label={t("payment.fields.merchantId.label")}
             type="number"
-            placeholder="e.g. 123456"
-            value={merchantId}
-            onChange={(e) => {
-              setMerchantId(e.target.value);
-              resetSubmitState();
-            }}
+            placeholder={t("payment.fields.merchantId.placeholder")}
             min={0}
             max={999999}
-            helperText="Przelewy24 merchant identifier (max 6 digits)"
-            required
+            helperText={t("payment.fields.merchantId.helper")}
+            error={getFieldError("p24Merchantid")}
+            {...register("merchantId", { required: true })}
           />
 
           <Input
-            label="P24 API Key"
-            placeholder="Enter Przelewy24 API key"
-            value={apiKey}
-            onChange={(e) => {
-              setApiKey(e.target.value);
-              resetSubmitState();
-            }}
+            label={t("payment.fields.apiKey.label")}
+            placeholder={t("payment.fields.apiKey.placeholder")}
             maxLength={32}
-            helperText="Max 32 characters"
-            required
+            helperText={t("payment.fields.apiKey.helper")}
+            error={getFieldError("p24Api")}
+            {...register("apiKey", { required: true })}
           />
 
           <Input
-            label="P24 CRC Key"
-            placeholder="Enter Przelewy24 CRC key"
-            value={crcKey}
-            onChange={(e) => {
-              setCrcKey(e.target.value);
-              resetSubmitState();
-            }}
+            label={t("payment.fields.crcKey.label")}
+            placeholder={t("payment.fields.crcKey.placeholder")}
             maxLength={16}
-            helperText="Max 16 characters"
-            required
+            helperText={t("payment.fields.crcKey.helper")}
+            error={getFieldError("p24Crc")}
+            {...register("crcKey", { required: true })}
           />
 
-          {submitState === "success" && (
-            <div className="rounded-lg border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-700 dark:bg-green-900/20 dark:text-green-300">
-              P24 configuration updated successfully.
+          {submitStatus === "success" && (
+            <div className="rounded-lg border border-status-success-border bg-status-success-background px-4 py-3 text-sm text-status-success-text">
+              {t("payment.success")}
             </div>
           )}
 
-          {submitState === "error" && (
-            <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-700 dark:bg-red-900/20 dark:text-red-300">
+          {(submitStatus === "error" || submitStatus === "validation") && (
+            <div className="rounded-lg border border-status-error-border bg-status-error-background px-4 py-3 text-sm text-status-error-text">
               {errorMessage}
             </div>
           )}
-
-          <FormActions>
-            <Button type="submit" disabled={!isFormValid || submitState === "submitting"}>
-              {submitState === "submitting" ? "Saving..." : "Save Configuration"}
-            </Button>
-          </FormActions>
         </Form>
       </div>
     </PageLayout>

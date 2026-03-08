@@ -1,4 +1,4 @@
-import { Button, Stack, Text, ThemeProvider, useTheme } from "@restorio/ui";
+import { Button, Stack, Text, ThemeProvider, ToastProvider, useTheme } from "@restorio/ui";
 import { THEME_STORAGE_KEY } from "@restorio/utils";
 import type { ReactElement } from "react";
 import { Navigate, NavLink, Route, Routes } from "react-router-dom";
@@ -66,46 +66,48 @@ const ThemeToggle = (): ReactElement => {
 const App = (): ReactElement => {
   return (
     <ThemeProvider defaultMode="system" storageKey={THEME_STORAGE_KEY}>
-      <div className="min-h-screen bg-background-primary text-text-primary">
-        <header className="border-b border-border-default bg-surface-primary">
-          <div className="mx-auto max-w-6xl px-6 py-4 flex items-center justify-between gap-4">
-            <Text variant="h3" weight="semibold">
-              UI Demo
-            </Text>
-            <ThemeToggle />
+      <ToastProvider>
+        <div className="min-h-screen bg-background-primary text-text-primary">
+          <header className="border-b border-border-default bg-surface-primary">
+            <div className="mx-auto max-w-6xl px-6 py-4 flex items-center justify-between gap-4">
+              <Text variant="h3" weight="semibold">
+                UI Demo
+              </Text>
+              <ThemeToggle />
+            </div>
+          </header>
+          <div className="mx-auto max-w-6xl px-6 py-6 flex gap-6">
+            <nav className="w-56 flex-shrink-0">
+              <Stack spacing="xs">
+                {navItems.map((item) => (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    className={({ isActive }): string =>
+                      [
+                        "block px-3 py-2 rounded-md transition-colors",
+                        isActive
+                          ? "bg-surface-secondary text-text-primary"
+                          : "text-text-secondary hover:bg-surface-secondary",
+                      ].join(" ")
+                    }
+                  >
+                    {item.label}
+                  </NavLink>
+                ))}
+              </Stack>
+            </nav>
+            <main className="flex-1">
+              <Routes>
+                {navItems.map((item) => (
+                  <Route key={item.path} path={item.path} element={item.element} />
+                ))}
+                <Route path="*" element={<Navigate to="/overview" replace />} />
+              </Routes>
+            </main>
           </div>
-        </header>
-        <div className="mx-auto max-w-6xl px-6 py-6 flex gap-6">
-          <nav className="w-56 flex-shrink-0">
-            <Stack spacing="xs">
-              {navItems.map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={({ isActive }): string =>
-                    [
-                      "block px-3 py-2 rounded-md transition-colors",
-                      isActive
-                        ? "bg-surface-secondary text-text-primary"
-                        : "text-text-secondary hover:bg-surface-secondary",
-                    ].join(" ")
-                  }
-                >
-                  {item.label}
-                </NavLink>
-              ))}
-            </Stack>
-          </nav>
-          <main className="flex-1">
-            <Routes>
-              {navItems.map((item) => (
-                <Route key={item.path} path={item.path} element={item.element} />
-              ))}
-              <Route path="*" element={<Navigate to="/overview" replace />} />
-            </Routes>
-          </main>
         </div>
-      </div>
+      </ToastProvider>
     </ThemeProvider>
   );
 };

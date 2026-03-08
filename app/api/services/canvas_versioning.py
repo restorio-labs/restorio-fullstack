@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
 
@@ -22,7 +22,7 @@ async def archive_canvas_version(canvas: FloorCanvas) -> None:
         "elements": canvas.elements,
         "created_at": canvas.created_at.isoformat(),
         "updated_at": canvas.updated_at.isoformat(),
-        "archived_at": datetime.now(timezone.UTC).isoformat(),
+        "archived_at": datetime.now(UTC).isoformat(),
     }
 
     await collection.insert_one(version_doc)

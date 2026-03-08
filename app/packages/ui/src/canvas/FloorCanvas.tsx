@@ -68,6 +68,7 @@ const renderElement = (
           bounds={bounds}
           tableNumber={el.tableNumber}
           seats={el.seats}
+          label={el.label}
           state={state}
           displayInfo={displayInfo}
           isSelected={isSelected}

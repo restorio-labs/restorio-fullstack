@@ -20,7 +20,7 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "tests", "vite.config.ts"],
+  "include": ["src", "vite.config.ts"],
   "exclude": ["node_modules", "dist", "postcss.config.cjs"],
   "references": [
     { "path": "../../packages/types" },

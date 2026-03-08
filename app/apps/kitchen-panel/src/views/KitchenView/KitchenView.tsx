@@ -14,10 +14,12 @@ import {
 import { useCallback, useMemo, type ReactElement } from "react";
 import { useParams } from "react-router-dom";
 
+import { statusConfig as statusConfigRaw } from "../../config/orderStatuses";
 import {
   DragOverlay,
   DropPlaceholder,
   DropZoneBar,
+  VirtualizedOrderList,
   useColumnNavigation,
   useOrdersDragAndDrop,
   useOrdersState,
@@ -26,7 +28,7 @@ import {
   type UseOrdersStateReturn,
 } from "../../features/orders";
 import { useRestaurantSelection, useTenantRestaurants } from "../../features/restaurants";
-import { orders as initialOrders, statusConfig as statusConfigRaw } from "../../mocks/orders";
+import { orders as initialOrders } from "../../mocks/orders";
 
 const getRestaurantLabel = (restaurant: Restaurant): string => {
   return restaurant.address.city ? `${restaurant.name} - ${restaurant.address.city}` : restaurant.name;
@@ -61,7 +63,7 @@ export const KitchenView = (): ReactElement => {
   const useHorizontalLayout = (isTablet && isLandscape && viewMode === "sliding") || viewMode === "sliding";
 
   const statusConfig = useMemo(() => statusConfigRaw, []);
-  const statusKeys = useMemo(() => Object.keys(statusConfig) as StatusKey[], [statusConfig]);
+  const statusKeys = useMemo(() => Object.keys(statusConfig) as (keyof typeof statusConfig)[], [statusConfig]);
 
   const boardRef = useColumnNavigation(statusKeys, useHorizontalLayout);
 
@@ -184,92 +186,100 @@ export const KitchenView = (): ReactElement => {
                     </Icon>
                   </Box>
                 }
+                ordersClassName="!overflow-visible !p-0 !gap-0"
               >
-                {ordersForStatus.map((order, index) => {
-                  const isDragging = dragState.isDragging && dragState.draggedItemId === order.id;
-                  const canMoveUp = index > 0;
-                  const canMoveDown = index < ordersForStatus.length - 1;
+                <VirtualizedOrderList
+                  count={ordersForStatus.length}
+                  estimateSize={120}
+                  renderItem={(index) => {
+                    const order = ordersForStatus[index];
+                    const isDragging = dragState.isDragging && dragState.draggedItemId === order.id;
+                    const canMoveUp = index > 0;
+                    const canMoveDown = index < ordersForStatus.length - 1;
 
-                  return (
-                    <OrderCard
-                      key={order.id}
-                      id={order.id}
-                      toggleLabel={`Toggle details for order ${order.id}`}
-                      dragHandleLabel={`Drag order ${order.id}`}
-                      isDragging={isDragging}
-                      dragHandleProps={getDragHandleProps(order.id)}
-                      showReorderButtons
-                      canMoveUp={canMoveUp}
-                      canMoveDown={canMoveDown}
-                      defaultExpanded={shouldDefaultExpand}
-                      onMoveUp={() => {
-                        (ordersState.moveOrderUp as (id: string) => void)(order.id);
-                      }}
-                      onMoveDown={() => {
-                        (ordersState.moveOrderDown as (id: string) => void)(order.id);
-                      }}
-                      moveUpLabel={`Move ${order.id} up`}
-                      moveDownLabel={`Move ${order.id} down`}
-                      summary={
-                        <Stack direction="row" align="center" justify="between" spacing="sm" className="w-full">
-                          <Stack spacing="xs" className="min-w-0 flex-1">
-                            <Text as="p" variant="body-lg" weight="semibold" className="truncate">
-                              {order.id}
-                            </Text>
-                            <Text as="p" variant="body-sm" className="text-text-secondary">
-                              {order.table} · {order.items.length} items
+                    return (
+                      <OrderCard
+                        key={order.id}
+                        id={order.id}
+                        toggleLabel={`Toggle details for order ${order.id}`}
+                        dragHandleLabel={`Drag order ${order.id}`}
+                        isDragging={isDragging}
+                        dragHandleProps={getDragHandleProps(order.id)}
+                        showReorderButtons
+                        canMoveUp={canMoveUp}
+                        canMoveDown={canMoveDown}
+                        defaultExpanded={shouldDefaultExpand}
+                        onMoveUp={() => {
+                          (ordersState.moveOrderUp as (id: string) => void)(order.id);
+                        }}
+                        onMoveDown={() => {
+                          (ordersState.moveOrderDown as (id: string) => void)(order.id);
+                        }}
+                        moveUpLabel={`Move ${order.id} up`}
+                        moveDownLabel={`Move ${order.id} down`}
+                        summary={
+                          <Stack direction="row" align="center" justify="between" spacing="sm" className="w-full">
+                            <Stack spacing="xs" className="min-w-0 flex-1">
+                              <Text as="p" variant="body-lg" weight="semibold" className="truncate">
+                                {order.id}
+                              </Text>
+                              <Text as="p" variant="body-sm" className="text-text-secondary">
+                                {order.table} · {order.items.length} items
+                              </Text>
+                            </Stack>
+                            <Text as="span" variant="body-sm" weight="medium" className="text-text-secondary">
+                              {order.time}
                             </Text>
                           </Stack>
-                          <Text as="span" variant="body-sm" weight="medium" className="text-text-secondary">
-                            {order.time}
-                          </Text>
-                        </Stack>
-                      }
-                      details={
-                        <Stack spacing="sm">
-                          <Text as="h3" variant="body-sm" weight="semibold">
-                            Items
-                          </Text>
-                          <Box as="ul" className="list-disc pl-4 text-text-secondary">
-                            {order.items.map((item: OrderItem) => (
-                              <Text as="li" variant="body-md" key={item.id} className="text-text-secondary">
-                                {item.quantity}x {item.name}
-                                {item.selectedModifiers.map((modifier: SelectedModifier) => (
-                                  <Text
-                                    as="span"
-                                    variant="body-md"
-                                    key={modifier.modifierId}
-                                    className="text-text-secondary"
-                                  >
-                                    {modifier.modifierId}
-                                  </Text>
-                                ))}
-                              </Text>
-                            ))}
-                          </Box>
-                          {order.notes && (
-                            <Box className="flex flex-col items-start gap-2">
-                              <Text as="p" variant="body-sm" weight="medium">
-                                Notes:
-                              </Text>
-                              <Text as="p" variant="body-sm" className="text-text-secondary ml-2">
-                                {order.notes}
-                              </Text>
+                        }
+                        details={
+                          <Stack spacing="sm">
+                            <Text as="h3" variant="body-sm" weight="semibold">
+                              Items
+                            </Text>
+                            <Box as="ul" className="list-disc pl-4 text-text-secondary">
+                              {order.items.map((item: OrderItem) => (
+                                <Text as="li" variant="body-md" key={item.id} className="text-text-secondary">
+                                  {item.quantity}x {item.name}
+                                  {item.selectedModifiers.map((modifier: SelectedModifier) => (
+                                    <Text
+                                      as="span"
+                                      variant="body-md"
+                                      key={modifier.modifierId}
+                                      className="text-text-secondary"
+                                    >
+                                      {modifier.modifierId}
+                                    </Text>
+                                  ))}
+                                </Text>
+                              ))}
                             </Box>
-                          )}
-                        </Stack>
-                      }
-                    />
-                  );
-                })}
-                {shouldShowPlaceholder && draggedOrder && (
-                  <DropPlaceholder
-                    orderId={draggedOrder.id}
-                    table={draggedOrder.table}
-                    itemCount={draggedOrder.items.length}
-                    time={draggedOrder.time}
-                  />
-                )}
+                            {order.notes && (
+                              <Box className="flex flex-col items-start gap-2">
+                                <Text as="p" variant="body-sm" weight="medium">
+                                  Notes:
+                                </Text>
+                                <Text as="p" variant="body-sm" className="text-text-secondary ml-2">
+                                  {order.notes}
+                                </Text>
+                              </Box>
+                            )}
+                          </Stack>
+                        }
+                      />
+                    );
+                  }}
+                  footer={
+                    shouldShowPlaceholder && draggedOrder ? (
+                      <DropPlaceholder
+                        orderId={draggedOrder.id}
+                        table={draggedOrder.table}
+                        itemCount={draggedOrder.items.length}
+                        time={draggedOrder.time}
+                      />
+                    ) : undefined
+                  }
+                />
               </StatusColumn>
             );
           })}

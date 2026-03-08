@@ -6,6 +6,14 @@ export default defineConfig({
   dts: true,
   sourcemap: true,
   clean: true,
-  external: ["react", "react-dom"],
+  external: [
+    "react",
+    "react-dom",
+    "react-router-dom",
+    "@restorio/api-client",
+    "@restorio/types",
+    "@restorio/ui",
+    "@restorio/utils",
+  ],
   tsconfig: "./tsconfig.dts.json",
 });

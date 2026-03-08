@@ -9,6 +9,51 @@
     "title": "Restorio Platform",
     "description": "Restaurant Management Platform"
   },
+  "login": {
+    "title": "Log in",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Log in",
+    "submitting": "Logging in...",
+    "genericError": "Login failed. Please check your email and password.",
+    "errors": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Enter a valid email address",
+      "passwordRequired": "Password is required",
+      "passwordInvalid": "Password does not meet the requirements",
+      "passwordMinLength": "Password must be at least {min} characters"
+    }
+  },
+  "register": {
+    "title": "Register your account",
+    "success": "Account created successfully. Check your email to continue.",
+    "button": "Register",
+    "fields": {
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "restaurantName": "Restaurant name",
+      "terms": "I accept the terms and conditions"
+    },
+    "errors": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Enter a valid email address",
+      "passwordRequired": "Password is required",
+      "passwordInvalid": "Password does not meet the requirements",
+      "confirmPasswordRequired": "Confirm your password",
+      "confirmPasswordMismatch": "Passwords do not match",
+      "restaurantNameRequired": "Restaurant name is required",
+      "termsRequired": "You must accept the terms and conditions",
+      "generic": "Unable to create account. Please try again."
+    },
+    "passwordRules": {
+      "minLength": "- At least 8 characters",
+      "lowercase": "- 1 lowercase letter",
+      "uppercase": "- 1 uppercase letter",
+      "number": "- 1 number",
+      "special": "- 1 special character"
+    }
+  },
   "navigation": {
     "home": "Home",
     "about": "About",
@@ -18,6 +63,22 @@
     "privacy": "Privacy",
     "terms": "Terms",
     "getStarted": "Get Started"
+  },
+  "sidebar": {
+    "items": {
+      "adminPanel": "Admin Panel",
+      "kitchenPanel": "Kitchen Panel",
+      "waiterPanel": "Waiter Panel"
+    }
+  },
+  "chooseApp": {
+    "title": "You’re logged in",
+    "subtitle": "Choose where you want to go next.",
+    "labels": {
+      "adminPanel": "Admin Panel",
+      "kitchenPanel": "Kitchen Panel",
+      "waiterPanel": "Waiter Panel"
+    }
   },
   "hero": {
     "title": "The Future of Restaurant Management",
@@ -115,6 +176,14 @@
       "product": "Product",
       "company": "Company"
     },
-    "copyright": "© {{year}} Restorio Platform. Open Source Academic Project."
+    "navigation": {
+      "features": "Features",
+      "pricing": "Pricing",
+      "demo": "Demo",
+      "about": "About",
+      "privacy": "Privacy",
+      "terms": "Terms"
+    },
+    "copyright": "© {year} Restorio Platform. Open Source Academic Project."
   }
 }

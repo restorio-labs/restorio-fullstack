@@ -4,7 +4,7 @@ from core.exceptions.handlers import setup_exception_handlers
 from core.foundation.infra.config import settings
 from core.middleware import TimingMiddleware, UnauthorizedMiddleware, setup_cors
 from routes import api_router as api_router_v1
-from routes import health as health_route
+from routes.v1.health import router as health_router
 
 
 def create_application() -> FastAPI:
@@ -17,11 +17,13 @@ def create_application() -> FastAPI:
         openapi_url="/openapi.json" if settings.DEBUG else None,
     )
 
-    setup_cors(app=app, settings=settings)
     setup_exception_handlers(app=app, settings=settings)
 
     app.add_middleware(TimingMiddleware)
     app.add_middleware(UnauthorizedMiddleware)
+    # Keep CORS as the outermost middleware so short-circuit 401 responses
+    # from auth middleware still receive CORS headers.
+    setup_cors(app=app, settings=settings)
 
     @app.get("/")
     def read_root() -> dict[str, str]:
@@ -34,7 +36,7 @@ def create_application() -> FastAPI:
         }
 
     app.include_router(api_router_v1, prefix=settings.API_V1_PREFIX)
-    app.include_router(health_route.router, prefix="/health", tags=["health"])
+    app.include_router(health_router, prefix="/health", tags=["health"])
     return app
 
 

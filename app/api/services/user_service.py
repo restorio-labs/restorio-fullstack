@@ -1,3 +1,5 @@
+import secrets
+import string
 from uuid import UUID
 
 from sqlalchemy import select
@@ -14,6 +16,24 @@ from core.models.user import User
 class UserService:
     def __init__(self, security: SecurityService) -> None:
         self.security = security
+
+    def generate_temporary_password(self, length: int = 24) -> str:
+        lowercase = string.ascii_lowercase
+        uppercase = string.ascii_uppercase
+        digits = string.digits
+        special = "!@#$%^&*()_+-=[]{}|;:,.<>?"
+        pool = lowercase + uppercase + digits + special
+
+        required = [
+            secrets.choice(lowercase),
+            secrets.choice(uppercase),
+            secrets.choice(digits),
+            secrets.choice(special),
+        ]
+        remaining = [secrets.choice(pool) for _ in range(max(0, length - len(required)))]
+        candidate = required + remaining
+        secrets.SystemRandom().shuffle(candidate)
+        return "".join(candidate)
 
     async def create_user_with_tenant(
         self,

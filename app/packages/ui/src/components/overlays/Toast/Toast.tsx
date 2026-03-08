@@ -1,11 +1,12 @@
-import type { ReactNode, ReactElement } from "react";
+import { useRef, type ReactElement, type ReactNode } from "react";
 
 import { cn } from "../../../utils";
+
+import { createToastId } from "./createToastId";
 
 export type ToastVariant = "info" | "success" | "warning" | "error";
 
 export interface ToastProps {
-  id: string;
   title: string;
   description?: string;
   variant?: ToastVariant;
@@ -31,10 +32,14 @@ export const Toast = ({
   className,
   closeButtonAriaLabel = "Close toast",
 }: ToastProps): ReactElement => {
+  const generatedIdRef = useRef<string>(createToastId());
+  const resolvedId = generatedIdRef.current;
+
   return (
     <div
+      id={resolvedId}
       className={cn(
-        "flex items-start gap-3 p-4 border rounded-md shadow-lg min-w-[300px] max-w-[500px]",
+        "pointer-events-auto flex items-start gap-3 p-4 border rounded-md shadow-lg min-w-[300px] max-w-[500px]",
         variantStyles[variant],
         className,
       )}

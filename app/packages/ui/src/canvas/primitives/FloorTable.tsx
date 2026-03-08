@@ -1,13 +1,15 @@
 import type { CanvasBounds, TableDisplayInfo, TableRuntimeState } from "@restorio/types";
 import type { ReactElement } from "react";
 
+import { useI18n } from "../../providers/I18nProvider";
 import { cn } from "../../utils";
 import { CanvasElement } from "../CanvasElement";
 
 export interface FloorTableProps {
   bounds: CanvasBounds;
-  tableNumber: string;
+  tableNumber: number;
   seats: number;
+  label?: string;
   state?: TableRuntimeState;
   displayInfo?: TableDisplayInfo;
   isSelected?: boolean;
@@ -35,16 +37,20 @@ export const FloorTable = ({
   bounds,
   tableNumber,
   seats,
+  label: tableLabel,
   state = "free",
   displayInfo,
   isSelected = false,
   "aria-label": ariaLabel,
   onPointerDown,
 }: FloorTableProps): ReactElement => {
+  const { t } = useI18n();
   const guests = displayInfo?.guestCount;
   const orderStatus = displayInfo?.orderStatus;
   const needHelp = displayInfo?.needHelp;
-  const label = ariaLabel ?? `Table ${tableNumber}, ${seats} seats, ${state}`;
+  const resolvedTableLabel =
+    tableLabel?.trim() ?? t("floorEditor.tableLabel", { number: tableNumber }) ?? `Table ${tableNumber}`;
+  const label = ariaLabel ?? `${resolvedTableLabel}, ${seats} ${t("floorEditor.panel.seats")}, ${state}`;
 
   return (
     <CanvasElement bounds={bounds} aria-label={label} role="img" onPointerDown={onPointerDown}>
@@ -66,7 +72,7 @@ export const FloorTable = ({
           </span>
         )}
         <span className="font-medium" aria-hidden="true">
-          {tableNumber}
+          {resolvedTableLabel}
         </span>
         <span className="text-xs text-text-secondary" aria-hidden="true">
           {guests != null ? `${guests}/${seats}` : seats}

@@ -3,37 +3,41 @@ import type { CreatedResponse, FloorCanvas, SuccessResponse } from "@restorio/ty
 import { BaseResource } from "./base";
 
 export class FloorCanvasesResource extends BaseResource {
-  list(tenantId: string, signal?: AbortSignal): Promise<FloorCanvas[]> {
-    return this.client
-      .get<SuccessResponse<FloorCanvas[]>>(`/tenants/${tenantId}/canvases`, { signal })
-      .then((res) => res.data);
+  async list(tenantId: string, signal?: AbortSignal): Promise<FloorCanvas[]> {
+    const res = await this.client.get<SuccessResponse<FloorCanvas[]>>(`/tenants/${tenantId}/canvases`, { signal });
+
+    return res.data;
   }
 
-  get(tenantId: string, canvasId: string, signal?: AbortSignal): Promise<FloorCanvas> {
-    return this.client
-      .get<SuccessResponse<FloorCanvas>>(`/tenants/${tenantId}/canvases/${canvasId}`, { signal })
-      .then((res) => res.data);
+  async get(tenantId: string, canvasId: string, signal?: AbortSignal): Promise<FloorCanvas> {
+    const res = await this.client.get<SuccessResponse<FloorCanvas>>(`/tenants/${tenantId}/canvases/${canvasId}`, {
+      signal,
+    });
+
+    return res.data;
   }
 
-  create(
+  async create(
     tenantId: string,
     data: Omit<FloorCanvas, "id" | "tenantId" | "version">,
     signal?: AbortSignal,
   ): Promise<FloorCanvas> {
-    return this.client
-      .post<CreatedResponse<FloorCanvas>>(`/tenants/${tenantId}/canvases`, data, { signal })
-      .then((res) => res.data);
+    const res = await this.client.post<CreatedResponse<FloorCanvas>>(`/tenants/${tenantId}/canvases`, data, { signal });
+
+    return res.data;
   }
 
-  update(
+  async update(
     tenantId: string,
     canvasId: string,
     data: Partial<Pick<FloorCanvas, "name" | "width" | "height" | "elements">>,
     signal?: AbortSignal,
   ): Promise<FloorCanvas> {
-    return this.client
-      .put<SuccessResponse<FloorCanvas>>(`/tenants/${tenantId}/canvases/${canvasId}`, data, { signal })
-      .then((res) => res.data);
+    const res = await this.client.put<SuccessResponse<FloorCanvas>>(`/tenants/${tenantId}/canvases/${canvasId}`, data, {
+      signal,
+    });
+
+    return res.data;
   }
 
   delete(tenantId: string, canvasId: string, signal?: AbortSignal): Promise<void> {

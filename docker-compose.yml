@@ -7,19 +7,31 @@ services:
     ports:
       - "8000:8000"
     environment:
+      - PROJECT_NAME=${PROJECT_NAME:-Restorio API}
+      - PROJECT_DESCRIPTION=${PROJECT_DESCRIPTION:-Multi-tenant Restaurant Management Platform API}
+      - VERSION=${VERSION:-0.1.0}
       - DATABASE_URL=${DATABASE_URL:-mongodb://mongo:27017/restorio}
+      - DATABASE_NAME=${DATABASE_NAME:-restorio}
       - POSTGRES_DSN=${POSTGRES_DSN:-postgresql://restorio:restorio@postgres:5432/restorio}
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
-      - JWT_SECRET=${JWT_SECRET:-your-secret-key-change-in-production}
-      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - API_V1_PREFIX=${API_V1_PREFIX:-/api/v1}
+      - CORS_ORIGINS=${CORS_ORIGINS:-["http://localhost:3000","http://localhost:3001","http://localhost:3002","http://localhost:3003","http://localhost:3004","https://restorio.org","https://*.restorio.org"]}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      - ALGORITHM=${ALGORITHM:-HS256}
       - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
-      - REFRESH_TOKEN_EXPIRE_DAYS=${REFRESH_TOKEN_EXPIRE_DAYS:-7}
-      - PRZELEWY24_MERCHANT_ID=${PRZELEWY24_MERCHANT_ID:-}
-      - PRZELEWY24_POS_ID=${PRZELEWY24_POS_ID:-}
+      - REFRESH_TOKEN_EXPIRE_DAYS=${REFRESH_TOKEN_EXPIRE_DAYS:-14}
+      - ACCESS_TOKEN_COOKIE_NAME=${ACCESS_TOKEN_COOKIE_NAME:-rat}
+      - REFRESH_TOKEN_COOKIE_NAME=${REFRESH_TOKEN_COOKIE_NAME:-rrt}
+      - SESSION_HINT_COOKIE=${SESSION_HINT_COOKIE:-rshc}
+      - PRZELEWY24_MERCHANT_ID=${PRZELEWY24_MERCHANT_ID:-0}
+      - PRZELEWY24_POS_ID=${PRZELEWY24_POS_ID:-0}
       - PRZELEWY24_CRC=${PRZELEWY24_CRC:-}
       - PRZELEWY24_API_KEY=${PRZELEWY24_API_KEY:-}
+      - PRZELEWY24_API_URL=${PRZELEWY24_API_URL:-https://sandbox.przelewy24.pl/api/v1}
       - RESEND_API_KEY=${RESEND_API_KEY:-}
       - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-}
+      - DEBUG=${DEBUG:-false}
     volumes:
       - ./app/api:/app
       - /app/.venv

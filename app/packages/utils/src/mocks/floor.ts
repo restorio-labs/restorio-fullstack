@@ -20,7 +20,7 @@ export const mockTenants: Tenant[] = [
             y: 80,
             w: 80,
             h: 80,
-            tableNumber: "1",
+            tableNumber: 1,
             seats: 2,
           },
           {
@@ -30,7 +30,7 @@ export const mockTenants: Tenant[] = [
             y: 80,
             w: 100,
             h: 80,
-            tableNumber: "2",
+            tableNumber: 2,
             seats: 4,
           },
           {

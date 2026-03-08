@@ -1,5 +1,27 @@
 import type { Restaurant } from "@restorio/types";
-import { useEffect, useState } from "react";
+import { useCallback, useMemo } from "react";
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+
+interface RestaurantSelectionState {
+  selections: Record<string, string>;
+  setSelection: (tenantId: string, restaurantId: string) => void;
+}
+
+const useRestaurantSelectionStore = create<RestaurantSelectionState>()(
+  persist(
+    (set) => ({
+      selections: {},
+      setSelection: (tenantId, restaurantId) =>
+        set((state) => ({
+          selections: { ...state.selections, [tenantId]: restaurantId },
+        })),
+    }),
+    {
+      name: "kitchen-panel:restaurantSelection",
+    },
+  ),
+);
 
 export interface UseRestaurantSelectionReturn {
   selectedRestaurantId: string | null;
@@ -11,31 +33,28 @@ export const useRestaurantSelection = (
   restaurants: readonly Restaurant[],
   defaultRestaurantId: string | null,
 ): UseRestaurantSelectionReturn => {
-  const [selectedRestaurantId, setSelectedRestaurantId] = useState<string | null>(null);
-  const storageKey = `kitchen-panel:tenant:${tenantId}:restaurant`;
+  const stored = useRestaurantSelectionStore((state) => state.selections[tenantId] ?? null);
+  const setSelection = useRestaurantSelectionStore((state) => state.setSelection);
 
-  useEffect(() => {
-    const stored = localStorage.getItem(storageKey);
+  const selectedRestaurantId = useMemo(() => {
     const storedIsValid = stored ? restaurants.some((restaurant) => restaurant.id === stored) : false;
-    const fallbackId = restaurants.length === 1 ? (restaurants[0]?.id ?? null) : defaultRestaurantId;
-    const nextId = storedIsValid ? stored : fallbackId;
 
-    setSelectedRestaurantId(nextId);
-
-    if (nextId) {
-      localStorage.setItem(storageKey, nextId);
-    } else {
-      localStorage.removeItem(storageKey);
+    if (storedIsValid) {
+      return stored;
     }
-  }, [defaultRestaurantId, restaurants, storageKey]);
 
-  const handleSetSelectedRestaurantId = (id: string): void => {
-    setSelectedRestaurantId(id);
-    localStorage.setItem(storageKey, id);
-  };
+    return restaurants.length === 1 ? (restaurants[0]?.id ?? null) : defaultRestaurantId;
+  }, [stored, restaurants, defaultRestaurantId]);
+
+  const setSelectedRestaurantId = useCallback(
+    (id: string): void => {
+      setSelection(tenantId, id);
+    },
+    [tenantId, setSelection],
+  );
 
   return {
     selectedRestaurantId,
-    setSelectedRestaurantId: handleSetSelectedRestaurantId,
+    setSelectedRestaurantId,
   };
 };

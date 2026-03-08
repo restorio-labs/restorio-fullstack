@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.dto.v1.floor_canvases import CreateFloorCanvasDTO, UpdateFloorCanvasDTO
-from core.exceptions import NotFoundResponse
+from core.exceptions import NotFoundResponse, ValidationError
 from core.models import FloorCanvas, Tenant
 from services.canvas_versioning import (
     archive_canvas_version,
@@ -51,12 +51,14 @@ class FloorCanvasService:
     ) -> FloorCanvas:
         await self._ensure_tenant_exists(session, tenant_id)
 
+        elements = [el.model_dump(by_alias=True, exclude_none=True) for el in data.elements]
+
         canvas = FloorCanvas(
             tenant_id=tenant_id,
             name=data.name,
             width=data.width,
             height=data.height,
-            elements=data.elements,
+            elements=elements,
         )
         session.add(canvas)
         await session.commit()
@@ -74,7 +76,9 @@ class FloorCanvasService:
 
         if data.elements is not None:
             await archive_canvas_version(canvas)
-            canvas.elements = data.elements
+            canvas.elements = [
+                el.model_dump(by_alias=True, exclude_none=True) for el in data.elements
+            ]
             canvas.version += 1
 
         if data.name is not None:
@@ -92,6 +96,44 @@ class FloorCanvasService:
         canvas = await self.get_canvas(session, tenant_id, canvas_id)
         await session.delete(canvas)
         await session.commit()
+
+    def ensure_valid_table_numeration(self, elements: list[dict[str, Any]] | None) -> None:
+        if not elements:
+            return
+
+        invalid_integer_msg = "Table numbers must be integers"
+        non_positive_msg = "Table numbers must be positive"
+        duplicate_msg = "Duplicate table numbers detected"
+        non_continuous_msg = "Table numbers must form a continuous sequence starting from 1"
+
+        table_numbers: list[int] = []
+
+        for element in elements:
+            if element.get("type") != "table":
+                continue
+
+            number = element.get("tableNumber")
+
+            if not isinstance(number, int):
+                raise ValidationError(invalid_integer_msg)
+
+            if number <= 0:
+                raise ValidationError(non_positive_msg)
+
+            table_numbers.append(number)
+
+        if not table_numbers:
+            return
+
+        unique_numbers = set(table_numbers)
+
+        if len(unique_numbers) != len(table_numbers):
+            raise ValidationError(duplicate_msg)
+
+        expected = set(range(1, len(table_numbers) + 1))
+
+        if unique_numbers != expected:
+            raise ValidationError(non_continuous_msg)
 
     async def list_versions(
         self, session: AsyncSession, tenant_id: UUID, canvas_id: UUID, limit: int = 50

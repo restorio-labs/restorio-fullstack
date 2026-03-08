@@ -8,3 +8,4 @@ export * from "./payment";
 export * from "./floorCanvas";
 export * from "./common";
 export * from "./environment";
+export * from "./tenantProfile";

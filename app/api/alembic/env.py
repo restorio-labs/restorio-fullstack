@@ -13,8 +13,8 @@ from core.models import (
     Order,  # pyright: ignore[reportUnusedImport] # noqa: F401
     OrderItem,  # pyright: ignore[reportUnusedImport] # noqa: F401
     Payment,  # pyright: ignore[reportUnusedImport] # noqa: F401
-    RestaurantTable,  # pyright: ignore[reportUnusedImport] # noqa: F401
     Tenant,  # pyright: ignore[reportUnusedImport] # noqa: F401
+    TenantProfile,  # pyright: ignore[reportUnusedImport] # noqa: F401
     TenantRole,  # pyright: ignore[reportUnusedImport] # noqa: F401
     Transaction,  # pyright: ignore[reportUnusedImport] # noqa: F401
     User,  # pyright: ignore[reportUnusedImport] # noqa: F401

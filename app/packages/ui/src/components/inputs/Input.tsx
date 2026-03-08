@@ -16,7 +16,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const helperId = `${inputId}-helper`;
 
     return (
-      <div className="w-full">
+      <div className="w-full mt-0">
         {label && (
           <label htmlFor={inputId} className="block text-sm font-medium text-text-primary mb-1">
             {label}

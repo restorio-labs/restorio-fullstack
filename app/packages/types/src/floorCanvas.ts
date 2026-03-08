@@ -24,16 +24,15 @@ export interface FloorElementBase extends CanvasBounds {
 
 export interface FloorTableElement extends FloorElementBase {
   type: "table";
-  tableNumber: string;
+  tableNumber: number;
   seats: number;
-  tableId?: string;
+  label?: string;
 }
 
 export interface FloorTableGroupElement extends FloorElementBase {
   type: "tableGroup";
   tableNumbers: string[];
   seats: number;
-  tableIds?: string[];
 }
 
 export interface FloorBarElement extends FloorElementBase {
@@ -81,7 +80,7 @@ export interface FloorLayoutEditorState {
 }
 
 export type ElementToAdd =
-  | { type: "table"; tableNumber: string; seats: number }
+  | { type: "table"; seats: number; tableNumber?: number; label?: string }
   | { type: "tableGroup"; tableNumbers: string[]; seats: number }
   | { type: "bar"; label?: string }
   | { type: "zone"; name: string; color?: string }
@@ -97,14 +96,16 @@ export type LayoutHistoryAction =
         bounds?: { x: number; y: number; w: number; h: number; rotation?: number };
         color?: string;
         name?: string;
-        tableNumber?: string;
         tableNumbers?: string[];
         seats?: number;
+        tableLabel?: string;
         label?: string;
         zIndex?: number;
+        recordHistory?: boolean;
       };
     }
   | { type: "ADD_ELEMENT"; payload: { element: FloorElement; x: number; y: number } }
   | { type: "REMOVE_ELEMENT"; payload: { id: string } }
+  | { type: "COMMIT_LAYOUT" }
   | { type: "UNDO" }
   | { type: "REDO" };

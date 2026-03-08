@@ -1,6 +1,9 @@
 from typing import TypeVar
 
+from fastapi import status
 from pydantic import BaseModel
+
+from core.exceptions.http import BaseHTTPException
 
 T = TypeVar("T")
 
@@ -24,14 +27,17 @@ class DeletedResponse(BaseModel):
     message: str = "Resource deleted successfully"
 
 
-class ErrorResponse(BaseModel):
+class ExceptionHandlerResponse(BaseModel):
     message: str
     details: dict | None = None
 
 
+class ErrorResponse(BaseModel):
+    details: dict | None = None
+
+
 class ValidationErrorResponse(BaseModel):
-    message: str = "Validation failed"
-    errors: list[dict[str, str]]
+    fields: list[str]
 
 
 class PaginatedResponse[T](BaseModel):
@@ -59,33 +65,41 @@ class PaginatedResponse[T](BaseModel):
         )
 
 
-class UnauthenticatedResponse(BaseModel):
-    message: str = "Unauthenticated"
+class UnauthenticatedResponse(BaseHTTPException):
+    def __init__(self, message: str = "Unauthorized") -> None:
+        super().__init__(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            message=message,
+        )
 
 
-class UnauthorizedResponse(BaseModel):
-    message: str = "Unauthorized"
+class UnauthorizedResponse(BaseHTTPException):
+    def __init__(self, message: str = "Unauthorized") -> None:
+        super().__init__(
+            status_code=status.HTTP_403_FORBIDDEN,
+            message=message,
+        )
 
 
 class NotFoundResponse(BaseModel):
-    message: str = "Not found"
+    pass
 
 
 class ConflictResponse(BaseModel):
-    message: str = "Conflict"
+    pass
 
 
 class BadRequestResponse(BaseModel):
-    message: str = "Bad request"
+    pass
 
 
 class GoneResponse(BaseModel):
-    message: str = "Gone"
+    pass
 
 
 class TooManyRequestsResponse(BaseModel):
-    message: str = "Too many requests"
+    pass
 
 
 class ServiceUnavailableResponse(BaseModel):
-    message: str = "Service unavailable"
+    pass

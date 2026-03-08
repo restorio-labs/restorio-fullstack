@@ -5,6 +5,7 @@ from fastapi import APIRouter, Request, Response, status
 
 from core.dto.v1.auth import (
     ActivateResponseData,
+    AuthMeSessionData,
     LoginResponseData,
     RegisterCreatedData,
     RegisterDTO,
@@ -61,7 +62,7 @@ async def login(
     token_data = {
         "sub": payload.get("sub"),
         "email": payload.get("email"),
-        "tenant_id": payload.get("tenant_id"),
+        "tenant_ids": payload.get("tenant_ids"),
         "account_type": payload.get("account_type"),
     }
     refresh_token = auth_service.security.create_access_token(
@@ -172,9 +173,9 @@ async def activate(
         activated_user = await session.get(User, activation_link.user_id)
         if activated_user is not None:
             token_data = {
-                "sub": str(activated_user.id),
-                "email": activated_user.email,
-                "tenant_id": str(tenant.id),
+                "sub": str(user.id),
+                "email": user.email,
+                "tenant_ids": [str(tenant.id)],
                 "account_type": AccountType.OWNER.value,
             }
             access_token = auth_service.security.create_access_token(token_data)
@@ -317,12 +318,17 @@ async def refresh_token(
     if not isinstance(user_id, str) or not user_id:
         raise UnauthorizedError(message="Unauthorized")
 
-    tenant_id = payload.get("tenant_id")
+    tenant_ids_claim = payload.get("tenant_ids")
+    tenant_ids: list[str] = []
+    if isinstance(tenant_ids_claim, list):
+        tenant_ids = [
+            tenant_id_item for tenant_id_item in tenant_ids_claim if isinstance(tenant_id_item, str)
+        ]
     account_type = payload.get("account_type")
     email = payload.get("email")
     token_data = {
         "sub": user_id,
-        "tenant_id": tenant_id if isinstance(tenant_id, str) else "",
+        "tenant_ids": tenant_ids,
         "account_type": account_type if isinstance(account_type, str) else None,
         "email": email if isinstance(email, str) else None,
     }
@@ -361,15 +367,20 @@ async def logout(request: Request, response: Response) -> SuccessResponse[dict[s
 @router.get(
     "/me",
     status_code=status.HTTP_200_OK,
-    response_model=SuccessResponse[dict[str, str]],
+    response_model=SuccessResponse[AuthMeSessionData],
 )
-async def me(request: Request) -> SuccessResponse[dict[str, str]]:
+async def me(request: Request) -> SuccessResponse[AuthMeSessionData]:
     user = getattr(request.state, "user", None)
     if not isinstance(user, dict):
         raise UnauthenticatedResponse(message="Unauthorized")
 
     subject = user.get("sub")
-    tenant_id = user.get("tenant_id")
+    tenant_ids_claim = user.get("tenant_ids")
+    tenant_ids: list[str] = []
+    if isinstance(tenant_ids_claim, list):
+        tenant_ids = [
+            tenant_id_item for tenant_id_item in tenant_ids_claim if isinstance(tenant_id_item, str)
+        ]
     account_type = user.get("account_type")
     if not isinstance(subject, str):
         raise UnauthenticatedResponse(message="Unauthorized")
@@ -377,7 +388,7 @@ async def me(request: Request) -> SuccessResponse[dict[str, str]]:
     return SuccessResponse(
         data={
             "sub": subject,
-            "tenant_id": tenant_id if isinstance(tenant_id, str) else "",
+            "tenant_ids": tenant_ids,
             "account_type": account_type if isinstance(account_type, str) else "",
         },
         message="Authenticated",

@@ -2,6 +2,7 @@ import { AuthGuard } from "@restorio/auth";
 import type { ReactElement } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
+import { api } from "./api/client";
 import { KitchenRail } from "./components/KitchenRail";
 import { AppLayout } from "./layouts/AppLayout";
 import { KitchenView } from "./views/KitchenView";
@@ -16,7 +17,7 @@ export const App = (): ReactElement => {
         <Route
           path="/:tenantId"
           element={
-            <AuthGuard strategy="code" loginPath="/login">
+            <AuthGuard strategy="code" loginPath="/login" client={api}>
               <KitchenView />
             </AuthGuard>
           }

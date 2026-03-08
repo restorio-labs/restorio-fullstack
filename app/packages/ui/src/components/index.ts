@@ -1,4 +1,5 @@
 export * from "./ChooseApp";
+export * from "./LanguageDropdown";
 export * from "./navigation";
 export * from "./primitives";
 export * from "./inputs";

@@ -1,8 +1,8 @@
 from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
-from fastapi import status
 import pytest
+from routes.v1.payments.create_payment import create_payment
 
 from core.dto.v1.payments import CreateTransactionDTO
 from core.exceptions import (
@@ -12,7 +12,6 @@ from core.exceptions import (
     ServiceUnavailableError,
 )
 from core.foundation.http.responses import CreatedResponse
-from routes.v1.payments.create_payment import create_payment
 from services.payment_service import P24Service
 
 
@@ -231,7 +230,7 @@ async def test_create_payment_p24_api_error(
             create_transaction_request, session, tenant_service, mock_p24_service, external_client
         )
 
-    assert exc_info.value.status_code == 400
+    assert exc_info.value.status_code == 400  # noqa: PLR2004
     assert "Przelewy24" in exc_info.value.detail
 
 
@@ -254,7 +253,7 @@ async def test_create_payment_service_unavailable(
             create_transaction_request, session, tenant_service, mock_p24_service, external_client
         )
 
-    assert exc_info.value.status_code == 503
+    assert exc_info.value.status_code == 503  # noqa: PLR2004
     assert "Przelewy24" in exc_info.value.detail
 
 

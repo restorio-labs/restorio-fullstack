@@ -28,7 +28,7 @@ export const ToastContainer = ({
 }: ToastContainerProps): ReactElement => {
   return (
     <div
-      className={cn("fixed z-toast flex flex-col gap-2 pointer-events-none", positionStyles[position], className)}
+      className={cn("fixed z-toast flex flex-col gap-2", positionStyles[position], className)}
       role="region"
       aria-label={ariaLabel}
       aria-live="polite"

@@ -2,7 +2,16 @@
   "common": {
     "skipToContent": "Skip to main content",
     "loading": "Loading...",
-    "error": "Error"
+    "error": "Error",
+    "actions": {
+      "save": "Save",
+      "saving": "Saving...",
+      "delete": "Delete",
+      "deleteSelected": "Delete selected",
+      "goBack": "Go Back",
+      "print": "Print",
+      "printQr": "Print QR Code"
+    }
   },
   "app": {
     "title": "Restorio Admin Panel",
@@ -11,5 +20,433 @@
   },
   "errors": {
     "rootElementNotFound": "Root element not found"
+  },
+  "sidebar": {
+    "ariaLabel": "Admin navigation",
+    "sections": {
+      "floorLayout": "Floor Layout",
+      "menu": "Menu",
+      "tools": "Tools",
+      "settings": "Settings"
+    },
+    "items": {
+      "label": "Choose app",
+      "adminPanel": "Admin Panel",
+      "kitchenPanel": "Kitchen Panel",
+      "waiterPanel": "Waiter Panel",
+      "floorEditor": "Floor Editor",
+      "menuCreator": "Menu Creator",
+      "pageConfigurator": "Page Configurator",
+      "qrCodeGenerator": "QR Code Generator",
+      "tenantProfile": "Profile",
+      "paymentConfig": "Payment Config",
+      "staff": "Staff"
+    },
+    "mobile": {
+      "openMenu": "Open navigation menu",
+      "closeMenu": "Close navigation menu"
+    },
+    "logoutLoading": "Logging out..."
+  },
+  "languageSwitcher": {
+    "label": "Language",
+    "options": {
+      "en": "English",
+      "pl": "Polish",
+      "es": "Spanish",
+      "ar": "Arabic"
+    }
+  },
+  "tenantSwitcher": {
+    "loadError": "Failed to load restaurants.",
+    "loading": "Loading restaurants...",
+    "empty": "No restaurants available.",
+    "addRestaurant": "+ Add new restaurant",
+    "select": "Select restaurant"
+  },
+  "floorEditor": {
+    "title": "Floor layout",
+    "loadingDescription": "Loading...",
+    "loadingRestaurant": "Loading restaurant...",
+    "noRestaurantDescription": "No restaurant selected",
+    "noRestaurantMessage": "Select a restaurant from the sidebar to edit its floor layout.",
+    "errorDescription": "Error",
+    "errorMessage": "Failed to load restaurant. Please try again later.",
+    "emptyMessage": "No floor layout exists for this restaurant yet. Create one to start designing.",
+    "createButton": "Create floor layout",
+    "creatingButton": "Creating...",
+    "layoutTitle": "Floor: {{name}}",
+    "defaultCanvasName": "Floor 1",
+    "defaultCanvasNameBase": "Floor",
+    "saveSuccessTitle": "Layout saved",
+    "saveSuccessMessage": "Your floor layout changes were saved.",
+    "saveErrorTitle": "Save failed",
+    "saveErrorMessage": "Could not save floor layout. Please try again.",
+    "renameSuccessTitle": "Floor renamed",
+    "renameSuccessMessage": "The floor name was updated.",
+    "renameErrorTitle": "Rename failed",
+    "renameErrorMessage": "Could not rename this floor. Please try again.",
+    "renamingButton": "Renaming...",
+    "deleteSuccessTitle": "Floor deleted",
+    "deleteSuccessMessage": "The floor was deleted.",
+    "deleteErrorTitle": "Delete failed",
+    "deleteErrorMessage": "Could not delete this floor. Please try again.",
+    "deletingButton": "Deleting...",
+    "mobileUnavailableTitle": "Floor editor unavailable on mobile",
+    "mobileUnavailableMessage": "Use a tablet or desktop device to edit floor layouts in the admin panel.",
+    "floorSelector": {
+      "label": "Floor",
+      "addFloor": "Add floor",
+      "renameLabel": "Floor name",
+      "renameFloor": "Rename floor",
+      "deleteFloor": "Delete floor"
+    },
+    "toolbar": {
+      "undo": "Undo",
+      "redo": "Redo",
+      "save": "Save",
+      "add": "Add"
+    },
+    "addMenu": {
+      "table": "Add table",
+      "zone": "Add zone",
+      "bar": "Add bar",
+      "wall": "Add wall",
+      "entrance": "Add entrance"
+    },
+    "panel": {
+      "title": "Customize",
+      "layer": "Layer",
+      "bringToFront": "Bring to front",
+      "sendToBack": "Send to back",
+      "forward": "Forward",
+      "backward": "Backward",
+      "name": "Name",
+      "color": "Color",
+      "seats": "Seats",
+      "tableCustomLabel": "Table label",
+      "label": "Label",
+      "delete": "Delete",
+      "deleteSelected": "Delete selected",
+      "multiSelected": "{{count}} items selected.",
+      "multiSelectHint": "Control mode: multi-select and move only.",
+      "selectHint": "Select an element on the canvas to customize it."
+    },
+    "unsavedChanges": {
+      "title": "You did not save the changes",
+      "message": "You have unsaved changes on this floor. If you switch floors now, your changes will be lost.",
+      "keepEditing": "Keep editing",
+      "discard": "Discard changes"
+    },
+    "aria": {
+      "resizeHandle": "Resize {{mode}}",
+      "setColor": "Set color {{color}}"
+    },
+    "zoneName": "Zone {{number}}",
+    "tableLabel": "Table {{number}}",
+    "tableGroupLabel": "Tables {{numbers}}"
+  },
+  "menuCreator": {
+    "title": "Menu Creator",
+    "description": "Create and manage menus for your restaurants",
+    "placeholderTitle": "Menu Creator",
+    "placeholderDescription": "Design menus with categories, items, and pricing"
+  },
+  "menuConfigurator": {
+    "title": "Page Configurator",
+    "description": "Configure the components and layout of your restaurant pages",
+    "placeholderTitle": "Menu Page Configurator",
+    "placeholderDescription": "Customize how your menu appears to customers on your restaurant page"
+  },
+  "payment": {
+    "title": "Payment Configurations",
+    "description": "Configure Przelewy24 payment provider settings",
+    "errors": {
+      "loadRestaurants": "Failed to load restaurants. Please refresh and try again.",
+      "selectRestaurant": "Select a restaurant from the header dropdown.",
+      "updateFailed": "Failed to update P24 configuration. Please verify the restaurant tenant ID and try again.",
+      "validationFailed": "Please fix the highlighted fields and try again."
+    },
+    "selectedRestaurant": {
+      "title": "Selected restaurant",
+      "empty": "No restaurant selected."
+    },
+    "loadingRestaurants": "Loading restaurants...",
+    "fields": {
+      "merchantId": {
+        "label": "Merchant ID",
+        "placeholder": "e.g. 123456",
+        "helper": "Przelewy24 merchant identifier (max 6 digits)",
+        "error": "Merchant ID must be between 0 and 999999"
+      },
+      "apiKey": {
+        "label": "P24 API Key",
+        "placeholder": "Enter Przelewy24 API key",
+        "helper": "Max 32 characters",
+        "error": "API key is required (max 32 characters)"
+      },
+      "crcKey": {
+        "label": "P24 CRC Key",
+        "placeholder": "Enter Przelewy24 CRC key",
+        "helper": "Max 16 characters",
+        "error": "CRC key is required (max 16 characters)"
+      },
+      "p24Merchantid": {
+        "error": "Merchant ID must be between 0 and 999999"
+      },
+      "p24Api": {
+        "error": "API key is required (max 32 characters)"
+      },
+      "p24Crc": {
+        "error": "CRC key is required (max 16 characters)"
+      }
+    },
+    "success": "P24 configuration updated successfully.",
+    "actions": {
+      "save": "Save Configuration",
+      "saving": "Saving..."
+    }
+  },
+  "qrGenerator": {
+    "title": "QR Code Generator",
+    "description": "Generate QR codes that redirect customers to your menu",
+    "loadingRestaurant": "Loading restaurant...",
+    "loadError": "Failed to load restaurants. Please try again later.",
+    "selectRestaurant": "Select a restaurant from the sidebar to generate its QR code.",
+    "loadTenantError": "Failed to load tenant details. Please try again later.",
+    "pageTitle": "{{name}} QR Codes",
+    "batchDownload": "Batch Download Table QR Codes",
+    "sectionTitle": "QR Codes",
+    "generatingMenu": "Generating QR code...",
+    "noTables": "No tables found in any floor. Add tables in Floor Editor to generate table QR codes.",
+    "noTablesOnFloor": "No tables on this floor.",
+    "generatingTables": "Generating QR codes for {{count}} tables..."
+  },
+  "qrPrint": {
+    "loadingRestaurant": "Loading restaurant...",
+    "loadError": "Failed to load restaurant. Please try again later.",
+    "noRestaurant": "No restaurant selected.",
+    "backToGenerator": "Back to QR Code Generator",
+    "noTablesTitle": "No tables found in the floor layout.",
+    "noTablesAction": "Go to Floor Editor to add tables",
+    "goBack": "Go Back",
+    "print": "Print",
+    "generating": "Generating QR codes...",
+    "generatingTables": "Generating QR codes for {{count}} tables..."
+  },
+  "qrDisplay": {
+    "goBack": "Go Back",
+    "print": "Print QR Code",
+    "generating": "Generating QR code...",
+    "qrAlt": "QR code for {{title}}"
+  },
+  "qrRow": {
+    "table": "Table {{table}}",
+    "restaurant": "Restaurant",
+    "qrAltTable": "QR code for table {{table}}",
+    "qrAltRestaurant": "QR code for restaurant",
+    "failed": "Failed to generate QR code"
+  },
+  "qrLoadingError": {
+    "default": "Failed to load QR code.",
+    "goBack": "Go back to QR Code Generator"
+  },
+  "restaurantsView": {
+    "add": "Add restaurant",
+    "empty": "No restaurants found.",
+    "floorCount": "{{count}} floor(s)",
+    "ariaLabel": "Open floor layout for {{name}}"
+  },
+  "restaurantCreator": {
+    "title": "Restaurant Creator",
+    "description": "Create and configure new restaurants",
+    "placeholderTitle": "Restaurant Creator",
+    "placeholderDescription": "Create new restaurants for your business"
+  },
+  "restaurantQr": {
+    "generateError": "Failed to generate QR code for restaurant:",
+    "loadError": "Failed to load restaurant QR code.",
+    "subtitle": "Restaurant Menu"
+  },
+  "staff": {
+    "title": "Staff Management",
+    "description": "Manage kitchen, waiter, and other staff accounts",
+    "status": {
+      "active": "Activated",
+      "inactive": "Pending activation"
+    },
+    "accessLevels": {
+      "kitchen": "Kitchen",
+      "waiter": "Waiter"
+    },
+    "toggleForm": {
+      "show": "Add user",
+      "hide": "Cancel"
+    },
+    "form": {
+      "emailLabel": "Email",
+      "accessLabel": "Access level",
+      "submit": "Create user",
+      "submitting": "Creating..."
+    },
+    "list": {
+      "title": "All users",
+      "loading": "Loading users...",
+      "empty": "No users yet."
+    },
+    "validation": {
+      "invalidEmail": "Enter a valid email address."
+    },
+    "feedback": {
+      "createSuccess": "User created. Activation email should be sent shortly.",
+      "createError": "Unable to create user.",
+      "deleteSuccess": "User deleted successfully.",
+      "deleteError": "Unable to delete user."
+    },
+    "delete": {
+      "button": "Delete user",
+      "confirmTitle": "Delete this user?",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "deleting": "Deleting..."
+    }
+  },
+  "tenantProfile": {
+    "title": "Tenant Profile",
+    "description": "Manage company details, contact information, and social media for your tenant",
+    "loadingTenants": "Loading tenants...",
+    "loadingProfile": "Loading profile...",
+    "selectedTenant": {
+      "title": "Selected tenant",
+      "empty": "No tenant selected."
+    },
+    "sections": {
+      "company": "Company Details",
+      "contact": "Restaurant Contact",
+      "address": "Address",
+      "owner": "Owner Details",
+      "contactPerson": "Contact Person",
+      "socials": "Social Media"
+    },
+    "fields": {
+      "nip": {
+        "label": "NIP",
+        "placeholder": "e.g. 1234567890",
+        "helper": "Tax identification number (exactly 10 digits)",
+        "error": "NIP must be exactly 10 digits"
+      },
+      "companyName": {
+        "label": "Company Name",
+        "placeholder": "Official registered company name",
+        "error": "Company name is required"
+      },
+      "logoUrl": {
+        "label": "Logo URL",
+        "placeholder": "https://example.com/logo.png",
+        "error": "Invalid logo URL"
+      },
+      "contactEmail": {
+        "label": "Contact Email",
+        "placeholder": "restaurant@example.com",
+        "error": "Contact email is required"
+      },
+      "phone": {
+        "label": "Phone",
+        "placeholder": "+48 123 456 789",
+        "error": "Phone number is required"
+      },
+      "addressStreet": {
+        "label": "Street",
+        "placeholder": "123 Main St",
+        "error": "Street address is required"
+      },
+      "addressCity": {
+        "label": "City",
+        "placeholder": "Warsaw",
+        "error": "City is required"
+      },
+      "addressPostalCode": {
+        "label": "Postal Code",
+        "placeholder": "00-001",
+        "helper": "Polish format: XX-XXX",
+        "error": "Postal code must be in XX-XXX format"
+      },
+      "addressCountry": {
+        "label": "Country",
+        "placeholder": "Poland",
+        "error": "Country is required"
+      },
+      "ownerFirstName": {
+        "label": "First Name",
+        "placeholder": "John",
+        "error": "Owner first name is required"
+      },
+      "ownerLastName": {
+        "label": "Last Name",
+        "placeholder": "Smith",
+        "error": "Owner last name is required"
+      },
+      "ownerEmail": {
+        "label": "Email",
+        "placeholder": "owner@example.com",
+        "error": "Invalid owner email"
+      },
+      "ownerPhone": {
+        "label": "Phone",
+        "placeholder": "+48 123 456 789",
+        "error": "Invalid owner phone number"
+      },
+      "contactPersonFirstName": {
+        "label": "First Name",
+        "placeholder": "Jane",
+        "error": "Invalid contact person first name"
+      },
+      "contactPersonLastName": {
+        "label": "Last Name",
+        "placeholder": "Doe",
+        "error": "Invalid contact person last name"
+      },
+      "contactPersonEmail": {
+        "label": "Email",
+        "placeholder": "contact@example.com",
+        "error": "Invalid contact person email"
+      },
+      "contactPersonPhone": {
+        "label": "Phone",
+        "placeholder": "+48 123 456 789",
+        "error": "Invalid contact person phone number"
+      },
+      "socialFacebook": {
+        "label": "Facebook",
+        "placeholder": "https://facebook.com/yourrestaurant",
+        "error": "Invalid Facebook URL"
+      },
+      "socialInstagram": {
+        "label": "Instagram",
+        "placeholder": "https://instagram.com/yourrestaurant",
+        "error": "Invalid Instagram URL"
+      },
+      "socialTiktok": {
+        "label": "TikTok",
+        "placeholder": "https://tiktok.com/@yourrestaurant",
+        "error": "Invalid TikTok URL"
+      },
+      "socialWebsite": {
+        "label": "Website",
+        "placeholder": "https://yourrestaurant.com",
+        "error": "Invalid website URL"
+      }
+    },
+    "errors": {
+      "loadTenants": "Failed to load tenants. Please refresh and try again.",
+      "selectTenant": "Select a tenant from the header dropdown.",
+      "saveFailed": "Failed to save tenant profile. Please try again.",
+      "validationFailed": "Please fix the highlighted fields and try again."
+    },
+    "success": "Tenant profile saved successfully.",
+    "actions": {
+      "save": "Save Profile",
+      "saving": "Saving..."
+    }
   }
 }

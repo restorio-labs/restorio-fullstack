@@ -11,5 +11,55 @@
   },
   "errors": {
     "rootElementNotFound": "Elemento raíz no encontrado"
+  },
+  "languageSwitcher": {
+    "label": "Idioma",
+    "options": {
+      "en": "Inglés",
+      "pl": "Polaco",
+      "es": "Español",
+      "ar": "Árabe"
+    }
+  },
+  "floorEditor": {
+    "defaultCanvasNameBase": "Piso",
+    "renamingButton": "Renombrando...",
+    "deletingButton": "Eliminando...",
+    "renameSuccessTitle": "Piso renombrado",
+    "renameSuccessMessage": "El nombre del piso se actualizó.",
+    "renameErrorTitle": "No se pudo renombrar",
+    "renameErrorMessage": "No se pudo renombrar este piso. Inténtalo de nuevo.",
+    "deleteSuccessTitle": "Piso eliminado",
+    "deleteSuccessMessage": "El piso fue eliminado.",
+    "deleteErrorTitle": "No se pudo eliminar",
+    "deleteErrorMessage": "No se pudo eliminar este piso. Inténtalo de nuevo.",
+    "floorSelector": {
+      "label": "Piso",
+      "addFloor": "Añadir piso",
+      "renameLabel": "Nombre del piso",
+      "renameFloor": "Renombrar piso",
+      "deleteFloor": "Eliminar piso"
+    },
+    "panel": {
+      "seats": "Asientos",
+      "tableCustomLabel": "Etiqueta de mesa"
+    },
+    "unsavedChanges": {
+      "title": "No guardaste los cambios",
+      "message": "Tienes cambios sin guardar en este piso. Si cambias ahora, los cambios se perderán.",
+      "keepEditing": "Seguir editando",
+      "discard": "Descartar cambios"
+    },
+    "aria": {
+      "resizeHandle": "Redimensionar {{mode}}",
+      "setColor": "Establecer color {{color}}"
+    },
+    "zoneName": "Zona {{number}}",
+    "tableLabel": "Mesa {{number}}",
+    "tableGroupLabel": "Mesas {{numbers}}"
+  },
+  "qrGenerator": {
+    "noTables": "No se encontraron mesas en ningún piso.",
+    "noTablesOnFloor": "No hay mesas en este piso."
   }
 }

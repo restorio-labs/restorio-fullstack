@@ -1,4 +1,5 @@
 export type ParamTypes = Record<string | number | symbol, string | number | Date>;
+export type LoadingState = "loading" | "loaded" | "error" | "not-found" | "idle";
 
 export interface SuccessResponse<T> {
   message?: string;
@@ -13,4 +14,8 @@ export interface CreatedResponse<T> {
 export interface UpdatedResponse<T> {
   message: string;
   data: T;
+}
+
+export interface ValidationErrorResponse {
+  fields: string[];
 }

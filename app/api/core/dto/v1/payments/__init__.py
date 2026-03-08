@@ -11,8 +11,8 @@ __all__ = [
     "CreatePaymentDTO",
     "CreateTransactionDTO",
     "PaymentResponseDTO",
-    "TransactionListQueryDTO",
     "TransactionListItemDTO",
+    "TransactionListQueryDTO",
     "UpdateP24ConfigDTO",
     "UpdatePaymentDTO",
 ]

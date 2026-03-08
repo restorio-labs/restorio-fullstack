@@ -1,6 +1,7 @@
 export * from "./auth";
 export * from "./user";
 export * from "./payments";
+export * from "./tenant-profiles";
 export * from "./restaurants";
 export * from "./tables";
 export * from "./tenants";

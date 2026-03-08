@@ -1,9 +1,15 @@
+import logging
+import traceback
+
 from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from core.exceptions import BaseHTTPException
-from core.foundation.http.responses import ErrorResponse
+from core.foundation.http.responses import ExceptionHandlerResponse, ValidationErrorResponse
 from core.foundation.infra.config import Settings
+
+logger = logging.getLogger(__name__)
 
 
 def setup_exception_handlers(app: FastAPI, settings: Settings) -> None:
@@ -12,17 +18,25 @@ def setup_exception_handlers(app: FastAPI, settings: Settings) -> None:
         _: Request,
         exc: BaseHTTPException,
     ) -> JSONResponse:
-        if settings.DEBUG:
-            content = ErrorResponse(message=exc.detail, details=exc.details).model_dump(
-                exclude_none=True
-            )
-        else:
-            content = ErrorResponse(message="An error occurred", details=None).model_dump(
-                exclude_none=True
-            )
         return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content=content,
+            status_code=exc.status_code,
+            content=None,
+        )
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_exception_handler(_: Request, exc: RequestValidationError) -> JSONResponse:
+        fields: list[str] = []
+        seen: set[str] = set()
+        for error in exc.errors():
+            loc = error.get("loc", [])
+            field = ".".join(str(part) for part in loc if part not in {"body"}) or "body"
+            if field not in seen:
+                seen.add(field)
+                fields.append(field)
+
+        return JSONResponse(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            content=ValidationErrorResponse(fields=fields).model_dump(),
         )
 
     @app.exception_handler(Exception)
@@ -30,16 +44,17 @@ def setup_exception_handlers(app: FastAPI, settings: Settings) -> None:
         _: Request,
         exc: Exception,
     ) -> JSONResponse:
+        logger.error("Unhandled exception: %s\n%s", exc, traceback.format_exc())
         if settings.DEBUG:
-            content = ErrorResponse(
-                message="An unexpected error occurred",
-                details={"type": type(exc).__name__},
-            ).model_dump(exclude_none=True)
-        else:
-            content = ErrorResponse(
-                message="An unexpected error occurred", details=None
-            ).model_dump(exclude_none=True)
+            return JSONResponse(
+                status_code=getattr(exc, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR),
+                content=ExceptionHandlerResponse(
+                    message="An unexpected error occurred",
+                    details={"type": type(exc).__name__},
+                ).model_dump(exclude_none=True),
+            )
+
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content=content,
+            content=None,
         )
