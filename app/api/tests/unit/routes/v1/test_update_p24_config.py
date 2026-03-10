@@ -5,7 +5,7 @@ from uuid import uuid4
 from fastapi import HTTPException
 from pydantic import ValidationError
 import pytest
-from routes.v1.payments.update_p24_config import update_p24_config
+from routes.v1.payments.p24_config import update_p24_config
 
 from core.dto.v1.payments import UpdateP24ConfigDTO
 from core.foundation.http.responses import UpdatedResponse

@@ -40,13 +40,13 @@ class TestNotFoundResponse:
     def test_not_found_error_without_identifier(self) -> None:
         exception = NotFoundResponse("User")
 
-        assert exception.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert exception.status_code == status.HTTP_404_NOT_FOUND
         assert exception.detail == "User not found"
 
     def test_not_found_error_with_identifier(self) -> None:
         exception = NotFoundResponse("User", identifier="123")
 
-        assert exception.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert exception.status_code == status.HTTP_404_NOT_FOUND
         assert exception.detail == "User with id '123' not found"
 
 

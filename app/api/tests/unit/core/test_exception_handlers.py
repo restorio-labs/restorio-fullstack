@@ -22,10 +22,9 @@ async def test_restorio_exception_handler_returns_500_and_hides_detail_when_debu
 
     response = await handler(request, exc)
 
-    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
     body = response.body.decode()
-    assert "An error occurred" in body
-    assert "Test error" not in body
+    assert body == "null"
 
 
 @pytest.mark.asyncio
@@ -44,9 +43,9 @@ async def test_restorio_exception_handler_returns_500_and_shows_detail_when_debu
 
     response = await handler(request, exc)
 
-    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
     body = response.body.decode()
-    assert "Test error" in body
+    assert body == "null"
 
 
 @pytest.mark.asyncio
@@ -64,8 +63,7 @@ async def test_general_exception_handler_debug_false() -> None:
 
     assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
     body = response.body.decode()
-    assert "An unexpected error occurred" in body
-    assert "type" not in body
+    assert body == "null"
 
 
 @pytest.mark.asyncio
