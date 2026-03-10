@@ -1,9 +1,19 @@
-from core.dto.v1.menus.requests import CreateMenuItemDTO, CreateModifierDTO
-from core.dto.v1.menus.responses import MenuItemDTO, ModifierDTO
+from core.dto.v1.menus.requests import (
+    MenuCategoryInputDTO,
+    MenuItemInputDTO,
+    UpsertTenantMenuDTO,
+)
+from core.dto.v1.menus.responses import (
+    MenuCategoryDTO,
+    MenuItemDTO,
+    TenantMenuResponseDTO,
+)
 
 __all__ = [
-    "CreateMenuItemDTO",
-    "CreateModifierDTO",
+    "MenuCategoryDTO",
+    "MenuCategoryInputDTO",
     "MenuItemDTO",
-    "ModifierDTO",
+    "MenuItemInputDTO",
+    "TenantMenuResponseDTO",
+    "UpsertTenantMenuDTO",
 ]

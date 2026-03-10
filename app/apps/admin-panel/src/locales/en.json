@@ -148,9 +148,39 @@
   },
   "menuCreator": {
     "title": "Menu Creator",
-    "description": "Create and manage menus for your restaurants",
-    "placeholderTitle": "Menu Creator",
-    "placeholderDescription": "Design menus with categories, items, and pricing"
+    "description": "Create and manage tenant menu categories and items",
+    "loading": "Loading menu...",
+    "emptyState": "No categories yet. Add your first category to start building the menu.",
+    "success": "Menu saved successfully.",
+    "actions": {
+      "save": "Save menu",
+      "saving": "Saving...",
+      "addCategory": "Add category",
+      "removeCategory": "Remove category",
+      "addItem": "Add item",
+      "removeItem": "Remove item"
+    },
+    "fields": {
+      "categoryName": "Category name",
+      "categoryOrder": "Category order",
+      "itemName": "Item name",
+      "itemPrice": "Price",
+      "itemPromoted": "Promoted",
+      "itemDescription": "Description",
+      "itemTags": "Tags (comma separated)"
+    },
+    "placeholders": {
+      "categoryName": "e.g. Starters",
+      "itemName": "e.g. Product {{index}}",
+      "itemDescription": "Describe this menu item",
+      "itemTags": "vegan, spicy, halal"
+    },
+    "errors": {
+      "selectRestaurant": "Select a restaurant from the tenant switcher first.",
+      "saveFailed": "Failed to save menu. Please try again.",
+      "invalidCategory": "Each category must have a valid name and non-negative order.",
+      "invalidItem": "Each item must have a valid name and non-negative price."
+    }
   },
   "menuConfigurator": {
     "title": "Page Configurator",

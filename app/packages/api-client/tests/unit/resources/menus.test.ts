@@ -14,41 +14,26 @@ describe("MenusResource", () => {
     vi.clearAllMocks();
 
     client = {
-      get: vi.fn().mockResolvedValue(undefined),
+      get: vi.fn().mockResolvedValue({ data: null }),
       post: vi.fn().mockResolvedValue(undefined),
-      put: vi.fn().mockResolvedValue(undefined),
+      put: vi.fn().mockResolvedValue({ data: {} }),
       delete: vi.fn().mockResolvedValue(undefined),
     };
 
     resource = new MenusResource(client as ApiClient);
   });
 
-  it("list calls GET /restaurants/:id/menus", async () => {
-    await resource.list("r1");
-    expect(client.get).toHaveBeenCalledWith("/restaurants/r1/menus", { signal: undefined });
+  it("get calls GET /tenants/:id/menu", async () => {
+    await resource.get("tenant-1");
+    expect(client.get).toHaveBeenCalledWith("/tenants/tenant-1/menu", { signal: undefined });
   });
 
-  it("get calls GET /restaurants/:id/menus/:menuId", async () => {
-    await resource.get("r1", "m1");
-    expect(client.get).toHaveBeenCalledWith("/restaurants/r1/menus/m1", { signal: undefined });
-  });
+  it("save calls PUT /tenants/:id/menu", async () => {
+    const payload = {
+      categories: [{ name: "Mains", order: 0, items: [] }],
+    };
 
-  it("create calls POST /restaurants/:id/menus", async () => {
-    const payload = { name: "Lunch Menu" };
-
-    await resource.create("r1", payload);
-    expect(client.post).toHaveBeenCalledWith("/restaurants/r1/menus", payload, { signal: undefined });
-  });
-
-  it("update calls PUT /restaurants/:id/menus/:menuId", async () => {
-    const payload = { name: "Updated Menu" };
-
-    await resource.update("r1", "m1", payload);
-    expect(client.put).toHaveBeenCalledWith("/restaurants/r1/menus/m1", payload, { signal: undefined });
-  });
-
-  it("delete calls DELETE /restaurants/:id/menus/:menuId", async () => {
-    await resource.delete("r1", "m1");
-    expect(client.delete).toHaveBeenCalledWith("/restaurants/r1/menus/m1", { signal: undefined });
+    await resource.save("tenant-1", payload);
+    expect(client.put).toHaveBeenCalledWith("/tenants/tenant-1/menu", payload, { signal: undefined });
   });
 });
