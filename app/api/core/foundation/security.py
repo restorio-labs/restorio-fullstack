@@ -2,7 +2,7 @@ from datetime import UTC, datetime, timedelta
 
 from bcrypt import checkpw, gensalt, hashpw
 from fastapi import Request
-from jose import JWTError, jwt
+import jwt
 
 from core.exceptions.http import UnauthorizedError
 from core.foundation.auth_cookies import get_access_token_from_request
@@ -52,7 +52,7 @@ class SecurityService:
     def decode_access_token(self, token: str) -> dict:
         try:
             return jwt.decode(token, self._secret_key, algorithms=[self._algorithm])
-        except JWTError as err:
+        except jwt.InvalidTokenError as err:
             logger.error(f"Invalid token: {err!s}", exc_info=True)
 
             raise UnauthorizedError(message="Unauthorized") from None

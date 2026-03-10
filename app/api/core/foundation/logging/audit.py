@@ -47,6 +47,7 @@ def _client_ip(request: Request) -> str:
 
 def _base_payload(request: Request) -> dict[str, Any]:
     return {
+        "request_id": getattr(request.state, "request_id", None),
         "ip": _client_ip(request),
         "user_agent": request.headers.get("User-Agent", ""),
         "path": str(request.url.path),

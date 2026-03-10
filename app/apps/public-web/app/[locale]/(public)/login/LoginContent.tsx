@@ -1,6 +1,6 @@
 "use client";
 
-import { APP_SLUGS, type AppSlug, type LoginResponse } from "@restorio/types";
+import { APP_SLUGS, type AppSlug } from "@restorio/types";
 import { Button, ChooseApp, Form, FormActions, FormField, Input } from "@restorio/ui";
 import {
   getApiErrorData,
@@ -14,7 +14,7 @@ import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 import { useMemo, useState } from "react";
 
-import { api, setAccessToken } from "@/api/client";
+import { api } from "@/api/client";
 import { isEmailValid, MIN_PASSWORD_LENGTH } from "@/services/validation";
 
 type ViewState = "form" | "choosing_app";
@@ -85,10 +85,7 @@ export const LoginContent = (): ReactElement => {
     setSubmitting(true);
 
     try {
-      const loginResponse: LoginResponse = await api.auth.login(email.trim(), password);
-      const accessToken: string = loginResponse.data.at;
-
-      setAccessToken(accessToken);
+      await api.auth.login(email.trim(), password);
 
       const rlvp = localStorage.getItem(LAST_VISITED_APP_STORAGE_KEY);
 
@@ -98,7 +95,7 @@ export const LoginContent = (): ReactElement => {
         return;
       }
 
-      const me = await api.auth.me(undefined, loginResponse.data.at);
+      const me = await api.auth.me();
 
       const role = me.accountType;
 

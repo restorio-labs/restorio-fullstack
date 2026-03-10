@@ -5,6 +5,7 @@ from core.dto.v1.payments import UpdateP24ConfigDTO
 from core.dto.v1.tenants import TenantResponseDTO
 from core.foundation.dependencies import AuthorizedTenantId, PostgresSession
 from core.foundation.http.responses import UpdatedResponse
+from core.foundation.role_guard import RequireOwner
 from core.models.tenant import Tenant
 
 router = APIRouter()
@@ -22,6 +23,7 @@ def _tenant_to_response(tenant: Tenant) -> TenantResponseDTO:
 
 @router.put("/tenants/{tenant_public_id}/p24-config", status_code=status.HTTP_200_OK)
 async def update_p24_config(
+    _role: RequireOwner,
     tenant_id: AuthorizedTenantId,
     request: UpdateP24ConfigDTO,
     session: PostgresSession,

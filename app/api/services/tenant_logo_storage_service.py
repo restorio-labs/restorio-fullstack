@@ -160,7 +160,8 @@ class TenantLogoStorageService:
         try:
             self._internal_client.stat_object(settings.MINIO_BUCKET, object_key)
         except Exception as exc:
-            raise NotFoundResponse("Tenant logo", str(tenant_id)) from exc
+            msg = "Tenant logo"
+            raise NotFoundResponse(msg, str(tenant_id)) from exc
 
         try:
             return self._public_client.presigned_get_object(

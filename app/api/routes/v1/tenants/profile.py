@@ -18,6 +18,7 @@ from core.foundation.http.responses import (
     SuccessResponse,
     UpdatedResponse,
 )
+from core.foundation.role_guard import RequireOwnerOrManager
 from routes.v1.mappers.tenant_profile_mappers import tenant_profile_to_response
 
 router = APIRouter()
@@ -32,6 +33,7 @@ router = APIRouter()
     response_description="Presigned tenant logo upload URL created successfully",
 )
 async def create_tenant_logo_upload(
+    _role: RequireOwnerOrManager,
     tenant_id: AuthorizedTenantId,
     storage: TenantLogoStorageServiceDep,
     request: TenantLogoUploadPresignRequestDTO,
@@ -97,6 +99,7 @@ async def get_tenant_profile(
     response_description="Tenant profile saved successfully",
 )
 async def upsert_tenant_profile(
+    _role: RequireOwnerOrManager,
     tenant_id: AuthorizedTenantId,
     request: CreateTenantProfileDTO,
     session: PostgresSession,

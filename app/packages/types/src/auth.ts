@@ -56,7 +56,7 @@ export interface AuthMeData {
 
 export interface LoginResponse {
   message: string;
-  data: { at: string };
+  data: Record<string, never>;
 }
 
 export interface RefreshResponse {

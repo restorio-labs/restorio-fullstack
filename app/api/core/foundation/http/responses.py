@@ -30,14 +30,17 @@ class DeletedResponse(BaseModel):
 class ExceptionHandlerResponse(BaseModel):
     message: str
     details: dict | None = None
+    request_id: str | None = None
 
 
 class ErrorResponse(BaseModel):
     details: dict | None = None
+    request_id: str | None = None
 
 
 class ValidationErrorResponse(BaseModel):
     fields: list[str]
+    request_id: str | None = None
 
 
 class PaginatedResponse[T](BaseModel):

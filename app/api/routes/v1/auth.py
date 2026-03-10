@@ -90,9 +90,7 @@ async def login(
     )
     audit.login_success(request=request, user_id=str(payload.get("sub")), email=credentials.email)
     return SuccessResponse(
-        data=LoginResponseData(
-            at=access_token,
-        ),
+        data=LoginResponseData(),
         message="Login successful",
     )
 

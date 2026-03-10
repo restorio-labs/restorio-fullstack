@@ -37,9 +37,7 @@ async def resolve_and_authorize_tenant(
     if tenant_public_id not in allowed_ids:
         raise ForbiddenError(message="Access denied to this tenant")
 
-    result = await session.execute(
-        select(Tenant.id).where(Tenant.public_id == tenant_public_id)
-    )
+    result = await session.execute(select(Tenant.id).where(Tenant.public_id == tenant_public_id))
     tenant_id = result.scalar_one_or_none()
 
     if tenant_id is None:

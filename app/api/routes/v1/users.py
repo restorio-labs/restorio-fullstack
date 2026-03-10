@@ -15,6 +15,7 @@ from core.foundation.dependencies import (
 )
 from core.foundation.http.responses import CreatedResponse, SuccessResponse, UnauthenticatedResponse
 from core.foundation.infra.config import settings
+from core.foundation.role_guard import RequireOwner
 from core.models.enums import AccountType
 from core.models.tenant import Tenant
 from core.models.tenant_role import TenantRole
@@ -50,6 +51,7 @@ async def get_tenant_id_from_request(request: Request, session: AsyncSession) ->
     description="Create inactive staff user and send activation email",
 )
 async def create_user(
+    _role: RequireOwner,
     data: CreateUserDTO,
     request: Request,
     session: PostgresSession,
@@ -148,6 +150,7 @@ async def list_tenant_users(
     description="Delete a user from current tenant",
 )
 async def delete_user(
+    _role: RequireOwner,
     user_id: UUID,
     request: Request,
     session: PostgresSession,

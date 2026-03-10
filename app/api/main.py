@@ -24,9 +24,9 @@ def create_application() -> FastAPI:
 
     setup_exception_handlers(app=app, settings=settings)
 
-    app.add_middleware(TimingMiddleware)
-    app.add_middleware(UnauthorizedMiddleware)
     app.add_middleware(RateLimitMiddleware)
+    app.add_middleware(UnauthorizedMiddleware)
+    app.add_middleware(TimingMiddleware)
     # Keep CORS as the outermost middleware so short-circuit 401 responses
     # from auth middleware still receive CORS headers.
     setup_cors(app=app, settings=settings)

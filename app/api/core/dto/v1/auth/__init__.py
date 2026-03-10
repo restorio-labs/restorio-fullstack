@@ -103,7 +103,7 @@ class ActivateResponseData(BaseDTO):
 
 
 class LoginResponseData(BaseDTO):
-    at: str = Field(..., description="JWT access token")
+    pass
 
 
 class AuthMeSessionData(BaseDTO):

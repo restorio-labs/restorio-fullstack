@@ -4,6 +4,7 @@ from collections import defaultdict
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 import time
+from typing import Protocol
 
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -16,25 +17,30 @@ from core.foundation.logging.logger import logger
 
 
 @dataclass(frozen=True)
-class _RateRule:
+class RateRule:
     max_requests: int
     window_seconds: int
 
 
-_RATE_LIMITED_PATHS: dict[str, _RateRule] = {
-    f"{settings.API_V1_PREFIX}/auth/login": _RateRule(max_requests=10, window_seconds=60),
-    f"{settings.API_V1_PREFIX}/auth/refresh": _RateRule(max_requests=20, window_seconds=60),
-    f"{settings.API_V1_PREFIX}/auth/register": _RateRule(max_requests=5, window_seconds=60),
-    f"{settings.API_V1_PREFIX}/auth/activate": _RateRule(max_requests=10, window_seconds=60),
-    f"{settings.API_V1_PREFIX}/auth/set-password": _RateRule(max_requests=5, window_seconds=60),
-    f"{settings.API_V1_PREFIX}/auth/resend-activation": _RateRule(
-        max_requests=3, window_seconds=60
-    ),
+RATE_LIMITED_PATHS: dict[str, RateRule] = {
+    f"{settings.API_V1_PREFIX}/auth/login": RateRule(max_requests=10, window_seconds=60),
+    f"{settings.API_V1_PREFIX}/auth/refresh": RateRule(max_requests=20, window_seconds=60),
+    f"{settings.API_V1_PREFIX}/auth/register": RateRule(max_requests=5, window_seconds=60),
+    f"{settings.API_V1_PREFIX}/auth/activate": RateRule(max_requests=10, window_seconds=60),
+    f"{settings.API_V1_PREFIX}/auth/set-password": RateRule(max_requests=5, window_seconds=60),
+    f"{settings.API_V1_PREFIX}/auth/resend-activation": RateRule(max_requests=3, window_seconds=60),
+    f"{settings.API_V1_PREFIX}/tenants": RateRule(max_requests=30, window_seconds=60),
 }
 
+_PRESIGN_SUFFIX = "/profile/logo/presign"
+_PRESIGN_RULE = RateRule(max_requests=10, window_seconds=60)
 
-def _match_rule(path: str) -> _RateRule | None:
-    for prefix, rule in _RATE_LIMITED_PATHS.items():
+
+def _match_rule(path: str) -> RateRule | None:
+    if path.endswith(_PRESIGN_SUFFIX):
+        return _PRESIGN_RULE
+
+    for prefix, rule in RATE_LIMITED_PATHS.items():
         if path == prefix or path.startswith((prefix + "/", prefix + "?")):
             return rule
     return None
@@ -47,16 +53,25 @@ def _client_ip(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 
+class RateLimitBackend(Protocol):
+    def is_rate_limited(self, key: str, rule: RateRule) -> tuple[bool, int]: ...
+
+
 @dataclass
 class _BucketEntry:
     timestamps: list[float] = field(default_factory=list)
 
 
-class _InMemoryBackend:
+class InMemoryBackend:
+    """Default in-memory rate-limit backend.
+
+    Swap for a Redis-backed implementation by calling ``set_backend()``.
+    """
+
     def __init__(self) -> None:
         self._buckets: dict[str, _BucketEntry] = defaultdict(_BucketEntry)
 
-    def is_rate_limited(self, key: str, rule: _RateRule) -> tuple[bool, int]:
+    def is_rate_limited(self, key: str, rule: RateRule) -> tuple[bool, int]:
         now = time.monotonic()
         cutoff = now - rule.window_seconds
         entry = self._buckets[key]
@@ -70,7 +85,12 @@ class _InMemoryBackend:
         return False, remaining
 
 
-_backend = _InMemoryBackend()
+_backend: RateLimitBackend = InMemoryBackend()
+
+
+def set_backend(backend: RateLimitBackend) -> None:
+    global _backend  # noqa: PLW0603
+    _backend = backend
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
@@ -99,9 +119,13 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 ip,
             )
             audit.rate_limited(request=request)
+            rid = getattr(request.state, "request_id", None)
+            body: dict[str, str | None] = {"message": "Too many requests. Please try again later."}
+            if rid:
+                body["request_id"] = rid
             return JSONResponse(
                 status_code=429,
-                content={"message": "Too many requests. Please try again later."},
+                content=body,
                 headers={
                     "Retry-After": str(rule.window_seconds),
                     "X-RateLimit-Limit": str(rule.max_requests),
