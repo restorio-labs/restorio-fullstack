@@ -9,23 +9,26 @@ from core.foundation.http.responses import (
     UnauthorizedResponse,
 )
 
+HTTP_UNAUTHORIZED = 401
+HTTP_FORBIDDEN = 403
+
 
 class TestUnauthenticatedResponse:
     def test_default_message(self) -> None:
         r = UnauthenticatedResponse()
-        assert r.status_code == 401
+        assert r.status_code == HTTP_UNAUTHORIZED
         assert r.detail == "Unauthorized"
 
     def test_custom_message(self) -> None:
         r = UnauthenticatedResponse(message="Not logged in")
-        assert r.status_code == 401
+        assert r.status_code == HTTP_UNAUTHORIZED
         assert r.detail == "Not logged in"
 
 
 class TestUnauthorizedResponse:
     def test_default_message(self) -> None:
         r = UnauthorizedResponse()
-        assert r.status_code == 403
+        assert r.status_code == HTTP_FORBIDDEN
         assert r.detail == "Unauthorized"
 
 

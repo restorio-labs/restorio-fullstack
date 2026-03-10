@@ -62,7 +62,7 @@ class FakeAsyncSession:
     async def refresh(self, obj: object) -> None:
         pass
 
-    async def scalars(self, query: object) -> object:
+    async def scalars(self, _query: object) -> object:
         class _ScalarResult:
             def all(self) -> list[object]:
                 return []

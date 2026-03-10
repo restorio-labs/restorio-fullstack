@@ -12,16 +12,18 @@ from core.dto.v1.menus import (
 
 
 class TestMenuItemInputDTO:
+    BURGER_PRICE = 29.99
+
     def test_valid_creation(self) -> None:
         dto = MenuItemInputDTO(
             name="Burger",
-            price=29.99,
+            price=self.BURGER_PRICE,
             promoted=1,
             desc="Classic burger",
             tags=["beef", "spicy"],
         )
         assert dto.name == "Burger"
-        assert dto.price == 29.99
+        assert dto.price == self.BURGER_PRICE
         assert dto.promoted == 1
 
     def test_promoted_flag_validation(self) -> None:
