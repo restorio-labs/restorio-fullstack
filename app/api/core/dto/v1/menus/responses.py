@@ -24,5 +24,7 @@ class TenantMenuResponseDTO(BaseDTO):
     tenant_id: EntityId = Field(..., alias="tenantId", serialization_alias="tenantId")
     tenant_id_legacy: str = Field(..., alias="tenantID", serialization_alias="tenantID")
     menu: dict[str, dict[str, Any]] = Field(..., description="Raw menu payload stored in MongoDB")
-    categories: list[MenuCategoryDTO] = Field(default_factory=list, description="Normalized category view")
+    categories: list[MenuCategoryDTO] = Field(
+        default_factory=list, description="Normalized category view"
+    )
     updated_at: datetime | None = Field(None, alias="updatedAt", serialization_alias="updatedAt")

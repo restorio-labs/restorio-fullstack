@@ -10,7 +10,12 @@ from core.dto.v1 import (
     UpsertTenantMenuDTO,
 )
 from core.foundation.dependencies import MongoDB
-from core.foundation.http.responses import SuccessResponse, UnauthenticatedResponse, UnauthorizedResponse, UpdatedResponse
+from core.foundation.http.responses import (
+    SuccessResponse,
+    UnauthenticatedResponse,
+    UnauthorizedResponse,
+    UpdatedResponse,
+)
 
 router = APIRouter()
 
@@ -79,7 +84,9 @@ def _build_raw_menu(data: UpsertTenantMenuDTO) -> dict[str, dict]:
 def _normalize_categories(raw_menu: dict[str, dict]) -> list[MenuCategoryDTO]:
     categories: list[MenuCategoryDTO] = []
 
-    for order_key in sorted(raw_menu.keys(), key=lambda value: int(value) if value.isdigit() else value):
+    for order_key in sorted(
+        raw_menu.keys(), key=lambda value: int(value) if value.isdigit() else value
+    ):
         category_data = raw_menu.get(order_key)
         if not isinstance(category_data, dict):
             continue
@@ -108,7 +115,11 @@ def _normalize_categories(raw_menu: dict[str, dict]) -> list[MenuCategoryDTO]:
             price = float(raw_price) if isinstance(raw_price, int | float) else 0.0
             promoted = 1 if raw_promoted == 1 else 0
             desc = raw_desc if isinstance(raw_desc, str) else ""
-            tags = [tag for tag in raw_tags if isinstance(tag, str)] if isinstance(raw_tags, list) else []
+            tags = (
+                [tag for tag in raw_tags if isinstance(tag, str)]
+                if isinstance(raw_tags, list)
+                else []
+            )
 
             items.append(
                 MenuItemDTO(

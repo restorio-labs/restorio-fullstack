@@ -22,16 +22,12 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     bind = op.get_bind()
     inspector = sa.inspect(bind)
-    if inspector.has_table("restaurant_profiles") and not inspector.has_table(
-        "tenant_profiles"
-    ):
+    if inspector.has_table("restaurant_profiles") and not inspector.has_table("tenant_profiles"):
         op.rename_table("restaurant_profiles", "tenant_profiles")
 
 
 def downgrade() -> None:
     bind = op.get_bind()
     inspector = sa.inspect(bind)
-    if inspector.has_table("tenant_profiles") and not inspector.has_table(
-        "restaurant_profiles"
-    ):
+    if inspector.has_table("tenant_profiles") and not inspector.has_table("restaurant_profiles"):
         op.rename_table("tenant_profiles", "restaurant_profiles")

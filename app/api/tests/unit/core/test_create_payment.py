@@ -2,7 +2,6 @@ from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
 import pytest
-from routes.v1.payments.payments import create_payment
 
 from core.dto.v1.payments import CreateTransactionDTO
 from core.exceptions import (
@@ -12,6 +11,7 @@ from core.exceptions import (
     ServiceUnavailableError,
 )
 from core.foundation.http.responses import CreatedResponse
+from routes.v1.payments.payments import create_payment
 from services.payment_service import P24Service
 
 
