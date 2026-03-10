@@ -157,28 +157,32 @@
       "saving": "Zapisywanie...",
       "addCategory": "Dodaj kategorię",
       "removeCategory": "Usuń kategorię",
+      "moveCategoryUp": "Przesuń kategorię w górę",
+      "moveCategoryDown": "Przesuń kategorię w dół",
       "addItem": "Dodaj pozycję",
-      "removeItem": "Usuń pozycję"
+      "removeItem": "Usuń pozycję",
+      "addTag": "Dodaj tag",
+      "removeTag": "Usuń tag"
     },
     "fields": {
       "categoryName": "Nazwa kategorii",
-      "categoryOrder": "Kolejność kategorii",
+      "categoryOrderControls": "Kolejność",
       "itemName": "Nazwa pozycji",
       "itemPrice": "Cena",
       "itemPromoted": "Promowana",
       "itemDescription": "Opis",
-      "itemTags": "Tagi (oddzielone przecinkami)"
+      "itemTags": "Tagi"
     },
     "placeholders": {
       "categoryName": "np. Przystawki",
       "itemName": "np. Produkt {{index}}",
       "itemDescription": "Opisz pozycję menu",
-      "itemTags": "vegan, pikantne, halal"
+      "itemTags": "Wpisz tag i kliknij +"
     },
     "errors": {
       "selectRestaurant": "Najpierw wybierz restaurację z przełącznika tenantów.",
       "saveFailed": "Nie udało się zapisać menu. Spróbuj ponownie.",
-      "invalidCategory": "Każda kategoria musi mieć poprawną nazwę i nieujemną kolejność.",
+      "invalidCategory": "Każda kategoria musi mieć poprawną nazwę.",
       "invalidItem": "Każda pozycja musi mieć poprawną nazwę i nieujemną cenę."
     }
   },

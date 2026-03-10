@@ -157,28 +157,32 @@
       "saving": "Saving...",
       "addCategory": "Add category",
       "removeCategory": "Remove category",
+      "moveCategoryUp": "Move category up",
+      "moveCategoryDown": "Move category down",
       "addItem": "Add item",
-      "removeItem": "Remove item"
+      "removeItem": "Remove item",
+      "addTag": "Add tag",
+      "removeTag": "Remove tag"
     },
     "fields": {
       "categoryName": "Category name",
-      "categoryOrder": "Category order",
+      "categoryOrderControls": "Order",
       "itemName": "Item name",
       "itemPrice": "Price",
       "itemPromoted": "Promoted",
       "itemDescription": "Description",
-      "itemTags": "Tags (comma separated)"
+      "itemTags": "Tags"
     },
     "placeholders": {
       "categoryName": "e.g. Starters",
       "itemName": "e.g. Product {{index}}",
       "itemDescription": "Describe this menu item",
-      "itemTags": "vegan, spicy, halal"
+      "itemTags": "Type a tag and click +"
     },
     "errors": {
       "selectRestaurant": "Select a restaurant from the tenant switcher first.",
       "saveFailed": "Failed to save menu. Please try again.",
-      "invalidCategory": "Each category must have a valid name and non-negative order.",
+      "invalidCategory": "Each category must have a valid name.",
       "invalidItem": "Each item must have a valid name and non-negative price."
     }
   },
