@@ -1,17 +1,483 @@
-import { useI18n } from "@restorio/ui";
+import type { SaveTenantMenuPayload, TenantMenuCategory } from "@restorio/types";
+import { Button, FormActions, useI18n } from "@restorio/ui";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type { ReactElement } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { api } from "../api/client";
+import { useCurrentTenant } from "../context/TenantContext";
 import { PageLayout } from "../layouts/PageLayout";
+
+interface MenuItemFormState {
+  id: string;
+  name: string;
+  price: string;
+  promoted: boolean;
+  desc: string;
+  tags: string[];
+  tagInput: string;
+}
+
+interface MenuCategoryFormState {
+  id: string;
+  name: string;
+  items: MenuItemFormState[];
+}
+
+const menuQueryKey = (tenantId: string): readonly string[] => ["tenant-menu", tenantId];
+const ITEM_DESCRIPTION_MAX_LENGTH = 2000;
+
+const createLocalId = (): string => `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+
+const createEmptyItem = (): MenuItemFormState => ({
+  id: createLocalId(),
+  name: "",
+  price: "",
+  promoted: false,
+  desc: "",
+  tags: [],
+  tagInput: "",
+});
+
+const createEmptyCategory = (order = 0): MenuCategoryFormState => ({
+  id: createLocalId(),
+  name: "",
+  items: [createEmptyItem()],
+});
+
+const toFormCategories = (categories: TenantMenuCategory[]): MenuCategoryFormState[] =>
+  categories.map((category) => ({
+    id: createLocalId(),
+    name: category.name,
+    items: category.items.map((item) => ({
+      id: createLocalId(),
+      name: item.name,
+      price: String(item.price),
+      promoted: item.promoted === 1,
+      desc: item.desc,
+      tags: item.tags,
+      tagInput: "",
+    })),
+  }));
 
 export const MenuCreatorPage = (): ReactElement => {
   const { t } = useI18n();
+  const { selectedTenantId } = useCurrentTenant();
+  const [categories, setCategories] = useState<MenuCategoryFormState[]>([]);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successVisible, setSuccessVisible] = useState(false);
+
+  const tenantId = selectedTenantId;
+
+  const { data: menuData, isLoading } = useQuery({
+    queryKey: menuQueryKey(tenantId ?? ""),
+    queryFn: () => api.menus.get(tenantId!),
+    enabled: tenantId !== null,
+  });
+
+  useEffect(() => {
+    if (!tenantId) {
+      setCategories([]);
+      return;
+    }
+
+    if (menuData?.categories) {
+      setCategories(toFormCategories(menuData.categories));
+      return;
+    }
+
+    setCategories([createEmptyCategory(0)]);
+  }, [menuData, tenantId]);
+
+  const saveMutation = useMutation({
+    mutationFn: async (payload: SaveTenantMenuPayload) => {
+      if (!tenantId) {
+        throw new Error(t("menuCreator.errors.selectRestaurant"));
+      }
+      return api.menus.save(tenantId, payload);
+    },
+    onSuccess: () => {
+      setErrorMessage("");
+      setSuccessVisible(true);
+    },
+    onError: (error: unknown) => {
+      setSuccessVisible(false);
+      setErrorMessage(
+        error instanceof Error && error.message.trim() !== "" ? error.message : t("menuCreator.errors.saveFailed"),
+      );
+    },
+  });
+
+  const canSave = useMemo(() => tenantId !== null && categories.length > 0 && !saveMutation.isPending, [categories.length, saveMutation.isPending, tenantId]);
+
+  const updateCategory = (categoryId: string, patch: Partial<MenuCategoryFormState>): void => {
+    setCategories((prev) => prev.map((category) => (category.id === categoryId ? { ...category, ...patch } : category)));
+  };
+
+  const removeCategory = (categoryId: string): void => {
+    setCategories((prev) => prev.filter((category) => category.id !== categoryId));
+  };
+
+  const addCategory = (): void => {
+    setCategories((prev) => [...prev, createEmptyCategory(prev.length)]);
+  };
+
+  const moveCategory = (categoryId: string, direction: "up" | "down"): void => {
+    setCategories((prev) => {
+      const index = prev.findIndex((category) => category.id === categoryId);
+      if (index === -1) {
+        return prev;
+      }
+
+      const targetIndex = direction === "up" ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= prev.length) {
+        return prev;
+      }
+
+      const next = [...prev];
+      const [moved] = next.splice(index, 1);
+      next.splice(targetIndex, 0, moved);
+
+      return next;
+    });
+  };
+
+  const addItem = (categoryId: string): void => {
+    setCategories((prev) =>
+      prev.map((category) =>
+        category.id === categoryId ? { ...category, items: [...category.items, createEmptyItem()] } : category,
+      ),
+    );
+  };
+
+  const updateItem = (categoryId: string, itemId: string, patch: Partial<MenuItemFormState>): void => {
+    setCategories((prev) =>
+      prev.map((category) =>
+        category.id !== categoryId
+          ? category
+          : {
+              ...category,
+              items: category.items.map((item) => (item.id === itemId ? { ...item, ...patch } : item)),
+            },
+      ),
+    );
+  };
+
+  const removeItem = (categoryId: string, itemId: string): void => {
+    setCategories((prev) =>
+      prev.map((category) =>
+        category.id !== categoryId
+          ? category
+          : {
+              ...category,
+              items: category.items.filter((item) => item.id !== itemId),
+            },
+      ),
+    );
+  };
+
+  const addTagToItem = (categoryId: string, itemId: string): void => {
+    setCategories((prev) =>
+      prev.map((category) =>
+        category.id !== categoryId
+          ? category
+          : {
+              ...category,
+              items: category.items.map((item) => {
+                if (item.id !== itemId) {
+                  return item;
+                }
+
+                const normalizedTag = item.tagInput.trim();
+                if (normalizedTag === "" || item.tags.some((tag) => tag.toLowerCase() === normalizedTag.toLowerCase())) {
+                  return item;
+                }
+
+                return {
+                  ...item,
+                  tags: [...item.tags, normalizedTag],
+                  tagInput: "",
+                };
+              }),
+            },
+      ),
+    );
+  };
+
+  const removeTagFromItem = (categoryId: string, itemId: string, tagToRemove: string): void => {
+    setCategories((prev) =>
+      prev.map((category) =>
+        category.id !== categoryId
+          ? category
+          : {
+              ...category,
+              items: category.items.map((item) =>
+                item.id !== itemId
+                  ? item
+                  : {
+                      ...item,
+                      tags: item.tags.filter((tag) => tag !== tagToRemove),
+                    },
+              ),
+            },
+      ),
+    );
+  };
+
+  const buildPayload = (): SaveTenantMenuPayload | null => {
+    const normalizedCategories: TenantMenuCategory[] = [];
+
+    for (const [index, category] of categories.entries()) {
+      const categoryName = category.name.trim();
+      if (categoryName === "") {
+        setErrorMessage(t("menuCreator.errors.invalidCategory"));
+        return null;
+      }
+
+      const normalizedItems = category.items
+        .map((item) => {
+          const itemName = item.name.trim();
+          const itemPrice = Number(item.price);
+          if (itemName === "" || Number.isNaN(itemPrice) || itemPrice < 0) {
+            return null;
+          }
+
+          return {
+            name: itemName,
+            price: itemPrice,
+            promoted: item.promoted ? 1 : 0,
+            desc: item.desc.trim(),
+            tags: item.tags,
+          } as const;
+        })
+        .filter((item): item is NonNullable<typeof item> => item !== null);
+
+      if (normalizedItems.length !== category.items.length) {
+        setErrorMessage(t("menuCreator.errors.invalidItem"));
+        return null;
+      }
+
+      normalizedCategories.push({
+        name: categoryName,
+        order: index,
+        items: normalizedItems,
+      });
+    }
+
+    return { categories: normalizedCategories };
+  };
+
+  const handleSave = (): void => {
+    setErrorMessage("");
+    setSuccessVisible(false);
+
+    const payload = buildPayload();
+    if (!payload) {
+      return;
+    }
+
+    saveMutation.mutate(payload);
+  };
 
   return (
-    <PageLayout title={`${t("menuCreator.title")} [WIP]`} description={t("menuCreator.description")}>
-      <div className="p-6">
-        <div className="flex flex-col items-center justify-center min-h-[400px] border-2 border-dashed border-border-default rounded-lg">
-          <h2 className="text-lg font-medium text-text-secondary">{`${t("menuCreator.placeholderTitle")} [WIP]`}</h2>
-          <p className="mt-2 text-sm text-text-tertiary">{`${t("menuCreator.placeholderDescription")} This screen is not implemented yet.`}</p>
+    <PageLayout
+      title={t("menuCreator.title")}
+      description={t("menuCreator.description")}
+      headerActions={
+        <FormActions>
+          <Button type="button" variant="secondary" onClick={addCategory} disabled={tenantId === null}>
+            {t("menuCreator.actions.addCategory")}
+          </Button>
+          <Button type="button" onClick={handleSave} disabled={!canSave}>
+            {saveMutation.isPending ? t("menuCreator.actions.saving") : t("menuCreator.actions.save")}
+          </Button>
+        </FormActions>
+      }
+    >
+      <div className="mx-auto max-w-6xl p-6">
+        {tenantId === null && (
+          <div className="rounded-lg border border-status-warning-border bg-status-warning-background px-4 py-3 text-sm text-status-warning-text">
+            {t("menuCreator.errors.selectRestaurant")}
+          </div>
+        )}
+
+        {isLoading && tenantId !== null && <div className="text-sm text-text-tertiary">{t("menuCreator.loading")}</div>}
+
+        {errorMessage !== "" && (
+          <div className="mb-4 rounded-lg border border-status-error-border bg-status-error-background px-4 py-3 text-sm text-status-error-text">
+            {errorMessage}
+          </div>
+        )}
+
+        {successVisible && (
+          <div className="mb-4 rounded-lg border border-status-success-border bg-status-success-background px-4 py-3 text-sm text-status-success-text">
+            {t("menuCreator.success")}
+          </div>
+        )}
+
+        <div className="space-y-6">
+          {categories.map((category, categoryIndex) => (
+            <section key={category.id} className="rounded-xl border border-border-default bg-surface-secondary/60 p-4 shadow-sm">
+              <div className="grid gap-4 md:grid-cols-12">
+                <div className="md:col-span-8">
+                  <label className="mb-1 block text-xs font-medium text-text-secondary">{t("menuCreator.fields.categoryName")}</label>
+                  <input
+                    value={category.name}
+                    onChange={(event) => updateCategory(category.id, { name: event.target.value })}
+                    className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
+                    placeholder={t("menuCreator.placeholders.categoryName")}
+                  />
+                </div>
+                <div className="flex items-end gap-2 md:col-span-4">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-medium text-text-secondary">{t("menuCreator.fields.categoryOrderControls")}</span>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => moveCategory(category.id, "up")}
+                        disabled={categoryIndex === 0}
+                        aria-label={t("menuCreator.actions.moveCategoryUp")}
+                      >
+                        ↑
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => moveCategory(category.id, "down")}
+                        disabled={categoryIndex === categories.length - 1}
+                        aria-label={t("menuCreator.actions.moveCategoryDown")}
+                      >
+                        ↓
+                      </Button>
+                    </div>
+                  </div>
+                  <Button type="button" variant="secondary" onClick={() => addItem(category.id)}>
+                    {t("menuCreator.actions.addItem")}
+                  </Button>
+                  <Button type="button" variant="danger" onClick={() => removeCategory(category.id)}>
+                    {t("menuCreator.actions.removeCategory")}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                {category.items.map((item) => (
+                  <div key={item.id} className="relative rounded-lg border border-border-default bg-surface-primary p-3 pt-9">
+                    <button
+                      type="button"
+                      aria-label={t("menuCreator.actions.removeItem")}
+                      onClick={() => removeItem(category.id, item.id)}
+                      className="absolute right-3 top-3 inline-flex h-7 w-7 items-center justify-center rounded-md border border-status-error-border bg-status-error-background text-sm font-semibold leading-none text-status-error-text"
+                    >
+                      x
+                    </button>
+                    <div className="grid gap-3 md:grid-cols-12">
+                      <div className="md:col-span-4">
+                        <label className="mb-1 block text-xs font-medium text-text-secondary">{t("menuCreator.fields.itemName")}</label>
+                        <input
+                          value={item.name}
+                          onChange={(event) => updateItem(category.id, item.id, { name: event.target.value })}
+                          className="w-full rounded-md border border-border-default bg-surface-secondary px-3 py-2 text-sm text-text-primary"
+                          placeholder={t("menuCreator.placeholders.itemName", { index: categoryIndex + 1 })}
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="mb-1 block text-xs font-medium text-text-secondary">{t("menuCreator.fields.itemPrice")}</label>
+                        <input
+                          type="number"
+                          min={0}
+                          step="0.01"
+                          value={item.price}
+                          onChange={(event) => updateItem(category.id, item.id, { price: event.target.value })}
+                          className="w-full rounded-md border border-border-default bg-surface-secondary px-3 py-2 text-sm text-text-primary"
+                        />
+                      </div>
+                      <div className="md:col-span-3">
+                        <label className="mb-1 block text-xs font-medium text-text-secondary">{t("menuCreator.fields.itemTags")}</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            value={item.tagInput}
+                            onChange={(event) => updateItem(category.id, item.id, { tagInput: event.target.value })}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter") {
+                                event.preventDefault();
+                                addTagToItem(category.id, item.id);
+                              }
+                            }}
+                            className="w-full rounded-md border border-border-default bg-surface-secondary px-3 py-2 text-sm text-text-primary"
+                            placeholder={t("menuCreator.placeholders.itemTags")}
+                          />
+                          <button
+                            type="button"
+                            aria-label={t("menuCreator.actions.addTag")}
+                            onClick={() => addTagToItem(category.id, item.id)}
+                            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border-default bg-surface-secondary text-base font-semibold text-text-primary"
+                          >
+                            +
+                          </button>
+                        </div>
+                        {item.tags.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {item.tags.map((tag) => (
+                              <span
+                                key={`${item.id}-${tag}`}
+                                className="inline-flex items-center gap-1 rounded-md border border-border-default bg-surface-secondary px-2 py-1 text-xs text-text-secondary"
+                              >
+                                {tag}
+                                <button
+                                  type="button"
+                                  aria-label={t("menuCreator.actions.removeTag")}
+                                  onClick={() => removeTagFromItem(category.id, item.id, tag)}
+                                  className="inline-flex h-5 w-5 items-center justify-center rounded border border-status-error-border bg-status-error-background text-[10px] font-semibold leading-none text-status-error-text"
+                                >
+                                  -
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 pt-6 md:col-span-2">
+                        <input
+                          id={`promoted-${item.id}`}
+                          type="checkbox"
+                          checked={item.promoted}
+                          onChange={(event) => updateItem(category.id, item.id, { promoted: event.target.checked })}
+                        />
+                        <label htmlFor={`promoted-${item.id}`} className="text-xs text-text-secondary">
+                          {t("menuCreator.fields.itemPromoted")}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between">
+                      <label className="block text-xs font-medium text-text-secondary">
+                        {t("menuCreator.fields.itemDescription")}
+                      </label>
+                      <span className="text-xs text-text-tertiary">
+                        {item.desc.length}/{ITEM_DESCRIPTION_MAX_LENGTH}
+                      </span>
+                    </div>
+                    <div className="mt-2">
+                      <textarea
+                        value={item.desc}
+                        onChange={(event) => updateItem(category.id, item.id, { desc: event.target.value })}
+                        className="min-h-20 w-full rounded-md border border-border-default bg-surface-secondary px-3 py-2 text-sm text-text-primary"
+                        placeholder={t("menuCreator.placeholders.itemDescription")}
+                        maxLength={ITEM_DESCRIPTION_MAX_LENGTH}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))}
+
+          {categories.length === 0 && (
+            <div className="rounded-lg border border-dashed border-border-default p-6 text-sm text-text-tertiary">
+              {t("menuCreator.emptyState")}
+            </div>
+          )}
         </div>
       </div>
     </PageLayout>

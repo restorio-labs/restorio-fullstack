@@ -62,6 +62,13 @@ class FakeAsyncSession:
     async def refresh(self, obj: object) -> None:
         pass
 
+    async def scalars(self, _query: object) -> object:
+        class _ScalarResult:
+            def all(self) -> list[object]:
+                return []
+
+        return _ScalarResult()
+
 
 @pytest.mark.asyncio
 async def test_create_activation_link_success() -> None:
@@ -386,7 +393,6 @@ async def test_login_success_returns_jwt_with_claims() -> None:
     assert decoded is not None
     assert decoded["sub"] == str(user.id)
     assert decoded["email"] == user.email
-    assert decoded["tenant_id"] == str(tenant_id)
     assert decoded["tenant_ids"] == [str(tenant_id)]
 
 

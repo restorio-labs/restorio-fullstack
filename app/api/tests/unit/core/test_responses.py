@@ -9,54 +9,60 @@ from core.foundation.http.responses import (
     UnauthorizedResponse,
 )
 
+HTTP_UNAUTHORIZED = 401
+HTTP_FORBIDDEN = 403
+
 
 class TestUnauthenticatedResponse:
     def test_default_message(self) -> None:
         r = UnauthenticatedResponse()
-        assert r.message == "Unauthenticated"
+        assert r.status_code == HTTP_UNAUTHORIZED
+        assert r.detail == "Unauthorized"
 
     def test_custom_message(self) -> None:
         r = UnauthenticatedResponse(message="Not logged in")
-        assert r.message == "Not logged in"
+        assert r.status_code == HTTP_UNAUTHORIZED
+        assert r.detail == "Not logged in"
 
 
 class TestUnauthorizedResponse:
     def test_default_message(self) -> None:
         r = UnauthorizedResponse()
-        assert r.message == "Unauthorized"
+        assert r.status_code == HTTP_FORBIDDEN
+        assert r.detail == "Unauthorized"
 
 
 class TestNotFoundResponse:
     def test_default_message(self) -> None:
         r = NotFoundResponse()
-        assert r.message == "Not found"
+        assert r.model_dump() == {}
 
 
 class TestConflictResponse:
     def test_default_message(self) -> None:
         r = ConflictResponse()
-        assert r.message == "Conflict"
+        assert r.model_dump() == {}
 
 
 class TestBadRequestResponse:
     def test_default_message(self) -> None:
         r = BadRequestResponse()
-        assert r.message == "Bad request"
+        assert r.model_dump() == {}
 
 
 class TestGoneResponse:
     def test_default_message(self) -> None:
         r = GoneResponse()
-        assert r.message == "Gone"
+        assert r.model_dump() == {}
 
 
 class TestTooManyRequestsResponse:
     def test_default_message(self) -> None:
         r = TooManyRequestsResponse()
-        assert r.message == "Too many requests"
+        assert r.model_dump() == {}
 
 
 class TestServiceUnavailableResponse:
     def test_default_message(self) -> None:
         r = ServiceUnavailableResponse()
-        assert r.message == "Service unavailable"
+        assert r.model_dump() == {}

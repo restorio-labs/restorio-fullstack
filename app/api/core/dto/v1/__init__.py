@@ -14,6 +14,14 @@ from core.dto.v1.floor_canvases import (
     FloorCanvasResponseDTO,
     UpdateFloorCanvasDTO,
 )
+from core.dto.v1.menus import (
+    MenuCategoryDTO,
+    MenuCategoryInputDTO,
+    MenuItemDTO,
+    MenuItemInputDTO,
+    TenantMenuResponseDTO,
+    UpsertTenantMenuDTO,
+)
 from core.dto.v1.tenant_profiles import (
     CreateTenantProfileDTO,
     TenantProfileResponseDTO,
@@ -31,12 +39,18 @@ __all__ = [
     "CreateTenantDTO",
     "CreateTenantProfileDTO",
     "FloorCanvasResponseDTO",
+    "MenuCategoryDTO",
+    "MenuCategoryInputDTO",
+    "MenuItemDTO",
+    "MenuItemInputDTO",
+    "TenantMenuResponseDTO",
     "TenantProfileResponseDTO",
     "TenantResponseDTO",
     "TenantSummaryResponseDTO",
     "UpdateFloorCanvasDTO",
     "UpdateTenantDTO",
     "UpdateTenantProfileDTO",
+    "UpsertTenantMenuDTO",
     "auth",
     "common",
     "floor_canvases",
