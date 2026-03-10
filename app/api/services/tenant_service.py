@@ -39,6 +39,20 @@ class TenantService:
 
         return tenant
 
+    async def get_tenant_by_public_id(self, session: AsyncSession, public_id: str) -> Tenant:
+        query = (
+            select(Tenant)
+            .options(selectinload(Tenant.floor_canvases))
+            .where(Tenant.public_id == public_id)
+        )
+        result = await session.execute(query)
+        tenant = result.scalar_one_or_none()
+
+        if not tenant:
+            raise NotFoundResponse(self._RESOURCE, public_id)
+
+        return tenant
+
     async def create_tenant(self, session: AsyncSession, data: CreateTenantDTO) -> Tenant:
         tenant = Tenant(
             name=data.name,

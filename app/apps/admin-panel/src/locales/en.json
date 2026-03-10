@@ -340,10 +340,17 @@
         "placeholder": "Official registered company name",
         "error": "Company name is required"
       },
-      "logoUrl": {
-        "label": "Logo URL",
+      "logo": {
+        "label": "Logo",
         "placeholder": "https://example.com/logo.png",
-        "error": "Invalid logo URL"
+        "helper": "Upload a PNG, JPEG, or WEBP logo up to 5 MB.",
+        "uploading": "Uploading logo...",
+        "uploadError": "Failed to upload logo. Please try again.",
+        "invalidType": "Logo must be a PNG, JPEG, or WEBP image.",
+        "fileTooLarge": "Logo must be 5 MB or smaller.",
+        "current": "Current logo",
+        "previewAlt": "Tenant logo preview",
+        "error": "Invalid logo"
       },
       "contactEmail": {
         "label": "Contact Email",

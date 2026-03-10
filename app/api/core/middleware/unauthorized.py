@@ -14,7 +14,9 @@ from core.middleware.cors import is_origin_allowed
 
 def _cors_headers_for_request(request: Request) -> dict[str, str]:
     origin = request.headers.get("origin")
-    if origin is not None and is_origin_allowed(origin, settings.CORS_ORIGINS):
+    if origin is not None and is_origin_allowed(
+        origin, settings.CORS_ORIGINS, debug=settings.DEBUG
+    ):
         return {
             "Access-Control-Allow-Origin": origin,
             "Access-Control-Allow-Credentials": "true",

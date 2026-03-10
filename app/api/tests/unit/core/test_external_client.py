@@ -6,7 +6,8 @@ import pytest
 from core.exceptions import ExternalAPIError, ServiceUnavailableError
 from services.external_client_service import ExternalClient
 
-HTTP_INTERNAL_SERVER_ERROR = 500
+HTTP_BAD_GATEWAY = 502
+HTTP_SERVICE_UNAVAILABLE = 503
 
 
 @pytest.mark.asyncio
@@ -65,7 +66,7 @@ async def test_external_post_json_http_status_error_raises_external_api_error() 
                 service_name="Example API",
             )
 
-        assert exc_info.value.status_code == HTTP_INTERNAL_SERVER_ERROR
+        assert exc_info.value.status_code == HTTP_BAD_GATEWAY
         assert "Example API error" in exc_info.value.detail
         assert "Invalid request" in exc_info.value.detail
 
@@ -84,7 +85,7 @@ async def test_external_post_json_request_error_raises_service_unavailable() -> 
                 service_name="Example API",
             )
 
-        assert exc_info.value.status_code == HTTP_INTERNAL_SERVER_ERROR
+        assert exc_info.value.status_code == HTTP_SERVICE_UNAVAILABLE
         assert "Failed to connect to Example API" in exc_info.value.detail
         assert "Connection refused" in exc_info.value.detail
 
@@ -134,7 +135,7 @@ async def test_external_post_json_extract_error_fallback_to_response_text() -> N
         with pytest.raises(ExternalAPIError) as exc_info:
             await ExternalClient().external_post_json("https://api.example.com", json={})
 
-        assert exc_info.value.status_code == HTTP_INTERNAL_SERVER_ERROR
+        assert exc_info.value.status_code == HTTP_BAD_GATEWAY
         assert "Internal Server Error" in exc_info.value.detail
 
 
@@ -164,5 +165,5 @@ async def test_external_post_json_extract_error_fallback_inside_try_block() -> N
                 service_name="Example API",
             )
 
-        assert exc_info.value.status_code == HTTP_INTERNAL_SERVER_ERROR
+        assert exc_info.value.status_code == HTTP_BAD_GATEWAY
         assert "I'm a teapot" in exc_info.value.detail

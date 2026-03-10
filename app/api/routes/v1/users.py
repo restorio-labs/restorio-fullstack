@@ -2,10 +2,12 @@ from uuid import UUID
 
 from fastapi import APIRouter, Request, status
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.dto.v1.auth import CreateUserDTO, RegisterCreatedData
 from core.exceptions import NotFoundResponse
 from core.foundation.dependencies import (
+    AuthorizedTenantId,
     AuthServiceDep,
     EmailServiceDep,
     PostgresSession,
@@ -21,20 +23,21 @@ from core.models.user import User
 router = APIRouter()
 
 
-def get_tenant_id_from_request(request: Request) -> UUID:
+async def get_tenant_id_from_request(request: Request, session: AsyncSession) -> UUID:
     user = getattr(request.state, "user", None)
     if not isinstance(user, dict):
         raise UnauthenticatedResponse(message="Unauthorized")
 
-    tenant_id_value = user.get("tenant_id")
-    if isinstance(tenant_id_value, str) and tenant_id_value != "":
-        return UUID(tenant_id_value)
-
     tenant_ids_value = user.get("tenant_ids")
     if isinstance(tenant_ids_value, list):
-        for tenant_id_item in tenant_ids_value:
-            if isinstance(tenant_id_item, str) and tenant_id_item != "":
-                return UUID(tenant_id_item)
+        for tenant_public_id in tenant_ids_value:
+            if isinstance(tenant_public_id, str) and tenant_public_id != "":
+                result = await session.execute(
+                    select(Tenant.id).where(Tenant.public_id == tenant_public_id)
+                )
+                internal_id = result.scalar_one_or_none()
+                if internal_id is not None:
+                    return internal_id
 
     raise UnauthenticatedResponse(message="Unauthorized")
 
@@ -54,7 +57,7 @@ async def create_user(
     user_service: UserServiceDep,
     email_service: EmailServiceDep,
 ) -> CreatedResponse[RegisterCreatedData]:
-    tenant_id = get_tenant_id_from_request(request)
+    tenant_id = await get_tenant_id_from_request(request, session)
     tenant = await session.get(Tenant, tenant_id)
     if tenant is None:
         raise UnauthenticatedResponse(message="Unauthorized")
@@ -86,7 +89,7 @@ async def create_user(
         data=RegisterCreatedData(
             user_id=str(created_user.id),
             email=created_user.email,
-            tenant_id=str(tenant.id),
+            tenant_id=tenant.public_id,
             tenant_name=tenant.name,
             tenant_slug=tenant.slug,
         ),
@@ -95,14 +98,14 @@ async def create_user(
 
 
 @router.get(
-    "/{tenant_id}",
+    "/{tenant_public_id}",
     status_code=status.HTTP_200_OK,
     response_model=SuccessResponse[list[dict[str, str | bool]]],
     summary="List tenant staff users",
     description="List waiter and kitchen users for current tenant",
 )
 async def list_tenant_users(
-    tenant_id: UUID,
+    tenant_id: AuthorizedTenantId,
     session: PostgresSession,
 ) -> SuccessResponse[list[dict[str, str | bool]]]:
     stmt = (
@@ -149,7 +152,7 @@ async def delete_user(
     request: Request,
     session: PostgresSession,
 ) -> SuccessResponse[dict[str, str]]:
-    tenant_id = get_tenant_id_from_request(request)
+    tenant_id = await get_tenant_id_from_request(request, session)
     resource_name = "User"
 
     user = await session.scalar(select(User).where(User.id == user_id, User.tenant_id == tenant_id))

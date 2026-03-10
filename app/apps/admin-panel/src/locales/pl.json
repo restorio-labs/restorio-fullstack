@@ -336,10 +336,17 @@
         "placeholder": "Oficjalna zarejestrowana nazwa firmy",
         "error": "Nazwa firmy jest wymagana"
       },
-      "logoUrl": {
-        "label": "URL logo",
+      "logo": {
+        "label": "Logo",
         "placeholder": "https://example.com/logo.png",
-        "error": "Nieprawidłowy URL logo"
+        "helper": "Prześlij logo PNG, JPEG lub WEBP o rozmiarze do 5 MB.",
+        "uploading": "Przesyłanie logo...",
+        "uploadError": "Nie udało się przesłać logo. Spróbuj ponownie.",
+        "invalidType": "Logo musi być obrazem PNG, JPEG lub WEBP.",
+        "fileTooLarge": "Logo musi mieć maksymalnie 5 MB.",
+        "current": "Aktualne logo",
+        "previewAlt": "Podgląd logo najemcy",
+        "error": "Nieprawidłowe logo"
       },
       "contactEmail": {
         "label": "Email kontaktowy",

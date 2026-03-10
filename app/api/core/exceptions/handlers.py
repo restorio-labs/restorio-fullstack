@@ -20,7 +20,10 @@ def setup_exception_handlers(app: FastAPI, settings: Settings) -> None:
     ) -> JSONResponse:
         return JSONResponse(
             status_code=exc.status_code,
-            content=None,
+            content=ExceptionHandlerResponse(
+                message=str(exc.detail),
+                details=exc.details,
+            ).model_dump(exclude_none=True),
         )
 
     @app.exception_handler(RequestValidationError)

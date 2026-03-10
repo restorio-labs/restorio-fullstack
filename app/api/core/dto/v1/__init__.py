@@ -16,6 +16,9 @@ from core.dto.v1.floor_canvases import (
 )
 from core.dto.v1.tenant_profiles import (
     CreateTenantProfileDTO,
+    TenantLogoUploadPresignRequestDTO,
+    TenantLogoUploadResponseDTO,
+    TenantLogoViewPresignResponseDTO,
     TenantProfileResponseDTO,
     UpdateTenantProfileDTO,
 )
@@ -31,6 +34,9 @@ __all__ = [
     "CreateTenantDTO",
     "CreateTenantProfileDTO",
     "FloorCanvasResponseDTO",
+    "TenantLogoUploadPresignRequestDTO",
+    "TenantLogoUploadResponseDTO",
+    "TenantLogoViewPresignResponseDTO",
     "TenantProfileResponseDTO",
     "TenantResponseDTO",
     "TenantSummaryResponseDTO",

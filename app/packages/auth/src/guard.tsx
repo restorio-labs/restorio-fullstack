@@ -33,12 +33,18 @@ const fallbackTokenCheck = (): boolean => {
   return Boolean(refreshToken);
 };
 
+const REVALIDATION_COOLDOWN_MS = 2000;
+
 const createDefaultCheckAuth = (client: RestorioApi): (() => boolean | Promise<boolean>) => {
   if (typeof window === "undefined") {
     return (): boolean => fallbackTokenCheck();
   }
 
   return async (): Promise<boolean> => {
+    if (fallbackTokenCheck()) {
+      return true;
+    }
+
     try {
       await client.auth.me();
 
@@ -46,7 +52,6 @@ const createDefaultCheckAuth = (client: RestorioApi): (() => boolean | Promise<b
     } catch {
       try {
         await client.auth.refresh();
-        await client.auth.me();
 
         return true;
       } catch {
@@ -119,13 +124,26 @@ export const AuthGuard = ({
       setStatus("unauthorized");
     };
 
-    const handleFocus = (): void => {
+    let lastRevalidation = 0;
+
+    const debouncedCheck = (): void => {
+      const now = Date.now();
+
+      if (now - lastRevalidation < REVALIDATION_COOLDOWN_MS) {
+        return;
+      }
+
+      lastRevalidation = now;
       void runCheck();
+    };
+
+    const handleFocus = (): void => {
+      debouncedCheck();
     };
 
     const handleVisibility = (): void => {
       if (typeof document !== "undefined" && document.visibilityState === "visible") {
-        void runCheck();
+        debouncedCheck();
       }
     };
 
