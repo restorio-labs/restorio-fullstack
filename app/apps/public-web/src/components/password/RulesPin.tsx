@@ -1,7 +1,7 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
-interface PasswordRulesProps {
+interface PasswordRulesPinProps {
   checks: {
     minLength: boolean;
     lowercase: boolean;
@@ -11,7 +11,7 @@ interface PasswordRulesProps {
   };
 }
 
-export const PasswordRules = ({ checks }: PasswordRulesProps): ReactElement => {
+export const PasswordRulesPin = ({ checks }: PasswordRulesPinProps): ReactElement => {
   const t = useTranslations("register.passwordRules");
 
   return (

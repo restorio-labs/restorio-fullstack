@@ -15,6 +15,7 @@ from core.middleware.cors import is_origin_allowed
 
 _PUBLIC_PATH_PREFIXES: frozenset[str] = frozenset(
     {
+        "/",
         "/docs",
         "/openapi",
         "/health",

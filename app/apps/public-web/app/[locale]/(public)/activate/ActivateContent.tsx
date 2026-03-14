@@ -1,20 +1,21 @@
 "use client";
 
-import { Button, ContentContainer, Input, Text } from "@restorio/ui";
-import { getAppUrl, getEnvironmentFromEnv, getEnvSource, resolveNextEnvVar } from "@restorio/utils";
+import { ContentContainer } from "@restorio/ui";
+import { getAppHref } from "@restorio/utils";
 import type { FormEvent, ReactElement } from "react";
 import { useEffect, useRef, useState } from "react";
 
-import { PasswordRules } from "../register/PasswordRules";
-
 import { api } from "@/api/client";
+import {
+  ActivateSetPasswordView,
+  ActivateErrorView,
+  ActivateExpiredView,
+  ActivateResendSentView,
+  ActivateLoadingView,
+  ActivateSuccessView,
+  ActivateAlreadyActivatedView,
+} from "@/components/activation";
 import { getPasswordFieldsValidation } from "@/services/passwordFieldsValidation";
-
-const viteEnv = typeof import.meta !== "undefined" ? (import.meta as { env?: Record<string, unknown> }).env : undefined;
-const envSource = getEnvSource(viteEnv);
-const envMode = resolveNextEnvVar(envSource, "ENV", "NODE_ENV") ?? "development";
-const adminPanelUrlEnv = resolveNextEnvVar(envSource, "VITE_ADMIN_PANEL_URL", "NEXT_PUBLIC_ADMIN_PANEL_URL");
-const adminPanelUrl = adminPanelUrlEnv ?? getAppUrl(getEnvironmentFromEnv(envMode), "admin-panel");
 
 type Result = "loading" | "success" | "already_activated" | "expired" | "error" | "resend_sent" | "set_password";
 
@@ -69,14 +70,14 @@ export function ActivateContent(): ReactElement {
     const params = new URLSearchParams(window.location.search);
     const id = params.get("activation_id")?.trim() ?? "";
 
-    setActivationId(id);
-
     if (!id) {
-      setErrorMessage("Activation link is missing or invalid.");
+      setErrorMessage("");
       setResult("error");
 
       return;
     }
+
+    setActivationId(id);
 
     const run = async (): Promise<void> => {
       try {
@@ -100,10 +101,10 @@ export function ActivateContent(): ReactElement {
         const msg = axiosErr?.response?.data?.message ?? axiosErr?.response?.data?.detail;
 
         if (status === 410) {
-          setErrorMessage(msg ?? "Activation link has expired.");
+          setErrorMessage(msg ?? "");
           setResult("expired");
         } else {
-          setErrorMessage(msg ?? "Activation failed. Please request a new link.");
+          setErrorMessage(msg ?? "");
           setResult("error");
         }
       }
@@ -113,14 +114,18 @@ export function ActivateContent(): ReactElement {
   }, []);
 
   const handleResend = (): void => {
-    if (!activationId || resendLoading) {
+    const idFromUrl = new URLSearchParams(window.location.search).get("activation_id")?.trim() ?? "";
+    const id = activationId || idFromUrl;
+
+    if (!id || resendLoading) {
       return;
     }
     setResendLoading(true);
+    setErrorMessage("");
 
     const run = async (): Promise<void> => {
       try {
-        await api.auth.resendActivation(activationId);
+        await api.auth.resendActivation(id);
         setResult("resend_sent");
       } catch (err: unknown) {
         interface AxiosErrorShape {
@@ -128,12 +133,12 @@ export function ActivateContent(): ReactElement {
         }
         const axiosErr = err && typeof err === "object" && "response" in err ? (err as AxiosErrorShape) : undefined;
 
-        setErrorMessage(
-          axiosErr?.response?.data?.message ?? axiosErr?.response?.data?.detail ?? "Failed to resend activation email.",
-        );
+        setErrorMessage(axiosErr?.response?.data?.message ?? axiosErr?.response?.data?.detail ?? "");
 
         if (axiosErr?.response?.status === 429) {
           setResendCooldownUntil(Date.now() + 300_000);
+        } else {
+          setResult("error");
         }
       } finally {
         setResendLoading(false);
@@ -147,8 +152,9 @@ export function ActivateContent(): ReactElement {
     event.preventDefault();
     setPasswordSubmitted(true);
     setErrorMessage("");
+    const { isPasswordFormValid: isValidNow } = getPasswordFieldsValidation(password, confirmPassword, true);
 
-    if (!activationId || !isPasswordFormValid) {
+    if (!activationId || !isValidNow) {
       return;
     }
 
@@ -171,10 +177,10 @@ export function ActivateContent(): ReactElement {
         const msg = axiosErr?.response?.data?.message ?? axiosErr?.response?.data?.detail;
 
         if (status === 410) {
-          setErrorMessage(msg ?? "Activation link has expired.");
+          setErrorMessage(msg ?? "");
           setResult("expired");
         } else {
-          setErrorMessage(msg ?? "Failed to set password. Please try again.");
+          setErrorMessage(msg ?? "");
         }
       } finally {
         setIsSettingPassword(false);
@@ -186,143 +192,92 @@ export function ActivateContent(): ReactElement {
 
   const resendOnCooldown = cooldownSeconds > 0;
 
+  const goToAdmin = (): void => {
+    window.location.href = getAppHref("admin-panel");
+  };
+
   return (
-    <div className="py-16 md:py-24">
-      <ContentContainer maxWidth={result === "set_password" ? "full" : "md"} padding>
+    <div>
+      <ContentContainer maxWidth="md">
         <div className="rounded-2xl border border-border-default bg-surface-primary p-8 text-center">
-          {result === "loading" && (
-            <>
-              <Text variant="h2" weight="bold" className="mb-4">
-                We are activating your account
-              </Text>
-              <Text variant="body-lg" className="text-text-secondary">
-                This should only take a moment.
-              </Text>
-            </>
-          )}
+          {result === "loading" && <ActivateLoadingView />}
 
           {result === "success" && (
-            <>
-              <Text variant="h2" weight="bold" className="mb-4">
-                Your account is activated.
-              </Text>
-              <Text variant="body-lg" className="text-text-secondary">
-                You’re now logged in. Continue to the admin panel to finish setup.
-              </Text>
-              <div className="mt-8 flex justify-center">
-                <Button
-                  variant="primary"
-                  size="lg"
-                  onClick={() => {
-                    window.location.href = adminPanelUrl;
-                  }}
-                >
-                  Go to admin panel
-                </Button>
-              </div>
-            </>
+            <ActivateSuccessView
+              onGoToAdmin={() => {
+                goToAdmin();
+              }}
+            />
           )}
 
           {result === "already_activated" && (
-            <>
-              <Text variant="h2" weight="bold" className="mb-4">
-                This account is already activated.
-              </Text>
-              <Text variant="body-lg" className="text-text-secondary">
-                Continue to the admin panel.
-              </Text>
-              <div className="mt-8 flex justify-center">
-                <Button
-                  variant="primary"
-                  size="lg"
-                  onClick={() => {
-                    window.location.href = adminPanelUrl;
-                  }}
-                >
-                  Go to admin panel
-                </Button>
-              </div>
-            </>
+            <ActivateAlreadyActivatedView
+              onGoToAdmin={() => {
+                goToAdmin();
+              }}
+            />
           )}
 
           {result === "expired" && (
-            <>
-              <Text variant="h2" weight="bold" className="mb-4">
-                Activation link has expired
-              </Text>
-              <Text variant="body-lg" className="mb-6 text-text-secondary">
-                {errorMessage}
-              </Text>
-              <Button variant="primary" onClick={handleResend} disabled={resendLoading || resendOnCooldown}>
-                {resendLoading
-                  ? "Sending…"
-                  : resendOnCooldown
-                    ? `Resend activation link (${cooldownSeconds}s)`
-                    : "Resend activation link"}
-              </Button>
-            </>
+            <ActivateExpiredView
+              errorMessage={errorMessage}
+              resendLoading={resendLoading}
+              resendOnCooldown={resendOnCooldown}
+              cooldownSeconds={cooldownSeconds}
+              onResend={handleResend}
+            />
           )}
 
           {result === "set_password" && (
-            <>
-              <Text variant="h2" weight="bold" className="mb-4">
-                Set your password
-              </Text>
-              <Text variant="body-lg" className="mb-6 text-text-secondary">
-                Before activation, set a password for your account.
-              </Text>
-              <form className="w-full space-y-4 text-left" onSubmit={handleSetPassword}>
-                <div className="relative">
-                  <Input
-                    label="Password"
-                    type="password"
-                    autoComplete="new-password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    onFocus={() => setShowPasswordRules(true)}
-                    onBlur={() => setShowPasswordRules(false)}
-                    error={passwordError}
-                    required
-                  />
-                  {showPasswordRules && <PasswordRules checks={passwordChecks} />}
-                </div>
-                <Input
-                  label="Repeat password"
-                  type="password"
-                  autoComplete="new-password"
-                  value={confirmPassword}
-                  onChange={(event) => setConfirmPassword(event.target.value)}
-                  error={confirmPasswordError}
-                  required
-                />
-                {errorMessage && <p className="text-sm text-status-error-text">{errorMessage}</p>}
-                <Button type="submit" variant="primary" fullWidth disabled={!isPasswordFormValid || isSettingPassword}>
-                  {isSettingPassword ? "Saving..." : "Save password and activate"}
-                </Button>
-              </form>
-            </>
+            <ActivateSetPasswordView
+              password={password}
+              confirmPassword={confirmPassword}
+              passwordChecks={passwordChecks}
+              passwordError={passwordError}
+              confirmPasswordError={confirmPasswordError}
+              showPasswordRules={showPasswordRules}
+              errorMessage={errorMessage}
+              isPasswordFormValid={isPasswordFormValid}
+              isSettingPassword={isSettingPassword}
+              onPasswordChange={setPassword}
+              onConfirmPasswordChange={setConfirmPassword}
+              onPasswordFocus={() => {
+                setShowPasswordRules(true);
+              }}
+              onPasswordBlur={() => {
+                const allPassed =
+                  passwordChecks.minLength &&
+                  passwordChecks.lowercase &&
+                  passwordChecks.uppercase &&
+                  passwordChecks.number &&
+                  passwordChecks.special;
+
+                if (allPassed) {
+                  setShowPasswordRules(false);
+                }
+              }}
+              onSubmit={handleSetPassword}
+            />
           )}
 
           {result === "resend_sent" && (
-            <>
-              <Text variant="h2" weight="bold" className="mb-4">
-                Check your email
-              </Text>
-              <Text variant="body-lg" className="text-text-secondary">
-                We’ve sent a new activation link. Use the link in the email to activate your account.
-              </Text>
-            </>
+            <ActivateResendSentView
+              resendLoading={resendLoading}
+              resendOnCooldown={resendOnCooldown}
+              cooldownSeconds={cooldownSeconds}
+              onResend={handleResend}
+            />
           )}
 
           {result === "error" && (
-            <>
-              <Text variant="h2" weight="bold" className="mb-4">
-                Activation failed
-              </Text>
-              <Text variant="body-lg" className="text-text-secondary">
-                {errorMessage || "Please request a new activation link."}
-              </Text>
-            </>
+            <ActivateErrorView
+              errorMessage={errorMessage}
+              canResend={Boolean(activationId)}
+              resendLoading={resendLoading}
+              resendOnCooldown={resendOnCooldown}
+              cooldownSeconds={cooldownSeconds}
+              onResend={handleResend}
+            />
           )}
         </div>
       </ContentContainer>

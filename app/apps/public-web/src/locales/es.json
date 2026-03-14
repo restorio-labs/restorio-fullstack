@@ -7,7 +7,29 @@
   },
   "metadata": {
     "title": "Plataforma Restorio",
-    "description": "Plataforma de Gestión de Restaurantes"
+    "description": "Plataforma de Gestión de Restaurantes",
+    "pages": {
+      "home": {
+        "title": "Inicio",
+        "description": "Bienvenido a la plataforma Restorio."
+      },
+      "about": {
+        "title": "Acerca de",
+        "description": "Conoce la misión y los objetivos de la plataforma Restorio."
+      },
+      "login": {
+        "title": "Iniciar sesión",
+        "description": "Inicia sesión en tu cuenta de Restorio."
+      },
+      "register": {
+        "title": "Crea tu cuenta",
+        "description": "Crea tu cuenta de Restorio."
+      },
+      "activate": {
+        "title": "Activar cuenta",
+        "description": "Activa tu cuenta de Restorio."
+      }
+    }
   },
   "login": {
     "title": "Iniciar sesión",

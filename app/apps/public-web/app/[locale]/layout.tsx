@@ -5,6 +5,7 @@ import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
 import type { ReactElement, ReactNode } from "react";
 
+import { getRootMetadata } from "../../src/i18n/metadata";
 import { routing } from "../../src/i18n/routing";
 import { AppProviders } from "../../src/wrappers/AppProviders";
 
@@ -16,27 +17,15 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-export const metadata: Metadata = {
-  title: {
-    default: "Restorio Platform",
-    template: "%s | Restorio Platform",
-  },
-  description: "Restaurant Management Platform",
-  icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
-    apple: "/favicon.ico",
-  },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000"),
-  openGraph: {
-    type: "website",
-    locale: "en_US",
-    siteName: "Restorio Platform",
-  },
-  twitter: {
-    card: "summary_large_image",
-  },
-};
+interface MetadataParams {
+  params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: MetadataParams): Promise<Metadata> {
+  const { locale } = await params;
+
+  return getRootMetadata(locale);
+}
 
 interface RootLayoutProps {
   children: ReactNode;
