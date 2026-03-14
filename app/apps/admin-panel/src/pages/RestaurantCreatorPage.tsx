@@ -8,13 +8,13 @@ import type { UseFormRegister } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
 import { api } from "../api/client";
+import type { ProfileFormData } from "../components/tenant-profile/profileForm";
 import {
   AddressFieldset,
   CompanyFieldset,
   ContactFieldset,
   OwnerFieldset,
 } from "../components/tenant-profile/TenantProfileFieldsets";
-import type { ProfileFormData } from "../components/tenant-profile/profileForm";
 import { tenantDetailsQueryKey, useCurrentTenant } from "../context/TenantContext";
 import { tenantsQueryKey } from "../hooks/useTenants";
 import { useValidationErrors } from "../hooks/useValidationErrors";
@@ -51,7 +51,10 @@ interface WrappedProfileError {
 }
 
 const isWrappedProfileError = (error: unknown): error is WrappedProfileError =>
-  typeof error === "object" && error !== null && "source" in error && (error as { source?: string }).source === "profile";
+  typeof error === "object" &&
+  error !== null &&
+  "source" in error &&
+  (error as { source?: string }).source === "profile";
 
 export const RestaurantCreatorPage = (): ReactElement => {
   const { t } = useI18n();
@@ -189,6 +192,7 @@ export const RestaurantCreatorPage = (): ReactElement => {
   const isFormDisabled = !isValid || createMutation.isPending;
   const getCombinedFieldError = (field: string): string | undefined => {
     const serverError = getFieldError(field);
+
     if (serverError) {
       return serverError;
     }
@@ -196,30 +200,39 @@ export const RestaurantCreatorPage = (): ReactElement => {
     if (field === "name" && errors.name) {
       return t("restaurantCreator.fields.name.error");
     }
+
     if (field === "nip" && errors.nip) {
       return t("tenantProfile.fields.nip.error");
     }
+
     if (field === "companyName" && errors.companyName) {
       return t("tenantProfile.fields.companyName.error");
     }
+
     if (field === "contactEmail" && errors.contactEmail) {
       return t("tenantProfile.fields.contactEmail.error");
     }
+
     if (field === "phone" && errors.phone) {
       return t("tenantProfile.fields.phone.error");
     }
+
     if (field === "addressStreet" && errors.addressStreet) {
       return t("tenantProfile.fields.addressStreet.error");
     }
+
     if (field === "addressCity" && errors.addressCity) {
       return t("tenantProfile.fields.addressCity.error");
     }
+
     if (field === "addressPostalCode" && errors.addressPostalCode) {
       return t("tenantProfile.fields.addressPostalCode.error");
     }
+
     if (field === "ownerFirstName" && errors.ownerFirstName) {
       return t("tenantProfile.fields.ownerFirstName.error");
     }
+
     if (field === "ownerLastName" && errors.ownerLastName) {
       return t("tenantProfile.fields.ownerLastName.error");
     }

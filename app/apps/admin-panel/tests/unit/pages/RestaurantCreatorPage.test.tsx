@@ -113,17 +113,20 @@ describe("RestaurantCreatorPage", () => {
       refreshTenants,
       setSelectedTenantId,
     });
-    queryClient.setQueryData(["tenants"], [
-      {
-        id: "tenant-1",
-        name: "Old Name",
-        slug: "old-name",
-        status: "ACTIVE",
-        activeLayoutVersionId: null,
-        floorCanvasCount: 1,
-        createdAt: new Date(),
-      },
-    ]);
+    queryClient.setQueryData(
+      ["tenants"],
+      [
+        {
+          id: "tenant-1",
+          name: "Old Name",
+          slug: "old-name",
+          status: "ACTIVE",
+          activeLayoutVersionId: null,
+          floorCanvasCount: 1,
+          createdAt: new Date(),
+        },
+      ],
+    );
     mockCreateTenant.mockResolvedValueOnce({
       id: "tenant-1",
       name: "New Name",
