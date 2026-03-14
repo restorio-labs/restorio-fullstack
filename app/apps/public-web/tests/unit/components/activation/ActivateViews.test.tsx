@@ -14,8 +14,7 @@ type TranslationFn = (key: string, values?: Record<string, number | string>) => 
 type UseTranslationsFn = (namespace?: string) => TranslationFn;
 
 const { useTranslationsMock } = vi.hoisted(() => {
-  const translate: TranslationFn = (key, values) =>
-    values ? `${key}-${JSON.stringify(values)}` : key;
+  const translate: TranslationFn = (key, values) => (values ? `${key}-${JSON.stringify(values)}` : key);
 
   const useTranslationsMockInner: UseTranslationsFn = () => translate;
 
@@ -158,12 +157,7 @@ describe("Activation views", () => {
     expect(handleResend).toHaveBeenCalledTimes(1);
 
     rerender(
-      <ActivateResendSentView
-        resendLoading={false}
-        resendOnCooldown
-        cooldownSeconds={20}
-        onResend={handleResend}
-      />,
+      <ActivateResendSentView resendLoading={false} resendOnCooldown cooldownSeconds={20} onResend={handleResend} />,
     );
 
     const cooldownButton = screen.getByRole("button");
