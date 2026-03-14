@@ -238,4 +238,38 @@ describe("Dropdown", () => {
     );
     expect(screen.getByRole("menu")).toBeDefined();
   });
+
+  it("should close on menu click when closeOnSelect is enabled", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Dropdown trigger={<button type="button">Open</button>} closeOnSelect>
+        <button type="button">Selectable item</button>
+      </Dropdown>,
+    );
+
+    await user.click(screen.getByText("Open"));
+    expect(screen.getByRole("menu")).toBeDefined();
+
+    await user.click(screen.getByRole("button", { name: "Selectable item" }));
+    expect(screen.queryByRole("menu")).toBeNull();
+  });
+
+  it("should keep menu open when clicking prevent-close content", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Dropdown trigger={<button type="button">Open</button>} closeOnSelect>
+        <button type="button" data-dropdown-prevent-close="true">
+          Keep open
+        </button>
+      </Dropdown>,
+    );
+
+    await user.click(screen.getByText("Open"));
+    expect(screen.getByRole("menu")).toBeDefined();
+
+    await user.click(screen.getByRole("button", { name: "Keep open" }));
+    expect(screen.getByRole("menu")).toBeDefined();
+  });
 });
