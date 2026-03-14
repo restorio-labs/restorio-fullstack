@@ -1,4 +1,4 @@
-from fastapi import Request, Response
+from fastapi import Request, Response, status
 import pytest
 
 from core.middleware import rate_limit as rl
@@ -13,8 +13,7 @@ def _request(path: str, method: str = "GET", headers=None, client=None) -> Reque
     }
     if client is not None:
         scope["client"] = client
-    request = Request(scope)
-    return request
+    return Request(scope)
 
 
 def test_match_rule_for_known_prefix_suffix_and_none() -> None:
@@ -34,27 +33,31 @@ def test_client_ip_forwarded_and_unknown() -> None:
 
 
 def test_inmemory_backend_blocks_after_limit(monkeypatch) -> None:
+    max_requests = 2
     monotonic_values = iter([100.0, 101.0, 102.0])
     monkeypatch.setattr(rl.time, "monotonic", lambda: next(monotonic_values))
 
     backend = rl.InMemoryBackend()
-    rule = rl.RateRule(max_requests=2, window_seconds=60)
+    rule = rl.RateRule(max_requests=max_requests, window_seconds=60)
 
     limited, remaining = backend.is_rate_limited("k", rule)
-    assert limited is False and remaining == 1
+    assert limited is False
+    assert remaining == 1
 
     limited, remaining = backend.is_rate_limited("k", rule)
-    assert limited is False and remaining == 0
+    assert limited is False
+    assert remaining == 0
 
     limited, remaining = backend.is_rate_limited("k", rule)
-    assert limited is True and remaining == 2
+    assert limited is True
+    assert remaining == max_requests
 
 
 def test_set_backend_swaps_global_backend() -> None:
     original = rl._backend
 
     class DummyBackend:
-        def is_rate_limited(self, key, rule):
+        def is_rate_limited(self, _key, _rule):
             return False, 5
 
     dummy = DummyBackend()
@@ -69,26 +72,28 @@ def test_set_backend_swaps_global_backend() -> None:
 @pytest.mark.asyncio
 async def test_rate_limit_middleware_options_and_unmatched_passthrough() -> None:
     async def call_next(_: Request) -> Response:
-        return Response(content="ok", status_code=204)
+        return Response(content="ok", status_code=status.HTTP_204_NO_CONTENT)
 
     middleware = rl.RateLimitMiddleware(call_next)
 
     options_response = await middleware.dispatch(_request("/any", method="OPTIONS"), call_next)
-    assert options_response.status_code == 204
+    assert options_response.status_code == status.HTTP_204_NO_CONTENT
 
     response = await middleware.dispatch(_request("/not-limited"), call_next)
-    assert response.status_code == 204
+    assert response.status_code == status.HTTP_204_NO_CONTENT
 
 
 @pytest.mark.asyncio
-async def test_rate_limit_middleware_limited_response_includes_headers_and_request_id(monkeypatch) -> None:
+async def test_rate_limit_middleware_limited_response_includes_headers_and_request_id(
+    monkeypatch,
+) -> None:
     async def call_next(_: Request) -> Response:
-        return Response(content="ok", status_code=200)
+        return Response(content="ok", status_code=status.HTTP_200_OK)
 
     middleware = rl.RateLimitMiddleware(call_next)
 
     class DummyBackend:
-        def is_rate_limited(self, key, rule):
+        def is_rate_limited(self, _key, _rule):
             return True, 0
 
     monkeypatch.setattr(rl, "_backend", DummyBackend())
@@ -103,7 +108,7 @@ async def test_rate_limit_middleware_limited_response_includes_headers_and_reque
 
     response = await middleware.dispatch(request, call_next)
 
-    assert response.status_code == 429
+    assert response.status_code == status.HTTP_429_TOO_MANY_REQUESTS
     assert response.headers["Retry-After"] == "60"
     assert response.headers["X-RateLimit-Limit"] == "10"
     assert response.headers["X-RateLimit-Remaining"] == "0"
@@ -115,12 +120,12 @@ async def test_rate_limit_middleware_limited_response_includes_headers_and_reque
 @pytest.mark.asyncio
 async def test_rate_limit_middleware_success_sets_rate_headers(monkeypatch) -> None:
     async def call_next(_: Request) -> Response:
-        return Response(content="ok", status_code=200)
+        return Response(content="ok", status_code=status.HTTP_200_OK)
 
     middleware = rl.RateLimitMiddleware(call_next)
 
     class DummyBackend:
-        def is_rate_limited(self, key, rule):
+        def is_rate_limited(self, _key, _rule):
             return False, 7
 
     monkeypatch.setattr(rl, "_backend", DummyBackend())
@@ -128,6 +133,6 @@ async def test_rate_limit_middleware_success_sets_rate_headers(monkeypatch) -> N
     request = _request("/api/v1/auth/login", client=("198.51.100.10", 1234))
     response = await middleware.dispatch(request, call_next)
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     assert response.headers["X-RateLimit-Limit"] == "10"
     assert response.headers["X-RateLimit-Remaining"] == "7"

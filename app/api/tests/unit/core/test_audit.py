@@ -4,7 +4,12 @@ import logging
 from fastapi import Request
 
 from core.foundation.logging import audit as audit_module
-from core.foundation.logging.audit import AuditLogger, _base_payload, _client_ip, _setup_audit_logger
+from core.foundation.logging.audit import (
+    AuditLogger,
+    _base_payload,
+    _client_ip,
+    _setup_audit_logger,
+)
 
 
 def _request(path: str = "/x", headers=None, client=None) -> Request:
@@ -67,7 +72,8 @@ def test_audit_logger_methods_emit_json(monkeypatch) -> None:
     logger.rate_limited(request=req)
     logger.register(request=req, email="a@b.com", tenant_name="Tenant")
 
-    assert len(emitted) == 9
+    expected_audit_events_count = 9
+    assert len(emitted) == expected_audit_events_count
     parsed = [json.loads(item) for item in emitted]
     assert parsed[0]["event"] == "login_success"
     assert parsed[1]["reason"] == "invalid_credentials"

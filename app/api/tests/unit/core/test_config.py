@@ -1,5 +1,6 @@
-from core.foundation.infra.config import Settings
 import pytest
+
+from core.foundation.infra.config import Settings
 
 PASSTHROUGH_INT_VALUE = 12
 NUMERIC_STRING_VALUE = "34"

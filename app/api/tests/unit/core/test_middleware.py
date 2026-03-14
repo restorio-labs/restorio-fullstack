@@ -6,8 +6,8 @@ from fastapi.testclient import TestClient
 import pytest
 
 from core.foundation.infra.config import Settings
-from core.middleware.cors import _build_allowed_origins, is_origin_allowed
 from core.middleware import TimingMiddleware, UnauthorizedMiddleware, setup_cors
+from core.middleware.cors import _build_allowed_origins, is_origin_allowed
 
 
 def test_setup_cors_adds_middleware() -> None:
@@ -220,7 +220,9 @@ async def test_unauthorized_middleware_includes_request_id_when_token_invalid() 
     request = Request(scope)
     request.state.request_id = "rid-2"
 
-    with patch.object(middleware._security, "decode_access_token", side_effect=Exception("bad token")):
+    with patch.object(
+        middleware._security, "decode_access_token", side_effect=Exception("bad token")
+    ):
         response = await middleware.dispatch(request, call_next)
 
     assert response.status_code == 401  # noqa: PLR2004
@@ -234,6 +236,10 @@ def test_build_allowed_origins_deduplicates_entries() -> None:
 
 def test_is_origin_allowed_handles_none_and_restorio_hosts() -> None:
     assert is_origin_allowed(None, ["http://example.com"], debug=False) is False
-    assert is_origin_allowed("https://tenant.restorio.org", ["http://example.com"], debug=True) is True
-    assert is_origin_allowed("ftp://tenant.restorio.org", ["http://example.com"], debug=True) is False
+    assert (
+        is_origin_allowed("https://tenant.restorio.org", ["http://example.com"], debug=True) is True
+    )
+    assert (
+        is_origin_allowed("ftp://tenant.restorio.org", ["http://example.com"], debug=True) is False
+    )
     assert is_origin_allowed("https://example.org", ["http://example.com"], debug=True) is False
