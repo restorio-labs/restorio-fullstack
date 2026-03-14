@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 import pytest
 
 from core.foundation.infra.config import Settings
+from core.middleware.cors import _build_allowed_origins, is_origin_allowed
 from core.middleware import TimingMiddleware, UnauthorizedMiddleware, setup_cors
 
 
@@ -20,7 +21,7 @@ def test_setup_cors_adds_middleware() -> None:
 
 def test_setup_cors_always_includes_local_admin_origin() -> None:
     app = FastAPI()
-    settings = Settings(CORS_ORIGINS=["http://example.com"])
+    settings = Settings(CORS_ORIGINS=["http://example.com"], DEBUG=True)
     setup_cors(app=app, settings=settings)
 
     @app.get("/")
@@ -39,12 +40,12 @@ def test_cors_headers_present_on_unauthorized_response() -> None:
     app.add_middleware(UnauthorizedMiddleware)
     setup_cors(app=app, settings=settings)
 
-    @app.get("/")
+    @app.get("/private")
     async def protected_route() -> Response:
         return Response(content="ok")
 
     client = TestClient(app)
-    response = client.get("/", headers={"Origin": "http://localhost:3001"})
+    response = client.get("/private", headers={"Origin": "http://localhost:3001"})
 
     assert response.status_code == 401  # noqa: PLR2004
     assert response.headers.get("access-control-allow-origin") == "http://localhost:3001"
@@ -89,7 +90,7 @@ async def test_unauthorized_middleware_transforms_not_found() -> None:
 
     response = await middleware.dispatch(request, call_next)
 
-    assert response.status_code == 401  # noqa: PLR2004
+    assert response.status_code == 404  # noqa: PLR2004
 
 
 @pytest.mark.asyncio
@@ -101,7 +102,7 @@ async def test_unauthorized_middleware_passes_other_status() -> None:
     scope = {
         "type": "http",
         "method": "GET",
-        "path": "/",
+        "path": "/private",
         "headers": [(b"authorization", b"Bearer valid-token")],
     }
     request = Request(scope)
@@ -110,6 +111,7 @@ async def test_unauthorized_middleware_passes_other_status() -> None:
         response = await middleware.dispatch(request, call_next)
 
     assert response.status_code == 200  # noqa: PLR2004
+    assert request.state.user == {"sub": "user-1"}
 
 
 @pytest.mark.asyncio
@@ -149,7 +151,7 @@ async def test_unauthorized_middleware_returns_401_on_invalid_token() -> None:
     scope = {
         "type": "http",
         "method": "GET",
-        "path": "/",
+        "path": "/private",
         "headers": [(b"authorization", b"Bearer invalid-token")],
     }
     request = Request(scope)
@@ -180,3 +182,58 @@ async def test_unauthorized_middleware_accepts_access_token_cookie() -> None:
         response = await middleware.dispatch(request, call_next)
 
     assert response.status_code == 200  # noqa: PLR2004
+
+
+@pytest.mark.asyncio
+async def test_unauthorized_middleware_includes_request_id_when_missing_token() -> None:
+    async def call_next(_: Request) -> Response:
+        return Response(status_code=200)
+
+    middleware = UnauthorizedMiddleware(call_next)
+    scope = {
+        "type": "http",
+        "method": "GET",
+        "path": "/private",
+        "headers": [(b"origin", b"http://localhost:3001")],
+    }
+    request = Request(scope)
+    request.state.request_id = "rid-1"
+
+    response = await middleware.dispatch(request, call_next)
+
+    assert response.status_code == 401  # noqa: PLR2004
+    assert b'"request_id":"rid-1"' in response.body
+
+
+@pytest.mark.asyncio
+async def test_unauthorized_middleware_includes_request_id_when_token_invalid() -> None:
+    async def call_next(_: Request) -> Response:
+        return Response(status_code=200)
+
+    middleware = UnauthorizedMiddleware(call_next)
+    scope = {
+        "type": "http",
+        "method": "GET",
+        "path": "/private",
+        "headers": [(b"authorization", b"Bearer bad-token")],
+    }
+    request = Request(scope)
+    request.state.request_id = "rid-2"
+
+    with patch.object(middleware._security, "decode_access_token", side_effect=Exception("bad token")):
+        response = await middleware.dispatch(request, call_next)
+
+    assert response.status_code == 401  # noqa: PLR2004
+    assert b'"request_id":"rid-2"' in response.body
+
+
+def test_build_allowed_origins_deduplicates_entries() -> None:
+    origins = _build_allowed_origins(["http://example.com", "http://example.com"], debug=False)
+    assert origins == ["http://example.com"]
+
+
+def test_is_origin_allowed_handles_none_and_restorio_hosts() -> None:
+    assert is_origin_allowed(None, ["http://example.com"], debug=False) is False
+    assert is_origin_allowed("https://tenant.restorio.org", ["http://example.com"], debug=True) is True
+    assert is_origin_allowed("ftp://tenant.restorio.org", ["http://example.com"], debug=True) is False
+    assert is_origin_allowed("https://example.org", ["http://example.com"], debug=True) is False

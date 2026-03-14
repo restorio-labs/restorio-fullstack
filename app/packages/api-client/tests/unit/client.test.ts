@@ -38,12 +38,12 @@ describe("Api Client", () => {
 
     const config = { headers: {} } as AxiosRequestConfig;
 
-    const result = (await ctx.requestInterceptor?.(config)) ?? config;
+    const result = ctx.requestInterceptor?.(config) ?? config;
 
-    expect(result.headers?.Authorization).toBe("Bearer token");
+    expect((result as AxiosRequestConfig).headers?.Authorization).toBe("Bearer token");
   });
 
-  it("does not override existing Authorization header", async () => {
+  it("does not override existing Authorization header", () => {
     new ApiClient({
       baseURL: "x",
       getAccessToken: (): string | null => "token",
@@ -53,9 +53,9 @@ describe("Api Client", () => {
       headers: { Authorization: "Bearer existing" },
     } as AxiosRequestConfig;
 
-    const result = (await ctx.requestInterceptor?.(config)) ?? config;
+    const result = ctx.requestInterceptor?.(config) ?? config;
 
-    expect(result.headers?.Authorization).toBe("Bearer existing");
+    expect((result as AxiosRequestConfig).headers?.Authorization).toBe("Bearer existing");
   });
 
   it("calls onUnauthorized on 401 response", async () => {

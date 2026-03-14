@@ -134,6 +134,27 @@ describe("PaymentConfigPage", () => {
     });
   });
 
+  it("shows validation feedback when API returns 422 fields", async () => {
+    mockUpdateP24Config.mockRejectedValueOnce({
+      response: {
+        status: 422,
+        data: {
+          fields: ["p24_api"],
+        },
+      },
+    });
+    renderPage();
+
+    fillPaymentForm("123456", "", "test-crc-key");
+    fillPaymentForm("123456", "test-api-key", "test-crc-key");
+    clickSaveConfiguration();
+
+    await waitFor(() => {
+      expect(screen.getByText(/please fix the highlighted fields and try again/i)).toBeInTheDocument();
+      expect(screen.getByText(/api key is required/i)).toBeInTheDocument();
+    });
+  });
+
   it("shows 'Saving...' text while submitting", async () => {
     let resolvePromise!: () => void;
 
@@ -212,5 +233,36 @@ describe("PaymentConfigPage", () => {
 
     expect(screen.getByRole("button", { name: /save configuration/i })).toBeDisabled();
     expect(mockUpdateP24Config).not.toHaveBeenCalled();
+  });
+
+  it("shows load restaurants error when tenant state fails", async () => {
+    mockUseCurrentTenant.mockReturnValue({
+      selectedTenantId: null,
+      selectedTenant: null,
+      tenants: [],
+      tenantsState: "error",
+      setSelectedTenantId: vi.fn(),
+    });
+    renderPage();
+
+    expect(screen.getByRole("button", { name: /save configuration/i })).toBeDisabled();
+  });
+
+  it("shows select restaurant error when submit runs without selected tenant", async () => {
+    mockUseCurrentTenant.mockReturnValue({
+      selectedTenantId: null,
+      selectedTenant: null,
+      tenants: [],
+      tenantsState: "loaded",
+      setSelectedTenantId: vi.fn(),
+    });
+    renderPage();
+
+    fillPaymentForm("123456", "test-api-key", "test-crc-key");
+    clickSaveConfiguration();
+
+    await waitFor(() => {
+      expect(screen.getByText(/select a restaurant from the header dropdown/i)).toBeInTheDocument();
+    });
   });
 });

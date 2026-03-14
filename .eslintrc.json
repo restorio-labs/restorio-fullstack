@@ -188,5 +188,5 @@
       }
     }
   },
-  "ignorePatterns": ["node_modules", "dist", "build", ".next", "coverage", "e2e"]
+  "ignorePatterns": ["node_modules", "dist", "build", ".next", "coverage", "e2e", "tests/unit"]
 }

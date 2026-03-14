@@ -2,13 +2,13 @@ from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
 import pytest
-from routes.v1.payments.create_payment import create_payment
+from routes.v1.payments.payments import create_payment
 
 from core.dto.v1.payments import CreateTransactionDTO
 from core.exceptions import (
     BadRequestError,
     ExternalAPIError,
-    NotFoundError,
+    NotFoundResponse,
     ServiceUnavailableError,
 )
 from core.foundation.http.responses import CreatedResponse
@@ -172,13 +172,13 @@ async def test_create_payment_success(
 async def test_create_payment_tenant_not_found(create_transaction_request, mock_p24_service):
     session = AsyncMock()
     tenant_service = AsyncMock()
-    tenant_service.get_tenant.side_effect = NotFoundError(
+    tenant_service.get_tenant.side_effect = NotFoundResponse(
         "Tenant", str(create_transaction_request.tenant_id)
     )
 
     external_client = Mock()
 
-    with pytest.raises(NotFoundError):
+    with pytest.raises(NotFoundResponse):
         await create_payment(
             create_transaction_request, session, tenant_service, mock_p24_service, external_client
         )
@@ -219,7 +219,6 @@ async def test_create_payment_p24_api_error(
     tenant_service.get_tenant.return_value = mock_tenant
 
     mock_p24_service.register_transaction.side_effect = ExternalAPIError(
-        status_code=400,
         message="Przelewy24 error: Invalid merchant configuration",
     )
 
@@ -230,7 +229,7 @@ async def test_create_payment_p24_api_error(
             create_transaction_request, session, tenant_service, mock_p24_service, external_client
         )
 
-    assert exc_info.value.status_code == 400  # noqa: PLR2004
+    assert exc_info.value.status_code == 502  # noqa: PLR2004
     assert "Przelewy24" in exc_info.value.detail
 
 

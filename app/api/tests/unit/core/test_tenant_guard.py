@@ -32,6 +32,14 @@ class TestExtractTenantPublicIds:
 
         assert result == []
 
+    def test_falls_back_to_single_tenant_id_claim(self) -> None:
+        request = MagicMock()
+        request.state.user = {"tenant_id": "pub-single"}
+
+        result = _extract_tenant_public_ids(request)
+
+        assert result == ["pub-single"]
+
     def test_raises_unauthorized_when_no_user(self) -> None:
         request = MagicMock()
         request.state.user = None

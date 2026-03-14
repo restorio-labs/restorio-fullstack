@@ -1,4 +1,5 @@
 from core.foundation.infra.config import Settings
+import pytest
 
 PASSTHROUGH_INT_VALUE = 12
 NUMERIC_STRING_VALUE = "34"
@@ -29,3 +30,10 @@ class TestSettingsPrzelewy24Int:
     def test_parse_przelewy24_int_returns_zero_for_invalid_values(self) -> None:
         assert Settings.parse_przelewy24_int("abc") == 0
         assert Settings.parse_przelewy24_int(None) == 0  # type: ignore[arg-type]
+
+
+class TestSettingsProductionSecrets:
+    def test_insecure_secret_rejected_in_production(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("ENV", "production")
+        with pytest.raises(ValueError, match="FATAL: SECRET_KEY is set to an insecure default"):
+            Settings(SECRET_KEY="change-me-in-production")
