@@ -1,8 +1,19 @@
-"use client";
-
+import type { Metadata } from "next";
 import type { ReactElement } from "react";
 
 import { LoginContent } from "./LoginContent";
+
+import { getPageMetadata } from "@/i18n/metadata";
+
+interface MetadataParams {
+  params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: MetadataParams): Promise<Metadata> {
+  const { locale } = await params;
+
+  return getPageMetadata(locale, "login");
+}
 
 export default function LoginPage(): ReactElement {
   return (

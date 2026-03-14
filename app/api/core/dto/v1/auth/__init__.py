@@ -103,12 +103,8 @@ class ActivateResponseData(BaseDTO):
 
 
 class LoginResponseData(BaseDTO):
-    at: str = Field(..., description="JWT access token")
+    pass
 
 
 class AuthMeSessionData(BaseDTO):
-    sub: str = Field(..., description="User id")
-    tenant_ids: list[str] = Field(
-        default_factory=list, description="All tenant ids available to the user"
-    )
-    account_type: str = Field(..., description="Account type for the primary tenant")
+    authenticated: bool = Field(default=True, description="Whether the user is authenticated")

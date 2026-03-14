@@ -1,5 +1,4 @@
 from datetime import UTC, datetime
-from uuid import uuid4
 
 from pydantic import ValidationError
 import pytest
@@ -95,16 +94,16 @@ class TestUpdateTenantDTO:
 
 class TestTenantResponseDTO:
     def test_valid_response(self) -> None:
-        tenant_id = uuid4()
+        public_id = "abc123-opaque-id"
         now = datetime.now(UTC)
         dto = TenantResponseDTO(
-            id=tenant_id,
+            id=public_id,
             name="Test Restaurant",
             slug="test-restaurant",
             status=TenantStatus.ACTIVE,
             created_at=now,
         )
-        assert dto.id == tenant_id
+        assert dto.id == public_id
         assert dto.name == "Test Restaurant"
         assert dto.slug == "test-restaurant"
         assert dto.status == TenantStatus.ACTIVE

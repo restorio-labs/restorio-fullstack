@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+import secrets
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
@@ -10,6 +11,11 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.foundation.database.database import Base
 from core.models.enums import TenantStatus
+
+
+def _generate_public_id() -> str:
+    return secrets.token_urlsafe(16)
+
 
 if TYPE_CHECKING:
     from core.models.audit_log import AuditLog
@@ -24,6 +30,9 @@ class Tenant(Base):
     __tablename__ = "tenants"
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
+    public_id: Mapped[str] = mapped_column(
+        String(32), nullable=False, unique=True, default=_generate_public_id, index=True
+    )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     slug: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
     owner_id: Mapped[UUID | None] = mapped_column(

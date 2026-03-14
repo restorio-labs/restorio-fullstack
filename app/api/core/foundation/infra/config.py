@@ -1,7 +1,10 @@
 import json
+import os
 
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+_INSECURE_SECRET_KEYS = frozenset({"change-me-in-production", "secret", ""})
 
 
 class Settings(BaseSettings):
@@ -42,6 +45,16 @@ class Settings(BaseSettings):
     RESEND_FROM_EMAIL: str = ""
     FRONTEND_URL: str = "http://localhost:3000"
 
+    MINIO_ENDPOINT: str = "localhost:9000"
+    MINIO_PUBLIC_ENDPOINT: str = "localhost:9000"
+    MINIO_ACCESS_KEY: str = "minioadmin"
+    MINIO_SECRET_KEY: str = "minioadmin"
+    MINIO_BUCKET: str = "restorio-media"
+    MINIO_REGION: str = "eu-central-1"
+    MINIO_SECURE: bool = False
+    MINIO_PRESIGN_EXPIRY_SECONDS: int = 900
+    TENANT_LOGO_MAX_BYTES: int = 5 * 1024 * 1024
+
     SECRET_KEY: str = "change-me-in-production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
@@ -67,6 +80,17 @@ class Settings(BaseSettings):
     PRZELEWY24_CRC: str = ""
     PRZELEWY24_API_KEY: str = ""
     PRZELEWY24_API_URL: str = "https://sandbox.przelewy24.pl/api/v1"
+
+    @model_validator(mode="after")
+    def _reject_insecure_production_secrets(self) -> "Settings":
+        env_mode = os.getenv("ENV") or os.getenv("NODE_ENV") or "development"
+        if env_mode == "production" and self.SECRET_KEY in _INSECURE_SECRET_KEYS:
+            msg = (
+                "FATAL: SECRET_KEY is set to an insecure default. "
+                "Set a strong, unique SECRET_KEY environment variable before running in production."
+            )
+            raise ValueError(msg)
+        return self
 
     model_config = SettingsConfigDict(
         env_file=".env",

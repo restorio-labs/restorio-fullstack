@@ -4,7 +4,7 @@ export interface TenantProfile {
 
   nip: string;
   companyName: string;
-  logoUrl: string | null;
+  logo: string | null;
 
   contactEmail: string;
   phone: string;
@@ -33,10 +33,24 @@ export interface TenantProfile {
   updatedAt: Date;
 }
 
+export interface TenantLogoUploadPresignRequest {
+  contentType: string;
+  fileName?: string | null;
+}
+
+export interface TenantLogoUploadResponse {
+  uploadUrl: string;
+  objectKey: string;
+}
+
+export interface TenantLogoViewPresignResponse {
+  url: string;
+}
+
 export interface CreateTenantProfileRequest {
   nip: string;
   company_name: string;
-  logo_url?: string | null;
+  logo_upload_key?: string | null;
 
   contact_email: string;
   phone: string;

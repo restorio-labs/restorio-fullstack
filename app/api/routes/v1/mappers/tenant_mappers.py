@@ -5,7 +5,7 @@ from core.models import FloorCanvas, Tenant
 
 def tenant_to_response(tenant: Tenant) -> TenantResponseDTO:
     return TenantResponseDTO(
-        id=tenant.id,
+        id=tenant.public_id,
         name=tenant.name,
         slug=tenant.slug,
         status=tenant.status,
@@ -17,7 +17,7 @@ def tenant_to_response(tenant: Tenant) -> TenantResponseDTO:
 
 def tenant_to_summary(tenant: Tenant) -> TenantSummaryResponseDTO:
     return TenantSummaryResponseDTO(
-        id=tenant.id,
+        id=tenant.public_id,
         name=tenant.name,
         slug=tenant.slug,
         status=tenant.status,

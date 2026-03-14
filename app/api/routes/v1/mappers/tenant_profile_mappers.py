@@ -8,7 +8,7 @@ def tenant_profile_to_response(profile: TenantProfile) -> TenantProfileResponseD
         tenantId=profile.tenant_id,
         nip=profile.nip,
         companyName=profile.company_name,
-        logoUrl=profile.logo_url,
+        logo=profile.logo,
         contactEmail=profile.contact_email,
         phone=profile.phone,
         addressStreet=profile.address_street,

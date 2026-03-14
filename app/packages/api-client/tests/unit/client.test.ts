@@ -30,7 +30,7 @@ describe("Api Client", () => {
     });
   });
 
-  it("adds Authorization header when access token exists", () => {
+  it("adds Authorization header when access token exists", async () => {
     new ApiClient({
       baseURL: "x",
       getAccessToken: (): string | null => "token",
@@ -38,12 +38,12 @@ describe("Api Client", () => {
 
     const config = { headers: {} } as AxiosRequestConfig;
 
-    const result = ctx.requestInterceptor?.(config) ?? config;
+    const result = (await ctx.requestInterceptor?.(config)) ?? config;
 
-    expect(result.headers?.Authorization).toBe("Bearer token");
+    expect((result as AxiosRequestConfig).headers?.Authorization).toBe("Bearer token");
   });
 
-  it("does not override existing Authorization header", () => {
+  it("does not override existing Authorization header", async () => {
     new ApiClient({
       baseURL: "x",
       getAccessToken: (): string | null => "token",
@@ -53,9 +53,9 @@ describe("Api Client", () => {
       headers: { Authorization: "Bearer existing" },
     } as AxiosRequestConfig;
 
-    const result = ctx.requestInterceptor?.(config) ?? config;
+    const result = (await ctx.requestInterceptor?.(config)) ?? config;
 
-    expect(result.headers?.Authorization).toBe("Bearer existing");
+    expect((result as AxiosRequestConfig).headers?.Authorization).toBe("Bearer existing");
   });
 
   it("calls onUnauthorized on 401 response", async () => {
@@ -227,5 +227,160 @@ describe("Api Client", () => {
 
     await expect(ctx.responseError!(error as AxiosError)).rejects.toBe(error);
     expect(onUnauthorized).toHaveBeenCalledOnce();
+  });
+
+  it("does not add Authorization header when getAccessToken is undefined", async () => {
+    new ApiClient({ baseURL: "x" });
+
+    const config = { headers: {} } as AxiosRequestConfig;
+
+    const result = (await ctx.requestInterceptor?.(config)) ?? config;
+
+    expect((result as AxiosRequestConfig).headers?.Authorization).toBeUndefined();
+  });
+
+  it("uses custom tokenExpiryBufferMs when provided", () => {
+    new ApiClient({ baseURL: "x", tokenExpiryBufferMs: 120_000 });
+
+    expect(axios.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        baseURL: "x",
+        withCredentials: true,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+  });
+
+  it("triggers refresh on request when token is expiring soon", async () => {
+    const expiringPayload = Buffer.from(JSON.stringify({ exp: 1 })).toString("base64");
+    const expiringToken = `header.${expiringPayload}.sig`;
+
+    vi.mocked(ctx.instance.post).mockResolvedValue({ data: {} });
+
+    new ApiClient({
+      baseURL: "x",
+      getAccessToken: (): string | null => expiringToken,
+      refreshPath: "auth/refresh",
+      tokenExpiryBufferMs: 60_000,
+    });
+
+    const config = { headers: {}, url: "/items" } as AxiosRequestConfig;
+
+    await ctx.requestInterceptor?.(config);
+
+    expect(ctx.instance.post).toHaveBeenCalledWith("auth/refresh", undefined, { withCredentials: true });
+  });
+
+  it("does not trigger refresh when token is invalid and decodeTokenExp returns null", async () => {
+    new ApiClient({
+      baseURL: "x",
+      getAccessToken: (): string | null => "invalid-no-dots",
+      refreshPath: "auth/refresh",
+    });
+
+    const config = { headers: {}, url: "/items" } as AxiosRequestConfig;
+
+    await ctx.requestInterceptor?.(config);
+
+    expect(ctx.instance.post).not.toHaveBeenCalled();
+  });
+
+  it("does not trigger refresh when request url is refresh path", async () => {
+    const expiringPayload = Buffer.from(JSON.stringify({ exp: 1 })).toString("base64");
+    const expiringToken = `header.${expiringPayload}.sig`;
+
+    new ApiClient({
+      baseURL: "x",
+      getAccessToken: (): string | null => expiringToken,
+      refreshPath: "auth/refresh",
+    });
+
+    const config = { headers: {}, url: "auth/refresh" } as AxiosRequestConfig;
+
+    await ctx.requestInterceptor?.(config);
+
+    expect(ctx.instance.post).not.toHaveBeenCalled();
+  });
+
+  it("on 401 with config null after successful refresh calls onUnauthorized and rejects", async () => {
+    const onUnauthorized = vi.fn();
+
+    vi.mocked(ctx.instance.post).mockResolvedValueOnce({ data: {} });
+
+    new ApiClient({
+      baseURL: "x",
+      refreshPath: "auth/refresh",
+      onUnauthorized,
+    });
+
+    const error = {
+      response: { status: 401 },
+      config: null,
+    };
+
+    await expect(ctx.responseError!(error as unknown as AxiosError)).rejects.toBe(error);
+    expect(onUnauthorized).toHaveBeenCalledOnce();
+    expect(ctx.instance.request).not.toHaveBeenCalled();
+  });
+
+  it("on 401 when config has _retry true calls onUnauthorized without retry", async () => {
+    const onUnauthorized = vi.fn();
+
+    new ApiClient({
+      baseURL: "x",
+      refreshPath: "auth/refresh",
+      onUnauthorized,
+    });
+
+    const error = {
+      response: { status: 401 },
+      config: { url: "items", _retry: true },
+    };
+
+    await expect(ctx.responseError!(error as unknown as AxiosError)).rejects.toBe(error);
+    expect(onUnauthorized).toHaveBeenCalledOnce();
+    expect(ctx.instance.post).not.toHaveBeenCalled();
+    expect(ctx.instance.request).not.toHaveBeenCalled();
+  });
+
+  it("on 401 when request url ends with refresh path calls onUnauthorized without retry", async () => {
+    const onUnauthorized = vi.fn();
+
+    new ApiClient({
+      baseURL: "x",
+      refreshPath: "auth/refresh",
+      onUnauthorized,
+    });
+
+    const error = {
+      response: { status: 401 },
+      config: { url: "v1/auth/refresh" },
+    };
+
+    await expect(ctx.responseError!(error as AxiosError)).rejects.toBe(error);
+    expect(onUnauthorized).toHaveBeenCalledOnce();
+    expect(ctx.instance.post).not.toHaveBeenCalled();
+  });
+
+  it("get passes config to axios", async () => {
+    vi.mocked(ctx.instance.get).mockResolvedValue({ data: { ok: true } });
+
+    const client = new ApiClient({ baseURL: "x" });
+    const config = { params: { id: 1 } };
+
+    await client.get("/test", config);
+
+    expect(ctx.instance.get).toHaveBeenCalledWith("/test", config);
+  });
+
+  it("post passes config to axios", async () => {
+    vi.mocked(ctx.instance.post).mockResolvedValue({ data: { id: 1 } });
+
+    const client = new ApiClient({ baseURL: "x" });
+    const config = { headers: { "X-Custom": "1" } };
+
+    await client.post("/test", { a: 1 }, config);
+
+    expect(ctx.instance.post).toHaveBeenCalledWith("/test", { a: 1 }, config);
   });
 });

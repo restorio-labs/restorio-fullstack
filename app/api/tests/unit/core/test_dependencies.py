@@ -100,6 +100,23 @@ def test_get_p24_service_returns_instance(monkeypatch: pytest.MonkeyPatch) -> No
     assert isinstance(service, DummyP24Service)
 
 
+def test_get_tenant_profile_service_returns_instance(monkeypatch: pytest.MonkeyPatch) -> None:
+    class DummyTenantProfileService:
+        pass
+
+    monkeypatch.setattr(dependencies, "TenantProfileService", DummyTenantProfileService)
+    service = dependencies.get_tenant_profile_service()
+    assert isinstance(service, DummyTenantProfileService)
+
+
+def test_get_tenant_logo_storage_service_returns_singleton(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    singleton = object()
+    monkeypatch.setattr(dependencies, "tenant_logo_storage_service", singleton)
+    assert dependencies.get_tenant_logo_storage_service() is singleton
+
+
 def test_get_external_client_returns_instance(monkeypatch: pytest.MonkeyPatch) -> None:
     class DummyExternalClient:
         pass

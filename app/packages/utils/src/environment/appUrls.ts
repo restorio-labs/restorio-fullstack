@@ -47,9 +47,14 @@ export const getEnvironmentFromEnv = (mode: string): EnvironmentType => {
 export const getEnvMode = (): string => {
   const viteEnv =
     typeof import.meta !== "undefined" ? (import.meta as { env?: Record<string, unknown> }).env : undefined;
+  const processEnv = typeof process !== "undefined" ? (process.env as Record<string, unknown>) : undefined;
   const envSource = getEnvSource(viteEnv);
 
-  return resolveNextEnvVar(envSource, "ENV", "NODE_ENV") ?? "development";
+  return (
+    resolveNextEnvVar(processEnv ?? {}, "ENV", "NODE_ENV") ??
+    resolveNextEnvVar(envSource, "ENV", "NODE_ENV") ??
+    "development"
+  );
 };
 
 export const getAppHref = (slug: AppSlug): string => {

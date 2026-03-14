@@ -189,10 +189,17 @@ class AuthService:
         tenant_ids_result = await session.scalars(
             select(TenantRole.tenant_id).where(TenantRole.account_id == user.id)
         )
-        tenant_role_ids = tenant_ids_result.all()
-        tenant_ids = [str(tenant_id) for tenant_id in tenant_role_ids]
-        if not tenant_ids and user.tenant_id is not None:
-            tenant_ids = [str(user.tenant_id)]
+        tenant_role_ids = list(tenant_ids_result.all())
+
+        if not tenant_role_ids and user.tenant_id is not None:
+            tenant_role_ids = [user.tenant_id]
+
+        tenant_public_ids: list[str] = []
+        if tenant_role_ids:
+            rows = await session.execute(
+                select(Tenant.public_id).where(Tenant.id.in_(tenant_role_ids))
+            )
+            tenant_public_ids = [row[0] for row in rows.all()]
 
         role: TenantRole | None = None
 
@@ -204,7 +211,7 @@ class AuthService:
         token_data: dict[str, str | list[str] | None] = {
             "sub": str(user.id),
             "email": user.email,
-            "tenant_ids": tenant_ids,
+            "tenant_ids": tenant_public_ids,
         }
         if role is not None:
             token_data["account_type"] = role.account_type.value

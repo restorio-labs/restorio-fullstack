@@ -13,17 +13,17 @@ from core.foundation.http.responses import (
 class TestUnauthenticatedResponse:
     def test_default_message(self) -> None:
         r = UnauthenticatedResponse()
-        assert r.message == "Unauthenticated"
+        assert r.detail == "Unauthenticated"
 
     def test_custom_message(self) -> None:
         r = UnauthenticatedResponse(message="Not logged in")
-        assert r.message == "Not logged in"
+        assert r.detail == "Not logged in"
 
 
 class TestUnauthorizedResponse:
     def test_default_message(self) -> None:
         r = UnauthorizedResponse()
-        assert r.message == "Unauthorized"
+        assert r.detail == "Unauthorized"
 
 
 class TestNotFoundResponse:

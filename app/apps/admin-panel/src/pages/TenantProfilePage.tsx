@@ -1,94 +1,36 @@
-import type { TenantProfile } from "@restorio/types";
-import { Button, Form, FormActions, Input, useI18n } from "@restorio/ui";
+import { Button, Form, FormActions, useI18n } from "@restorio/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { ReactElement } from "react";
+import type { ChangeEvent, FormEvent, ReactElement } from "react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { api } from "../api/client";
+import { EMPTY_FORM, type ProfileFormData, toFormData } from "../components/tenant-profile/profileForm";
+import {
+  AddressFieldset,
+  CompanyFieldset,
+  ContactFieldset,
+  ContactPersonFieldset,
+  OwnerFieldset,
+  SocialsFieldset,
+} from "../components/tenant-profile/TenantProfileFieldsets";
 import { useCurrentTenant } from "../context/TenantContext";
 import { useValidationErrors } from "../hooks/useValidationErrors";
 import { PageLayout } from "../layouts/PageLayout";
 
-interface ProfileFormData {
-  nip: string;
-  companyName: string;
-  logoUrl: string;
-  contactEmail: string;
-  phone: string;
-  addressStreet: string;
-  addressCity: string;
-  addressPostalCode: string;
-  addressCountry: string;
-  ownerFirstName: string;
-  ownerLastName: string;
-  ownerEmail: string;
-  ownerPhone: string;
-  contactPersonFirstName: string;
-  contactPersonLastName: string;
-  contactPersonEmail: string;
-  contactPersonPhone: string;
-  socialFacebook: string;
-  socialInstagram: string;
-  socialTiktok: string;
-  socialWebsite: string;
-}
-
-const EMPTY_FORM: ProfileFormData = {
-  nip: "",
-  companyName: "",
-  logoUrl: "",
-  contactEmail: "",
-  phone: "",
-  addressStreet: "",
-  addressCity: "",
-  addressPostalCode: "",
-  addressCountry: "Polska",
-  ownerFirstName: "",
-  ownerLastName: "",
-  ownerEmail: "",
-  ownerPhone: "",
-  contactPersonFirstName: "",
-  contactPersonLastName: "",
-  contactPersonEmail: "",
-  contactPersonPhone: "",
-  socialFacebook: "",
-  socialInstagram: "",
-  socialTiktok: "",
-  socialWebsite: "",
-};
-
 const profileQueryKey = (tenantId: string): readonly string[] => ["tenant-profile", tenantId];
-
-const toFormData = (profile: TenantProfile): ProfileFormData => ({
-  nip: profile.nip,
-  companyName: profile.companyName,
-  logoUrl: profile.logoUrl ?? "",
-  contactEmail: profile.contactEmail,
-  phone: profile.phone,
-  addressStreet: profile.addressStreet,
-  addressCity: profile.addressCity,
-  addressPostalCode: profile.addressPostalCode,
-  addressCountry: profile.addressCountry,
-  ownerFirstName: profile.ownerFirstName,
-  ownerLastName: profile.ownerLastName,
-  ownerEmail: profile.ownerEmail ?? "",
-  ownerPhone: profile.ownerPhone ?? "",
-  contactPersonFirstName: profile.contactPersonFirstName ?? "",
-  contactPersonLastName: profile.contactPersonLastName ?? "",
-  contactPersonEmail: profile.contactPersonEmail ?? "",
-  contactPersonPhone: profile.contactPersonPhone ?? "",
-  socialFacebook: profile.socialFacebook ?? "",
-  socialInstagram: profile.socialInstagram ?? "",
-  socialTiktok: profile.socialTiktok ?? "",
-  socialWebsite: profile.socialWebsite ?? "",
-});
+const MAX_LOGO_BYTES = 5 * 1024 * 1024;
+const ALLOWED_LOGO_TYPES = ["image/png", "image/jpeg", "image/webp"];
 
 export const TenantProfilePage = (): ReactElement => {
   const { t } = useI18n();
   const { selectedTenant } = useCurrentTenant();
   const queryClient = useQueryClient();
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error" | "validation">("idle");
+  const [logoUploadError, setLogoUploadError] = useState("");
+  const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
+  const [logoViewUrl, setLogoViewUrl] = useState<string | null>(null);
+  const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null);
   const { getFieldError, setFromResponse, clearErrors } = useValidationErrors();
 
   const tenantId = selectedTenant?.id ?? null;
@@ -117,8 +59,38 @@ export const TenantProfilePage = (): ReactElement => {
     }
 
     setSubmitStatus("idle");
+    setLogoUploadError("");
+    setLogoPreviewUrl(null);
+    setLogoViewUrl(null);
+    setSelectedLogoFile(null);
     clearErrors();
   }, [profile, reset, clearErrors]);
+
+  useEffect(() => {
+    if (!tenantId || !profile?.logo) {
+      setLogoViewUrl(null);
+
+      return;
+    }
+
+    void (async (): Promise<void> => {
+      try {
+        const result = await api.tenantProfiles.createLogoViewUrl(tenantId);
+
+        setLogoViewUrl(result.url);
+      } catch {
+        setLogoViewUrl(null);
+      }
+    })();
+  }, [tenantId, profile?.logo]);
+
+  useEffect(() => {
+    return () => {
+      if (logoPreviewUrl) {
+        URL.revokeObjectURL(logoPreviewUrl);
+      }
+    };
+  }, [logoPreviewUrl]);
 
   const saveMutation = useMutation({
     mutationFn: async (values: ProfileFormData) => {
@@ -126,10 +98,33 @@ export const TenantProfilePage = (): ReactElement => {
         throw new Error("No tenant selected");
       }
 
+      let logoUploadKey: string | null = null;
+
+      if (selectedLogoFile) {
+        const uploadTarget = await api.tenantProfiles.createLogoUploadUrl(tenantId, {
+          contentType: selectedLogoFile.type,
+          fileName: selectedLogoFile.name,
+        });
+
+        const uploadResult = await fetch(uploadTarget.uploadUrl, {
+          method: "PUT",
+          headers: {
+            "Content-Type": selectedLogoFile.type,
+          },
+          body: selectedLogoFile,
+        });
+
+        if (!uploadResult.ok) {
+          throw new Error("Logo upload failed");
+        }
+
+        logoUploadKey = uploadTarget.objectKey;
+      }
+
       return api.tenantProfiles.save(tenantId, {
         nip: values.nip.trim(),
         company_name: values.companyName.trim(),
-        logo_url: values.logoUrl.trim() || null,
+        logo_upload_key: logoUploadKey,
         contact_email: values.contactEmail.trim(),
         phone: values.phone.trim(),
         address_street: values.addressStreet.trim(),
@@ -150,14 +145,27 @@ export const TenantProfilePage = (): ReactElement => {
         social_website: values.socialWebsite.trim() || null,
       });
     },
-    onSuccess: () => {
+    onSuccess: (_savedProfile) => {
       setSubmitStatus("success");
+      setLogoUploadError("");
+      setSelectedLogoFile(null);
+
+      if (logoPreviewUrl) {
+        URL.revokeObjectURL(logoPreviewUrl);
+      }
+
+      setLogoPreviewUrl(null);
+      setLogoViewUrl(null);
 
       if (tenantId) {
         void queryClient.invalidateQueries({ queryKey: profileQueryKey(tenantId) });
       }
     },
     onError: (err: unknown) => {
+      if (selectedLogoFile && logoUploadError === "") {
+        setLogoUploadError(t("tenantProfile.fields.logo.uploadError"));
+      }
+
       const isValidation = setFromResponse(err, "tenantProfile.fields");
 
       setSubmitStatus(isValidation ? "validation" : "error");
@@ -166,10 +174,47 @@ export const TenantProfilePage = (): ReactElement => {
 
   const onSubmit = (values: ProfileFormData): void => {
     setSubmitStatus("idle");
+    setLogoUploadError("");
     clearErrors();
     saveMutation.mutate(values);
   };
 
+  const handleLogoChange = (event: ChangeEvent<HTMLInputElement>): void => {
+    const file = event.target.files?.[0];
+
+    setLogoUploadError("");
+
+    if (!file) {
+      return;
+    }
+
+    if (!ALLOWED_LOGO_TYPES.includes(file.type)) {
+      setLogoUploadError(t("tenantProfile.fields.logo.invalidType"));
+      event.target.value = "";
+
+      return;
+    }
+
+    if (file.size > MAX_LOGO_BYTES) {
+      setLogoUploadError(t("tenantProfile.fields.logo.fileTooLarge"));
+      event.target.value = "";
+
+      return;
+    }
+
+    setSelectedLogoFile(file);
+    setLogoPreviewUrl((currentPreviewUrl) => {
+      if (currentPreviewUrl) {
+        URL.revokeObjectURL(currentPreviewUrl);
+      }
+
+      return URL.createObjectURL(file);
+    });
+    event.target.value = "";
+  };
+
+  const effectiveLogo = logoPreviewUrl ?? logoViewUrl ?? null;
+  const logoFieldError = logoUploadError || getFieldError("logo");
   const isFormDisabled = !tenantId || !isValid || isLoadingProfile || saveMutation.isPending;
 
   return (
@@ -185,7 +230,12 @@ export const TenantProfilePage = (): ReactElement => {
       }
     >
       <div className="mx-auto max-w-5xl p-6">
-        <Form id="tenant-profile-form" onSubmit={handleSubmit(onSubmit)}>
+        <Form
+          id="tenant-profile-form"
+          onSubmit={(event: FormEvent<HTMLFormElement>): void => {
+            void handleSubmit(onSubmit)(event);
+          }}
+        >
           {isLoadingProfile && <div className="text-xs text-text-tertiary">{t("tenantProfile.loadingProfile")}</div>}
           {submitStatus === "error" && (
             <div className="text-xs text-status-error-text">{t("tenantProfile.errors.saveFailed")}</div>
@@ -194,219 +244,21 @@ export const TenantProfilePage = (): ReactElement => {
             <div className="text-xs text-status-error-text">{t("tenantProfile.errors.validationFailed")}</div>
           )}
 
-          <div className="mt-2 grid gap-6 lg:grid-cols-2">
-            <fieldset className="rounded-xl border border-border-default bg-surface-secondary/60 p-4 shadow-sm">
-              <legend className="mb-0 text-sm font-semibold text-text-primary">
-                {t("tenantProfile.sections.company")}
-              </legend>
-              <div className="space-y-4">
-                <Input
-                  label={t("tenantProfile.fields.nip.label")}
-                  placeholder={t("tenantProfile.fields.nip.placeholder")}
-                  maxLength={10}
-                  helperText={t("tenantProfile.fields.nip.helper")}
-                  error={getFieldError("nip")}
-                  {...register("nip", { required: true, pattern: /^\d{10}$/ })}
-                />
-                <Input
-                  label={t("tenantProfile.fields.companyName.label")}
-                  placeholder={t("tenantProfile.fields.companyName.placeholder")}
-                  maxLength={255}
-                  error={getFieldError("companyName")}
-                  {...register("companyName", { required: true })}
-                />
-                <Input
-                  label={t("tenantProfile.fields.logoUrl.label")}
-                  placeholder={t("tenantProfile.fields.logoUrl.placeholder")}
-                  maxLength={512}
-                  error={getFieldError("logoUrl")}
-                  {...register("logoUrl")}
-                />
-              </div>
-            </fieldset>
-
-            <fieldset className="rounded-xl border border-border-default bg-surface-secondary/60 p-4 shadow-sm">
-              <legend className="mb-0 text-sm font-semibold text-text-primary">
-                {t("tenantProfile.sections.contact")}
-              </legend>
-              <div className="space-y-4">
-                <Input
-                  label={t("tenantProfile.fields.contactEmail.label")}
-                  type="email"
-                  placeholder={t("tenantProfile.fields.contactEmail.placeholder")}
-                  maxLength={255}
-                  error={getFieldError("contactEmail")}
-                  {...register("contactEmail", { required: true })}
-                />
-                <Input
-                  label={t("tenantProfile.fields.phone.label")}
-                  type="tel"
-                  placeholder={t("tenantProfile.fields.phone.placeholder")}
-                  maxLength={20}
-                  error={getFieldError("phone")}
-                  {...register("phone", { required: true })}
-                />
-              </div>
-            </fieldset>
-
-            <fieldset className="rounded-xl border border-border-default bg-surface-secondary/60 p-4 shadow-sm">
-              <legend className="mb-0 text-sm font-semibold text-text-primary">
-                {t("tenantProfile.sections.address")}
-              </legend>
-              <div className="space-y-4">
-                <Input
-                  label={t("tenantProfile.fields.addressStreet.label")}
-                  placeholder={t("tenantProfile.fields.addressStreet.placeholder")}
-                  maxLength={255}
-                  error={getFieldError("addressStreet")}
-                  {...register("addressStreet", { required: true })}
-                />
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    label={t("tenantProfile.fields.addressCity.label")}
-                    placeholder={t("tenantProfile.fields.addressCity.placeholder")}
-                    maxLength={100}
-                    error={getFieldError("addressCity")}
-                    {...register("addressCity", { required: true })}
-                  />
-                  <Input
-                    label={t("tenantProfile.fields.addressPostalCode.label")}
-                    placeholder={t("tenantProfile.fields.addressPostalCode.placeholder")}
-                    maxLength={6}
-                    helperText={t("tenantProfile.fields.addressPostalCode.helper")}
-                    error={getFieldError("addressPostalCode")}
-                    {...register("addressPostalCode", { required: true, pattern: /^\d{2}-\d{3}$/ })}
-                  />
-                </div>
-                <Input
-                  label={t("tenantProfile.fields.addressCountry.label")}
-                  placeholder={t("tenantProfile.fields.addressCountry.placeholder")}
-                  maxLength={100}
-                  error={getFieldError("addressCountry")}
-                  {...register("addressCountry")}
-                />
-              </div>
-            </fieldset>
-
-            <fieldset className="rounded-xl border border-border-default bg-surface-secondary/60 p-4 shadow-sm">
-              <legend className="mb-0 text-sm font-semibold text-text-primary">
-                {t("tenantProfile.sections.owner")}
-              </legend>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    label={t("tenantProfile.fields.ownerFirstName.label")}
-                    placeholder={t("tenantProfile.fields.ownerFirstName.placeholder")}
-                    maxLength={100}
-                    error={getFieldError("ownerFirstName")}
-                    {...register("ownerFirstName", { required: true })}
-                  />
-                  <Input
-                    label={t("tenantProfile.fields.ownerLastName.label")}
-                    placeholder={t("tenantProfile.fields.ownerLastName.placeholder")}
-                    maxLength={100}
-                    error={getFieldError("ownerLastName")}
-                    {...register("ownerLastName", { required: true })}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    label={t("tenantProfile.fields.ownerEmail.label")}
-                    type="email"
-                    placeholder={t("tenantProfile.fields.ownerEmail.placeholder")}
-                    maxLength={255}
-                    error={getFieldError("ownerEmail")}
-                    {...register("ownerEmail")}
-                  />
-                  <Input
-                    label={t("tenantProfile.fields.ownerPhone.label")}
-                    type="tel"
-                    placeholder={t("tenantProfile.fields.ownerPhone.placeholder")}
-                    maxLength={20}
-                    error={getFieldError("ownerPhone")}
-                    {...register("ownerPhone")}
-                  />
-                </div>
-              </div>
-            </fieldset>
-
-            <fieldset className="rounded-xl border border-border-default bg-surface-secondary/60 p-4 shadow-sm">
-              <legend className="mb-0 text-sm font-semibold text-text-primary">
-                {t("tenantProfile.sections.contactPerson")}
-              </legend>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    label={t("tenantProfile.fields.contactPersonFirstName.label")}
-                    placeholder={t("tenantProfile.fields.contactPersonFirstName.placeholder")}
-                    maxLength={100}
-                    error={getFieldError("contactPersonFirstName")}
-                    {...register("contactPersonFirstName")}
-                  />
-                  <Input
-                    label={t("tenantProfile.fields.contactPersonLastName.label")}
-                    placeholder={t("tenantProfile.fields.contactPersonLastName.placeholder")}
-                    maxLength={100}
-                    error={getFieldError("contactPersonLastName")}
-                    {...register("contactPersonLastName")}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    label={t("tenantProfile.fields.contactPersonEmail.label")}
-                    type="email"
-                    placeholder={t("tenantProfile.fields.contactPersonEmail.placeholder")}
-                    maxLength={255}
-                    error={getFieldError("contactPersonEmail")}
-                    {...register("contactPersonEmail")}
-                  />
-                  <Input
-                    label={t("tenantProfile.fields.contactPersonPhone.label")}
-                    type="tel"
-                    placeholder={t("tenantProfile.fields.contactPersonPhone.placeholder")}
-                    maxLength={20}
-                    error={getFieldError("contactPersonPhone")}
-                    {...register("contactPersonPhone")}
-                  />
-                </div>
-              </div>
-            </fieldset>
-
-            <fieldset className="rounded-xl border border-border-default bg-surface-secondary/60 p-4 shadow-sm">
-              <legend className="mb-0 text-sm font-semibold text-text-primary">
-                {t("tenantProfile.sections.socials")}
-              </legend>
-              <div className="space-y-4">
-                <Input
-                  label={t("tenantProfile.fields.socialFacebook.label")}
-                  placeholder={t("tenantProfile.fields.socialFacebook.placeholder")}
-                  maxLength={512}
-                  error={getFieldError("socialFacebook")}
-                  {...register("socialFacebook")}
-                />
-                <Input
-                  label={t("tenantProfile.fields.socialInstagram.label")}
-                  placeholder={t("tenantProfile.fields.socialInstagram.placeholder")}
-                  maxLength={512}
-                  error={getFieldError("socialInstagram")}
-                  {...register("socialInstagram")}
-                />
-                <Input
-                  label={t("tenantProfile.fields.socialTiktok.label")}
-                  placeholder={t("tenantProfile.fields.socialTiktok.placeholder")}
-                  maxLength={512}
-                  error={getFieldError("socialTiktok")}
-                  {...register("socialTiktok")}
-                />
-                <Input
-                  label={t("tenantProfile.fields.socialWebsite.label")}
-                  placeholder={t("tenantProfile.fields.socialWebsite.placeholder")}
-                  maxLength={512}
-                  error={getFieldError("socialWebsite")}
-                  {...register("socialWebsite")}
-                />
-              </div>
-            </fieldset>
+          <div className="mt-2 grid items-start gap-6 [grid-template-columns:repeat(auto-fit,minmax(320px,1fr))]">
+            <CompanyFieldset
+              effectiveLogo={effectiveLogo}
+              getFieldError={getFieldError}
+              handleLogoChange={handleLogoChange}
+              isSaving={saveMutation.isPending}
+              logoFieldError={logoFieldError}
+              register={register}
+              t={t}
+            />
+            <ContactFieldset getFieldError={getFieldError} register={register} t={t} />
+            <AddressFieldset getFieldError={getFieldError} register={register} t={t} />
+            <OwnerFieldset getFieldError={getFieldError} register={register} t={t} />
+            <ContactPersonFieldset getFieldError={getFieldError} register={register} t={t} />
+            <SocialsFieldset getFieldError={getFieldError} register={register} t={t} />
           </div>
 
           {submitStatus === "success" && (

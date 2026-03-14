@@ -7,7 +7,29 @@
   },
   "metadata": {
     "title": "Platforma Restorio",
-    "description": "Platforma Zarządzania Restauracją"
+    "description": "Platforma Zarządzania Restauracją",
+    "pages": {
+      "home": {
+        "title": "Start",
+        "description": "Witamy na platformie Restorio."
+      },
+      "about": {
+        "title": "O nas",
+        "description": "Poznaj misję i cele platformy Restorio."
+      },
+      "login": {
+        "title": "Zaloguj się",
+        "description": "Zaloguj się do swojego konta Restorio."
+      },
+      "register": {
+        "title": "Zarejestruj konto",
+        "description": "Utwórz swoje konto w Restorio."
+      },
+      "activate": {
+        "title": "Aktywuj konto",
+        "description": "Aktywuj swoje konto Restorio."
+      }
+    }
   },
   "login": {
     "title": "Zaloguj się",
@@ -112,6 +134,52 @@
     "title": "Gotowy na unowocześnienie swojej restauracji?",
     "subtitle": "Dołącz do setek restauracji już korzystających z Restorio, aby usprawnić swoje operacje.",
     "button": "Dowiedz Się Więcej O Nas"
+  },
+  "activate": {
+    "loading": {
+      "title": "Aktywujemy Twoje konto",
+      "subtitle": "To powinno zająć tylko chwilę."
+    },
+    "success": {
+      "title": "Twoje konto zostało aktywowane.",
+      "description": "Jesteś teraz zalogowany. Przejdź do panelu administracyjnego, aby dokończyć konfigurację."
+    },
+    "alreadyActivated": {
+      "title": "To konto jest już aktywne."
+    },
+    "expired": {
+      "title": "Link aktywacyjny wygasł",
+      "genericMessage": "Link aktywacyjny wygasł."
+    },
+    "error": {
+      "title": "Aktywacja nie powiodła się",
+      "genericMessage": "Poproś o nowy link aktywacyjny."
+    },
+    "setPassword": {
+      "title": "Ustaw hasło",
+      "description": "Przed aktywacją ustaw hasło do swojego konta.",
+      "submit": "Zapisz hasło i aktywuj",
+      "submitting": "Zapisywanie..."
+    },
+    "resendSent": {
+      "title": "Sprawdź swoją skrzynkę e-mail",
+      "description": "Wysłaliśmy nowy link aktywacyjny. Użyj linku w wiadomości, aby aktywować konto.",
+      "secondaryPrompt": "Nie otrzymałeś wiadomości?",
+      "resendAgain": "Wyślij ponownie"
+    },
+    "buttons": {
+      "goToAdmin": "Przejdź do panelu administracyjnego",
+      "resend": "Wyślij link aktywacyjny ponownie",
+      "resendLoading": "Wysyłanie…",
+      "resendWithCooldown": "Wyślij link ponownie ({seconds}s)"
+    },
+    "errors": {
+      "missingOrInvalidLink": "Link aktywacyjny jest nieprawidłowy lub go brakuje.",
+      "activationExpired": "Link aktywacyjny wygasł.",
+      "activationGeneric": "Aktywacja nie powiodła się. Poproś o nowy link.",
+      "resendGeneric": "Nie udało się wysłać ponownie e-maila aktywacyjnego.",
+      "setPasswordGeneric": "Nie udało się ustawić hasła. Spróbuj ponownie."
+    }
   },
   "about": {
     "mission": {
