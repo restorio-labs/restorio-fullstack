@@ -2,7 +2,7 @@
 
 import { I18nProvider, ThemeProvider } from "@restorio/ui";
 import { THEME_STORAGE_KEY } from "@restorio/utils";
-import { useLocale, useMessages } from "next-intl";
+import { useMessages } from "next-intl";
 import type { ReactNode } from "react";
 
 interface AppProvidersProps {
@@ -10,7 +10,8 @@ interface AppProvidersProps {
 }
 
 export const AppProviders = ({ children }: AppProvidersProps): ReactNode => {
-  const locale = useLocale();
+  // const locale = useLocale();
+  const locale = "pl";
   const messages = useMessages();
 
   return (

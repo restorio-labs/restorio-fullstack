@@ -1,22 +1,20 @@
 import { LogoutButton } from "@restorio/auth";
-import { ChooseApp, LanguageDropdown, ThemeSwitcher, NavItem, NavSection, Sidebar, useI18n } from "@restorio/ui";
+import { ChooseApp, ThemeSwitcher, NavItem, NavSection, Sidebar, useI18n } from "@restorio/ui";
 import { goToApp } from "@restorio/utils";
 import type { ReactElement } from "react";
-import { useCallback, useId } from "react";
+import { useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { api } from "../../api/client";
 import { PUBLIC_WEB_URL } from "../../config";
-import { supportedLocales } from "../../i18n/messages";
 import { TenantSwitcher } from "../tenant/TenantSwitcher";
 
 const FLOOR_EDITOR_NAVIGATION_EVENT = "restorio:floor-editor-navigation-attempt";
 
 export const AdminSidebar = (): ReactElement => {
-  const { t, locale, setLocale } = useI18n();
+  const { t } = useI18n();
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const languageSelectId = useId();
 
   const isActive = (path: string): boolean => {
     if (path === "/") {
@@ -141,17 +139,10 @@ export const AdminSidebar = (): ReactElement => {
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-text-secondary">
           <ThemeSwitcher />
           <div className="flex items-center gap-2">
-            <span id={languageSelectId}>{t("languageSwitcher.label")}</span>
-            <LanguageDropdown
-              value={locale}
-              options={supportedLocales.map((localeOption) => ({
-                value: localeOption,
-                label: t(`languageSwitcher.options.${localeOption}`),
-              }))}
-              onSelect={setLocale}
-              ariaLabelledBy={languageSelectId}
-              placement="bottom-end"
-            />
+            <span>{t("languageSwitcher.label")}</span>
+            <span className="rounded-md border border-border-default px-2 py-1 text-xs font-semibold tracking-wide">
+              PL
+            </span>
           </div>
           <div className="flex items-center gap-2 ml-auto">
             <span>{t("sidebar.items.label")}</span>
