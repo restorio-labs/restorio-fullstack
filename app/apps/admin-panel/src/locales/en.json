@@ -259,9 +259,34 @@
   },
   "restaurantCreator": {
     "title": "Restaurant Creator",
-    "description": "Create and configure new restaurants",
-    "placeholderTitle": "Restaurant Creator",
-    "placeholderDescription": "Create new restaurants for your business"
+    "description": "Create a new restaurant tenant",
+    "actions": {
+      "create": "Create Restaurant",
+      "creating": "Creating..."
+    },
+    "fields": {
+      "name": {
+        "label": "Restaurant name",
+        "placeholder": "e.g. Bistro Nova",
+        "error": "Restaurant name is required."
+      },
+      "slug": {
+        "label": "Generated slug",
+        "empty": "Slug will be generated from restaurant name"
+      }
+    },
+    "profile": {
+      "title": "Add profile now (optional)",
+      "description": "Expand to fill required profile fields during creation.",
+      "show": "Expand",
+      "hide": "Collapse"
+    },
+    "errors": {
+      "createFailed": "Failed to create restaurant. Please try again.",
+      "validationFailed": "Please fix the highlighted fields and try again.",
+      "profileSaveFailed": "Restaurant was created, but profile could not be saved."
+    },
+    "success": "Restaurant created successfully."
   },
   "restaurantQr": {
     "generateError": "Failed to generate QR code for restaurant:",

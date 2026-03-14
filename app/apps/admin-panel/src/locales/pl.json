@@ -255,9 +255,34 @@
   },
   "restaurantCreator": {
     "title": "Kreator restauracji",
-    "description": "Twórz i konfiguruj nowe restauracje",
-    "placeholderTitle": "Kreator restauracji",
-    "placeholderDescription": "Twórz nowe restauracje dla swojej firmy"
+    "description": "Utwórz nowego najemcę restauracji",
+    "actions": {
+      "create": "Utwórz restaurację",
+      "creating": "Tworzenie..."
+    },
+    "fields": {
+      "name": {
+        "label": "Nazwa restauracji",
+        "placeholder": "np. Bistro Nova",
+        "error": "Nazwa restauracji jest wymagana."
+      },
+      "slug": {
+        "label": "Wygenerowany slug",
+        "empty": "Slug zostanie wygenerowany z nazwy restauracji"
+      }
+    },
+    "profile": {
+      "title": "Dodaj profil od razu (opcjonalnie)",
+      "description": "Rozwiń i uzupełnij wymagane pola profilu podczas tworzenia.",
+      "show": "Rozwiń",
+      "hide": "Zwiń"
+    },
+    "errors": {
+      "createFailed": "Nie udało się utworzyć restauracji. Spróbuj ponownie.",
+      "validationFailed": "Popraw zaznaczone pola i spróbuj ponownie.",
+      "profileSaveFailed": "Restauracja została utworzona, ale nie udało się zapisać profilu."
+    },
+    "success": "Restauracja została utworzona."
   },
   "restaurantQr": {
     "generateError": "Nie udało się wygenerować kodu QR dla restauracji:",

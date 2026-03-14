@@ -9,6 +9,7 @@ from sqlalchemy.orm import selectinload
 from core.dto.v1.tenants import CreateTenantDTO, UpdateTenantDTO
 from core.exceptions import NotFoundResponse
 from core.models import Tenant, TenantRole
+from core.models.enums import AccountType
 
 
 class TenantService:
@@ -53,13 +54,22 @@ class TenantService:
 
         return tenant
 
-    async def create_tenant(self, session: AsyncSession, data: CreateTenantDTO) -> Tenant:
+    async def create_tenant(self, session: AsyncSession, data: CreateTenantDTO, owner_id: UUID) -> Tenant:
         tenant = Tenant(
             name=data.name,
             slug=data.slug,
             status=data.status,
         )
         session.add(tenant)
+        await session.flush()
+
+        tenant_role = TenantRole(
+            account_id=owner_id,
+            tenant_id=tenant.id,
+            account_type=AccountType.OWNER,
+        )
+        session.add(tenant_role)
+
         await session.commit()
         await session.refresh(tenant, attribute_names=["floor_canvases"])
         return tenant

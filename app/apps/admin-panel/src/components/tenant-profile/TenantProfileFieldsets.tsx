@@ -16,10 +16,11 @@ interface FormFieldsetProps {
 }
 
 interface CompanyFieldsetProps extends FormFieldsetProps {
-  effectiveLogo: string | null;
-  handleLogoChange: ChangeEventHandler<HTMLInputElement>;
-  isSaving: boolean;
+  effectiveLogo?: string | null;
+  handleLogoChange?: ChangeEventHandler<HTMLInputElement>;
+  isSaving?: boolean;
   logoFieldError: string | undefined;
+  showLogoField?: boolean;
 }
 
 const FieldsetCard = ({ children, title }: BaseFieldsetProps): ReactElement => {
@@ -32,14 +33,19 @@ const FieldsetCard = ({ children, title }: BaseFieldsetProps): ReactElement => {
 };
 
 export const CompanyFieldset = ({
-  effectiveLogo,
+  effectiveLogo = null,
   getFieldError,
   handleLogoChange,
-  isSaving,
+  isSaving = false,
   logoFieldError,
   register,
+  showLogoField = true,
   t,
 }: CompanyFieldsetProps): ReactElement => {
+  const handleLogoChangeSafe: ChangeEventHandler<HTMLInputElement> = (event) => {
+    handleLogoChange?.(event);
+  };
+
   return (
     <FieldsetCard title={t("tenantProfile.sections.company")}>
       <Input
@@ -57,23 +63,27 @@ export const CompanyFieldset = ({
         error={getFieldError("companyName")}
         {...register("companyName", { required: true })}
       />
-      <Input
-        label={t("tenantProfile.fields.logo.label")}
-        type="file"
-        accept="image/png,image/jpeg,image/webp"
-        helperText={isSaving ? t("tenantProfile.fields.logo.uploading") : t("tenantProfile.fields.logo.helper")}
-        error={logoFieldError}
-        onChange={handleLogoChange}
-      />
-      {effectiveLogo ? (
-        <div className="space-y-2 rounded-lg border border-border-default bg-surface-primary p-3">
-          <div className="text-xs text-text-secondary">{t("tenantProfile.fields.logo.current")}</div>
-          <img
-            src={effectiveLogo}
-            alt={t("tenantProfile.fields.logo.previewAlt")}
-            className="h-20 w-20 rounded-lg border border-border-default bg-surface-secondary object-contain"
+      {showLogoField ? (
+        <>
+          <Input
+            label={t("tenantProfile.fields.logo.label")}
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            helperText={isSaving ? t("tenantProfile.fields.logo.uploading") : t("tenantProfile.fields.logo.helper")}
+            error={logoFieldError}
+            onChange={handleLogoChangeSafe}
           />
-        </div>
+          {effectiveLogo ? (
+            <div className="space-y-2 rounded-lg border border-border-default bg-surface-primary p-3">
+              <div className="text-xs text-text-secondary">{t("tenantProfile.fields.logo.current")}</div>
+              <img
+                src={effectiveLogo}
+                alt={t("tenantProfile.fields.logo.previewAlt")}
+                className="h-20 w-20 rounded-lg border border-border-default bg-surface-secondary object-contain"
+              />
+            </div>
+          ) : null}
+        </>
       ) : null}
     </FieldsetCard>
   );
