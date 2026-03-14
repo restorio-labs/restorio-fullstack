@@ -3,7 +3,7 @@ import React from "react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, it, expect, beforeEach, vi, type Mock } from "vitest";
 
-import { AuthGuard } from "../../src/guard";
+import { AuthGuard, type AuthGuardProps } from "../../src/guard";
 import { TokenStorage } from "../../src/storage";
 
 vi.mock("../../src/storage", () => ({
@@ -14,8 +14,9 @@ vi.mock("../../src/storage", () => ({
   },
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockClient: any = {
+type AuthClient = NonNullable<AuthGuardProps["client"]>;
+
+const mockClient: AuthClient = {
   auth: {
     me: vi.fn(),
     refresh: vi.fn(),
@@ -35,14 +36,12 @@ describe("AuthGuard", () => {
   it("should render children when strategy is none", () => {
     render(
       <MemoryRouter future={ROUTER_FUTURE_FLAGS}>
-        <AuthGuard strategy="none" client={undefined}>
+        <AuthGuard strategy="none">
           <div>Protected Content</div>
         </AuthGuard>
       </MemoryRouter>,
     );
 
-    // @ts-expect-error - test purposes
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     expect(screen.getByText("Protected Content")).toBeInTheDocument();
   });
 
@@ -58,8 +57,6 @@ describe("AuthGuard", () => {
       </MemoryRouter>,
     );
 
-    // @ts-expect-error - test purposes
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     await waitFor(() => expect(screen.getByText("Protected Content")).toBeInTheDocument());
   });
 
@@ -77,8 +74,6 @@ describe("AuthGuard", () => {
       </MemoryRouter>,
     );
 
-    // @ts-expect-error - test purposes
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     await waitFor(() => expect(screen.queryByText("Protected Content")).not.toBeInTheDocument());
   });
 
@@ -97,8 +92,6 @@ describe("AuthGuard", () => {
       </MemoryRouter>,
     );
 
-    // @ts-expect-error - test purposes
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     await waitFor(() => expect(screen.queryByText("Protected Content")).not.toBeInTheDocument());
   });
 
@@ -116,8 +109,6 @@ describe("AuthGuard", () => {
       </MemoryRouter>,
     );
 
-    // @ts-expect-error - test purposes
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     await waitFor(() => expect(screen.queryByText("Protected Content")).not.toBeInTheDocument());
   });
 
@@ -133,8 +124,6 @@ describe("AuthGuard", () => {
       </MemoryRouter>,
     );
 
-    // @ts-expect-error - test purposes
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     await waitFor(() => expect(screen.getByText("Protected Content")).toBeInTheDocument());
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(TokenStorage.getAccessToken).toHaveBeenCalled();

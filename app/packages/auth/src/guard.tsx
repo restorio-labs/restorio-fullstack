@@ -1,4 +1,4 @@
-import { type RestorioApi } from "@restorio/api-client";
+import type { RefreshResponse } from "@restorio/types";
 import type { ReactElement, ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
@@ -6,6 +6,13 @@ import { Navigate } from "react-router-dom";
 import { TokenStorage } from "./storage";
 
 export type AuthStrategy = "code" | "none";
+
+interface AuthClient {
+  auth: {
+    me: () => Promise<unknown>;
+    refresh: () => Promise<RefreshResponse>;
+  };
+}
 
 export interface AuthGuardProps {
   strategy?: AuthStrategy;
@@ -16,7 +23,7 @@ export interface AuthGuardProps {
   checkAuth?: () => boolean | Promise<boolean>;
   revalidateIntervalMs?: number;
   revalidateOnFocus?: boolean;
-  client: RestorioApi;
+  client?: AuthClient;
 }
 
 type AuthStatus = "pending" | "allowed" | "unauthorized";
@@ -35,8 +42,8 @@ const fallbackTokenCheck = (): boolean => {
 
 const REVALIDATION_COOLDOWN_MS = 2000;
 
-const createDefaultCheckAuth = (client: RestorioApi): (() => boolean | Promise<boolean>) => {
-  if (typeof window === "undefined") {
+const createDefaultCheckAuth = (client: AuthClient | undefined): (() => boolean | Promise<boolean>) => {
+  if (typeof window === "undefined" || !client) {
     return (): boolean => fallbackTokenCheck();
   }
 

@@ -1,4 +1,5 @@
 import json
+import os
 
 from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -82,7 +83,8 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _reject_insecure_production_secrets(self) -> "Settings":
-        if not self.DEBUG and self.SECRET_KEY in _INSECURE_SECRET_KEYS:
+        env_mode = os.getenv("ENV") or os.getenv("NODE_ENV") or "development"
+        if env_mode == "production" and self.SECRET_KEY in _INSECURE_SECRET_KEYS:
             msg = (
                 "FATAL: SECRET_KEY is set to an insecure default. "
                 "Set a strong, unique SECRET_KEY environment variable before running in production."

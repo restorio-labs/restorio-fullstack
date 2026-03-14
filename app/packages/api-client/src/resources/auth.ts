@@ -69,19 +69,19 @@ export class AuthResource extends BaseResource {
   }
 
   /**
-   * Get current session (id and tenantIds from JWT). Not a full user profile.
+   * Check whether the current session is authenticated.
    * Pass accessToken when calling immediately after login so the request is authenticated
    * without relying on cookies (e.g. cross-origin).
    */
   async me(signal?: AbortSignal, accessToken?: string | null): Promise<AuthMeData> {
     const headers = accessToken != null && accessToken !== "" ? { Authorization: `Bearer ${accessToken}` } : undefined;
 
-    const { data } = await this.client.get<
-      SuccessResponse<{ sub: string; tenant_ids: string[]; account_type: string }>
-    >("auth/me", { signal, withCredentials: true, ...(headers ? { headers } : {}) });
+    const { data } = await this.client.get<SuccessResponse<{ authenticated: boolean }>>("auth/me", {
+      signal,
+      withCredentials: true,
+      ...(headers ? { headers } : {}),
+    });
 
-    const tenantIds = Array.isArray(data.tenant_ids) ? data.tenant_ids : [];
-
-    return { id: data.sub, tenantIds, accountType: data.account_type };
+    return { authenticated: data.authenticated };
   }
 }

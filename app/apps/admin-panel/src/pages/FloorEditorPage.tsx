@@ -63,7 +63,7 @@ export const FloorEditorPage = (): ReactElement => {
       return;
     }
 
-    setSelectedCanvasId(activeCanvas?.id ?? tenant.floorCanvases[0]?.id ?? null);
+    setSelectedCanvasId(activeCanvas?.id ?? tenant.floorCanvases[0]?.id);
   }, [selectedCanvasId, tenant]);
 
   useEffect(() => {

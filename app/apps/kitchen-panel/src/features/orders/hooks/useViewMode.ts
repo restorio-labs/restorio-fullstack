@@ -11,12 +11,15 @@ interface ViewModeState {
 
 const useViewModeStore = create<ViewModeState>()(
   persist(
-    (set) => ({
+    (set): ViewModeState => ({
       viewModes: {},
-      setViewMode: (tenantId, mode) =>
-        set((state) => ({
-          viewModes: { ...state.viewModes, [tenantId]: mode },
-        })),
+      setViewMode: (tenantId: string, mode: ViewMode): void => {
+        set(
+          (state): Pick<ViewModeState, "viewModes"> => ({
+            viewModes: { ...state.viewModes, [tenantId]: mode },
+          }),
+        );
+      },
     }),
     {
       name: "kitchen-panel:viewMode",

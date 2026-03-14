@@ -12,10 +12,10 @@ const useRestaurantSelectionStore = create<RestaurantSelectionState>()(
   persist(
     (set) => ({
       selections: {},
-      setSelection: (tenantId, restaurantId) =>
+      setSelection: (tenantId, restaurantId): RestaurantSelectionState =>
         set((state) => ({
           selections: { ...state.selections, [tenantId]: restaurantId },
-        })),
+        })) as RestaurantSelectionState,
     }),
     {
       name: "kitchen-panel:restaurantSelection",

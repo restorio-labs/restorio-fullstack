@@ -4,6 +4,9 @@ import { resolve } from "path";
 const isCI = !!process.env.GITHUB_ACTIONS;
 
 export default defineConfig({
+  esbuild: {
+    jsxInject: `import React from "react"`,
+  },
   test: {
     globals: true,
     root: process.cwd(),
@@ -32,6 +35,7 @@ export default defineConfig({
       "@restorio/api-client": resolve(__dirname, "./app/packages/api-client/src"),
       "@restorio/auth": resolve(__dirname, "./app/packages/auth/src"),
       "@restorio/utils": resolve(__dirname, "./app/packages/utils/src"),
+      "@/": resolve(__dirname, "./app/apps/public-web/src/"),
       "@utils": resolve(__dirname, "./app/packages/ui/src/utils/index.ts"),
       "@components": resolve(__dirname, "./app/packages/ui/src/components"),
     },

@@ -49,9 +49,7 @@ export interface DeleteUserData {
 }
 
 export interface AuthMeData {
-  id: string;
-  tenantIds: string[];
-  accountType: string;
+  authenticated: boolean;
 }
 
 export interface LoginResponse {

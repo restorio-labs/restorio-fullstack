@@ -85,7 +85,7 @@ export const LoginContent = (): ReactElement => {
     setSubmitting(true);
 
     try {
-      await api.auth.login(email.trim(), password);
+      const loginResponse = await api.auth.login(email.trim(), password);
 
       const rlvp = localStorage.getItem(LAST_VISITED_APP_STORAGE_KEY);
 
@@ -95,9 +95,7 @@ export const LoginContent = (): ReactElement => {
         return;
       }
 
-      const me = await api.auth.me();
-
-      const role = me.accountType;
+      const role = loginResponse.data.account_type;
 
       if (role === "kitchen") {
         window.location.href = getAppHref("kitchen-panel");

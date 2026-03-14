@@ -52,19 +52,17 @@ describe("AuthResource", () => {
 
   it("me calls GET auth/me and returns unwrapped AuthMeData", async () => {
     client.get = vi.fn().mockResolvedValue({
-      data: { sub: "user-1", tenant_id: "t-1", tenant_ids: ["t-1", "t-2"], account_type: "owner" },
+      data: { authenticated: true },
     });
 
     const result = await resource.me();
 
     expect(client.get).toHaveBeenCalledWith("auth/me", { signal: undefined, withCredentials: true });
-    expect(result).toEqual({ id: "user-1", tenantIds: ["t-1", "t-2"], tenantId: "t-1", accountType: "owner" });
+    expect(result).toEqual({ authenticated: true });
   });
 
   it("me with accessToken sends Authorization header", async () => {
-    client.get = vi
-      .fn()
-      .mockResolvedValue({ data: { sub: "u", tenant_id: "t", tenant_ids: ["t"], account_type: "owner" } });
+    client.get = vi.fn().mockResolvedValue({ data: { authenticated: true } });
 
     await resource.me(undefined, "jwt-token");
 

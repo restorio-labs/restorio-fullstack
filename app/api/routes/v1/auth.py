@@ -431,21 +431,10 @@ async def me(request: Request) -> SuccessResponse[AuthMeSessionData]:
         raise UnauthenticatedResponse(message="Unauthorized")
 
     subject = user.get("sub")
-    tenant_ids_claim = user.get("tenant_ids")
-    tenant_ids: list[str] = []
-    if isinstance(tenant_ids_claim, list):
-        tenant_ids = [
-            tenant_id_item for tenant_id_item in tenant_ids_claim if isinstance(tenant_id_item, str)
-        ]
-    account_type = user.get("account_type")
     if not isinstance(subject, str):
         raise UnauthenticatedResponse(message="Unauthorized")
 
     return SuccessResponse(
-        data={
-            "sub": subject,
-            "tenant_ids": tenant_ids,
-            "account_type": account_type if isinstance(account_type, str) else "",
-        },
+        data=AuthMeSessionData(),
         message="Authenticated",
     )

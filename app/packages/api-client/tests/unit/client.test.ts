@@ -30,7 +30,7 @@ describe("Api Client", () => {
     });
   });
 
-  it("adds Authorization header when access token exists", () => {
+  it("adds Authorization header when access token exists", async () => {
     new ApiClient({
       baseURL: "x",
       getAccessToken: (): string | null => "token",
@@ -38,12 +38,12 @@ describe("Api Client", () => {
 
     const config = { headers: {} } as AxiosRequestConfig;
 
-    const result = ctx.requestInterceptor?.(config) ?? config;
+    const result = (await ctx.requestInterceptor?.(config)) ?? config;
 
     expect(result.headers?.Authorization).toBe("Bearer token");
   });
 
-  it("does not override existing Authorization header", () => {
+  it("does not override existing Authorization header", async () => {
     new ApiClient({
       baseURL: "x",
       getAccessToken: (): string | null => "token",
@@ -53,7 +53,7 @@ describe("Api Client", () => {
       headers: { Authorization: "Bearer existing" },
     } as AxiosRequestConfig;
 
-    const result = ctx.requestInterceptor?.(config) ?? config;
+    const result = (await ctx.requestInterceptor?.(config)) ?? config;
 
     expect(result.headers?.Authorization).toBe("Bearer existing");
   });

@@ -1,6 +1,6 @@
 import { Button, Form, FormActions, useI18n } from "@restorio/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { ChangeEvent, ReactElement } from "react";
+import type { ChangeEvent, FormEvent, ReactElement } from "react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -69,27 +69,19 @@ export const TenantProfilePage = (): ReactElement => {
   useEffect(() => {
     if (!tenantId || !profile?.logo) {
       setLogoViewUrl(null);
+
       return;
     }
 
-    let cancelled = false;
-
-    void (async () => {
+    void (async (): Promise<void> => {
       try {
         const result = await api.tenantProfiles.createLogoViewUrl(tenantId);
-        if (!cancelled) {
-          setLogoViewUrl(result.url);
-        }
+
+        setLogoViewUrl(result.url);
       } catch {
-        if (!cancelled) {
-          setLogoViewUrl(null);
-        }
+        setLogoViewUrl(null);
       }
     })();
-
-    return () => {
-      cancelled = true;
-    };
   }, [tenantId, profile?.logo]);
 
   useEffect(() => {
@@ -153,7 +145,7 @@ export const TenantProfilePage = (): ReactElement => {
         social_website: values.socialWebsite.trim() || null,
       });
     },
-    onSuccess: (savedProfile) => {
+    onSuccess: (_savedProfile) => {
       setSubmitStatus("success");
       setLogoUploadError("");
       setSelectedLogoFile(null);
@@ -238,7 +230,12 @@ export const TenantProfilePage = (): ReactElement => {
       }
     >
       <div className="mx-auto max-w-5xl p-6">
-        <Form id="tenant-profile-form" onSubmit={handleSubmit(onSubmit)}>
+        <Form
+          id="tenant-profile-form"
+          onSubmit={(event: FormEvent<HTMLFormElement>): void => {
+            void handleSubmit(onSubmit)(event);
+          }}
+        >
           {isLoadingProfile && <div className="text-xs text-text-tertiary">{t("tenantProfile.loadingProfile")}</div>}
           {submitStatus === "error" && (
             <div className="text-xs text-status-error-text">{t("tenantProfile.errors.saveFailed")}</div>
