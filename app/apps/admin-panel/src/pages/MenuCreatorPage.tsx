@@ -39,7 +39,7 @@ const createEmptyItem = (): MenuItemFormState => ({
   tagInput: "",
 });
 
-const createEmptyCategory = (order = 0): MenuCategoryFormState => ({
+const createEmptyCategory = (): MenuCategoryFormState => ({
   id: createLocalId(),
   name: "",
   items: [createEmptyItem()],
