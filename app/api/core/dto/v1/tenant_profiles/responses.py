@@ -30,11 +30,17 @@ class TenantProfileResponseDTO(BaseDTO):
     )
     phone: str = Field(..., description="Restaurant telephone number")
 
-    address_street: str = Field(
+    address_street_name: str = Field(
         ...,
-        alias="addressStreet",
-        serialization_alias="addressStreet",
-        description="Street address",
+        alias="addressStreetName",
+        serialization_alias="addressStreetName",
+        description="Street name",
+    )
+    address_street_number: str = Field(
+        ...,
+        alias="addressStreetNumber",
+        serialization_alias="addressStreetNumber",
+        description="Street/building number",
     )
     address_city: str = Field(
         ..., alias="addressCity", serialization_alias="addressCity", description="City"

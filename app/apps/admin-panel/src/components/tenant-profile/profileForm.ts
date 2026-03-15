@@ -5,7 +5,8 @@ export interface ProfileFormData {
   companyName: string;
   contactEmail: string;
   phone: string;
-  addressStreet: string;
+  addressStreetName: string;
+  addressStreetNumber: string;
   addressCity: string;
   addressPostalCode: string;
   addressCountry: string;
@@ -28,7 +29,8 @@ export const EMPTY_FORM: ProfileFormData = {
   companyName: "",
   contactEmail: "",
   phone: "",
-  addressStreet: "",
+  addressStreetName: "",
+  addressStreetNumber: "",
   addressCity: "",
   addressPostalCode: "",
   addressCountry: "Polska",
@@ -51,7 +53,8 @@ export const toFormData = (profile: TenantProfile): ProfileFormData => ({
   companyName: profile.companyName,
   contactEmail: profile.contactEmail,
   phone: profile.phone,
-  addressStreet: profile.addressStreet,
+  addressStreetName: profile.addressStreetName,
+  addressStreetNumber: profile.addressStreetNumber,
   addressCity: profile.addressCity,
   addressPostalCode: profile.addressPostalCode,
   addressCountry: profile.addressCountry,

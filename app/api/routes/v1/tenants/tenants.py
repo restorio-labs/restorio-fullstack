@@ -62,16 +62,26 @@ async def list_tenants(
 )
 async def create_tenant(
     _role: RequireOwner,
-    request: CreateTenantDTO,
+    request: Request,
+    body: CreateTenantDTO,
     session: PostgresSession,
     service: TenantServiceDep,
 ) -> CreatedResponse[TenantResponseDTO]:
+    user = getattr(request.state, "user", None)
+    if not isinstance(user, dict):
+        raise UnauthenticatedResponse(message="Unauthorized")
+
+    subject = user.get("sub")
+    if not isinstance(subject, str):
+        raise UnauthenticatedResponse(message="Unauthorized")
+
+    user_id = UUID(subject)
     data = CreateTenantDTO(
-        name=request.name,
-        slug=request.slug,
-        status=request.status,
+        name=body.name,
+        slug=body.slug,
+        status=body.status,
     )
-    tenant = await service.create_tenant(session, data)
+    tenant = await service.create_tenant(session, data, user_id)
     return CreatedResponse(
         message="Tenant created successfully",
         data=tenant_to_response(tenant),

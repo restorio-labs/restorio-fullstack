@@ -34,6 +34,13 @@ class TestCreateTenantDTO:
         errors = exc_info.value.errors()
         assert any("slug" in str(err) for err in errors)
 
+    def test_slug_normalizes_diacritics(self) -> None:
+        dto = CreateTenantDTO(
+            name="Test Restaurant",
+            slug="Zażółć-Gęślą-Jaźń",
+        )
+        assert dto.slug == "zazolc-gesla-jazn"
+
     def test_name_too_long(self) -> None:
         with pytest.raises(ValidationError):
             CreateTenantDTO(
@@ -64,9 +71,9 @@ class TestUpdateTenantDTO:
         assert dto.status is None
 
     def test_partial_update_slug_only(self) -> None:
-        dto = UpdateTenantDTO(slug="updated-slug")
+        dto = UpdateTenantDTO(slug="Żółć-updated")
         assert dto.name is None
-        assert dto.slug == "updated-slug"
+        assert dto.slug == "zolc-updated"
         assert dto.status is None
 
     def test_partial_update_status_only(self) -> None:

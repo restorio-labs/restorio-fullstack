@@ -8,7 +8,9 @@ from sqlalchemy.orm import selectinload
 
 from core.dto.v1.tenants import CreateTenantDTO, UpdateTenantDTO
 from core.exceptions import NotFoundResponse
+from core.foundation.slug import normalize_slug_letters
 from core.models import Tenant, TenantRole
+from core.models.enums import AccountType
 
 
 class TenantService:
@@ -53,13 +55,25 @@ class TenantService:
 
         return tenant
 
-    async def create_tenant(self, session: AsyncSession, data: CreateTenantDTO) -> Tenant:
+    async def create_tenant(
+        self, session: AsyncSession, data: CreateTenantDTO, owner_id: UUID
+    ) -> Tenant:
         tenant = Tenant(
             name=data.name,
-            slug=data.slug,
+            slug=normalize_slug_letters(data.slug).lower(),
             status=data.status,
+            owner_id=owner_id,
         )
         session.add(tenant)
+        await session.flush()
+
+        tenant_role = TenantRole(
+            account_id=owner_id,
+            tenant_id=tenant.id,
+            account_type=AccountType.OWNER,
+        )
+        session.add(tenant_role)
+
         await session.commit()
         await session.refresh(tenant, attribute_names=["floor_canvases"])
         return tenant
@@ -72,7 +86,7 @@ class TenantService:
         if data.name is not None:
             tenant.name = data.name
         if data.slug is not None:
-            tenant.slug = data.slug
+            tenant.slug = normalize_slug_letters(data.slug).lower()
         if data.status is not None:
             tenant.status = data.status
         if data.active_layout_version_id is not None:

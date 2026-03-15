@@ -259,9 +259,37 @@
   },
   "restaurantCreator": {
     "title": "Restaurant Creator",
-    "description": "Create and configure new restaurants",
-    "placeholderTitle": "Restaurant Creator",
-    "placeholderDescription": "Create new restaurants for your business"
+    "description": "Create a new restaurant tenant",
+    "actions": {
+      "create": "Create Restaurant",
+      "creating": "Creating..."
+    },
+    "fields": {
+      "name": {
+        "label": "Restaurant name",
+        "placeholder": "e.g. Bistro Nova",
+        "error": "Restaurant name is required."
+      },
+      "slug": {
+        "label": "Generated slug",
+        "empty": "Slug will be generated from restaurant name"
+      }
+    },
+    "profile": {
+      "title": "Add profile now (optional)",
+      "description": "Expand to fill required profile fields during creation.",
+      "show": "Expand",
+      "hide": "Collapse"
+    },
+    "duplicateName": {
+      "notice": "A restaurant with this name already exists. Please provide street and city to generate a unique slug."
+    },
+    "errors": {
+      "createFailed": "Failed to create restaurant. Please try again.",
+      "validationFailed": "Please fix the highlighted fields and try again.",
+      "profileSaveFailed": "Restaurant was created, but profile could not be saved."
+    },
+    "success": "Restaurant created successfully."
   },
   "restaurantQr": {
     "generateError": "Failed to generate QR code for restaurant:",
@@ -362,10 +390,15 @@
         "placeholder": "+48 123 456 789",
         "error": "Phone number is required"
       },
-      "addressStreet": {
-        "label": "Street",
-        "placeholder": "123 Main St",
-        "error": "Street address is required"
+      "addressStreetName": {
+        "label": "Street Name",
+        "placeholder": "Main Street",
+        "error": "Street name is required"
+      },
+      "addressStreetNumber": {
+        "label": "Street Number",
+        "placeholder": "123A",
+        "error": "Street number is required"
       },
       "addressCity": {
         "label": "City",

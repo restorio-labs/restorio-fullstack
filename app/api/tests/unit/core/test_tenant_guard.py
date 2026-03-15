@@ -74,12 +74,31 @@ class TestResolveAndAuthorizeTenant:
     @pytest.mark.asyncio
     async def test_raises_forbidden_when_public_id_not_in_token(self) -> None:
         request = MagicMock()
-        request.state.user = {"tenant_ids": ["pub-abc"]}
+        request.state.user = {"tenant_ids": ["pub-abc"], "sub": str(uuid4())}
 
+        mock_result = MagicMock()
+        mock_result.scalar_one_or_none.return_value = None
         session = AsyncMock()
+        session.execute.return_value = mock_result
 
         with pytest.raises(ForbiddenError):
             await resolve_and_authorize_tenant("pub-other", request, session)
+
+    @pytest.mark.asyncio
+    async def test_allows_access_when_not_in_token_but_user_has_role_in_db(self) -> None:
+        user_id = uuid4()
+        internal_id = uuid4()
+        request = MagicMock()
+        request.state.user = {"tenant_ids": ["pub-abc"], "sub": str(user_id)}
+
+        mock_result = MagicMock()
+        mock_result.scalar_one_or_none.return_value = internal_id
+        session = AsyncMock()
+        session.execute.return_value = mock_result
+
+        result = await resolve_and_authorize_tenant("pub-other", request, session)
+
+        assert result == internal_id
 
     @pytest.mark.asyncio
     async def test_raises_forbidden_when_no_tenant_access(self) -> None:

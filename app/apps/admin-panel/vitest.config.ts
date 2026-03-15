@@ -16,6 +16,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@restorio/types": resolve(__dirname, "../../packages/types/src"),
+      "@restorio/utils": resolve(__dirname, "../../packages/utils/src"),
     },
   },
 });
