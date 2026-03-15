@@ -13,8 +13,6 @@ export interface TenantMenuCategory {
 }
 
 export interface TenantMenu {
-  tenantId: string;
-  tenantID: string;
   menu: Record<string, Record<string, unknown>>;
   categories: TenantMenuCategory[];
   updatedAt?: string;

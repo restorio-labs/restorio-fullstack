@@ -82,13 +82,11 @@ class TestMenuItemDTO:
 
 class TestTenantMenuResponseDTO:
     def test_includes_aliases(self) -> None:
-        tenant_id = "11111111-1111-1111-1111-111111111111"
         payload = TenantMenuResponseDTO(
-            tenantId=tenant_id,
-            tenantID=tenant_id,
             menu={"0": {"__category": {"name": "Mains", "order": 0}}},
             categories=[MenuCategoryDTO(name="Mains", order=0, items=[])],
         )
         dumped = payload.model_dump(by_alias=True)
-        assert str(dumped["tenantId"]) == tenant_id
-        assert dumped["tenantID"] == tenant_id
+        assert "updatedAt" in dumped
+        assert dumped["menu"]["0"]["__category"]["name"] == "Mains"
+        assert len(dumped["categories"]) == 1

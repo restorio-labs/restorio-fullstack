@@ -1,7 +1,6 @@
 from datetime import UTC, datetime
-from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, HTTPException, status
 
 from core.dto.v1 import (
     MenuCategoryDTO,
@@ -9,11 +8,9 @@ from core.dto.v1 import (
     TenantMenuResponseDTO,
     UpsertTenantMenuDTO,
 )
-from core.foundation.dependencies import MongoDB
+from core.foundation.dependencies import AuthorizedTenantId, MongoDB
 from core.foundation.http.responses import (
     SuccessResponse,
-    UnauthenticatedResponse,
-    UnauthorizedResponse,
     UpdatedResponse,
 )
 
@@ -21,27 +18,6 @@ router = APIRouter()
 
 _CATEGORY_META_KEY = "__category"
 _MENU_COLLECTION = "menus"
-
-
-def _assert_tenant_access(request: Request, tenant_id: UUID) -> None:
-    user = getattr(request.state, "user", None)
-    if not isinstance(user, dict):
-        raise UnauthenticatedResponse(message="Unauthorized")
-
-    allowed_tenant_ids: set[str] = set()
-
-    tenant_id_value = user.get("tenant_id")
-    if isinstance(tenant_id_value, str) and tenant_id_value != "":
-        allowed_tenant_ids.add(tenant_id_value)
-
-    tenant_ids_value = user.get("tenant_ids")
-    if isinstance(tenant_ids_value, list):
-        for tenant_id_item in tenant_ids_value:
-            if isinstance(tenant_id_item, str) and tenant_id_item != "":
-                allowed_tenant_ids.add(tenant_id_item)
-
-    if str(tenant_id) not in allowed_tenant_ids:
-        raise UnauthorizedResponse(message="Access to this tenant is forbidden")
 
 
 def _validate_payload(data: UpsertTenantMenuDTO) -> None:
@@ -143,24 +119,26 @@ def _normalize_categories(raw_menu: dict[str, dict]) -> list[MenuCategoryDTO]:
 
 
 @router.get(
-    "/{tenant_id}/menu",
+    "/{tenant_public_id}/menu",
     status_code=status.HTTP_200_OK,
-    response_model=SuccessResponse[TenantMenuResponseDTO | None],
+    response_model=SuccessResponse[TenantMenuResponseDTO],
     summary="Get tenant menu",
     description="Get menu definition for a tenant from MongoDB",
 )
 async def get_tenant_menu(
-    tenant_id: UUID,
-    request: Request,
+    tenant_public_id: str,
+    _tenant_id: AuthorizedTenantId,
     db: MongoDB,
-) -> SuccessResponse[TenantMenuResponseDTO | None]:
-    _assert_tenant_access(request, tenant_id)
-
-    document = await db[_MENU_COLLECTION].find_one({"tenantID": str(tenant_id)})
+) -> SuccessResponse[TenantMenuResponseDTO]:
+    document = await db[_MENU_COLLECTION].find_one({"tenantPublicId": tenant_public_id})
     if document is None:
         return SuccessResponse(
             message="Tenant menu not yet created",
-            data=None,
+            data=TenantMenuResponseDTO(
+                menu={},
+                categories=[],
+                updatedAt=None,
+            ),
         )
 
     raw_menu = document.get("menu", {})
@@ -170,8 +148,6 @@ async def get_tenant_menu(
     return SuccessResponse(
         message="Tenant menu retrieved successfully",
         data=TenantMenuResponseDTO(
-            tenantId=tenant_id,
-            tenantID=str(tenant_id),
             menu=normalized_menu,
             categories=categories,
             updatedAt=document.get("updatedAt"),
@@ -180,35 +156,32 @@ async def get_tenant_menu(
 
 
 @router.put(
-    "/{tenant_id}/menu",
+    "/{tenant_public_id}/menu",
     status_code=status.HTTP_200_OK,
     response_model=UpdatedResponse[TenantMenuResponseDTO],
     summary="Create or update tenant menu",
     description="Save menu definition for a tenant in MongoDB",
 )
 async def upsert_tenant_menu(
-    tenant_id: UUID,
+    tenant_public_id: str,
+    _tenant_id: AuthorizedTenantId,
     payload: UpsertTenantMenuDTO,
-    request: Request,
     db: MongoDB,
 ) -> UpdatedResponse[TenantMenuResponseDTO]:
-    _assert_tenant_access(request, tenant_id)
     _validate_payload(payload)
 
     raw_menu = _build_raw_menu(payload)
     now = datetime.now(UTC)
 
     await db[_MENU_COLLECTION].update_one(
-        {"tenantID": str(tenant_id)},
-        {"$set": {"tenantID": str(tenant_id), "menu": raw_menu, "updatedAt": now}},
+        {"tenantPublicId": tenant_public_id},
+        {"$set": {"tenantPublicId": tenant_public_id, "menu": raw_menu, "updatedAt": now}},
         upsert=True,
     )
 
     return UpdatedResponse(
         message="Tenant menu saved successfully",
         data=TenantMenuResponseDTO(
-            tenantId=tenant_id,
-            tenantID=str(tenant_id),
             menu=raw_menu,
             categories=_normalize_categories(raw_menu),
             updatedAt=now,

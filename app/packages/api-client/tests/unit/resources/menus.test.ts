@@ -28,6 +28,14 @@ describe("MenusResource", () => {
     expect(client.get).toHaveBeenCalledWith("/tenants/tenant-1/menu", { signal: undefined });
   });
 
+  it("get returns null when API responds 404", async () => {
+    vi.mocked(client.get).mockRejectedValueOnce({
+      response: { status: 404 },
+    });
+
+    await expect(resource.get("tenant-1")).resolves.toBeNull();
+  });
+
   it("save calls PUT /tenants/:id/menu", async () => {
     const payload = {
       categories: [{ name: "Mains", order: 0, items: [] }],

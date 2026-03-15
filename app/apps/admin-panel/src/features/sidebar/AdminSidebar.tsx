@@ -82,7 +82,7 @@ export const AdminSidebar = (): ReactElement => {
           >
             {t("sidebar.items.menuCreator")}
           </NavItem>
-          <NavItem
+          {/* <NavItem
             as={Link}
             to="/main-page-configurator"
             active={isActive("/main-page-configurator")}
@@ -90,7 +90,7 @@ export const AdminSidebar = (): ReactElement => {
             onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/main-page-configurator")}
           >
             {t("sidebar.items.pageConfigurator")}
-          </NavItem>
+          </NavItem> */}
         </NavSection>
 
         <NavSection aria-label={t("sidebar.sections.tools")}>

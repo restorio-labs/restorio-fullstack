@@ -2,11 +2,25 @@ import type { SaveTenantMenuPayload, SuccessResponse, TenantMenu, UpdatedRespons
 
 import { BaseResource } from "./base";
 
+interface ErrorWithStatusCode {
+  response?: {
+    status?: number;
+  };
+}
+
 export class MenusResource extends BaseResource {
   async get(tenantId: string, signal?: AbortSignal): Promise<TenantMenu | null> {
-    const response = await this.client.get<SuccessResponse<TenantMenu | null>>(`/tenants/${tenantId}/menu`, { signal });
+    try {
+      const response = await this.client.get<SuccessResponse<TenantMenu | null>>(`/tenants/${tenantId}/menu`, { signal });
 
-    return response.data;
+      return response.data;
+    } catch (error) {
+      if ((error as ErrorWithStatusCode).response?.status === 404) {
+        return null;
+      }
+
+      throw error;
+    }
   }
 
   async save(tenantId: string, data: SaveTenantMenuPayload, signal?: AbortSignal): Promise<TenantMenu> {

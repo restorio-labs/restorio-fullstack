@@ -24,6 +24,16 @@ interface MenuCategoryFormState {
   items: MenuItemFormState[];
 }
 
+interface QueryErrorWithStatusCode {
+  status?: number;
+  response?: {
+    status?: number;
+    data?: {
+      detail?: string;
+    };
+  };
+}
+
 const menuQueryKey = (tenantId: string): readonly string[] => ["tenant-menu", tenantId];
 const ITEM_DESCRIPTION_MAX_LENGTH = 2000;
 
@@ -66,19 +76,59 @@ export const MenuCreatorPage = (): ReactElement => {
   const [categories, setCategories] = useState<MenuCategoryFormState[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [successVisible, setSuccessVisible] = useState(false);
+  const [didUserEdit, setDidUserEdit] = useState(false);
+  const [loadedTenantId, setLoadedTenantId] = useState<string | null>(null);
 
   const tenantId = selectedTenantId;
 
   const { data: menuData, isLoading } = useQuery({
     queryKey: menuQueryKey(tenantId ?? ""),
-    queryFn: () => api.menus.get(tenantId!),
+    queryFn: async () => {
+      try {
+        return await api.menus.get(tenantId!);
+      } catch (error) {
+        const normalizedError = error as QueryErrorWithStatusCode;
+        const statusCode = normalizedError.response?.status ?? normalizedError.status;
+        const isNotFoundResponse =
+          statusCode === 404 || normalizedError.response?.data?.detail?.toLowerCase() === "not found";
+
+        if (isNotFoundResponse) {
+          return null;
+        }
+
+        throw error;
+      }
+    },
     enabled: tenantId !== null,
   });
 
   useEffect(() => {
     if (!tenantId) {
       setCategories([]);
+      setDidUserEdit(false);
+      setLoadedTenantId(null);
 
+      return;
+    }
+
+    if (loadedTenantId !== tenantId) {
+      if (isLoading) {
+        return;
+      }
+
+      if (menuData?.categories) {
+        setCategories(toFormCategories(menuData.categories));
+      } else {
+        setCategories([]);
+      }
+
+      setDidUserEdit(false);
+      setLoadedTenantId(tenantId);
+
+      return;
+    }
+
+    if (didUserEdit) {
       return;
     }
 
@@ -88,8 +138,10 @@ export const MenuCreatorPage = (): ReactElement => {
       return;
     }
 
-    setCategories([createEmptyCategory(0)]);
-  }, [menuData, tenantId]);
+    if (!isLoading && !menuData?.categories) {
+      setCategories([]);
+    }
+  }, [categories.length, didUserEdit, isLoading, loadedTenantId, menuData, tenantId]);
 
   const saveMutation = useMutation({
     mutationFn: async (payload: SaveTenantMenuPayload) => {
@@ -117,20 +169,24 @@ export const MenuCreatorPage = (): ReactElement => {
   );
 
   const updateCategory = (categoryId: string, patch: Partial<MenuCategoryFormState>): void => {
+    setDidUserEdit(true);
     setCategories((prev) =>
       prev.map((category) => (category.id === categoryId ? { ...category, ...patch } : category)),
     );
   };
 
   const removeCategory = (categoryId: string): void => {
+    setDidUserEdit(true);
     setCategories((prev) => prev.filter((category) => category.id !== categoryId));
   };
 
   const addCategory = (): void => {
-    setCategories((prev) => [...prev, createEmptyCategory(prev.length)]);
+    setDidUserEdit(true);
+    setCategories((prev) => [...prev, createEmptyCategory()]);
   };
 
   const moveCategory = (categoryId: string, direction: "up" | "down"): void => {
+    setDidUserEdit(true);
     setCategories((prev) => {
       const index = prev.findIndex((category) => category.id === categoryId);
 
@@ -154,6 +210,7 @@ export const MenuCreatorPage = (): ReactElement => {
   };
 
   const addItem = (categoryId: string): void => {
+    setDidUserEdit(true);
     setCategories((prev) =>
       prev.map((category) =>
         category.id === categoryId ? { ...category, items: [...category.items, createEmptyItem()] } : category,
@@ -162,6 +219,7 @@ export const MenuCreatorPage = (): ReactElement => {
   };
 
   const updateItem = (categoryId: string, itemId: string, patch: Partial<MenuItemFormState>): void => {
+    setDidUserEdit(true);
     setCategories((prev) =>
       prev.map((category) =>
         category.id !== categoryId
@@ -175,6 +233,7 @@ export const MenuCreatorPage = (): ReactElement => {
   };
 
   const removeItem = (categoryId: string, itemId: string): void => {
+    setDidUserEdit(true);
     setCategories((prev) =>
       prev.map((category) =>
         category.id !== categoryId
@@ -188,6 +247,7 @@ export const MenuCreatorPage = (): ReactElement => {
   };
 
   const addTagToItem = (categoryId: string, itemId: string): void => {
+    setDidUserEdit(true);
     setCategories((prev) =>
       prev.map((category) =>
         category.id !== categoryId
@@ -220,6 +280,7 @@ export const MenuCreatorPage = (): ReactElement => {
   };
 
   const removeTagFromItem = (categoryId: string, itemId: string, tagToRemove: string): void => {
+    setDidUserEdit(true);
     setCategories((prev) =>
       prev.map((category) =>
         category.id !== categoryId
@@ -251,29 +312,43 @@ export const MenuCreatorPage = (): ReactElement => {
         return null;
       }
 
-      const normalizedItems = category.items
-        .map((item) => {
-          const itemName = item.name.trim();
-          const itemPrice = Number(item.price);
+      const normalizedItems: TenantMenuCategory["items"] = [];
+      const seenItemNames = new Set<string>();
 
-          if (itemName === "" || Number.isNaN(itemPrice) || itemPrice < 0) {
-            return null;
-          }
+      for (const item of category.items) {
+        const itemName = item.name.trim();
+        const rawPrice = item.price.trim();
 
-          return {
-            name: itemName,
-            price: itemPrice,
-            promoted: item.promoted ? 1 : 0,
-            desc: item.desc.trim(),
-            tags: item.tags,
-          } as const;
-        })
-        .filter((item): item is NonNullable<typeof item> => item !== null);
+        if (itemName === "" || rawPrice === "") {
+          setErrorMessage(t("menuCreator.errors.invalidItem"));
 
-      if (normalizedItems.length !== category.items.length) {
-        setErrorMessage(t("menuCreator.errors.invalidItem"));
+          return null;
+        }
 
-        return null;
+        const itemPrice = Number(rawPrice);
+
+        if (Number.isNaN(itemPrice) || itemPrice < 0) {
+          setErrorMessage(t("menuCreator.errors.invalidItem"));
+
+          return null;
+        }
+
+        const normalizedName = itemName.toLowerCase();
+
+        if (seenItemNames.has(normalizedName)) {
+          setErrorMessage(t("menuCreator.errors.invalidItem"));
+
+          return null;
+        }
+
+        seenItemNames.add(normalizedName);
+        normalizedItems.push({
+          name: itemName,
+          price: itemPrice,
+          promoted: item.promoted ? 1 : 0,
+          desc: item.desc.trim(),
+          tags: item.tags,
+        });
       }
 
       normalizedCategories.push({
