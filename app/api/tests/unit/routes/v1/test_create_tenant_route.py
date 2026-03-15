@@ -33,11 +33,12 @@ async def test_create_tenant_raises_401_when_user_is_not_dict() -> None:
     request = _make_request(user=None)
     service = AsyncMock()
     body = CreateTenantDTO(name="Test", slug="test")
+    status_code = 401
 
     with pytest.raises(HTTPException) as exc_info:
         await create_tenant(MagicMock(), request, body, AsyncMock(), service)
 
-    assert exc_info.value.status_code == 401
+    assert exc_info.value.status_code == status_code
     assert exc_info.value.detail == "Unauthorized"
     service.create_tenant.assert_not_awaited()
 
@@ -47,11 +48,12 @@ async def test_create_tenant_raises_401_when_subject_is_invalid() -> None:
     request = _make_request(user={"sub": 123})
     service = AsyncMock()
     body = CreateTenantDTO(name="Test", slug="test")
+    status_code = 401
 
     with pytest.raises(HTTPException) as exc_info:
         await create_tenant(MagicMock(), request, body, AsyncMock(), service)
 
-    assert exc_info.value.status_code == 401
+    assert exc_info.value.status_code == status_code
     assert exc_info.value.detail == "Unauthorized"
     service.create_tenant.assert_not_awaited()
 

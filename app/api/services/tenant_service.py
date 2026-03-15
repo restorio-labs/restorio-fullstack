@@ -55,7 +55,9 @@ class TenantService:
 
         return tenant
 
-    async def create_tenant(self, session: AsyncSession, data: CreateTenantDTO, owner_id: UUID) -> Tenant:
+    async def create_tenant(
+        self, session: AsyncSession, data: CreateTenantDTO, owner_id: UUID
+    ) -> Tenant:
         tenant = Tenant(
             name=data.name,
             slug=normalize_slug_letters(data.slug).lower(),

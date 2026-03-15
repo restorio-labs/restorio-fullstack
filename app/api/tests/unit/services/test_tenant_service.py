@@ -6,8 +6,7 @@ from uuid import uuid4
 import pytest
 
 from core.dto.v1.tenants import CreateTenantDTO
-from core.models.enums import AccountType
-from core.models.enums import TenantStatus
+from core.models.enums import AccountType, TenantStatus
 from core.models.tenant import Tenant
 from core.models.tenant_role import TenantRole
 from services.tenant_service import TenantService

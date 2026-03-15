@@ -95,7 +95,13 @@ describe("FloorEditorPage", () => {
         { id: "tenant-empty", name: "Brand New", slug: "brand-new", status: "ACTIVE", floorCanvasCount: 0 },
         { id: "tenant-old", name: "Old", slug: "old", status: "ACTIVE", floorCanvasCount: 3 },
       ],
-      selectedTenant: { id: "tenant-empty", name: "Brand New", slug: "brand-new", status: "ACTIVE", floorCanvasCount: 0 },
+      selectedTenant: {
+        id: "tenant-empty",
+        name: "Brand New",
+        slug: "brand-new",
+        status: "ACTIVE",
+        floorCanvasCount: 0,
+      },
       setSelectedTenantId: vi.fn(),
       refreshTenants: vi.fn(),
     });

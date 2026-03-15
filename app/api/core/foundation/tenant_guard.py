@@ -33,7 +33,9 @@ async def resolve_and_authorize_tenant(
 ) -> UUID:
     allowed_ids = _extract_tenant_public_ids(request)
     if tenant_public_id in allowed_ids:
-        result = await session.execute(select(Tenant.id).where(Tenant.public_id == tenant_public_id))
+        result = await session.execute(
+            select(Tenant.id).where(Tenant.public_id == tenant_public_id)
+        )
         tenant_id = result.scalar_one_or_none()
 
         if tenant_id is None:
