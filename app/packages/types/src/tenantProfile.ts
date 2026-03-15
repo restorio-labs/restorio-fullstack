@@ -9,7 +9,8 @@ export interface TenantProfile {
   contactEmail: string;
   phone: string;
 
-  addressStreet: string;
+  addressStreetName: string;
+  addressStreetNumber: string;
   addressCity: string;
   addressPostalCode: string;
   addressCountry: string;
@@ -55,7 +56,8 @@ export interface CreateTenantProfileRequest {
   contact_email: string;
   phone: string;
 
-  address_street: string;
+  address_street_name: string;
+  address_street_number: string;
   address_city: string;
   address_postal_code: string;
   address_country?: string;

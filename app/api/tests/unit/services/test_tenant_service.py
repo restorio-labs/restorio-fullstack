@@ -93,6 +93,7 @@ async def test_create_tenant_creates_owner_role_and_commits() -> None:
 
     assert tenant.name == "New Tenant"
     assert tenant.slug == "new-tenant"
+    assert tenant.owner_id == owner_id
     assert tenant.status == TenantStatus.ACTIVE
     assert isinstance(tenant_role, TenantRole)
     assert tenant_role.account_id == owner_id
@@ -101,3 +102,36 @@ async def test_create_tenant_creates_owner_role_and_commits() -> None:
     session.flush.assert_awaited_once()
     session.commit.assert_awaited_once()
     session.refresh.assert_awaited_once_with(tenant, attribute_names=["floor_canvases"])
+
+
+@pytest.mark.asyncio
+async def test_create_tenant_normalizes_slug_diacritics() -> None:
+    service = TenantService()
+    owner_id = uuid4()
+    dto = CreateTenantDTO(name="New Tenant", slug="zażółć-gęślą-jaźń")
+    added_objects: list[object] = []
+
+    def add_side_effect(value: object) -> None:
+        added_objects.append(value)
+
+    async def flush_side_effect() -> None:
+        for item in added_objects:
+            if isinstance(item, Tenant) and item.id is None:
+                item.id = uuid4()
+            if isinstance(item, Tenant) and item.public_id == "":
+                item.public_id = "public-id"
+            if isinstance(item, Tenant) and item.created_at is None:
+                item.created_at = datetime.now(UTC)
+            if isinstance(item, Tenant) and item.floor_canvases is None:
+                item.floor_canvases = []
+
+    session = SimpleNamespace(
+        add=MagicMock(side_effect=add_side_effect),
+        flush=AsyncMock(side_effect=flush_side_effect),
+        commit=AsyncMock(),
+        refresh=AsyncMock(),
+    )
+
+    tenant = await service.create_tenant(session, dto, owner_id)
+
+    assert tenant.slug == "zazolc-gesla-jazn"

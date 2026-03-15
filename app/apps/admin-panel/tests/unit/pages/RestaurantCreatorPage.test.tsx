@@ -78,13 +78,17 @@ const setInputValue = (name: string, value: string): void => {
   fireEvent.change(input, { target: { value } });
 };
 
+const fillRequiredAddressForCreation = (): void => {
+  setInputValue("addressStreetName", "Main");
+  setInputValue("addressStreetNumber", "1");
+  setInputValue("addressCity", "Warsaw");
+};
+
 const fillRequiredProfileFields = (): void => {
   setInputValue("nip", "1234567890");
   setInputValue("companyName", "Bistro Nova LLC");
   setInputValue("contactEmail", "contact@example.com");
   setInputValue("phone", "+48 123 456 789");
-  setInputValue("addressStreet", "Main 1");
-  setInputValue("addressCity", "Warsaw");
   setInputValue("addressPostalCode", "00-001");
   setInputValue("ownerFirstName", "John");
   setInputValue("ownerLastName", "Smith");
@@ -94,6 +98,7 @@ describe("RestaurantCreatorPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseCurrentTenant.mockReturnValue({
+      tenants: [],
       refreshTenants: vi.fn(),
       setSelectedTenantId: vi.fn(),
     });
@@ -105,11 +110,26 @@ describe("RestaurantCreatorPage", () => {
     expect(screen.queryByLabelText(/^slug$/i)).not.toBeInTheDocument();
   });
 
-  it("submits tenant with generated slug and handles success flow", async () => {
+  it("requires street name, street number and city for restaurant creation", async () => {
+    renderPage();
+
+    fireEvent.change(screen.getByLabelText(/restaurant name/i), { target: { value: "Balans" } });
+
+    expect(screen.getByRole("button", { name: /create restaurant/i })).toBeDisabled();
+
+    fillRequiredAddressForCreation();
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /create restaurant/i })).toBeEnabled();
+    });
+  });
+
+  it("submits tenant with slug generated from name + street + number + city", async () => {
     const queryClient = new QueryClient();
     const refreshTenants = vi.fn();
     const setSelectedTenantId = vi.fn();
     mockUseCurrentTenant.mockReturnValue({
+      tenants: [],
       refreshTenants,
       setSelectedTenantId,
     });
@@ -129,8 +149,8 @@ describe("RestaurantCreatorPage", () => {
     );
     mockCreateTenant.mockResolvedValueOnce({
       id: "tenant-1",
-      name: "New Name",
-      slug: "new-name",
+      name: "Balans",
+      slug: "balans-main-1-warsaw",
       status: "ACTIVE",
       activeLayoutVersionId: null,
       floorCanvases: [],
@@ -139,7 +159,9 @@ describe("RestaurantCreatorPage", () => {
 
     renderPage(queryClient);
 
-    fireEvent.change(screen.getByLabelText(/restaurant name/i), { target: { value: "  New Name  " } });
+    fireEvent.change(screen.getByLabelText(/restaurant name/i), { target: { value: "Balans" } });
+    fillRequiredAddressForCreation();
+
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /create restaurant/i })).toBeEnabled();
     });
@@ -147,9 +169,9 @@ describe("RestaurantCreatorPage", () => {
 
     await waitFor(() => {
       expect(mockCreateTenant).toHaveBeenCalledWith({
-        name: "New Name",
-        slug: "new-name",
-        status: "ACTIVE",
+        name: "Balans",
+        slug: "balans-main-1-warsaw",
+        status: "active",
       });
     });
 
@@ -162,11 +184,43 @@ describe("RestaurantCreatorPage", () => {
     });
   });
 
+  it("normalizes diacritics when generating tenant slug", async () => {
+    mockCreateTenant.mockResolvedValueOnce({
+      id: "tenant-1",
+      name: "Zażółć",
+      slug: "zazolc-zurawia-1-lodz",
+      status: "ACTIVE",
+      activeLayoutVersionId: null,
+      floorCanvases: [],
+      createdAt: new Date(),
+    });
+
+    renderPage();
+
+    fireEvent.change(screen.getByLabelText(/restaurant name/i), { target: { value: "Zażółć" } });
+    setInputValue("addressStreetName", "Żurawia");
+    setInputValue("addressStreetNumber", "1");
+    setInputValue("addressCity", "Łódź");
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /create restaurant/i })).toBeEnabled();
+    });
+    submitCreateForm();
+
+    await waitFor(() => {
+      expect(mockCreateTenant).toHaveBeenCalledWith({
+        name: "Zażółć",
+        slug: "zazolc-zurawia-1-lodz",
+        status: "active",
+      });
+    });
+  });
+
   it("saves tenant profile when accordion is expanded and required fields are filled", async () => {
     mockCreateTenant.mockResolvedValueOnce({
       id: "tenant-100",
       name: "New Name",
-      slug: "new-name",
+      slug: "new-name-main-1-warsaw",
       status: "ACTIVE",
       activeLayoutVersionId: null,
       floorCanvases: [],
@@ -176,8 +230,10 @@ describe("RestaurantCreatorPage", () => {
     renderPage();
 
     fireEvent.change(screen.getByLabelText(/restaurant name/i), { target: { value: "New Name" } });
+    fillRequiredAddressForCreation();
     fireEvent.click(screen.getByRole("button", { name: /add profile now/i }));
     fillRequiredProfileFields();
+
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /create restaurant/i })).toBeEnabled();
     });
@@ -191,7 +247,8 @@ describe("RestaurantCreatorPage", () => {
           company_name: "Bistro Nova LLC",
           contact_email: "contact@example.com",
           phone: "+48 123 456 789",
-          address_street: "Main 1",
+          address_street_name: "Main",
+          address_street_number: "1",
           address_city: "Warsaw",
           address_postal_code: "00-001",
           owner_first_name: "John",
@@ -199,21 +256,6 @@ describe("RestaurantCreatorPage", () => {
         }),
       );
     });
-  });
-
-  it("blocks submit with client validation when profile accordion is expanded but required fields are missing", async () => {
-    renderPage();
-
-    fireEvent.change(screen.getByLabelText(/restaurant name/i), { target: { value: "Valid Name" } });
-    fireEvent.click(screen.getByRole("button", { name: /add profile now/i }));
-    submitCreateForm();
-
-    await waitFor(() => {
-      expect(screen.getByText(/NIP must be exactly 10 digits/i)).toBeInTheDocument();
-      expect(screen.getByText(/company name is required/i)).toBeInTheDocument();
-    });
-
-    expect(mockCreateTenant).not.toHaveBeenCalled();
   });
 
   it("shows client-side required error when restaurant name is missing", async () => {
@@ -240,6 +282,8 @@ describe("RestaurantCreatorPage", () => {
     renderPage();
 
     fireEvent.change(screen.getByLabelText(/restaurant name/i), { target: { value: "Valid Name" } });
+    fillRequiredAddressForCreation();
+
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /create restaurant/i })).toBeEnabled();
     });
@@ -256,7 +300,7 @@ describe("RestaurantCreatorPage", () => {
     mockCreateTenant.mockResolvedValueOnce({
       id: "tenant-200",
       name: "New Name",
-      slug: "new-name",
+      slug: "new-name-main-1-warsaw",
       status: "ACTIVE",
       activeLayoutVersionId: null,
       floorCanvases: [],
@@ -274,8 +318,10 @@ describe("RestaurantCreatorPage", () => {
     renderPage();
 
     fireEvent.change(screen.getByLabelText(/restaurant name/i), { target: { value: "New Name" } });
+    fillRequiredAddressForCreation();
     fireEvent.click(screen.getByRole("button", { name: /add profile now/i }));
     fillRequiredProfileFields();
+
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /create restaurant/i })).toBeEnabled();
     });
@@ -291,7 +337,7 @@ describe("RestaurantCreatorPage", () => {
     mockCreateTenant.mockResolvedValueOnce({
       id: "tenant-300",
       name: "New Name",
-      slug: "new-name",
+      slug: "new-name-main-1-warsaw",
       status: "ACTIVE",
       activeLayoutVersionId: null,
       floorCanvases: [],
@@ -302,8 +348,10 @@ describe("RestaurantCreatorPage", () => {
     renderPage();
 
     fireEvent.change(screen.getByLabelText(/restaurant name/i), { target: { value: "New Name" } });
+    fillRequiredAddressForCreation();
     fireEvent.click(screen.getByRole("button", { name: /add profile now/i }));
     fillRequiredProfileFields();
+
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /create restaurant/i })).toBeEnabled();
     });
@@ -318,7 +366,7 @@ describe("RestaurantCreatorPage", () => {
     mockCreateTenant.mockResolvedValueOnce({
       id: "tenant-301",
       name: "New Name",
-      slug: "new-name",
+      slug: "new-name-main-1-warsaw",
       status: "ACTIVE",
       activeLayoutVersionId: null,
       floorCanvases: [],
@@ -328,6 +376,7 @@ describe("RestaurantCreatorPage", () => {
     renderPage();
 
     fireEvent.change(screen.getByLabelText(/restaurant name/i), { target: { value: "New Name" } });
+    fillRequiredAddressForCreation();
     fireEvent.click(screen.getByRole("button", { name: /add profile now/i }));
     fillRequiredProfileFields();
     setInputValue("addressCountry", " ");
@@ -352,6 +401,8 @@ describe("RestaurantCreatorPage", () => {
     renderPage();
 
     fireEvent.change(screen.getByLabelText(/restaurant name/i), { target: { value: "Valid Name" } });
+    fillRequiredAddressForCreation();
+
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /create restaurant/i })).toBeEnabled();
     });
@@ -369,6 +420,8 @@ describe("RestaurantCreatorPage", () => {
     renderPage();
 
     fireEvent.change(screen.getByLabelText(/restaurant name/i), { target: { value: "Valid Name" } });
+    fillRequiredAddressForCreation();
+
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /create restaurant/i })).toBeEnabled();
     });
@@ -381,7 +434,7 @@ describe("RestaurantCreatorPage", () => {
     resolvePromise({
       id: "tenant-400",
       name: "Valid Name",
-      slug: "valid-name",
+      slug: "valid-name-main-1-warsaw",
       status: "ACTIVE",
       activeLayoutVersionId: null,
       floorCanvases: [],

@@ -44,7 +44,18 @@ class CreateTenantProfileDTO(BaseDTO):
     )
     phone: str = Field(..., min_length=1, max_length=20, description="Restaurant telephone number")
 
-    address_street: str = Field(..., min_length=1, max_length=255, description="Street address")
+    address_street_name: str = Field(
+        ...,
+        min_length=1,
+        max_length=255,
+        description="Street name",
+    )
+    address_street_number: str = Field(
+        ...,
+        min_length=1,
+        max_length=20,
+        description="Street/building number",
+    )
     address_city: str = Field(..., min_length=1, max_length=100, description="City")
     address_postal_code: str = Field(
         ...,
@@ -108,8 +119,11 @@ class UpdateTenantProfileDTO(BaseDTO):
         None, min_length=1, max_length=20, description="Restaurant telephone number"
     )
 
-    address_street: str | None = Field(
-        None, min_length=1, max_length=255, description="Street address"
+    address_street_name: str | None = Field(
+        None, min_length=1, max_length=255, description="Street name"
+    )
+    address_street_number: str | None = Field(
+        None, min_length=1, max_length=20, description="Street/building number"
     )
     address_city: str | None = Field(None, min_length=1, max_length=100, description="City")
     address_postal_code: str | None = Field(

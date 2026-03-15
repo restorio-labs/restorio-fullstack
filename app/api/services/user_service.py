@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.exceptions import ConflictError
 from core.foundation.security import SecurityService
+from core.foundation.slug import to_compact_slug
 from core.models.enums import AccountType, TenantStatus
 from core.models.tenant import Tenant
 from core.models.tenant_role import TenantRole
@@ -42,7 +43,7 @@ class UserService:
         password: str,
         restaurant_name: str,
     ) -> tuple[User, Tenant, TenantRole]:
-        slug = "".join(restaurant_name.split()).lower()
+        slug = to_compact_slug(restaurant_name)
 
         existing_user = await session.scalar(select(User).where(User.email == email))
         if existing_user:

@@ -116,13 +116,20 @@ export const AddressFieldset = ({ getFieldError, register, t }: FormFieldsetProp
   return (
     <FieldsetCard title={t("tenantProfile.sections.address")}>
       <Input
-        label={t("tenantProfile.fields.addressStreet.label")}
-        placeholder={t("tenantProfile.fields.addressStreet.placeholder")}
+        label={t("tenantProfile.fields.addressStreetName.label")}
+        placeholder={t("tenantProfile.fields.addressStreetName.placeholder")}
         maxLength={255}
-        error={getFieldError("addressStreet")}
-        {...register("addressStreet", { required: true })}
+        error={getFieldError("addressStreetName")}
+        {...register("addressStreetName", { required: true })}
       />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Input
+          label={t("tenantProfile.fields.addressStreetNumber.label")}
+          placeholder={t("tenantProfile.fields.addressStreetNumber.placeholder")}
+          maxLength={20}
+          error={getFieldError("addressStreetNumber")}
+          {...register("addressStreetNumber", { required: true })}
+        />
         <Input
           label={t("tenantProfile.fields.addressCity.label")}
           placeholder={t("tenantProfile.fields.addressCity.placeholder")}

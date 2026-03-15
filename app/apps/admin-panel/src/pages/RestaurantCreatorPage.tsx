@@ -1,5 +1,6 @@
 import type { TenantSummary } from "@restorio/types";
 import { Button, Form, FormActions, Input, useI18n } from "@restorio/ui";
+import { slugify } from "@restorio/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { FormEvent, ReactElement } from "react";
 import { useState } from "react";
@@ -9,12 +10,7 @@ import { useNavigate } from "react-router-dom";
 
 import { api } from "../api/client";
 import type { ProfileFormData } from "../components/tenant-profile/profileForm";
-import {
-  AddressFieldset,
-  CompanyFieldset,
-  ContactFieldset,
-  OwnerFieldset,
-} from "../components/tenant-profile/TenantProfileFieldsets";
+import { CompanyFieldset, ContactFieldset, OwnerFieldset } from "../components/tenant-profile/TenantProfileFieldsets";
 import { tenantDetailsQueryKey, useCurrentTenant } from "../context/TenantContext";
 import { tenantsQueryKey } from "../hooks/useTenants";
 import { useValidationErrors } from "../hooks/useValidationErrors";
@@ -28,22 +24,14 @@ type CreateTenantFormValues = {
   | "companyName"
   | "contactEmail"
   | "phone"
-  | "addressStreet"
+  | "addressStreetName"
+  | "addressStreetNumber"
   | "addressCity"
   | "addressPostalCode"
   | "addressCountry"
   | "ownerFirstName"
   | "ownerLastName"
 >;
-
-const slugify = (value: string): string =>
-  value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
 
 interface WrappedProfileError {
   source: "profile";
@@ -80,7 +68,8 @@ export const RestaurantCreatorPage = (): ReactElement => {
       companyName: "",
       contactEmail: "",
       phone: "",
-      addressStreet: "",
+      addressStreetName: "",
+      addressStreetNumber: "",
       addressCity: "",
       addressPostalCode: "",
       addressCountry: "Polska",
@@ -92,7 +81,12 @@ export const RestaurantCreatorPage = (): ReactElement => {
   });
 
   const watchedName = watch("name");
-  const generatedSlug = slugify(watchedName);
+  const watchedAddressStreetName = watch("addressStreetName");
+  const watchedAddressStreetNumber = watch("addressStreetNumber");
+  const watchedAddressCity = watch("addressCity");
+  const generatedSlug = slugify(
+    `${watchedName}-${watchedAddressStreetName}-${watchedAddressStreetNumber}-${watchedAddressCity}`,
+  );
   const profileRegister = register as unknown as UseFormRegister<ProfileFormData>;
 
   const createMutation = useMutation({
@@ -100,7 +94,7 @@ export const RestaurantCreatorPage = (): ReactElement => {
       const createdTenant = await api.tenants.create({
         name: values.name.trim(),
         slug: generatedSlug,
-        status: "ACTIVE",
+        status: "active",
       });
 
       if (isProfileExpanded) {
@@ -110,7 +104,8 @@ export const RestaurantCreatorPage = (): ReactElement => {
             company_name: values.companyName.trim(),
             contact_email: values.contactEmail.trim(),
             phone: values.phone.trim(),
-            address_street: values.addressStreet.trim(),
+            address_street_name: values.addressStreetName.trim(),
+            address_street_number: values.addressStreetNumber.trim(),
             address_city: values.addressCity.trim(),
             address_postal_code: values.addressPostalCode.trim(),
             address_country: values.addressCountry.trim() || "Polska",
@@ -158,7 +153,8 @@ export const RestaurantCreatorPage = (): ReactElement => {
         companyName: "",
         contactEmail: "",
         phone: "",
-        addressStreet: "",
+        addressStreetName: "",
+        addressStreetNumber: "",
         addressCity: "",
         addressPostalCode: "",
         addressCountry: "Polska",
@@ -217,8 +213,12 @@ export const RestaurantCreatorPage = (): ReactElement => {
       return t("tenantProfile.fields.phone.error");
     }
 
-    if (field === "addressStreet" && errors.addressStreet) {
-      return t("tenantProfile.fields.addressStreet.error");
+    if (field === "addressStreetName" && errors.addressStreetName) {
+      return t("tenantProfile.fields.addressStreetName.error");
+    }
+
+    if (field === "addressStreetNumber" && errors.addressStreetNumber) {
+      return t("tenantProfile.fields.addressStreetNumber.error");
     }
 
     if (field === "addressCity" && errors.addressCity) {
@@ -239,8 +239,6 @@ export const RestaurantCreatorPage = (): ReactElement => {
 
     return undefined;
   };
-
-  const nameError = getCombinedFieldError("name");
 
   return (
     <PageLayout
@@ -264,7 +262,7 @@ export const RestaurantCreatorPage = (): ReactElement => {
           <Input
             label={t("restaurantCreator.fields.name.label")}
             placeholder={t("restaurantCreator.fields.name.placeholder")}
-            error={nameError}
+            error={getCombinedFieldError("name")}
             maxLength={255}
             {...register("name", {
               required: true,
@@ -273,6 +271,30 @@ export const RestaurantCreatorPage = (): ReactElement => {
               validate: (value) => slugify(value).length > 0,
             })}
           />
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <Input
+              label={t("tenantProfile.fields.addressStreetName.label")}
+              placeholder={t("tenantProfile.fields.addressStreetName.placeholder")}
+              maxLength={255}
+              error={getCombinedFieldError("addressStreetName")}
+              {...register("addressStreetName", { required: true })}
+            />
+            <Input
+              label={t("tenantProfile.fields.addressStreetNumber.label")}
+              placeholder={t("tenantProfile.fields.addressStreetNumber.placeholder")}
+              maxLength={20}
+              error={getCombinedFieldError("addressStreetNumber")}
+              {...register("addressStreetNumber", { required: true })}
+            />
+            <Input
+              label={t("tenantProfile.fields.addressCity.label")}
+              placeholder={t("tenantProfile.fields.addressCity.placeholder")}
+              maxLength={100}
+              error={getCombinedFieldError("addressCity")}
+              {...register("addressCity", { required: true })}
+            />
+          </div>
 
           <div className="rounded-xl border border-border-default bg-surface-secondary/50">
             <button
@@ -301,8 +323,28 @@ export const RestaurantCreatorPage = (): ReactElement => {
                     t={t}
                   />
                   <ContactFieldset getFieldError={getCombinedFieldError} register={profileRegister} t={t} />
-                  <AddressFieldset getFieldError={getCombinedFieldError} register={profileRegister} t={t} />
                   <OwnerFieldset getFieldError={getCombinedFieldError} register={profileRegister} t={t} />
+                  <fieldset className="h-fit rounded-xl border border-border-default bg-surface-secondary/60 p-4 shadow-sm">
+                    <legend className="mb-0 text-sm font-semibold text-text-primary">
+                      {t("tenantProfile.sections.address")}
+                    </legend>
+                    <div className="space-y-4">
+                      <Input
+                        label={t("tenantProfile.fields.addressPostalCode.label")}
+                        placeholder={t("tenantProfile.fields.addressPostalCode.placeholder")}
+                        helperText={t("tenantProfile.fields.addressPostalCode.helper")}
+                        maxLength={6}
+                        error={getCombinedFieldError("addressPostalCode")}
+                        {...register("addressPostalCode", { required: true, pattern: /^\d{2}-\d{3}$/ })}
+                      />
+                      <Input
+                        label={t("tenantProfile.fields.addressCountry.label")}
+                        placeholder={t("tenantProfile.fields.addressCountry.placeholder")}
+                        maxLength={100}
+                        {...register("addressCountry")}
+                      />
+                    </div>
+                  </fieldset>
                 </div>
               </div>
             )}

@@ -16,6 +16,7 @@ from core.exceptions import (
     UnauthorizedError,
 )
 from core.foundation.security import SecurityService
+from core.foundation.slug import to_compact_slug
 from core.models.activation_link import ActivationLink
 from core.models.enums import AccountType, TenantStatus
 from core.models.tenant import Tenant
@@ -37,7 +38,7 @@ class AuthService:
     ) -> tuple[User, Tenant]:
         # await self.check_password_pwned(password)  # noqa: ERA001 If we ever want to check passwords against HIBP
 
-        slug = "".join(restaurant_name.split()).lower()
+        slug = to_compact_slug(restaurant_name)
 
         existing_user = await session.scalar(select(User).where(User.email == email))
         if existing_user:
