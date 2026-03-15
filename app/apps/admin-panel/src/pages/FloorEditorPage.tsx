@@ -63,7 +63,7 @@ export const FloorEditorPage = (): ReactElement => {
       return;
     }
 
-    setSelectedCanvasId(activeCanvas?.id ?? tenant.floorCanvases[0]?.id ?? null);
+    setSelectedCanvasId(activeCanvas?.id ?? tenant.floorCanvases[0]?.id);
   }, [selectedCanvasId, tenant]);
 
   useEffect(() => {
@@ -379,7 +379,7 @@ export const FloorEditorPage = (): ReactElement => {
     );
   }
 
-  if (!selectedTenantId || !tenant) {
+  if (!selectedTenantId) {
     return (
       <PageLayout title={t("floorEditor.title")} description={t("floorEditor.noRestaurantDescription")}>
         <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-text-tertiary">
@@ -390,6 +390,16 @@ export const FloorEditorPage = (): ReactElement => {
   }
 
   if (tenantsState === "error") {
+    return (
+      <PageLayout title={t("floorEditor.title")} description={t("floorEditor.errorDescription")}>
+        <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-text-tertiary">
+          {t("floorEditor.errorMessage")}
+        </div>
+      </PageLayout>
+    );
+  }
+
+  if (!tenant) {
     return (
       <PageLayout title={t("floorEditor.title")} description={t("floorEditor.errorDescription")}>
         <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-text-tertiary">

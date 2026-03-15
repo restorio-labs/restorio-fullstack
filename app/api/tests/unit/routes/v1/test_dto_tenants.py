@@ -1,5 +1,4 @@
 from datetime import UTC, datetime
-from uuid import uuid4
 
 from pydantic import ValidationError
 import pytest
@@ -35,6 +34,13 @@ class TestCreateTenantDTO:
         errors = exc_info.value.errors()
         assert any("slug" in str(err) for err in errors)
 
+    def test_slug_normalizes_diacritics(self) -> None:
+        dto = CreateTenantDTO(
+            name="Test Restaurant",
+            slug="Zażółć-Gęślą-Jaźń",
+        )
+        assert dto.slug == "zazolc-gesla-jazn"
+
     def test_name_too_long(self) -> None:
         with pytest.raises(ValidationError):
             CreateTenantDTO(
@@ -65,9 +71,9 @@ class TestUpdateTenantDTO:
         assert dto.status is None
 
     def test_partial_update_slug_only(self) -> None:
-        dto = UpdateTenantDTO(slug="updated-slug")
+        dto = UpdateTenantDTO(slug="Żółć-updated")
         assert dto.name is None
-        assert dto.slug == "updated-slug"
+        assert dto.slug == "zolc-updated"
         assert dto.status is None
 
     def test_partial_update_status_only(self) -> None:
@@ -95,16 +101,16 @@ class TestUpdateTenantDTO:
 
 class TestTenantResponseDTO:
     def test_valid_response(self) -> None:
-        tenant_id = uuid4()
+        public_id = "abc123-opaque-id"
         now = datetime.now(UTC)
         dto = TenantResponseDTO(
-            id=tenant_id,
+            id=public_id,
             name="Test Restaurant",
             slug="test-restaurant",
             status=TenantStatus.ACTIVE,
             created_at=now,
         )
-        assert dto.id == tenant_id
+        assert dto.id == public_id
         assert dto.name == "Test Restaurant"
         assert dto.slug == "test-restaurant"
         assert dto.status == TenantStatus.ACTIVE

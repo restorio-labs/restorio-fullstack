@@ -8,6 +8,7 @@ from core.dto.v1 import (
     UpdateFloorCanvasDTO,
 )
 from core.foundation.dependencies import (
+    AuthorizedTenantId,
     FloorCanvasServiceDep,
     PostgresSession,
 )
@@ -25,7 +26,7 @@ router = APIRouter()
 
 
 @router.get(
-    "/{tenant_id}/canvases",
+    "/{tenant_public_id}/canvases",
     status_code=status.HTTP_200_OK,
     response_model=SuccessResponse[list[FloorCanvasResponseDTO]],
     summary="List floor canvases",
@@ -33,7 +34,7 @@ router = APIRouter()
     response_description="Floor canvases retrieved successfully",
 )
 async def list_floor_canvases(
-    tenant_id: UUID,
+    tenant_id: AuthorizedTenantId,
     session: PostgresSession,
     service: FloorCanvasServiceDep,
 ) -> SuccessResponse[list[FloorCanvasResponseDTO]]:
@@ -45,7 +46,7 @@ async def list_floor_canvases(
 
 
 @router.get(
-    "/{tenant_id}/canvases/{canvas_id}",
+    "/{tenant_public_id}/canvases/{canvas_id}",
     status_code=status.HTTP_200_OK,
     response_model=SuccessResponse[FloorCanvasResponseDTO],
     summary="Get a floor canvas by ID",
@@ -53,7 +54,7 @@ async def list_floor_canvases(
     response_description="Floor canvas retrieved successfully",
 )
 async def get_floor_canvas(
-    tenant_id: UUID,
+    tenant_id: AuthorizedTenantId,
     canvas_id: UUID,
     session: PostgresSession,
     service: FloorCanvasServiceDep,
@@ -66,7 +67,7 @@ async def get_floor_canvas(
 
 
 @router.post(
-    "/{tenant_id}/canvases",
+    "/{tenant_public_id}/canvases",
     status_code=status.HTTP_201_CREATED,
     response_model=CreatedResponse[FloorCanvasResponseDTO],
     summary="Create a floor canvas",
@@ -74,7 +75,7 @@ async def get_floor_canvas(
     response_description="Floor canvas created successfully",
 )
 async def create_floor_canvas(
-    tenant_id: UUID,
+    tenant_id: AuthorizedTenantId,
     request: CreateFloorCanvasDTO,
     session: PostgresSession,
     service: FloorCanvasServiceDep,
@@ -93,7 +94,7 @@ async def create_floor_canvas(
 
 
 @router.put(
-    "/{tenant_id}/canvases/{canvas_id}",
+    "/{tenant_public_id}/canvases/{canvas_id}",
     status_code=status.HTTP_200_OK,
     response_model=UpdatedResponse[FloorCanvasResponseDTO],
     response_model_exclude_none=True,
@@ -102,7 +103,7 @@ async def create_floor_canvas(
     response_description="Floor canvas updated successfully",
 )
 async def update_floor_canvas(
-    tenant_id: UUID,
+    tenant_id: AuthorizedTenantId,
     canvas_id: UUID,
     request: UpdateFloorCanvasDTO,
     session: PostgresSession,
@@ -128,7 +129,7 @@ async def update_floor_canvas(
 
 
 @router.delete(
-    "/{tenant_id}/canvases/{canvas_id}",
+    "/{tenant_public_id}/canvases/{canvas_id}",
     status_code=status.HTTP_200_OK,
     response_model=DeletedResponse,
     summary="Delete a floor canvas",
@@ -136,7 +137,7 @@ async def update_floor_canvas(
     response_description="Floor canvas deleted successfully",
 )
 async def delete_floor_canvas(
-    tenant_id: UUID,
+    tenant_id: AuthorizedTenantId,
     canvas_id: UUID,
     session: PostgresSession,
     service: FloorCanvasServiceDep,
@@ -146,7 +147,7 @@ async def delete_floor_canvas(
 
 
 @router.get(
-    "/{tenant_id}/canvases/{canvas_id}/versions",
+    "/{tenant_public_id}/canvases/{canvas_id}/versions",
     status_code=status.HTTP_200_OK,
     response_model=SuccessResponse[list[dict]],
     summary="List canvas versions",
@@ -154,7 +155,7 @@ async def delete_floor_canvas(
     response_description="Canvas versions retrieved successfully",
 )
 async def list_canvas_versions(
-    tenant_id: UUID,
+    tenant_id: AuthorizedTenantId,
     canvas_id: UUID,
     session: PostgresSession,
     service: FloorCanvasServiceDep,
@@ -168,7 +169,7 @@ async def list_canvas_versions(
 
 
 @router.get(
-    "/{tenant_id}/canvases/{canvas_id}/versions/{version}",
+    "/{tenant_public_id}/canvases/{canvas_id}/versions/{version}",
     status_code=status.HTTP_200_OK,
     response_model=SuccessResponse[dict],
     summary="Get a canvas version by ID",
@@ -176,7 +177,7 @@ async def list_canvas_versions(
     response_description="Canvas version retrieved successfully",
 )
 async def get_canvas_version(
-    tenant_id: UUID,
+    tenant_id: AuthorizedTenantId,
     canvas_id: UUID,
     version: int,
     session: PostgresSession,

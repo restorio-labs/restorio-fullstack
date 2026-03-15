@@ -30,14 +30,17 @@ class DeletedResponse(BaseModel):
 class ExceptionHandlerResponse(BaseModel):
     message: str
     details: dict | None = None
+    request_id: str | None = None
 
 
 class ErrorResponse(BaseModel):
     details: dict | None = None
+    request_id: str | None = None
 
 
 class ValidationErrorResponse(BaseModel):
     fields: list[str]
+    request_id: str | None = None
 
 
 class PaginatedResponse[T](BaseModel):
@@ -66,7 +69,7 @@ class PaginatedResponse[T](BaseModel):
 
 
 class UnauthenticatedResponse(BaseHTTPException):
-    def __init__(self, message: str = "Unauthorized") -> None:
+    def __init__(self, message: str = "Unauthenticated") -> None:
         super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,
             message=message,
@@ -82,24 +85,24 @@ class UnauthorizedResponse(BaseHTTPException):
 
 
 class NotFoundResponse(BaseModel):
-    pass
+    message: str = "Not found"
 
 
 class ConflictResponse(BaseModel):
-    pass
+    message: str = "Conflict"
 
 
 class BadRequestResponse(BaseModel):
-    pass
+    message: str = "Bad request"
 
 
 class GoneResponse(BaseModel):
-    pass
+    message: str = "Gone"
 
 
 class TooManyRequestsResponse(BaseModel):
-    pass
+    message: str = "Too many requests"
 
 
 class ServiceUnavailableResponse(BaseModel):
-    pass
+    message: str = "Service unavailable"

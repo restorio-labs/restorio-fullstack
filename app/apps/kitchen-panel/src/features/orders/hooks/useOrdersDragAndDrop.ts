@@ -42,7 +42,7 @@ export const useOrdersDragAndDrop = (
 
       const order = orders.find((o) => o.id === orderId);
 
-      if (order && order.status === targetZoneId) {
+      if (order && order.status === (targetZoneId as OrderStatus)) {
         setDraggedOrder(null);
 
         return;

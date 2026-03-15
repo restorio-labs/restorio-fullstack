@@ -4,9 +4,8 @@ import { Button, Checkbox, Form, FormActions, FormField, Input } from "@restorio
 import { useTranslations } from "next-intl";
 import { useState, type ReactElement } from "react";
 
-import { PasswordRules } from "./PasswordRules";
-
 import { api } from "@/api/client";
+import { PasswordRulesPin } from "@/components/password/RulesPin";
 import { getPasswordFieldsValidation } from "@/services/passwordFieldsValidation";
 import { isEmailValid } from "@/services/validation";
 
@@ -146,7 +145,7 @@ export const RegisterContent = (): ReactElement => {
               error={passwordError}
               required
             />
-            {showPasswordRules && <PasswordRules checks={passwordChecks} />}
+            {showPasswordRules && <PasswordRulesPin checks={passwordChecks} />}
           </div>
         </FormField>
 

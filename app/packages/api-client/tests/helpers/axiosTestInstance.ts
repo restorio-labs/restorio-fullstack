@@ -1,9 +1,11 @@
 import { type AxiosError, type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from "axios";
 import { vi } from "vitest";
 
+type RequestInterceptor = (config: AxiosRequestConfig) => AxiosRequestConfig | Promise<AxiosRequestConfig>;
+
 export interface AxiosTestContext {
   instance: AxiosInstance;
-  requestInterceptor?: (config: AxiosRequestConfig) => AxiosRequestConfig;
+  requestInterceptor?: RequestInterceptor;
   responseSuccess?: (response: AxiosResponse) => AxiosResponse;
   responseError?: (error: AxiosError) => Promise<never>;
 }
@@ -23,7 +25,7 @@ export function setupAxiosMock(): AxiosTestContext {
     defaults: { headers: { common: {} } },
     interceptors: {
       request: {
-        use: vi.fn((fn: (config: AxiosRequestConfig) => AxiosRequestConfig) => {
+        use: vi.fn((fn: RequestInterceptor) => {
           ctx.requestInterceptor = fn;
 
           return 0;

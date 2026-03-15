@@ -3,6 +3,22 @@ from pydantic import Field
 from core.dto.v1.common import BaseDTO
 
 
+class TenantLogoUploadPresignRequestDTO(BaseDTO):
+    content_type: str = Field(
+        ...,
+        alias="contentType",
+        serialization_alias="contentType",
+        description="MIME type of the logo being uploaded",
+    )
+    file_name: str | None = Field(
+        None,
+        alias="fileName",
+        serialization_alias="fileName",
+        max_length=255,
+        description="Original file name for display/debugging purposes",
+    )
+
+
 class CreateTenantProfileDTO(BaseDTO):
     nip: str = Field(
         ...,
@@ -14,14 +30,32 @@ class CreateTenantProfileDTO(BaseDTO):
     company_name: str = Field(
         ..., min_length=1, max_length=255, description="Official registered company name"
     )
-    logo_url: str | None = Field(None, max_length=512, description="URL to uploaded logo")
+    logo: str | None = Field(None, max_length=512, description="URL to uploaded logo")
+    logo_upload_key: str | None = Field(
+        None,
+        alias="logoUploadKey",
+        serialization_alias="logoUploadKey",
+        max_length=1024,
+        description="Temporary MinIO object key to finalize as the tenant logo",
+    )
 
     contact_email: str = Field(
         ..., min_length=1, max_length=255, description="Restaurant contact email"
     )
     phone: str = Field(..., min_length=1, max_length=20, description="Restaurant telephone number")
 
-    address_street: str = Field(..., min_length=1, max_length=255, description="Street address")
+    address_street_name: str = Field(
+        ...,
+        min_length=1,
+        max_length=255,
+        description="Street name",
+    )
+    address_street_number: str = Field(
+        ...,
+        min_length=1,
+        max_length=20,
+        description="Street/building number",
+    )
     address_city: str = Field(..., min_length=1, max_length=100, description="City")
     address_postal_code: str = Field(
         ...,
@@ -69,7 +103,14 @@ class UpdateTenantProfileDTO(BaseDTO):
     company_name: str | None = Field(
         None, min_length=1, max_length=255, description="Official registered company name"
     )
-    logo_url: str | None = Field(None, max_length=512, description="URL to uploaded logo")
+    logo: str | None = Field(None, max_length=512, description="URL to uploaded logo")
+    logo_upload_key: str | None = Field(
+        None,
+        alias="logoUploadKey",
+        serialization_alias="logoUploadKey",
+        max_length=1024,
+        description="Temporary MinIO object key to finalize as the tenant logo",
+    )
 
     contact_email: str | None = Field(
         None, min_length=1, max_length=255, description="Restaurant contact email"
@@ -78,8 +119,11 @@ class UpdateTenantProfileDTO(BaseDTO):
         None, min_length=1, max_length=20, description="Restaurant telephone number"
     )
 
-    address_street: str | None = Field(
-        None, min_length=1, max_length=255, description="Street address"
+    address_street_name: str | None = Field(
+        None, min_length=1, max_length=255, description="Street name"
+    )
+    address_street_number: str | None = Field(
+        None, min_length=1, max_length=20, description="Street/building number"
     )
     address_city: str | None = Field(None, min_length=1, max_length=100, description="City")
     address_postal_code: str | None = Field(

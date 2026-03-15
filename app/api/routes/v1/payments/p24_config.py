@@ -1,12 +1,11 @@
-from uuid import UUID
-
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
 
 from core.dto.v1.payments import UpdateP24ConfigDTO
 from core.dto.v1.tenants import TenantResponseDTO
-from core.foundation.dependencies import PostgresSession
+from core.foundation.dependencies import AuthorizedTenantId, PostgresSession
 from core.foundation.http.responses import UpdatedResponse
+from core.foundation.role_guard import RequireOwner
 from core.models.tenant import Tenant
 
 router = APIRouter()
@@ -14,7 +13,7 @@ router = APIRouter()
 
 def _tenant_to_response(tenant: Tenant) -> TenantResponseDTO:
     return TenantResponseDTO(
-        id=tenant.id,
+        id=tenant.public_id,
         name=tenant.name,
         slug=tenant.slug,
         status=tenant.status,
@@ -22,9 +21,10 @@ def _tenant_to_response(tenant: Tenant) -> TenantResponseDTO:
     )
 
 
-@router.put("/tenants/{tenant_id}/p24-config", status_code=status.HTTP_200_OK)
+@router.put("/tenants/{tenant_public_id}/p24-config", status_code=status.HTTP_200_OK)
 async def update_p24_config(
-    tenant_id: UUID,
+    _role: RequireOwner,
+    tenant_id: AuthorizedTenantId,
     request: UpdateP24ConfigDTO,
     session: PostgresSession,
 ) -> UpdatedResponse[TenantResponseDTO]:

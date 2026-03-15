@@ -6,11 +6,25 @@ import { act, render, renderHook, screen, waitFor } from "@testing-library/react
 import React from "react";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 
+const { mockGetCrossAppValue, mockSetCrossAppValue } = vi.hoisted(() => ({
+  mockGetCrossAppValue: vi.fn<(key: string) => string | null>(),
+  mockSetCrossAppValue: vi.fn<(key: string, value: string) => void>(),
+}));
+
+vi.mock("@restorio/utils", () => ({
+  getCrossAppValue: mockGetCrossAppValue,
+  setCrossAppValue: mockSetCrossAppValue,
+}));
+
 import { ThemeProvider, useTheme, getSystemTheme, getSystemDirection } from "../../../src/theme/ThemeProvider";
 import type { ThemeOverride } from "../../../src/tokens/types";
 
 describe("ThemeProvider", () => {
   beforeEach(() => {
+    mockGetCrossAppValue.mockReset();
+    mockGetCrossAppValue.mockReturnValue(null);
+    mockSetCrossAppValue.mockReset();
+
     document.documentElement.removeAttribute("data-theme");
     document.documentElement.classList.remove("dark");
     document.documentElement.removeAttribute("style");
@@ -49,8 +63,7 @@ describe("ThemeProvider", () => {
   });
 
   it("should initialize mode from stored light value", () => {
-    vi.spyOn(Storage.prototype, "getItem").mockImplementation((key: string) => (key === "theme-key" ? "light" : null));
-    const setItemSpy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {});
+    mockGetCrossAppValue.mockImplementation((key: string) => (key === "theme-key" ? "light" : null));
 
     const { result } = renderHook(() => useTheme(), {
       wrapper: ({ children }) => (
@@ -61,7 +74,7 @@ describe("ThemeProvider", () => {
     });
 
     expect(result.current.mode).toBe("light");
-    expect(setItemSpy).toHaveBeenCalledWith("theme-key", "light");
+    expect(mockSetCrossAppValue).toHaveBeenCalledWith("theme-key", "light");
   });
 
   it("should replace stored system mode with the fallback mode", () => {
@@ -74,8 +87,7 @@ describe("ThemeProvider", () => {
         removeEventListener: vi.fn(),
       })),
     );
-    vi.spyOn(Storage.prototype, "getItem").mockImplementation((key: string) => (key === "theme-key" ? "system" : null));
-    const setItemSpy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {});
+    mockGetCrossAppValue.mockImplementation((key: string) => (key === "theme-key" ? "system" : null));
 
     const { result } = renderHook(() => useTheme(), {
       wrapper: ({ children }) => (
@@ -86,15 +98,12 @@ describe("ThemeProvider", () => {
     });
 
     expect(result.current.mode).toBe("dark");
-    expect(setItemSpy).toHaveBeenCalledWith("theme-key", "dark");
+    expect(mockSetCrossAppValue).toHaveBeenCalledWith("theme-key", "dark");
     vi.unstubAllGlobals();
   });
 
   it("should fallback and persist default mode when stored mode is invalid", () => {
-    vi.spyOn(Storage.prototype, "getItem").mockImplementation((key: string) =>
-      key === "theme-key" ? "invalid-mode" : null,
-    );
-    const setItemSpy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {});
+    mockGetCrossAppValue.mockImplementation((key: string) => (key === "theme-key" ? "invalid-mode" : null));
 
     const { result } = renderHook(() => useTheme(), {
       wrapper: ({ children }) => (
@@ -105,7 +114,7 @@ describe("ThemeProvider", () => {
     });
 
     expect(result.current.mode).toBe("light");
-    expect(setItemSpy).toHaveBeenCalledWith("theme-key", "light");
+    expect(mockSetCrossAppValue).toHaveBeenCalledWith("theme-key", "light");
   });
 
   it("should fallback to system theme when localStorage access throws", () => {
@@ -118,7 +127,7 @@ describe("ThemeProvider", () => {
         removeEventListener: vi.fn(),
       })),
     );
-    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+    mockGetCrossAppValue.mockImplementation(() => {
       throw new Error("storage get failed");
     });
 
@@ -135,7 +144,7 @@ describe("ThemeProvider", () => {
   });
 
   it("should fallback to default mode when localStorage access throws", () => {
-    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+    mockGetCrossAppValue.mockImplementation(() => {
       throw new Error("storage get failed");
     });
 
@@ -160,8 +169,7 @@ describe("ThemeProvider", () => {
         removeEventListener: vi.fn(),
       })),
     );
-    vi.spyOn(Storage.prototype, "getItem").mockImplementation((key: string) => (key === "theme-key" ? "light" : null));
-    const setItemSpy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {});
+    mockGetCrossAppValue.mockImplementation((key: string) => (key === "theme-key" ? "light" : null));
 
     const { result } = renderHook(() => useTheme(), {
       wrapper: ({ children }) => (
@@ -171,14 +179,14 @@ describe("ThemeProvider", () => {
       ),
     });
 
-    setItemSpy.mockClear();
+    mockSetCrossAppValue.mockClear();
 
     act(() => {
       result.current.setMode("system");
     });
 
     await waitFor(() => {
-      expect(setItemSpy).toHaveBeenCalledWith("theme-key", "dark");
+      expect(mockSetCrossAppValue).toHaveBeenCalledWith("theme-key", "dark");
     });
     vi.unstubAllGlobals();
   });

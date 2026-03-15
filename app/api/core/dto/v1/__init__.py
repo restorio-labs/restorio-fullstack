@@ -24,6 +24,9 @@ from core.dto.v1.menus import (
 )
 from core.dto.v1.tenant_profiles import (
     CreateTenantProfileDTO,
+    TenantLogoUploadPresignRequestDTO,
+    TenantLogoUploadResponseDTO,
+    TenantLogoViewPresignResponseDTO,
     TenantProfileResponseDTO,
     UpdateTenantProfileDTO,
 )
@@ -44,6 +47,9 @@ __all__ = [
     "MenuItemDTO",
     "MenuItemInputDTO",
     "TenantMenuResponseDTO",
+    "TenantLogoUploadPresignRequestDTO",
+    "TenantLogoUploadResponseDTO",
+    "TenantLogoViewPresignResponseDTO",
     "TenantProfileResponseDTO",
     "TenantResponseDTO",
     "TenantSummaryResponseDTO",

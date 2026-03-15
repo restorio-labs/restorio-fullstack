@@ -229,7 +229,7 @@ async def test_create_payment_p24_api_error(
             create_transaction_request, session, tenant_service, mock_p24_service, external_client
         )
 
-    assert exc_info.value.status_code == 500  # noqa: PLR2004
+    assert exc_info.value.status_code == 502  # noqa: PLR2004
     assert "Przelewy24" in exc_info.value.detail
 
 

@@ -17,7 +17,8 @@
     "strict": true,
 
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@restorio/utils": ["../../packages/utils/src"]
     }
   },
   "include": ["src", "vite.config.ts"],
@@ -26,6 +27,7 @@
     { "path": "../../packages/types" },
     { "path": "../../packages/auth" },
     { "path": "../../packages/api-client" },
-    { "path": "../../packages/ui" }
+    { "path": "../../packages/ui" },
+    { "path": "../../packages/utils" }
   ]
 }

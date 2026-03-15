@@ -1,6 +1,6 @@
 import { Button, Form, FormActions, Input, useI18n } from "@restorio/ui";
 import { useMutation } from "@tanstack/react-query";
-import type { ReactElement } from "react";
+import type { FormEvent, ReactElement } from "react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -96,7 +96,12 @@ export const PaymentConfigPage = (): ReactElement => {
       }
     >
       <div className="mx-auto max-w-lg p-6">
-        <Form id="payment-config-form" onSubmit={handleSubmit(onSubmit)}>
+        <Form
+          id="payment-config-form"
+          onSubmit={(event: FormEvent<HTMLFormElement>): void => {
+            void handleSubmit(onSubmit)(event);
+          }}
+        >
           <Input
             label={t("payment.fields.merchantId.label")}
             type="number"

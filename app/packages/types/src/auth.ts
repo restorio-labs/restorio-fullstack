@@ -49,14 +49,12 @@ export interface DeleteUserData {
 }
 
 export interface AuthMeData {
-  id: string;
-  tenantIds: string[];
-  accountType: string;
+  authenticated: boolean;
 }
 
 export interface LoginResponse {
   message: string;
-  data: { at: string };
+  data: Record<string, never>;
 }
 
 export interface RefreshResponse {

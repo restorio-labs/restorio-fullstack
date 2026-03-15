@@ -48,8 +48,7 @@ export const FloorTable = ({
   const guests = displayInfo?.guestCount;
   const orderStatus = displayInfo?.orderStatus;
   const needHelp = displayInfo?.needHelp;
-  const resolvedTableLabel =
-    tableLabel?.trim() ?? t("floorEditor.tableLabel", { number: tableNumber }) ?? `Table ${tableNumber}`;
+  const resolvedTableLabel = tableLabel?.trim() ?? t("floorEditor.tableLabel", { number: tableNumber });
   const label = ariaLabel ?? `${resolvedTableLabel}, ${seats} ${t("floorEditor.panel.seats")}, ${state}`;
 
   return (

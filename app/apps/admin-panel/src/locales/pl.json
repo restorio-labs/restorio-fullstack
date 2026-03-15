@@ -289,9 +289,37 @@
   },
   "restaurantCreator": {
     "title": "Kreator restauracji",
-    "description": "Twórz i konfiguruj nowe restauracje",
-    "placeholderTitle": "Kreator restauracji",
-    "placeholderDescription": "Twórz nowe restauracje dla swojej firmy"
+    "description": "Utwórz nowego najemcę restauracji",
+    "actions": {
+      "create": "Utwórz restaurację",
+      "creating": "Tworzenie..."
+    },
+    "fields": {
+      "name": {
+        "label": "Nazwa restauracji",
+        "placeholder": "np. Bistro Nova",
+        "error": "Nazwa restauracji jest wymagana."
+      },
+      "slug": {
+        "label": "Wygenerowany slug",
+        "empty": "Slug zostanie wygenerowany z nazwy restauracji"
+      }
+    },
+    "profile": {
+      "title": "Dodaj profil od razu (opcjonalnie)",
+      "description": "Rozwiń i uzupełnij wymagane pola profilu podczas tworzenia.",
+      "show": "Rozwiń",
+      "hide": "Zwiń"
+    },
+    "duplicateName": {
+      "notice": "Restauracja o tej nazwie już istnieje. Podaj ulicę i miasto, aby wygenerować unikalny slug."
+    },
+    "errors": {
+      "createFailed": "Nie udało się utworzyć restauracji. Spróbuj ponownie.",
+      "validationFailed": "Popraw zaznaczone pola i spróbuj ponownie.",
+      "profileSaveFailed": "Restauracja została utworzona, ale nie udało się zapisać profilu."
+    },
+    "success": "Restauracja została utworzona."
   },
   "restaurantQr": {
     "generateError": "Nie udało się wygenerować kodu QR dla restauracji:",
@@ -370,10 +398,17 @@
         "placeholder": "Oficjalna zarejestrowana nazwa firmy",
         "error": "Nazwa firmy jest wymagana"
       },
-      "logoUrl": {
-        "label": "URL logo",
+      "logo": {
+        "label": "Logo",
         "placeholder": "https://example.com/logo.png",
-        "error": "Nieprawidłowy URL logo"
+        "helper": "Prześlij logo PNG, JPEG lub WEBP o rozmiarze do 5 MB.",
+        "uploading": "Przesyłanie logo...",
+        "uploadError": "Nie udało się przesłać logo. Spróbuj ponownie.",
+        "invalidType": "Logo musi być obrazem PNG, JPEG lub WEBP.",
+        "fileTooLarge": "Logo musi mieć maksymalnie 5 MB.",
+        "current": "Aktualne logo",
+        "previewAlt": "Podgląd logo najemcy",
+        "error": "Nieprawidłowe logo"
       },
       "contactEmail": {
         "label": "Email kontaktowy",
@@ -385,10 +420,15 @@
         "placeholder": "+48 123 456 789",
         "error": "Numer telefonu jest wymagany"
       },
-      "addressStreet": {
-        "label": "Ulica",
-        "placeholder": "ul. Marszałkowska 1",
-        "error": "Ulica jest wymagana"
+      "addressStreetName": {
+        "label": "Nazwa ulicy",
+        "placeholder": "Marszałkowska",
+        "error": "Nazwa ulicy jest wymagana"
+      },
+      "addressStreetNumber": {
+        "label": "Numer",
+        "placeholder": "1",
+        "error": "Numer ulicy jest wymagany"
       },
       "addressCity": {
         "label": "Miasto",

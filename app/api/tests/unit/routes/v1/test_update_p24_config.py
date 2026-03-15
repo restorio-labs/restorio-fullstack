@@ -23,6 +23,7 @@ def _make_tenant(
 ):
     tenant = MagicMock()
     tenant.id = tenant_id or uuid4()
+    tenant.public_id = str(tenant.id)
     tenant.name = name
     tenant.slug = slug
     tenant.status = status
@@ -56,7 +57,7 @@ class TestUpdateP24Config:
             p24_crc=self.EXAMPLE_CRC_KEY,
         )
 
-        await update_p24_config(tenant.id, request, session)
+        await update_p24_config(MagicMock(), tenant.id, request, session)
 
         assert tenant.p24_merchantid == self.EXAMPLE_MERCHANT_ID
         assert tenant.p24_api == self.EXAMPLE_API_KEY
@@ -72,7 +73,7 @@ class TestUpdateP24Config:
             p24_crc=self.EXAMPLE_CRC_KEY,
         )
 
-        await update_p24_config(tenant.id, request, session)
+        await update_p24_config(MagicMock(), tenant.id, request, session)
 
         session.commit.assert_awaited_once()
         session.refresh.assert_awaited_once_with(tenant)
@@ -83,11 +84,11 @@ class TestUpdateP24Config:
         session = _make_session(tenant)
         request = UpdateP24ConfigDTO(p24_merchantid=999, p24_api="k", p24_crc="c")
 
-        result = await update_p24_config(tenant.id, request, session)
+        result = await update_p24_config(MagicMock(), tenant.id, request, session)
 
         assert isinstance(result, UpdatedResponse)
         assert result.message == "P24 config updated successfully"
-        assert result.data.id == tenant.id
+        assert result.data.id == tenant.public_id
         assert result.data.name == "My Venue"
         assert result.data.slug == "my-venue"
         assert result.data.status == TenantStatus.ACTIVE
@@ -100,7 +101,7 @@ class TestUpdateP24Config:
         request = UpdateP24ConfigDTO(p24_merchantid=1, p24_api="key", p24_crc="crc")
 
         with pytest.raises(HTTPException) as exc_info:
-            await update_p24_config(tenant_id, request, session)
+            await update_p24_config(MagicMock(), tenant_id, request, session)
 
         assert exc_info.value.status_code == status_code
         assert str(tenant_id) in exc_info.value.detail
@@ -111,7 +112,7 @@ class TestUpdateP24Config:
         session = _make_session(tenant)
         request = UpdateP24ConfigDTO(p24_merchantid=222, p24_api="new-api", p24_crc="new-crc")
 
-        await update_p24_config(tenant.id, request, session)
+        await update_p24_config(MagicMock(), tenant.id, request, session)
 
         assert tenant.p24_merchantid == request.p24_merchantid
         assert tenant.p24_api == request.p24_api

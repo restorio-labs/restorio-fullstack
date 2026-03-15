@@ -167,4 +167,4 @@ class TestActivateResponseData:
 class TestLoginResponseData:
     def test_valid_response(self) -> None:
         dto = LoginResponseData(at="jwt-access-token")
-        assert dto.at == "jwt-access-token"
+        assert dto.model_dump() == {}

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections.abc import Awaitable, Callable
 
 from fastapi import Request, Response
@@ -11,10 +13,35 @@ from core.foundation.infra.config import settings
 from core.foundation.security import security_service
 from core.middleware.cors import is_origin_allowed
 
+_PUBLIC_PATH_PREFIXES: frozenset[str] = frozenset(
+    {
+        "/",
+        "/docs",
+        "/openapi",
+        "/health",
+        f"{settings.API_V1_PREFIX}/auth/login",
+        f"{settings.API_V1_PREFIX}/auth/register",
+        f"{settings.API_V1_PREFIX}/auth/activate",
+        f"{settings.API_V1_PREFIX}/auth/set-password",
+        f"{settings.API_V1_PREFIX}/auth/resend-activation",
+        f"{settings.API_V1_PREFIX}/auth/refresh",
+        f"{settings.API_V1_PREFIX}/auth/logout",
+    }
+)
+
+
+def _is_public_path(path: str) -> bool:
+    for prefix in _PUBLIC_PATH_PREFIXES:
+        if path == prefix or path.startswith((prefix + "/", prefix + "?")):
+            return True
+    return False
+
 
 def _cors_headers_for_request(request: Request) -> dict[str, str]:
     origin = request.headers.get("origin")
-    if origin is not None and is_origin_allowed(origin, settings.CORS_ORIGINS):
+    if origin is not None and is_origin_allowed(
+        origin, settings.CORS_ORIGINS, debug=settings.DEBUG
+    ):
         return {
             "Access-Control-Allow-Origin": origin,
             "Access-Control-Allow-Credentials": "true",
@@ -33,20 +60,7 @@ class UnauthorizedMiddleware(BaseHTTPMiddleware):
         if request.method == "OPTIONS":
             return await call_next(request)
 
-        # Allow public routes
-        if (
-            request.method == "OPTIONS"
-            or request.url.path.startswith("/docs")
-            or request.url.path.startswith("/openapi")
-            or request.url.path.startswith("/health")
-            or request.url.path.startswith("/api/v1/auth/login")
-            or request.url.path.startswith("/api/v1/auth/register")
-            or request.url.path.startswith("/api/v1/auth/activate")
-            or request.url.path.startswith("/api/v1/auth/set-password")
-            or request.url.path.startswith("/api/v1/auth/resend-activation")
-            or request.url.path.startswith("/api/v1/auth/refresh")
-            or request.url.path.startswith("/api/v1/auth/logout")
-        ):
+        if _is_public_path(request.url.path):
             return await call_next(request)
 
         auth_header = request.headers.get("Authorization")
@@ -56,23 +70,30 @@ class UnauthorizedMiddleware(BaseHTTPMiddleware):
         else:
             token = get_access_token_from_request(request)
 
+        rid = getattr(request.state, "request_id", None)
+
         if token is None:
+            body: dict[str, str | None] = {"message": "Unauthorized"}
+            if rid:
+                body["request_id"] = rid
             return JSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                content={"message": "Unauthorized"},
+                content=body,
                 headers=_cors_headers_for_request(request),
             )
 
         try:
-            user = self._security.decode_access_token(token)  # should raise if invalid
+            user = self._security.decode_access_token(token)
         except Exception:
+            body = {"message": "Unauthorized"}
+            if rid:
+                body["request_id"] = rid
             return JSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                content={"message": "Unauthorized"},
+                content=body,
                 headers=_cors_headers_for_request(request),
             )
 
-        # Attach user to request context
         request.state.user = user
 
         return await call_next(request)

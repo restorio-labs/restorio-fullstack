@@ -2,7 +2,12 @@ from fastapi import FastAPI
 
 from core.exceptions.handlers import setup_exception_handlers
 from core.foundation.infra.config import settings
-from core.middleware import TimingMiddleware, UnauthorizedMiddleware, setup_cors
+from core.middleware import (
+    RateLimitMiddleware,
+    TimingMiddleware,
+    UnauthorizedMiddleware,
+    setup_cors,
+)
 from routes import api_router as api_router_v1
 from routes.v1.health import router as health_router
 
@@ -19,8 +24,9 @@ def create_application() -> FastAPI:
 
     setup_exception_handlers(app=app, settings=settings)
 
-    app.add_middleware(TimingMiddleware)
+    app.add_middleware(RateLimitMiddleware)
     app.add_middleware(UnauthorizedMiddleware)
+    app.add_middleware(TimingMiddleware)
     # Keep CORS as the outermost middleware so short-circuit 401 responses
     # from auth middleware still receive CORS headers.
     setup_cors(app=app, settings=settings)

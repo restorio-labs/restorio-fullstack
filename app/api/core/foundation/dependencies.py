@@ -1,4 +1,5 @@
 from typing import Annotated
+from uuid import UUID
 
 from asyncpg import Pool
 from fastapi import Depends
@@ -8,11 +9,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.foundation.database.connection import get_mongo_db, get_postgres_pool
 from core.foundation.database.database import get_db_session
 from core.foundation.security import SecurityService, security_service
+from core.foundation.tenant_guard import resolve_and_authorize_tenant
 from services.auth_service import AuthService
 from services.email_service import EmailService
 from services.external_client_service import ExternalClient
 from services.floor_canvas_service import FloorCanvasService
 from services.payment_service import P24Service
+from services.tenant_logo_storage_service import (
+    TenantLogoStorageService,
+    tenant_logo_storage_service,
+)
 from services.tenant_profile_service import TenantProfileService
 from services.tenant_service import TenantService
 from services.user_service import UserService
@@ -60,6 +66,10 @@ def get_tenant_profile_service() -> TenantProfileService:
     return TenantProfileService()
 
 
+def get_tenant_logo_storage_service() -> TenantLogoStorageService:
+    return tenant_logo_storage_service
+
+
 def get_external_client() -> ExternalClient:
     return ExternalClient()
 
@@ -70,6 +80,9 @@ EmailServiceDep = Annotated[EmailService, Depends(get_email_service)]
 TenantServiceDep = Annotated[TenantService, Depends(get_tenant_service)]
 FloorCanvasServiceDep = Annotated[FloorCanvasService, Depends(get_floor_canvas_service)]
 P24ServiceDep = Annotated[P24Service, Depends(get_p24_service)]
+TenantLogoStorageServiceDep = Annotated[
+    TenantLogoStorageService, Depends(get_tenant_logo_storage_service)
+]
 TenantProfileServiceDep = Annotated[TenantProfileService, Depends(get_tenant_profile_service)]
 ExternalClientDep = Annotated[ExternalClient, Depends(get_external_client)]
 UserServiceDep = Annotated[UserService, Depends(get_user_service)]
@@ -77,3 +90,5 @@ UserServiceDep = Annotated[UserService, Depends(get_user_service)]
 MongoDB = Annotated[AsyncIOMotorDatabase, Depends(get_mongo_database)]
 PostgresPool = Annotated[Pool, Depends(get_postgres_connection_pool)]
 PostgresSession = Annotated[AsyncSession, Depends(get_db_session)]
+
+AuthorizedTenantId = Annotated[UUID, Depends(resolve_and_authorize_tenant)]

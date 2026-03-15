@@ -8,66 +8,14 @@ from core.exceptions import (
     GoneError,
     NotFoundResponse,
     TooManyRequestsError,
-    UnauthorizedError,
 )
-from core.foundation.security import SecurityService
 from core.models.activation_link import ActivationLink
 from core.models.enums import TenantStatus
 from core.models.tenant import Tenant
 from core.models.user import User
-from services.auth_service import AuthService
+from tests.unit.modules.auth.conftest import FakeAsyncSession, auth_service
 
-auth_service = AuthService(security=SecurityService())
 EXPECTED_NEW_LINK_COUNT = 2
-
-
-class FakeAsyncSession:
-    def __init__(self) -> None:
-        self.users: list[User] = []
-        self.tenants: list[Tenant] = []
-        self.activation_links: list[ActivationLink] = []
-        self.added_objects: list[object] = []
-
-    async def scalar(self, query: object) -> User | None:
-        query_str = str(query)
-        query_params: dict[str, object] = {}
-        if hasattr(query, "compile"):
-            query_params = query.compile().params
-
-        if "users.email" in query_str:
-            email = next(iter(query_params.values()), None)
-            return next((u for u in self.users if u.email == email), None)
-        return None
-
-    def add(self, obj: object) -> None:
-        self.added_objects.append(obj)
-
-    async def get(self, entity_cls: type, pk: object) -> object | None:
-        if entity_cls is ActivationLink:
-            return next((a for a in self.activation_links if a.id == pk), None)
-        if entity_cls is User:
-            return next((u for u in self.users if u.id == pk), None)
-        if entity_cls is Tenant:
-            return next((t for t in self.tenants if t.id == pk), None)
-        return None
-
-    async def flush(self) -> None:
-        for obj in self.added_objects:
-            if isinstance(obj, ActivationLink):
-                if not hasattr(obj, "id") or obj.id is None:
-                    obj.id = uuid4()
-                self.activation_links.append(obj)
-        self.added_objects.clear()
-
-    async def refresh(self, obj: object) -> None:
-        pass
-
-    async def scalars(self, _query: object) -> object:
-        class _ScalarResult:
-            def all(self) -> list[object]:
-                return []
-
-        return _ScalarResult()
 
 
 @pytest.mark.asyncio
@@ -367,86 +315,3 @@ async def test_resend_activation_link_success_creates_new_link() -> None:
     assert result_tenant.id == tenant.id
     assert len(session.activation_links) == EXPECTED_NEW_LINK_COUNT
     assert link.last_resend_at is not None
-
-
-@pytest.mark.asyncio
-async def test_login_success_returns_jwt_with_claims() -> None:
-    session = FakeAsyncSession()
-    tenant_id = uuid4()
-    user = User(
-        id=uuid4(),
-        email="owner@example.com",
-        password_hash=auth_service.security.hash_password("my_password_123"),
-        tenant_id=tenant_id,
-        is_active=True,
-    )
-    session.users.append(user)
-
-    access_token = await auth_service.login(
-        session=session,
-        email="owner@example.com",
-        password="my_password_123",
-    )
-
-    assert isinstance(access_token, str)
-    decoded = auth_service.security.decode_access_token(access_token)
-    assert decoded is not None
-    assert decoded["sub"] == str(user.id)
-    assert decoded["email"] == user.email
-    assert decoded["tenant_ids"] == [str(tenant_id)]
-
-
-@pytest.mark.asyncio
-async def test_login_invalid_credentials() -> None:
-    session = FakeAsyncSession()
-    user = User(
-        id=uuid4(),
-        email="owner@example.com",
-        password_hash=auth_service.security.hash_password("my_password_123"),
-        is_active=True,
-    )
-    session.users.append(user)
-
-    with pytest.raises(UnauthorizedError) as exc_info:
-        await auth_service.login(
-            session=session,
-            email="owner@example.com",
-            password="wrong-password",
-        )
-
-    assert "invalid credentials" in exc_info.value.detail.lower()
-
-
-@pytest.mark.asyncio
-async def test_login_inactive_account() -> None:
-    session = FakeAsyncSession()
-    user = User(
-        id=uuid4(),
-        email="owner@example.com",
-        password_hash=auth_service.security.hash_password("my_password_123"),
-        is_active=False,
-    )
-    session.users.append(user)
-
-    with pytest.raises(UnauthorizedError) as exc_info:
-        await auth_service.login(
-            session=session,
-            email="owner@example.com",
-            password="my_password_123",
-        )
-
-    assert "not active" in exc_info.value.detail.lower()
-
-
-@pytest.mark.asyncio
-async def test_login_user_not_found() -> None:
-    session = FakeAsyncSession()
-
-    with pytest.raises(UnauthorizedError) as exc_info:
-        await auth_service.login(
-            session=session,
-            email="missing@example.com",
-            password="my_password_123",
-        )
-
-    assert "invalid credentials" in exc_info.value.detail.lower()

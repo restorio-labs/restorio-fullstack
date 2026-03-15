@@ -93,7 +93,8 @@ async def test_create_user_with_tenant_slug_generation() -> None:
     test_cases = [
         ("My Restaurant", "myrestaurant"),
         ("The Best Pizza", "thebestpizza"),
-        ("Café Délice", "cafédélice"),
+        ("Café Délice", "cafedelice"),
+        ("Zażółć Gęślą Jaźń", "zazolcgeslajazn"),
         ("Restaurant   With   Spaces", "restaurantwithspaces"),
         ("A", "a"),
     ]

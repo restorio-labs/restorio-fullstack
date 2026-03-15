@@ -7,7 +7,29 @@
   },
   "metadata": {
     "title": "منصة Restorio",
-    "description": "منصة إدارة المطاعم"
+    "description": "منصة إدارة المطاعم",
+    "pages": {
+      "home": {
+        "title": "الرئيسية",
+        "description": "مرحبًا بك في منصة Restorio."
+      },
+      "about": {
+        "title": "حول",
+        "description": "تعرّف على مهمة وأهداف منصة Restorio."
+      },
+      "login": {
+        "title": "تسجيل الدخول",
+        "description": "سجّل الدخول إلى حسابك في Restorio."
+      },
+      "register": {
+        "title": "إنشاء حساب",
+        "description": "أنشئ حسابك في Restorio."
+      },
+      "activate": {
+        "title": "تفعيل الحساب",
+        "description": "فعّل حسابك في Restorio."
+      }
+    }
   },
   "login": {
     "title": "تسجيل الدخول",

@@ -7,7 +7,7 @@ from core.dto.v1.floor_canvases import FloorCanvasResponseDTO
 
 
 class TenantResponseDTO(BaseDTO):
-    id: EntityId = Field(..., description="Unique tenant identifier")
+    id: str = Field(..., description="Public tenant identifier")
     name: str = Field(..., description="Tenant name")
     slug: str = Field(..., description="URL-friendly tenant identifier")
     status: TenantStatus = Field(..., description="Tenant status")
@@ -28,7 +28,7 @@ class TenantResponseDTO(BaseDTO):
 
 
 class TenantSummaryResponseDTO(BaseDTO):
-    id: EntityId = Field(..., description="Unique tenant identifier")
+    id: str = Field(..., description="Public tenant identifier")
     name: str = Field(..., description="Tenant name")
     slug: str = Field(..., description="URL-friendly tenant identifier")
     status: TenantStatus = Field(..., description="Tenant status")

@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
 import pytest
 
 from core.exceptions import BaseHTTPException
@@ -63,7 +64,8 @@ async def test_general_exception_handler_debug_false() -> None:
 
     assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
     body = response.body.decode()
-    assert body == "null"
+    assert "failure" not in body
+    assert "RuntimeError" not in body
 
 
 @pytest.mark.asyncio
@@ -83,3 +85,35 @@ async def test_general_exception_handler_debug_true() -> None:
     body = response.body.decode()
     assert "An unexpected error occurred" in body
     assert "RuntimeError" in body
+
+
+@pytest.mark.asyncio
+async def test_validation_exception_handler_deduplicates_fields() -> None:
+    app = FastAPI()
+    settings = Settings(DEBUG=False)
+    setup_exception_handlers(app, settings)
+
+    handler = app.exception_handlers[RequestValidationError]
+    request = Request(
+        {
+            "type": "http",
+            "method": "POST",
+            "path": "/",
+            "headers": [],
+            "state": {"request_id": "req-123"},
+        }
+    )
+    exc = RequestValidationError(
+        [
+            {"loc": ("body", "email"), "msg": "Field required", "type": "missing"},
+            {"loc": ("body", "email"), "msg": "Invalid", "type": "value_error"},
+            {"loc": ("query", "page"), "msg": "Invalid", "type": "value_error"},
+        ]
+    )
+
+    response = await handler(request, exc)
+
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    body = response.body.decode()
+    assert '"fields":["email","query.page"]' in body
+    assert '"request_id":"req-123"' in body
