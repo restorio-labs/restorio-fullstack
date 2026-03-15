@@ -1,3 +1,5 @@
+import json
+
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 import pytest
@@ -24,8 +26,8 @@ async def test_restorio_exception_handler_returns_500_and_hides_detail_when_debu
     response = await handler(request, exc)
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    body = response.body.decode()
-    assert body == "null"
+    body = json.loads(response.body.decode())
+    assert body == {"message": "Test error"}
 
 
 @pytest.mark.asyncio
@@ -45,8 +47,8 @@ async def test_restorio_exception_handler_returns_500_and_shows_detail_when_debu
     response = await handler(request, exc)
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    body = response.body.decode()
-    assert body == "null"
+    body = json.loads(response.body.decode())
+    assert body == {"message": "Test error"}
 
 
 @pytest.mark.asyncio

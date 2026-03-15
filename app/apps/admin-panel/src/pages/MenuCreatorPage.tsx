@@ -78,11 +78,13 @@ export const MenuCreatorPage = (): ReactElement => {
   useEffect(() => {
     if (!tenantId) {
       setCategories([]);
+
       return;
     }
 
     if (menuData?.categories) {
       setCategories(toFormCategories(menuData.categories));
+
       return;
     }
 
@@ -94,6 +96,7 @@ export const MenuCreatorPage = (): ReactElement => {
       if (!tenantId) {
         throw new Error(t("menuCreator.errors.selectRestaurant"));
       }
+
       return api.menus.save(tenantId, payload);
     },
     onSuccess: () => {
@@ -108,10 +111,15 @@ export const MenuCreatorPage = (): ReactElement => {
     },
   });
 
-  const canSave = useMemo(() => tenantId !== null && categories.length > 0 && !saveMutation.isPending, [categories.length, saveMutation.isPending, tenantId]);
+  const canSave = useMemo(
+    () => tenantId !== null && categories.length > 0 && !saveMutation.isPending,
+    [categories.length, saveMutation.isPending, tenantId],
+  );
 
   const updateCategory = (categoryId: string, patch: Partial<MenuCategoryFormState>): void => {
-    setCategories((prev) => prev.map((category) => (category.id === categoryId ? { ...category, ...patch } : category)));
+    setCategories((prev) =>
+      prev.map((category) => (category.id === categoryId ? { ...category, ...patch } : category)),
+    );
   };
 
   const removeCategory = (categoryId: string): void => {
@@ -125,17 +133,20 @@ export const MenuCreatorPage = (): ReactElement => {
   const moveCategory = (categoryId: string, direction: "up" | "down"): void => {
     setCategories((prev) => {
       const index = prev.findIndex((category) => category.id === categoryId);
+
       if (index === -1) {
         return prev;
       }
 
       const targetIndex = direction === "up" ? index - 1 : index + 1;
+
       if (targetIndex < 0 || targetIndex >= prev.length) {
         return prev;
       }
 
       const next = [...prev];
       const [moved] = next.splice(index, 1);
+
       next.splice(targetIndex, 0, moved);
 
       return next;
@@ -189,7 +200,11 @@ export const MenuCreatorPage = (): ReactElement => {
                 }
 
                 const normalizedTag = item.tagInput.trim();
-                if (normalizedTag === "" || item.tags.some((tag) => tag.toLowerCase() === normalizedTag.toLowerCase())) {
+
+                if (
+                  normalizedTag === "" ||
+                  item.tags.some((tag) => tag.toLowerCase() === normalizedTag.toLowerCase())
+                ) {
                   return item;
                 }
 
@@ -229,8 +244,10 @@ export const MenuCreatorPage = (): ReactElement => {
 
     for (const [index, category] of categories.entries()) {
       const categoryName = category.name.trim();
+
       if (categoryName === "") {
         setErrorMessage(t("menuCreator.errors.invalidCategory"));
+
         return null;
       }
 
@@ -238,6 +255,7 @@ export const MenuCreatorPage = (): ReactElement => {
         .map((item) => {
           const itemName = item.name.trim();
           const itemPrice = Number(item.price);
+
           if (itemName === "" || Number.isNaN(itemPrice) || itemPrice < 0) {
             return null;
           }
@@ -254,6 +272,7 @@ export const MenuCreatorPage = (): ReactElement => {
 
       if (normalizedItems.length !== category.items.length) {
         setErrorMessage(t("menuCreator.errors.invalidItem"));
+
         return null;
       }
 
@@ -272,6 +291,7 @@ export const MenuCreatorPage = (): ReactElement => {
     setSuccessVisible(false);
 
     const payload = buildPayload();
+
     if (!payload) {
       return;
     }
@@ -317,10 +337,15 @@ export const MenuCreatorPage = (): ReactElement => {
 
         <div className="space-y-6">
           {categories.map((category, categoryIndex) => (
-            <section key={category.id} className="rounded-xl border border-border-default bg-surface-secondary/60 p-4 shadow-sm">
+            <section
+              key={category.id}
+              className="rounded-xl border border-border-default bg-surface-secondary/60 p-4 shadow-sm"
+            >
               <div className="grid gap-4 md:grid-cols-12">
                 <div className="md:col-span-8">
-                  <label className="mb-1 block text-xs font-medium text-text-secondary">{t("menuCreator.fields.categoryName")}</label>
+                  <label className="mb-1 block text-xs font-medium text-text-secondary">
+                    {t("menuCreator.fields.categoryName")}
+                  </label>
                   <input
                     value={category.name}
                     onChange={(event) => updateCategory(category.id, { name: event.target.value })}
@@ -330,7 +355,9 @@ export const MenuCreatorPage = (): ReactElement => {
                 </div>
                 <div className="flex items-end gap-2 md:col-span-4">
                   <div className="flex flex-col gap-1">
-                    <span className="text-xs font-medium text-text-secondary">{t("menuCreator.fields.categoryOrderControls")}</span>
+                    <span className="text-xs font-medium text-text-secondary">
+                      {t("menuCreator.fields.categoryOrderControls")}
+                    </span>
                     <div className="flex items-center gap-2">
                       <Button
                         type="button"
@@ -363,7 +390,10 @@ export const MenuCreatorPage = (): ReactElement => {
 
               <div className="mt-4 space-y-3">
                 {category.items.map((item) => (
-                  <div key={item.id} className="relative rounded-lg border border-border-default bg-surface-primary p-3 pt-9">
+                  <div
+                    key={item.id}
+                    className="relative rounded-lg border border-border-default bg-surface-primary p-3 pt-9"
+                  >
                     <button
                       type="button"
                       aria-label={t("menuCreator.actions.removeItem")}
@@ -374,7 +404,9 @@ export const MenuCreatorPage = (): ReactElement => {
                     </button>
                     <div className="grid gap-3 md:grid-cols-12">
                       <div className="md:col-span-4">
-                        <label className="mb-1 block text-xs font-medium text-text-secondary">{t("menuCreator.fields.itemName")}</label>
+                        <label className="mb-1 block text-xs font-medium text-text-secondary">
+                          {t("menuCreator.fields.itemName")}
+                        </label>
                         <input
                           value={item.name}
                           onChange={(event) => updateItem(category.id, item.id, { name: event.target.value })}
@@ -383,7 +415,9 @@ export const MenuCreatorPage = (): ReactElement => {
                         />
                       </div>
                       <div className="md:col-span-2">
-                        <label className="mb-1 block text-xs font-medium text-text-secondary">{t("menuCreator.fields.itemPrice")}</label>
+                        <label className="mb-1 block text-xs font-medium text-text-secondary">
+                          {t("menuCreator.fields.itemPrice")}
+                        </label>
                         <input
                           type="number"
                           min={0}
@@ -394,7 +428,9 @@ export const MenuCreatorPage = (): ReactElement => {
                         />
                       </div>
                       <div className="md:col-span-3">
-                        <label className="mb-1 block text-xs font-medium text-text-secondary">{t("menuCreator.fields.itemTags")}</label>
+                        <label className="mb-1 block text-xs font-medium text-text-secondary">
+                          {t("menuCreator.fields.itemTags")}
+                        </label>
                         <div className="flex items-center gap-2">
                           <input
                             value={item.tagInput}
