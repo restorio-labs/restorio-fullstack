@@ -182,23 +182,23 @@
       "apiKey": {
         "label": "P24 API Key",
         "placeholder": "Enter Przelewy24 API key",
-        "helper": "Max 32 characters",
-        "error": "API key is required (max 32 characters)"
+        "helper": "Exactly 32 characters",
+        "error": "API key is required and must contain exactly 32 characters"
       },
       "crcKey": {
         "label": "P24 CRC Key",
         "placeholder": "Enter Przelewy24 CRC key",
-        "helper": "Max 16 characters",
-        "error": "CRC key is required (max 16 characters)"
+        "helper": "Exactly 16 characters",
+        "error": "CRC key is required and must contain exactly 16 characters"
       },
       "p24Merchantid": {
         "error": "Merchant ID must be between 0 and 999999"
       },
       "p24Api": {
-        "error": "API key is required (max 32 characters)"
+        "error": "API key is required and must contain exactly 32 characters"
       },
       "p24Crc": {
-        "error": "CRC key is required (max 16 characters)"
+        "error": "CRC key is required and must contain exactly 16 characters"
       }
     },
     "success": "P24 configuration updated successfully.",

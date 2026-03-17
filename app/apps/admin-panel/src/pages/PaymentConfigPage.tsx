@@ -111,19 +111,29 @@ export const PaymentConfigPage = (): ReactElement => {
           <Input
             label={t("payment.fields.apiKey.label")}
             placeholder={t("payment.fields.apiKey.placeholder")}
+            minLength={32}
             maxLength={32}
             helperText={t("payment.fields.apiKey.helper")}
             error={getFieldError("p24Api")}
-            {...register("apiKey", { required: true })}
+            {...register("apiKey", {
+              required: true,
+              minLength: 32,
+              maxLength: 32,
+            })}
           />
 
           <Input
             label={t("payment.fields.crcKey.label")}
             placeholder={t("payment.fields.crcKey.placeholder")}
+            minLength={16}
             maxLength={16}
             helperText={t("payment.fields.crcKey.helper")}
             error={getFieldError("p24Crc")}
-            {...register("crcKey", { required: true })}
+            {...register("crcKey", {
+              required: true,
+              minLength: 16,
+              maxLength: 16,
+            })}
           />
 
           {submitStatus === "success" && (

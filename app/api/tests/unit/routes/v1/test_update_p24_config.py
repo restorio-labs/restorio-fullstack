@@ -43,8 +43,8 @@ def _make_session(tenant=None):
 
 class TestUpdateP24Config:
     EXAMPLE_MERCHANT_ID = 123456
-    EXAMPLE_API_KEY = "api-key-abc"
-    EXAMPLE_CRC_KEY = "crc-key-xyz"
+    EXAMPLE_API_KEY = "a" * 32
+    EXAMPLE_CRC_KEY = "b" * 16
 
     @pytest.mark.asyncio
     async def test_updates_tenant_p24_fields(self) -> None:
@@ -81,7 +81,7 @@ class TestUpdateP24Config:
     async def test_returns_updated_response_with_tenant_data(self) -> None:
         tenant = _make_tenant(name="My Venue", slug="my-venue", status=TenantStatus.ACTIVE)
         session = _make_session(tenant)
-        request = UpdateP24ConfigDTO(p24_merchantid=999, p24_api="k", p24_crc="c")
+        request = UpdateP24ConfigDTO(p24_merchantid=999, p24_api="k" * 32, p24_crc="c" * 16)
 
         result = await update_p24_config(tenant.id, request, session)
 
@@ -97,7 +97,7 @@ class TestUpdateP24Config:
         status_code = 404
         session = _make_session(tenant=None)
         tenant_id = uuid4()
-        request = UpdateP24ConfigDTO(p24_merchantid=1, p24_api="key", p24_crc="crc")
+        request = UpdateP24ConfigDTO(p24_merchantid=1, p24_api="k" * 32, p24_crc="c" * 16)
 
         with pytest.raises(HTTPException) as exc_info:
             await update_p24_config(tenant_id, request, session)
@@ -109,7 +109,7 @@ class TestUpdateP24Config:
     async def test_overwrites_existing_p24_config(self) -> None:
         tenant = _make_tenant(p24_merchantid=111, p24_api="old-api", p24_crc="old-crc")
         session = _make_session(tenant)
-        request = UpdateP24ConfigDTO(p24_merchantid=222, p24_api="new-api", p24_crc="new-crc")
+        request = UpdateP24ConfigDTO(p24_merchantid=222, p24_api="n" * 32, p24_crc="m" * 16)
 
         await update_p24_config(tenant.id, request, session)
 
@@ -120,12 +120,12 @@ class TestUpdateP24Config:
 
 class TestUpdateP24ConfigDTOValidation:
     MAX_MERCHANT_ID = 999_999
-    MAX_API_KEY_LENGTH = 32
-    MAX_CRC_KEY_LENGTH = 16
+    EXACT_API_KEY_LENGTH = 32
+    EXACT_CRC_KEY_LENGTH = 16
 
     EXAMPLE_MERCHANT_ID = 123456
-    EXAMPLE_API_KEY = "api-key"
-    EXAMPLE_CRC_KEY = "crc-key"
+    EXAMPLE_API_KEY = "a" * EXACT_API_KEY_LENGTH
+    EXAMPLE_CRC_KEY = "b" * EXACT_CRC_KEY_LENGTH
 
     def test_valid_dto(self) -> None:
         dto = UpdateP24ConfigDTO(
@@ -139,30 +139,52 @@ class TestUpdateP24ConfigDTOValidation:
 
     def test_merchant_id_max_6_digits(self) -> None:
         with pytest.raises(ValidationError):
-            UpdateP24ConfigDTO(p24_merchantid=1_000_000, p24_api="key", p24_crc="crc")
+            UpdateP24ConfigDTO(
+                p24_merchantid=1_000_000, p24_api=self.EXAMPLE_API_KEY, p24_crc=self.EXAMPLE_CRC_KEY
+            )
 
     def test_merchant_id_cannot_be_negative(self) -> None:
         with pytest.raises(ValidationError):
-            UpdateP24ConfigDTO(p24_merchantid=-1, p24_api="key", p24_crc="crc")
+            UpdateP24ConfigDTO(
+                p24_merchantid=-1, p24_api=self.EXAMPLE_API_KEY, p24_crc=self.EXAMPLE_CRC_KEY
+            )
 
-    def test_api_key_max_length_32(self) -> None:
+    def test_api_key_longer_than_32_rejected(self) -> None:
         with pytest.raises(ValidationError):
-            UpdateP24ConfigDTO(p24_merchantid=1, p24_api="a" * 33, p24_crc="crc")
+            UpdateP24ConfigDTO(
+                p24_merchantid=1, p24_api="a" * 33, p24_crc=self.EXAMPLE_CRC_KEY
+            )
 
-    def test_crc_key_max_length_16(self) -> None:
+    def test_api_key_shorter_than_32_rejected(self) -> None:
         with pytest.raises(ValidationError):
-            UpdateP24ConfigDTO(p24_merchantid=1, p24_api="key", p24_crc="a" * 17)
+            UpdateP24ConfigDTO(
+                p24_merchantid=1, p24_api="a" * 31, p24_crc=self.EXAMPLE_CRC_KEY
+            )
+
+    def test_crc_key_longer_than_16_rejected(self) -> None:
+        with pytest.raises(ValidationError):
+            UpdateP24ConfigDTO(
+                p24_merchantid=1, p24_api=self.EXAMPLE_API_KEY, p24_crc="a" * 17
+            )
+
+    def test_crc_key_shorter_than_16_rejected(self) -> None:
+        with pytest.raises(ValidationError):
+            UpdateP24ConfigDTO(
+                p24_merchantid=1, p24_api=self.EXAMPLE_API_KEY, p24_crc="a" * 15
+            )
 
     def test_boundary_values_accepted(self) -> None:
         dto = UpdateP24ConfigDTO(
             p24_merchantid=self.MAX_MERCHANT_ID,
-            p24_api="a" * self.MAX_API_KEY_LENGTH,
-            p24_crc="b" * self.MAX_CRC_KEY_LENGTH,
+            p24_api="a" * self.EXACT_API_KEY_LENGTH,
+            p24_crc="b" * self.EXACT_CRC_KEY_LENGTH,
         )
         assert dto.p24_merchantid == self.MAX_MERCHANT_ID
-        assert len(dto.p24_api) == self.MAX_API_KEY_LENGTH
-        assert len(dto.p24_crc) == self.MAX_CRC_KEY_LENGTH
+        assert len(dto.p24_api) == self.EXACT_API_KEY_LENGTH
+        assert len(dto.p24_crc) == self.EXACT_CRC_KEY_LENGTH
 
     def test_zero_merchant_id_accepted(self) -> None:
-        dto = UpdateP24ConfigDTO(p24_merchantid=0, p24_api="key", p24_crc="crc")
+        dto = UpdateP24ConfigDTO(
+            p24_merchantid=0, p24_api=self.EXAMPLE_API_KEY, p24_crc=self.EXAMPLE_CRC_KEY
+        )
         assert dto.p24_merchantid == 0
