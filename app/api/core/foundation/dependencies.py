@@ -19,6 +19,7 @@ from services.tenant_logo_storage_service import (
     TenantLogoStorageService,
     tenant_logo_storage_service,
 )
+from services.order_service import OrderService
 from services.tenant_profile_service import TenantProfileService
 from services.tenant_service import TenantService
 from services.user_service import UserService
@@ -70,6 +71,10 @@ def get_tenant_logo_storage_service() -> TenantLogoStorageService:
     return tenant_logo_storage_service
 
 
+def get_order_service() -> OrderService:
+    return OrderService()
+
+
 def get_external_client() -> ExternalClient:
     return ExternalClient()
 
@@ -84,6 +89,7 @@ TenantLogoStorageServiceDep = Annotated[
     TenantLogoStorageService, Depends(get_tenant_logo_storage_service)
 ]
 TenantProfileServiceDep = Annotated[TenantProfileService, Depends(get_tenant_profile_service)]
+OrderServiceDep = Annotated[OrderService, Depends(get_order_service)]
 ExternalClientDep = Annotated[ExternalClient, Depends(get_external_client)]
 UserServiceDep = Annotated[UserService, Depends(get_user_service)]
 

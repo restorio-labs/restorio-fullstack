@@ -1,5 +1,6 @@
 import json
 import os
+from urllib.parse import quote_plus, urlparse, urlunparse
 
 from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -36,6 +37,8 @@ class Settings(BaseSettings):
 
     DATABASE_URL: str = "mongodb://localhost:27017/restorio"
     DATABASE_NAME: str = "restorio"
+    MONGODB_USERNAME: str = ""
+    MONGODB_PASSWORD: str = ""
 
     POSTGRES_DSN: str = "postgresql://restorio:restorio@localhost:5432/restorio"
 
@@ -80,6 +83,23 @@ class Settings(BaseSettings):
     PRZELEWY24_CRC: str = ""
     PRZELEWY24_API_KEY: str = ""
     PRZELEWY24_API_URL: str = "https://sandbox.przelewy24.pl/api/v1"
+
+    @model_validator(mode="after")
+    def _inject_mongodb_credentials(self) -> "Settings":
+        if self.MONGODB_USERNAME and self.MONGODB_PASSWORD:
+            parsed = urlparse(self.DATABASE_URL)
+            safe_user = quote_plus(self.MONGODB_USERNAME)
+            safe_pass = quote_plus(self.MONGODB_PASSWORD)
+            netloc = f"{safe_user}:{safe_pass}@{parsed.hostname or ''}:{parsed.port or 27017}"
+            self.DATABASE_URL = urlunparse((
+                parsed.scheme,
+                netloc,
+                parsed.path or "/restorio",
+                parsed.params,
+                parsed.query,
+                parsed.fragment,
+            ))
+        return self
 
     @model_validator(mode="after")
     def _reject_insecure_production_secrets(self) -> "Settings":

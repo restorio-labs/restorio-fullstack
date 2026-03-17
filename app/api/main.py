@@ -10,6 +10,7 @@ from core.middleware import (
 )
 from routes import api_router as api_router_v1
 from routes.v1.health import router as health_router
+from routes.v1.ws import router as ws_router
 
 
 def create_application() -> FastAPI:
@@ -43,6 +44,7 @@ def create_application() -> FastAPI:
 
     app.include_router(api_router_v1, prefix=settings.API_V1_PREFIX)
     app.include_router(health_router, prefix="/health", tags=["health"])
+    app.include_router(ws_router, prefix=settings.API_V1_PREFIX, tags=["websocket"])
     return app
 
 
