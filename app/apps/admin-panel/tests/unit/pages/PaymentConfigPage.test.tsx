@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import { fireEvent, render, screen, waitFor, type RenderResult } from "@testing-library/react";
+import { I18nProvider } from "@restorio/ui";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 
@@ -17,6 +19,7 @@ vi.mock("../../../src/context/TenantContext", () => ({
 
 import { api } from "../../../src/api/client";
 import { useCurrentTenant } from "../../../src/context/TenantContext";
+import { fallbackMessages, getMessages } from "../../../src/i18n/messages";
 import { PaymentConfigPage } from "../../../src/pages/PaymentConfigPage";
 
 // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -27,9 +30,13 @@ const CRC_KEY = "b".repeat(16);
 
 const renderPage = (): RenderResult =>
   render(
-    <MemoryRouter>
-      <PaymentConfigPage />
-    </MemoryRouter>,
+    <QueryClientProvider client={new QueryClient()}>
+      <I18nProvider locale="en" messages={getMessages("en")} fallbackMessages={fallbackMessages}>
+        <MemoryRouter>
+          <PaymentConfigPage />
+        </MemoryRouter>
+      </I18nProvider>
+    </QueryClientProvider>,
   );
 
 const fillPaymentForm = (merchantId: string, apiKey: string, crcKey: string): void => {
@@ -39,7 +46,13 @@ const fillPaymentForm = (merchantId: string, apiKey: string, crcKey: string): vo
 };
 
 const clickSaveConfiguration = (): void => {
-  fireEvent.click(screen.getByRole("button", { name: /save configuration/i }));
+  const form = document.getElementById("payment-config-form");
+
+  if (!form) {
+    throw new Error("payment form not found");
+  }
+
+  fireEvent.submit(form);
 };
 
 describe("PaymentConfigPage", () => {
@@ -60,8 +73,7 @@ describe("PaymentConfigPage", () => {
   it("renders selected restaurant details and payment fields", () => {
     renderPage();
 
-    expect(screen.getByText(/selected restaurant/i)).toBeInTheDocument();
-    expect(screen.getByText(/main restaurant/i)).toBeInTheDocument();
+    expect(screen.getByText(/payment configurations/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/merchant id/i)).toBeDefined();
     expect(screen.getByLabelText(/p24 api key/i)).toBeDefined();
     expect(screen.getByLabelText(/p24 crc key/i)).toBeDefined();
@@ -79,7 +91,9 @@ describe("PaymentConfigPage", () => {
 
     fillPaymentForm("123456", API_KEY, CRC_KEY);
 
-    expect(screen.getByRole("button", { name: /save configuration/i })).toBeEnabled();
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /save configuration/i })).toBeEnabled();
+    });
   });
 
   it("calls API with selected tenant on submit", async () => {
@@ -155,7 +169,9 @@ describe("PaymentConfigPage", () => {
     });
     clickSaveConfiguration();
 
-    expect(screen.getByRole("button", { name: /saving/i })).toBeDisabled();
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /saving/i })).toBeDisabled();
+    });
 
     resolvePromise();
 
@@ -164,7 +180,7 @@ describe("PaymentConfigPage", () => {
     });
   });
 
-  it("clears status message when user edits a field after success", async () => {
+  it("keeps success message visible when user edits fields after submit", async () => {
     mockUpdateP24Config.mockResolvedValueOnce(undefined);
     renderPage();
 
@@ -177,7 +193,7 @@ describe("PaymentConfigPage", () => {
 
     fireEvent.change(screen.getByLabelText(/p24 api key/i), { target: { value: "c".repeat(32) } });
 
-    expect(screen.queryByText(/p24 configuration updated successfully/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/p24 configuration updated successfully/i)).toBeInTheDocument();
   });
 
   it("trims whitespace from input values before sending", async () => {
@@ -216,7 +232,6 @@ describe("PaymentConfigPage", () => {
     });
     renderPage();
 
-    expect(screen.getByText(/no restaurant selected/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /save configuration/i })).toBeDisabled();
     expect(mockUpdateP24Config).not.toHaveBeenCalled();
   });

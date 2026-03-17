@@ -13,10 +13,11 @@ export default defineConfig({
       "@restorio/ui": resolve(__dirname, "../../packages/ui/src"),
       "@restorio/auth": resolve(__dirname, "../../packages/auth/src"),
       "@restorio/api-client": resolve(__dirname, "../../packages/api-client/src"),
+      "@restorio/utils": resolve(__dirname, "../../packages/utils/src"),
     },
   },
   optimizeDeps: {
-    exclude: ["@restorio/types", "@restorio/ui", "@restorio/auth", "@restorio/api-client"],
+    exclude: ["@restorio/types", "@restorio/ui", "@restorio/auth", "@restorio/api-client", "@restorio/utils"],
   },
   server: {
     port: 3001,

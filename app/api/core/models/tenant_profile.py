@@ -27,12 +27,13 @@ class TenantProfile(Base):
 
     nip: Mapped[str] = mapped_column(String(10), nullable=False)
     company_name: Mapped[str] = mapped_column(String(255), nullable=False)
-    logo_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    logo: Mapped[str | None] = mapped_column("logo_url", String(512), nullable=True)
 
     contact_email: Mapped[str] = mapped_column(String(255), nullable=False)
     phone: Mapped[str] = mapped_column(String(20), nullable=False)
 
-    address_street: Mapped[str] = mapped_column(String(255), nullable=False)
+    address_street_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    address_street_number: Mapped[str] = mapped_column(String(20), nullable=False)
     address_city: Mapped[str] = mapped_column(String(100), nullable=False)
     address_postal_code: Mapped[str] = mapped_column(String(10), nullable=False)
     address_country: Mapped[str] = mapped_column(String(100), nullable=False, default="Polska")

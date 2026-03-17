@@ -1,7 +1,7 @@
 import { APP_SLUGS, Environment } from "@restorio/types";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi, afterEach } from "vitest";
 
-import { getAppUrl, getEnvironmentFromEnv, redirectTo } from "@restorio/utils";
+import { getAppHref, getAppUrl, getEnvMode, getEnvironmentFromEnv, goToApp, redirectTo } from "@restorio/utils";
 
 describe("Environment", () => {
   it("defines the supported runtime environments", () => {
@@ -71,10 +71,79 @@ describe("redirectTo", () => {
   });
 });
 
+describe("getEnvMode", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("returns ENV when set", () => {
+    vi.stubEnv("ENV", "production");
+
+    expect(getEnvMode()).toBe("production");
+  });
+
+  it("uses NODE_ENV when ENV is not set", () => {
+    vi.stubEnv("NODE_ENV", "production");
+
+    expect(getEnvMode()).toBe("production");
+  });
+});
+
+describe("getAppHref", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("returns app url for current env mode", () => {
+    vi.stubEnv("ENV", "production");
+
+    expect(getAppHref("public-web")).toBe("https://restorio.org");
+    expect(getAppHref("admin-panel")).toBe("https://admin.restorio.org");
+  });
+
+  it("returns localhost url when env is development", () => {
+    vi.stubEnv("ENV", "development");
+
+    expect(getAppHref("public-web")).toBe("http://localhost:3000");
+  });
+});
+
+describe("goToApp", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("does nothing when window is undefined", () => {
+    const win = globalThis.window;
+
+    (globalThis as { window?: undefined }).window = undefined;
+
+    expect(() => goToApp("admin-panel")).not.toThrow();
+
+    (globalThis as { window: unknown }).window = win;
+  });
+
+  it("sets last visited app and redirects when window is defined", () => {
+    const location = { href: "" };
+    const setItem = vi.fn();
+
+    vi.stubGlobal("window", { location });
+    vi.stubGlobal("localStorage", { setItem });
+
+    goToApp("waiter-panel");
+
+    expect(setItem).toHaveBeenCalledWith("rlvp", "waiter-panel");
+    expect(location.href).toBe("http://localhost:3004");
+  });
+});
+
 describe("utils barrel exports", () => {
   it("exposes environment helpers from root index", () => {
     expect(typeof getAppUrl).toBe("function");
     expect(typeof getEnvironmentFromEnv).toBe("function");
     expect(typeof redirectTo).toBe("function");
+    expect(typeof getEnvMode).toBe("function");
+    expect(typeof getAppHref).toBe("function");
+    expect(typeof goToApp).toBe("function");
   });
 });

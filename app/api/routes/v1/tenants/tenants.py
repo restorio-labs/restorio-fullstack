@@ -9,6 +9,7 @@ from core.dto.v1 import (
     UpdateTenantDTO,
 )
 from core.foundation.dependencies import (
+    AuthorizedTenantId,
     PostgresSession,
     TenantServiceDep,
 )
@@ -19,6 +20,7 @@ from core.foundation.http.responses import (
     UnauthenticatedResponse,
     UpdatedResponse,
 )
+from core.foundation.role_guard import RequireOwner
 from routes.v1.mappers.tenant_mappers import (
     tenant_to_response,
     tenant_to_summary,
@@ -59,16 +61,27 @@ async def list_tenants(
     response_model=CreatedResponse[TenantResponseDTO],
 )
 async def create_tenant(
-    request: CreateTenantDTO,
+    _role: RequireOwner,
+    request: Request,
+    body: CreateTenantDTO,
     session: PostgresSession,
     service: TenantServiceDep,
 ) -> CreatedResponse[TenantResponseDTO]:
+    user = getattr(request.state, "user", None)
+    if not isinstance(user, dict):
+        raise UnauthenticatedResponse(message="Unauthorized")
+
+    subject = user.get("sub")
+    if not isinstance(subject, str):
+        raise UnauthenticatedResponse(message="Unauthorized")
+
+    user_id = UUID(subject)
     data = CreateTenantDTO(
-        name=request.name,
-        slug=request.slug,
-        status=request.status,
+        name=body.name,
+        slug=body.slug,
+        status=body.status,
     )
-    tenant = await service.create_tenant(session, data)
+    tenant = await service.create_tenant(session, data, user_id)
     return CreatedResponse(
         message="Tenant created successfully",
         data=tenant_to_response(tenant),
@@ -76,7 +89,7 @@ async def create_tenant(
 
 
 @router.get(
-    "/{tenant_id}",
+    "/{tenant_public_id}",
     status_code=status.HTTP_200_OK,
     response_model=SuccessResponse[TenantResponseDTO],
     summary="Get a tenant by ID",
@@ -84,7 +97,7 @@ async def create_tenant(
     response_description="Tenant retrieved successfully",
 )
 async def get_tenant(
-    tenant_id: UUID,
+    tenant_id: AuthorizedTenantId,
     session: PostgresSession,
     service: TenantServiceDep,
 ) -> SuccessResponse[TenantResponseDTO]:
@@ -96,7 +109,7 @@ async def get_tenant(
 
 
 @router.put(
-    "/{tenant_id}",
+    "/{tenant_public_id}",
     status_code=status.HTTP_200_OK,
     response_model=UpdatedResponse[TenantResponseDTO],
     summary="Update a tenant",
@@ -104,7 +117,8 @@ async def get_tenant(
     response_description="Tenant updated successfully",
 )
 async def update_tenant(
-    tenant_id: UUID,
+    _role: RequireOwner,
+    tenant_id: AuthorizedTenantId,
     request: UpdateTenantDTO,
     session: PostgresSession,
     service: TenantServiceDep,
@@ -123,7 +137,7 @@ async def update_tenant(
 
 
 @router.delete(
-    "/{tenant_id}",
+    "/{tenant_public_id}",
     status_code=status.HTTP_200_OK,
     response_model=DeletedResponse,
     summary="Delete a tenant",
@@ -131,9 +145,10 @@ async def update_tenant(
     response_description="Tenant deleted successfully",
 )
 async def delete_tenant(
-    tenant_id: UUID,
+    _role: RequireOwner,
+    tenant_id: AuthorizedTenantId,
     session: PostgresSession,
     service: TenantServiceDep,
 ) -> DeletedResponse:
     await service.delete_tenant(session, tenant_id)
-    return DeletedResponse(message=f"Tenant {tenant_id} deleted successfully")
+    return DeletedResponse(message="Tenant deleted successfully")

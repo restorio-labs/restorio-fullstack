@@ -7,7 +7,29 @@
   },
   "metadata": {
     "title": "Restorio Platform",
-    "description": "Restaurant Management Platform"
+    "description": "Restaurant Management Platform",
+    "pages": {
+      "home": {
+        "title": "Home",
+        "description": "Welcome to Restorio Platform."
+      },
+      "about": {
+        "title": "About Us",
+        "description": "Learn about the mission and goals of the Restorio Platform."
+      },
+      "login": {
+        "title": "Log in",
+        "description": "Log in to your Restorio account."
+      },
+      "register": {
+        "title": "Register your account",
+        "description": "Create your Restorio account."
+      },
+      "activate": {
+        "title": "Activate Account",
+        "description": "Activate your Restorio account."
+      }
+    }
   },
   "login": {
     "title": "Log in",
@@ -112,6 +134,53 @@
     "title": "Ready to modernize your restaurant?",
     "subtitle": "Join hundreds of restaurants already using Restorio to streamline their operations.",
     "button": "Learn More About Us"
+  },
+  "activate": {
+    "loading": {
+      "title": "We are activating your account",
+      "subtitle": "This should only take a moment."
+    },
+    "success": {
+      "title": "Your account is activated.",
+      "description": "You’re now logged in. Continue to the admin panel to finish setup."
+    },
+    "alreadyActivated": {
+      "title": "This account is already activated.",
+      "description": "Continue to the admin panel."
+    },
+    "expired": {
+      "title": "Activation link has expired",
+      "genericMessage": "Activation link has expired."
+    },
+    "error": {
+      "title": "Activation failed",
+      "genericMessage": "Please request a new activation link."
+    },
+    "setPassword": {
+      "title": "Set your password",
+      "description": "Before activation, set a password for your account.",
+      "submit": "Save password and activate",
+      "submitting": "Saving..."
+    },
+    "resendSent": {
+      "title": "Check your email",
+      "description": "We’ve sent a new activation link. Use the link in the email to activate your account.",
+      "secondaryPrompt": "Didn’t get it?",
+      "resendAgain": "Resend again"
+    },
+    "buttons": {
+      "goToAdmin": "Go to admin panel",
+      "resend": "Resend activation link",
+      "resendLoading": "Sending…",
+      "resendWithCooldown": "Resend activation link ({seconds}s)"
+    },
+    "errors": {
+      "missingOrInvalidLink": "Activation link is missing or invalid.",
+      "activationExpired": "Activation link has expired.",
+      "activationGeneric": "Activation failed. Please request a new link.",
+      "resendGeneric": "Failed to resend activation email.",
+      "setPasswordGeneric": "Failed to set password. Please try again."
+    }
   },
   "about": {
     "mission": {

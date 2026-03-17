@@ -18,8 +18,8 @@ class TenantProfileResponseDTO(BaseDTO):
         serialization_alias="companyName",
         description="Official registered company name",
     )
-    logo_url: str | None = Field(
-        None, alias="logoUrl", serialization_alias="logoUrl", description="URL to uploaded logo"
+    logo: str | None = Field(
+        None, alias="logo", serialization_alias="logo", description="URL to uploaded logo"
     )
 
     contact_email: str = Field(
@@ -30,11 +30,17 @@ class TenantProfileResponseDTO(BaseDTO):
     )
     phone: str = Field(..., description="Restaurant telephone number")
 
-    address_street: str = Field(
+    address_street_name: str = Field(
         ...,
-        alias="addressStreet",
-        serialization_alias="addressStreet",
-        description="Street address",
+        alias="addressStreetName",
+        serialization_alias="addressStreetName",
+        description="Street name",
+    )
+    address_street_number: str = Field(
+        ...,
+        alias="addressStreetNumber",
+        serialization_alias="addressStreetNumber",
+        description="Street/building number",
     )
     address_city: str = Field(
         ..., alias="addressCity", serialization_alias="addressCity", description="City"
@@ -122,11 +128,35 @@ class TenantProfileResponseDTO(BaseDTO):
         ...,
         alias="createdAt",
         serialization_alias="createdAt",
-        description="Timestamp when profile was created",
+        description="Profile creation timestamp",
     )
     updated_at: datetime = Field(
         ...,
         alias="updatedAt",
         serialization_alias="updatedAt",
-        description="Timestamp when profile was last updated",
+        description="Last profile update timestamp",
+    )
+
+
+class TenantLogoUploadResponseDTO(BaseDTO):
+    upload_url: str = Field(
+        ...,
+        alias="uploadUrl",
+        serialization_alias="uploadUrl",
+        description="Presigned URL for uploading a tenant logo directly to object storage",
+    )
+    object_key: str = Field(
+        ...,
+        alias="objectKey",
+        serialization_alias="objectKey",
+        description="Temporary object key that must be sent back on profile save",
+    )
+
+
+class TenantLogoViewPresignResponseDTO(BaseDTO):
+    url: str = Field(
+        ...,
+        alias="url",
+        serialization_alias="url",
+        description="Presigned URL for viewing a tenant logo from object storage",
     )

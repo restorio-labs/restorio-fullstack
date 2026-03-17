@@ -1,4 +1,5 @@
 import { render, renderHook, screen, waitFor } from "@testing-library/react";
+import { act } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { AuthRouteProvider, useAuthRoute } from "../../../src/providers/AuthRouteProvider";
@@ -49,5 +50,30 @@ describe("AuthRouteProvider", () => {
 
   it("useAuthRoute throws when used outside provider", () => {
     expect(() => renderHook(() => useAuthRoute())).toThrow("useAuthRoute must be used within AuthRouteProvider");
+  });
+
+  it("does not update auth status after unmount", async () => {
+    let resolveAuth: ((value: boolean) => void) | null = null;
+    const checkAuth = vi.fn(
+      () =>
+        new Promise<boolean>((resolve) => {
+          resolveAuth = resolve;
+        }),
+    );
+
+    const { result, unmount } = renderHook(() => useAuthRoute(), {
+      wrapper: ({ children }) => <AuthRouteProvider checkAuth={checkAuth}>{children}</AuthRouteProvider>,
+    });
+
+    expect(result.current.authStatus).toBe("loading");
+
+    unmount();
+
+    await act(async () => {
+      resolveAuth?.(true);
+      await Promise.resolve();
+    });
+
+    expect(checkAuth).toHaveBeenCalledOnce();
   });
 });

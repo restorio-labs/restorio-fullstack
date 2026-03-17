@@ -20,11 +20,15 @@ _DEFAULT_LOCAL_ORIGINS: tuple[str, ...] = (
 _RESTORIO_HOST_SUFFIX = ".restorio.org"
 
 
-def _build_allowed_origins(configured_origins: list[str]) -> list[str]:
+def _build_allowed_origins(configured_origins: list[str], *, debug: bool = False) -> list[str]:
     seen: set[str] = set()
     ordered: list[str] = []
 
-    for origin in [*configured_origins, *_DEFAULT_LOCAL_ORIGINS]:
+    sources = [*configured_origins]
+    if debug:
+        sources.extend(_DEFAULT_LOCAL_ORIGINS)
+
+    for origin in sources:
         if origin in seen:
             continue
         seen.add(origin)
@@ -33,26 +37,26 @@ def _build_allowed_origins(configured_origins: list[str]) -> list[str]:
     return ordered
 
 
-def is_origin_allowed(origin: str | None, configured_origins: list[str]) -> bool:
+def is_origin_allowed(
+    origin: str | None, configured_origins: list[str], *, debug: bool = False
+) -> bool:
     if not origin:
         return False
 
-    if origin in _build_allowed_origins(configured_origins):
+    if origin in _build_allowed_origins(configured_origins, debug=debug):
         return True
 
-    parsed = urlparse(origin)
-    host = parsed.hostname
-    if host is None:
-        return False
-
-    if host == "restorio.org" or host.endswith(_RESTORIO_HOST_SUFFIX):
-        return parsed.scheme in {"http", "https"}
+    if debug:
+        parsed = urlparse(origin)
+        host = parsed.hostname
+        if host is not None and (host == "restorio.org" or host.endswith(_RESTORIO_HOST_SUFFIX)):
+            return parsed.scheme in {"http", "https"}
 
     return False
 
 
 def setup_cors(app: FastAPI, settings: Settings) -> None:
-    allow_origins = _build_allowed_origins(settings.CORS_ORIGINS)
+    allow_origins = _build_allowed_origins(settings.CORS_ORIGINS, debug=settings.DEBUG)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=allow_origins,

@@ -28,6 +28,7 @@ class ValidationError(BaseHTTPException):
         self, message: str = "Validation failed", errors: list[dict[str, str]] | None = None
     ) -> None:
         super().__init__(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             message=message,
             details={"errors": errors} if errors else None,
         )
@@ -36,6 +37,7 @@ class ValidationError(BaseHTTPException):
 class UnauthorizedError(BaseHTTPException):
     def __init__(self, message: str = "Unauthorized") -> None:
         super().__init__(
+            status_code=status.HTTP_401_UNAUTHORIZED,
             message=message,
         )
 
@@ -43,6 +45,7 @@ class UnauthorizedError(BaseHTTPException):
 class ForbiddenError(BaseHTTPException):
     def __init__(self, message: str = "Forbidden") -> None:
         super().__init__(
+            status_code=status.HTTP_403_FORBIDDEN,
             message=message,
         )
 
@@ -50,6 +53,7 @@ class ForbiddenError(BaseHTTPException):
 class ConflictError(BaseHTTPException):
     def __init__(self, message: str = "Resource conflict") -> None:
         super().__init__(
+            status_code=status.HTTP_409_CONFLICT,
             message=message,
         )
 
@@ -57,6 +61,7 @@ class ConflictError(BaseHTTPException):
 class BadRequestError(BaseHTTPException):
     def __init__(self, message: str = "Bad request") -> None:
         super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
             message=message,
         )
 
@@ -64,6 +69,7 @@ class BadRequestError(BaseHTTPException):
 class GoneError(BaseHTTPException):
     def __init__(self, message: str = "Resource no longer available") -> None:
         super().__init__(
+            status_code=status.HTTP_410_GONE,
             message=message,
         )
 
@@ -71,6 +77,7 @@ class GoneError(BaseHTTPException):
 class TooManyRequestsError(BaseHTTPException):
     def __init__(self, message: str = "Too many requests") -> None:
         super().__init__(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             message=message,
         )
 
@@ -78,6 +85,7 @@ class TooManyRequestsError(BaseHTTPException):
 class ServiceUnavailableError(BaseHTTPException):
     def __init__(self, message: str = "Service unavailable") -> None:
         super().__init__(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             message=message,
         )
 
@@ -85,5 +93,6 @@ class ServiceUnavailableError(BaseHTTPException):
 class ExternalAPIError(BaseHTTPException):
     def __init__(self, message: str) -> None:
         super().__init__(
+            status_code=status.HTTP_502_BAD_GATEWAY,
             message=message,
         )

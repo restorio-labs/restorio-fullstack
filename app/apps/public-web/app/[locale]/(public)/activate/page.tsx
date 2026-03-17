@@ -3,14 +3,22 @@ import type { ReactElement } from "react";
 
 import { ActivateContent } from "./ActivateContent";
 
-export const metadata: Metadata = {
-  title: "Activate Account",
-  description: "Activate your Restorio account.",
-};
+import { getPageMetadata } from "@/i18n/metadata";
 
-export const dynamic = "force-static";
-export const revalidate = false;
+interface MetadataParams {
+  params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: MetadataParams): Promise<Metadata> {
+  const { locale } = await params;
+
+  return getPageMetadata(locale, "activate");
+}
 
 export default function ActivatePage(): ReactElement {
-  return <ActivateContent />;
+  return (
+    <div className="mx-auto max-w-2xl px-4 py-16">
+      <ActivateContent />
+    </div>
+  );
 }

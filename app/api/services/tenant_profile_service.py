@@ -29,10 +29,11 @@ class TenantProfileService:
             tenant_id=tenant_id,
             nip=data.nip,
             company_name=data.company_name,
-            logo_url=data.logo_url,
+            logo=data.logo,
             contact_email=data.contact_email,
             phone=data.phone,
-            address_street=data.address_street,
+            address_street_name=data.address_street_name,
+            address_street_number=data.address_street_number,
             address_city=data.address_city,
             address_postal_code=data.address_postal_code,
             address_country=data.address_country,
@@ -59,7 +60,7 @@ class TenantProfileService:
     ) -> TenantProfile:
         profile = await self.get_by_tenant_or_404(session, tenant_id)
 
-        update_data = data.model_dump(exclude_unset=True)
+        update_data = data.model_dump(exclude_unset=True, exclude={"logo_upload_key"})
         for field, value in update_data.items():
             setattr(profile, field, value)
 
@@ -72,7 +73,7 @@ class TenantProfileService:
     ) -> tuple[TenantProfile, bool]:
         existing = await self.get_by_tenant(session, tenant_id)
         if existing:
-            update_data = data.model_dump()
+            update_data = data.model_dump(exclude={"logo_upload_key"})
             for field, value in update_data.items():
                 setattr(existing, field, value)
             await session.commit()

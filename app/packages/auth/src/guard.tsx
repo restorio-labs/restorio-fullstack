@@ -1,4 +1,4 @@
-import { type RestorioApi } from "@restorio/api-client";
+import type { RefreshResponse } from "@restorio/types";
 import type { ReactElement, ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
@@ -6,6 +6,13 @@ import { Navigate } from "react-router-dom";
 import { TokenStorage } from "./storage";
 
 export type AuthStrategy = "code" | "none";
+
+interface AuthClient {
+  auth: {
+    me: () => Promise<unknown>;
+    refresh: () => Promise<RefreshResponse>;
+  };
+}
 
 export interface AuthGuardProps {
   strategy?: AuthStrategy;
@@ -16,7 +23,7 @@ export interface AuthGuardProps {
   checkAuth?: () => boolean | Promise<boolean>;
   revalidateIntervalMs?: number;
   revalidateOnFocus?: boolean;
-  client: RestorioApi;
+  client?: AuthClient;
 }
 
 type AuthStatus = "pending" | "allowed" | "unauthorized";
@@ -33,12 +40,18 @@ const fallbackTokenCheck = (): boolean => {
   return Boolean(refreshToken);
 };
 
-const createDefaultCheckAuth = (client: RestorioApi): (() => boolean | Promise<boolean>) => {
-  if (typeof window === "undefined") {
+const REVALIDATION_COOLDOWN_MS = 2000;
+
+const createDefaultCheckAuth = (client: AuthClient | undefined): (() => boolean | Promise<boolean>) => {
+  if (typeof window === "undefined" || !client) {
     return (): boolean => fallbackTokenCheck();
   }
 
   return async (): Promise<boolean> => {
+    if (fallbackTokenCheck()) {
+      return true;
+    }
+
     try {
       await client.auth.me();
 
@@ -46,7 +59,6 @@ const createDefaultCheckAuth = (client: RestorioApi): (() => boolean | Promise<b
     } catch {
       try {
         await client.auth.refresh();
-        await client.auth.me();
 
         return true;
       } catch {
@@ -119,13 +131,26 @@ export const AuthGuard = ({
       setStatus("unauthorized");
     };
 
-    const handleFocus = (): void => {
+    let lastRevalidation = 0;
+
+    const debouncedCheck = (): void => {
+      const now = Date.now();
+
+      if (now - lastRevalidation < REVALIDATION_COOLDOWN_MS) {
+        return;
+      }
+
+      lastRevalidation = now;
       void runCheck();
+    };
+
+    const handleFocus = (): void => {
+      debouncedCheck();
     };
 
     const handleVisibility = (): void => {
       if (typeof document !== "undefined" && document.visibilityState === "visible") {
-        void runCheck();
+        debouncedCheck();
       }
     };
 

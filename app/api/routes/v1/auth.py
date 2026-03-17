@@ -29,6 +29,12 @@ from core.foundation.dependencies import (
 )
 from core.foundation.http.responses import CreatedResponse, SuccessResponse, UnauthenticatedResponse
 from core.foundation.infra.config import settings
+from core.foundation.logging.audit import audit
+from core.foundation.token_store import (
+    generate_family,
+    generate_jti,
+    refresh_token_store,
+)
 from core.models.activation_link import ActivationLink
 from core.models.enums import AccountType
 from core.models.tenant import Tenant
@@ -52,11 +58,15 @@ async def login(
     session: PostgresSession,
     auth_service: AuthServiceDep,
 ) -> SuccessResponse[LoginResponseData]:
-    access_token = await auth_service.login(
-        session=session,
-        email=credentials.email,
-        password=credentials.password,
-    )
+    try:
+        access_token = await auth_service.login(
+            session=session,
+            email=credentials.email,
+            password=credentials.password,
+        )
+    except UnauthorizedError:
+        audit.login_failure(request=request, email=credentials.email)
+        raise
 
     payload = auth_service.security.decode_access_token(access_token)
     token_data = {
@@ -65,8 +75,10 @@ async def login(
         "tenant_ids": payload.get("tenant_ids"),
         "account_type": payload.get("account_type"),
     }
+    family = generate_family()
+    jti = generate_jti()
     refresh_token = auth_service.security.create_access_token(
-        {**token_data, "type": "refresh"},
+        {**token_data, "type": "refresh", "jti": jti, "family": family},
         expires_delta=timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
     )
 
@@ -76,10 +88,9 @@ async def login(
         access_token=access_token,
         refresh_token=refresh_token,
     )
+    audit.login_success(request=request, user_id=str(payload.get("sub")), email=credentials.email)
     return SuccessResponse(
-        data=LoginResponseData(
-            at=access_token,
-        ),
+        data=LoginResponseData(),
         message="Login successful",
     )
 
@@ -94,6 +105,7 @@ async def login(
 )
 async def register(
     data: RegisterDTO,
+    request: Request,
     session: PostgresSession,
     auth_service: AuthServiceDep,
     user_service: UserServiceDep,
@@ -117,12 +129,13 @@ async def register(
         restaurant_name=tenant.name,
         activation_link=activation_link,
     )
+    audit.register(request=request, email=user.email, tenant_name=tenant.name)
 
     return CreatedResponse(
         data=RegisterCreatedData(
             user_id=str(user.id),
             email=user.email,
-            tenant_id=str(tenant.id),
+            tenant_id=tenant.public_id,
             tenant_name=tenant.name,
             tenant_slug=tenant.slug,
         ),
@@ -175,12 +188,14 @@ async def activate(
             token_data = {
                 "sub": str(user.id),
                 "email": user.email,
-                "tenant_ids": [str(tenant.id)],
+                "tenant_ids": [tenant.public_id],
                 "account_type": AccountType.OWNER.value,
             }
             access_token = auth_service.security.create_access_token(token_data)
+            act_family = generate_family()
+            act_jti = generate_jti()
             refresh_token = auth_service.security.create_access_token(
-                {**token_data, "type": "refresh"},
+                {**token_data, "type": "refresh", "jti": act_jti, "family": act_family},
                 expires_delta=timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
             )
             set_auth_cookies(
@@ -188,6 +203,9 @@ async def activate(
                 request=request,
                 access_token=access_token,
                 refresh_token=refresh_token,
+            )
+            audit.activation_success(
+                request=request, user_id=str(user.id), tenant_id=tenant.public_id
             )
     return SuccessResponse(
         data=ActivateResponseData(tenant_slug=tenant.slug, requires_password_change=False),
@@ -247,11 +265,13 @@ async def set_password(
     token_data = {
         "sub": payload.get("sub"),
         "email": payload.get("email"),
-        "tenant_id": payload.get("tenant_id"),
+        "tenant_ids": payload.get("tenant_ids"),
         "account_type": payload.get("account_type"),
     }
+    sp_family = generate_family()
+    sp_jti = generate_jti()
     refresh_token = auth_service.security.create_access_token(
-        {**token_data, "type": "refresh"},
+        {**token_data, "type": "refresh", "jti": sp_jti, "family": sp_family},
         expires_delta=timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
     )
     set_auth_cookies(
@@ -260,6 +280,7 @@ async def set_password(
         access_token=access_token,
         refresh_token=refresh_token,
     )
+    audit.password_set(request=request, user_id=str(user.id))
 
     return SuccessResponse(
         data=ActivateResponseData(tenant_slug=tenant.slug, requires_password_change=False),
@@ -318,6 +339,23 @@ async def refresh_token(
     if not isinstance(user_id, str) or not user_id:
         raise UnauthorizedError(message="Unauthorized")
 
+    old_jti = payload.get("jti", "")
+    family = payload.get("family", "")
+
+    if family and refresh_token_store.is_family_revoked(family):
+        audit.token_reuse_detected(request=request, user_id=user_id, family=family)
+        clear_auth_cookies(response=response, request=request)
+        raise UnauthorizedError(message="Unauthorized")
+
+    if family and old_jti and refresh_token_store.is_revoked(family, old_jti):
+        audit.token_reuse_detected(request=request, user_id=user_id, family=family)
+        refresh_token_store.revoke_family(family)
+        clear_auth_cookies(response=response, request=request)
+        raise UnauthorizedError(message="Unauthorized")
+
+    if family and old_jti:
+        refresh_token_store.revoke(family, old_jti)
+
     tenant_ids_claim = payload.get("tenant_ids")
     tenant_ids: list[str] = []
     if isinstance(tenant_ids_claim, list):
@@ -333,8 +371,9 @@ async def refresh_token(
         "email": email if isinstance(email, str) else None,
     }
     access_token = security_service.create_access_token(token_data)
+    new_jti = generate_jti()
     next_refresh_token = security_service.create_access_token(
-        {**token_data, "type": "refresh"},
+        {**token_data, "type": "refresh", "jti": new_jti, "family": family or generate_family()},
         expires_delta=timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
     )
 
@@ -344,6 +383,7 @@ async def refresh_token(
         access_token=access_token,
         refresh_token=next_refresh_token,
     )
+    audit.token_refresh(request=request, user_id=user_id, family=family)
 
     return SuccessResponse(
         message="Token refreshed",
@@ -356,7 +396,23 @@ async def refresh_token(
     status_code=status.HTTP_200_OK,
     response_model=SuccessResponse[dict[str, str]],
 )
-async def logout(request: Request, response: Response) -> SuccessResponse[dict[str, str]]:
+async def logout(
+    request: Request,
+    response: Response,
+    security_service: SecurityServiceDep,
+) -> SuccessResponse[dict[str, str]]:
+    refresh_token_value = get_refresh_token_from_request(request)
+    if refresh_token_value is not None:
+        try:
+            payload = security_service.decode_access_token(refresh_token_value)
+            family = payload.get("family", "")
+            if family:
+                refresh_token_store.revoke_family(family)
+        except Exception:
+            pass
+    user = getattr(request.state, "user", None)
+    user_id = user.get("sub") if isinstance(user, dict) else None
+    audit.logout(request=request, user_id=user_id)
     clear_auth_cookies(response=response, request=request)
     return SuccessResponse(
         message="Logout successful",
@@ -375,21 +431,10 @@ async def me(request: Request) -> SuccessResponse[AuthMeSessionData]:
         raise UnauthenticatedResponse(message="Unauthorized")
 
     subject = user.get("sub")
-    tenant_ids_claim = user.get("tenant_ids")
-    tenant_ids: list[str] = []
-    if isinstance(tenant_ids_claim, list):
-        tenant_ids = [
-            tenant_id_item for tenant_id_item in tenant_ids_claim if isinstance(tenant_id_item, str)
-        ]
-    account_type = user.get("account_type")
     if not isinstance(subject, str):
         raise UnauthenticatedResponse(message="Unauthorized")
 
     return SuccessResponse(
-        data={
-            "sub": subject,
-            "tenant_ids": tenant_ids,
-            "account_type": account_type if isinstance(account_type, str) else "",
-        },
+        data=AuthMeSessionData(),
         message="Authenticated",
     )
