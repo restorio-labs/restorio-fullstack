@@ -10,7 +10,8 @@ from core.dto.v1.menus import (
     ToggleItemAvailabilityDTO,
     UpsertTenantMenuDTO,
 )
-from core.foundation.dependencies import MongoDB
+
+from core.foundation.dependencies import AuthorizedTenantId, MongoDB
 from core.foundation.http.responses import (
     SuccessResponse,
     UpdatedResponse,
@@ -109,7 +110,7 @@ def _normalize_categories(raw_menu: dict[str, dict]) -> list[MenuCategoryDTO]:
                     promoted=promoted,
                     desc=desc,
                     tags=tags,
-                    isAvailable=is_available,
+                    is_available=is_available,
                 )
             )
 

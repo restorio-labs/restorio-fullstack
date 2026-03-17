@@ -11,18 +11,23 @@ interface ErrorWithStatusCode {
 export class MenusResource extends BaseResource {
   async get(tenantId: string, signal?: AbortSignal): Promise<TenantMenu | null> {
     try {
-      const response = await this.client.get<SuccessResponse<TenantMenu | null>>(`/tenants/${tenantId}/menu`, { signal });
+      const response = await this.client.get<SuccessResponse<TenantMenu | null>>(`/tenants/${tenantId}/menu`, {
+        signal,
+      });
+
       return response.data;
     } catch (error) {
       if ((error as ErrorWithStatusCode).response?.status === 404) {
         return null;
       }
+
       throw error;
     }
   }
 
   async save(tenantId: string, data: SaveTenantMenuPayload, signal?: AbortSignal): Promise<TenantMenu> {
     const response = await this.client.put<UpdatedResponse<TenantMenu>>(`/tenants/${tenantId}/menu`, data, { signal });
+
     return response.data;
   }
 
@@ -38,6 +43,7 @@ export class MenusResource extends BaseResource {
       { isAvailable },
       { signal },
     );
+
     return response.data;
   }
 }
