@@ -19,12 +19,14 @@ class TestMenuItemInputDTO:
             name="Burger",
             price=self.BURGER_PRICE,
             promoted=1,
+            active=1,
             desc="Classic burger",
             tags=["beef", "spicy"],
         )
         assert dto.name == "Burger"
         assert dto.price == self.BURGER_PRICE
         assert dto.promoted == 1
+        assert dto.active == 1
 
     def test_promoted_flag_validation(self) -> None:
         with pytest.raises(ValidationError):
@@ -32,6 +34,14 @@ class TestMenuItemInputDTO:
                 name="Burger",
                 price=10,
                 promoted=2,
+            )
+
+    def test_active_flag_validation(self) -> None:
+        with pytest.raises(ValidationError):
+            MenuItemInputDTO(
+                name="Burger",
+                price=10,
+                active=2,
             )
 
 
@@ -56,6 +66,7 @@ class TestUpsertTenantMenuDTO:
                             name="Burger",
                             price=21.5,
                             promoted=0,
+                            active=1,
                             desc="Chef special",
                             tags=["beef"],
                         )
@@ -73,6 +84,7 @@ class TestMenuItemDTO:
             name="Soup",
             price=12.5,
             promoted=0,
+            active=1,
             desc="Tomato soup",
             tags=["vegan"],
         )

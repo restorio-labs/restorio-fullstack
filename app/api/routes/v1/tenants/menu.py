@@ -50,6 +50,7 @@ def _build_raw_menu(data: UpsertTenantMenuDTO) -> dict[str, dict]:
             bucket[item.name] = {
                 "price": item.price,
                 "promoted": item.promoted,
+                "active": item.active,
                 "desc": item.desc,
                 "tags": item.tags,
             }
@@ -85,11 +86,13 @@ def _normalize_categories(raw_menu: dict[str, dict]) -> list[MenuCategoryDTO]:
 
             raw_price = item_payload.get("price", 0)
             raw_promoted = item_payload.get("promoted", 0)
+            raw_active = item_payload.get("active", 1)
             raw_desc = item_payload.get("desc", "")
             raw_tags = item_payload.get("tags", [])
 
             price = float(raw_price) if isinstance(raw_price, int | float) else 0.0
             promoted = 1 if raw_promoted == 1 else 0
+            active = 0 if raw_active == 0 else 1
             desc = raw_desc if isinstance(raw_desc, str) else ""
             tags = (
                 [tag for tag in raw_tags if isinstance(tag, str)]
@@ -102,6 +105,7 @@ def _normalize_categories(raw_menu: dict[str, dict]) -> list[MenuCategoryDTO]:
                     name=item_name,
                     price=price,
                     promoted=promoted,
+                    active=active,
                     desc=desc,
                     tags=tags,
                 )

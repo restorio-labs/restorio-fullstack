@@ -169,6 +169,7 @@
       "categoryOrderControls": "Order",
       "itemName": "Item name",
       "itemPrice": "Price",
+      "itemActive": "Active",
       "itemPromoted": "Promoted",
       "itemDescription": "Description",
       "itemTags": "Tags"

@@ -2,6 +2,7 @@ export interface TenantMenuItem {
   name: string;
   price: number;
   promoted: 0 | 1;
+  active: 0 | 1;
   desc: string;
   tags: string[];
 }

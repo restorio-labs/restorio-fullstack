@@ -169,6 +169,7 @@
       "categoryOrderControls": "Kolejność",
       "itemName": "Nazwa pozycji",
       "itemPrice": "Cena",
+      "itemActive": "Aktywna",
       "itemPromoted": "Promowana",
       "itemDescription": "Opis",
       "itemTags": "Tagi"

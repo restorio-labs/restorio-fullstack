@@ -13,6 +13,7 @@ interface MenuItemFormState {
   name: string;
   price: string;
   promoted: boolean;
+  active: boolean;
   desc: string;
   tags: string[];
   tagInput: string;
@@ -44,6 +45,7 @@ const createEmptyItem = (): MenuItemFormState => ({
   name: "",
   price: "",
   promoted: false,
+  active: true,
   desc: "",
   tags: [],
   tagInput: "",
@@ -64,6 +66,7 @@ const toFormCategories = (categories: TenantMenuCategory[]): MenuCategoryFormSta
       name: item.name,
       price: String(item.price),
       promoted: item.promoted === 1,
+      active: item.active !== 0,
       desc: item.desc,
       tags: item.tags,
       tagInput: "",
@@ -346,6 +349,7 @@ export const MenuCreatorPage = (): ReactElement => {
           name: itemName,
           price: itemPrice,
           promoted: item.promoted ? 1 : 0,
+          active: item.active ? 1 : 0,
           desc: item.desc.trim(),
           tags: item.tags,
         });
@@ -417,7 +421,7 @@ export const MenuCreatorPage = (): ReactElement => {
               className="rounded-xl border border-border-default bg-surface-secondary/60 p-4 shadow-sm"
             >
               <div className="grid gap-4 md:grid-cols-12">
-                <div className="md:col-span-8">
+                <div className="md:col-span-5">
                   <label className="mb-1 block text-xs font-medium text-text-secondary">
                     {t("menuCreator.fields.categoryName")}
                   </label>
@@ -428,7 +432,7 @@ export const MenuCreatorPage = (): ReactElement => {
                     placeholder={t("menuCreator.placeholders.categoryName")}
                   />
                 </div>
-                <div className="flex items-end gap-2 md:col-span-4">
+                <div className="flex items-end gap-2 md:col-span-7">
                   <div className="flex flex-col gap-1">
                     <span className="text-xs font-medium text-text-secondary">
                       {t("menuCreator.fields.categoryOrderControls")}
@@ -454,10 +458,20 @@ export const MenuCreatorPage = (): ReactElement => {
                       </Button>
                     </div>
                   </div>
-                  <Button type="button" variant="secondary" onClick={() => addItem(category.id)}>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => addItem(category.id)}
+                    className="whitespace-nowrap"
+                  >
                     {t("menuCreator.actions.addItem")}
                   </Button>
-                  <Button type="button" variant="danger" onClick={() => removeCategory(category.id)}>
+                  <Button
+                    type="button"
+                    variant="danger"
+                    onClick={() => removeCategory(category.id)}
+                    className="whitespace-nowrap"
+                  >
                     {t("menuCreator.actions.removeCategory")}
                   </Button>
                 </div>
@@ -475,7 +489,19 @@ export const MenuCreatorPage = (): ReactElement => {
                       onClick={() => removeItem(category.id, item.id)}
                       className="absolute right-3 top-3 inline-flex h-7 w-7 items-center justify-center rounded-md border border-status-error-border bg-status-error-background text-sm font-semibold leading-none text-status-error-text"
                     >
-                      x
+                      <svg
+                        className="h-4 w-4"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
                     </button>
                     <div className="grid gap-3 md:grid-cols-12">
                       <div className="md:col-span-4">
@@ -528,37 +554,30 @@ export const MenuCreatorPage = (): ReactElement => {
                             +
                           </button>
                         </div>
-                        {item.tags.length > 0 && (
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            {item.tags.map((tag) => (
-                              <span
-                                key={`${item.id}-${tag}`}
-                                className="inline-flex items-center gap-1 rounded-md border border-border-default bg-surface-secondary px-2 py-1 text-xs text-text-secondary"
-                              >
-                                {tag}
-                                <button
-                                  type="button"
-                                  aria-label={t("menuCreator.actions.removeTag")}
-                                  onClick={() => removeTagFromItem(category.id, item.id, tag)}
-                                  className="inline-flex h-5 w-5 items-center justify-center rounded border border-status-error-border bg-status-error-background text-[10px] font-semibold leading-none text-status-error-text"
-                                >
-                                  -
-                                </button>
-                              </span>
-                            ))}
-                          </div>
-                        )}
                       </div>
-                      <div className="flex items-center gap-2 pt-6 md:col-span-2">
-                        <input
-                          id={`promoted-${item.id}`}
-                          type="checkbox"
-                          checked={item.promoted}
-                          onChange={(event) => updateItem(category.id, item.id, { promoted: event.target.checked })}
-                        />
-                        <label htmlFor={`promoted-${item.id}`} className="text-xs text-text-secondary">
-                          {t("menuCreator.fields.itemPromoted")}
-                        </label>
+                      <div className="flex flex-col gap-2 pt-6 md:col-span-2">
+                        <div className="flex items-center gap-2">
+                          <input
+                            id={`active-${item.id}`}
+                            type="checkbox"
+                            checked={item.active}
+                            onChange={(event) => updateItem(category.id, item.id, { active: event.target.checked })}
+                          />
+                          <label htmlFor={`active-${item.id}`} className="text-xs text-text-secondary">
+                            {t("menuCreator.fields.itemActive")}
+                          </label>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <input
+                            id={`promoted-${item.id}`}
+                            type="checkbox"
+                            checked={item.promoted}
+                            onChange={(event) => updateItem(category.id, item.id, { promoted: event.target.checked })}
+                          />
+                          <label htmlFor={`promoted-${item.id}`} className="text-xs text-text-secondary">
+                            {t("menuCreator.fields.itemPromoted")}
+                          </label>
+                        </div>
                       </div>
                     </div>
                     <div className="mt-3 flex items-center justify-between">
@@ -578,6 +597,26 @@ export const MenuCreatorPage = (): ReactElement => {
                         maxLength={ITEM_DESCRIPTION_MAX_LENGTH}
                       />
                     </div>
+                    {item.tags.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {item.tags.map((tag) => (
+                          <span
+                            key={`${item.id}-${tag}`}
+                            className="inline-flex items-center gap-1 rounded-md border border-border-default bg-surface-secondary px-2 py-1 text-xs text-text-secondary"
+                          >
+                            {tag}
+                            <button
+                              type="button"
+                              aria-label={t("menuCreator.actions.removeTag")}
+                              onClick={() => removeTagFromItem(category.id, item.id, tag)}
+                              className="inline-flex h-5 w-5 items-center justify-center rounded border border-status-error-border bg-status-error-background text-[10px] font-semibold leading-none text-status-error-text"
+                            >
+                              -
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
