@@ -46,6 +46,7 @@ __all__ = [
     "MenuCategoryInputDTO",
     "MenuItemDTO",
     "MenuItemInputDTO",
+    "ToggleItemAvailabilityDTO",
     "TenantLogoUploadPresignRequestDTO",
     "TenantLogoUploadResponseDTO",
     "TenantLogoViewPresignResponseDTO",

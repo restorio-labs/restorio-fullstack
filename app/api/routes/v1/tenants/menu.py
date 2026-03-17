@@ -11,7 +11,7 @@ from core.dto.v1.menus import (
     UpsertTenantMenuDTO,
 )
 
-from core.foundation.dependencies import AuthorizedTenantId, MongoDB
+from core.foundation.dependencies import MongoDB
 from core.foundation.http.responses import (
     SuccessResponse,
     UpdatedResponse,
@@ -88,13 +88,13 @@ def _normalize_categories(raw_menu: dict[str, dict]) -> list[MenuCategoryDTO]:
                 continue
 
             raw_price = item_payload.get("price", 0)
-            raw_promoted = item_payload.get("promoted", 0)
+            raw_promoted = item_payload.get("promoted", False)
             raw_desc = item_payload.get("desc", "")
             raw_tags = item_payload.get("tags", [])
             raw_available = item_payload.get("isAvailable", True)
 
             price = float(raw_price) if isinstance(raw_price, int | float) else 0.0
-            promoted = 1 if raw_promoted == 1 else 0
+            promoted = bool(raw_promoted) if raw_promoted is not None else False
             desc = raw_desc if isinstance(raw_desc, str) else ""
             tags = (
                 [tag for tag in raw_tags if isinstance(tag, str)]

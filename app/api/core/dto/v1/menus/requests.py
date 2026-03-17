@@ -6,7 +6,7 @@ from core.dto.v1.common import BaseDTO
 class MenuItemInputDTO(BaseDTO):
     name: str = Field(..., min_length=1, max_length=255, description="Menu item name")
     price: float = Field(..., ge=0, description="Menu item price")
-    promoted: int = Field(default=0, ge=0, le=1, description="Promotion flag (0 or 1)")
+    promoted: bool = Field(default=False, description="Promotion flag")
     desc: str = Field(default="", max_length=2000, description="Menu item description")
     tags: list[str] = Field(default_factory=list, description="Menu item tags")
     is_available: bool = Field(default=True, alias="isAvailable", description="Whether item is currently available")

@@ -7,7 +7,7 @@ import { useState, type ReactElement } from "react";
 import { api } from "@/api/client";
 import { PasswordRulesPin } from "@/components/password/RulesPin";
 import { getPasswordFieldsValidation } from "@/services/passwordFieldsValidation";
-import { isEmailValid } from "@/services/validation";
+import { MIN_PASSWORD_LENGTH, isEmailValid } from "@/services/validation";
 
 export const RegisterContent = (): ReactElement => {
   const [email, setEmail] = useState("");
@@ -56,6 +56,21 @@ export const RegisterContent = (): ReactElement => {
   const termsError = submitted && !acceptTerms ? t("errors.termsRequired") : undefined;
 
   const isFormValid = isEmailValid(email) && isPasswordFormValid && restaurantName.trim().length > 0 && acceptTerms;
+
+  const confirmPasswordMeetsLength = confirmPassword.length >= MIN_PASSWORD_LENGTH;
+  const passwordsMatchByLength = confirmPasswordMeetsLength && confirmPassword === password;
+
+  const passwordInputStatusClassName =
+    !passwordError && passwordsMatchByLength
+      ? "border-status-success-border focus:ring-status-success-border focus:border-status-success-border"
+      : undefined;
+
+  const confirmPasswordInputStatusClassName =
+    !confirmPasswordError && passwordsMatchByLength
+      ? "border-status-success-border focus:ring-status-success-border focus:border-status-success-border"
+      : !confirmPasswordError && confirmPasswordMeetsLength && confirmPassword !== password
+        ? "border-status-error-border focus:ring-status-error-border focus:border-status-error-border"
+        : undefined;
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
@@ -143,6 +158,7 @@ export const RegisterContent = (): ReactElement => {
               onFocus={() => setShowPasswordRules(true)}
               onBlur={() => setShowPasswordRules(false)}
               error={passwordError}
+            className={passwordInputStatusClassName}
               required
             />
             {showPasswordRules && <PasswordRulesPin checks={passwordChecks} />}
@@ -157,6 +173,7 @@ export const RegisterContent = (): ReactElement => {
             value={confirmPassword}
             onChange={(event) => setConfirmPassword(event.target.value)}
             error={confirmPasswordError}
+            className={confirmPasswordInputStatusClassName}
             required
           />
         </FormField>

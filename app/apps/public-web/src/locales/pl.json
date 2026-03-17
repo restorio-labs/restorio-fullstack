@@ -84,7 +84,9 @@
     "demo": "Demo",
     "privacy": "Prywatność",
     "terms": "Warunki",
-    "getStarted": "Rozpocznij"
+    "getStarted": "Rozpocznij",
+    "login": "Zaloguj się",
+    "register": "Zarejestruj się"
   },
   "sidebar": {
     "items": {
