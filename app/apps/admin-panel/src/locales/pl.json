@@ -213,23 +213,23 @@
       "apiKey": {
         "label": "Klucz API P24",
         "placeholder": "Wpisz klucz API Przelewy24",
-        "helper": "Maks. 32 znaki",
-        "error": "Klucz API jest wymagany (maks. 32 znaki)"
+        "helper": "Dokładnie 32 znaki",
+        "error": "Klucz API jest wymagany i musi mieć dokładnie 32 znaki"
       },
       "crcKey": {
         "label": "Klucz CRC P24",
         "placeholder": "Wpisz klucz CRC Przelewy24",
-        "helper": "Maks. 16 znaków",
-        "error": "Klucz CRC jest wymagany (maks. 16 znaków)"
+        "helper": "Dokładnie 16 znaków",
+        "error": "Klucz CRC jest wymagany i musi mieć dokładnie 16 znaków"
       },
       "p24Merchantid": {
         "error": "Identyfikator sprzedawcy musi być między 0 a 999999"
       },
       "p24Api": {
-        "error": "Klucz API jest wymagany (maks. 32 znaki)"
+        "error": "Klucz API jest wymagany i musi mieć dokładnie 32 znaki"
       },
       "p24Crc": {
-        "error": "Klucz CRC jest wymagany (maks. 16 znaków)"
+        "error": "Klucz CRC jest wymagany i musi mieć dokładnie 16 znaków"
       }
     },
     "success": "Konfiguracja P24 została zaktualizowana.",

@@ -25,6 +25,8 @@ import { PaymentConfigPage } from "../../../src/pages/PaymentConfigPage";
 // eslint-disable-next-line @typescript-eslint/unbound-method
 const mockUpdateP24Config = api.payments.updateP24Config as Mock;
 const mockUseCurrentTenant = useCurrentTenant as Mock;
+const API_KEY = "a".repeat(32);
+const CRC_KEY = "b".repeat(16);
 
 const renderPage = (): RenderResult =>
   render(
@@ -87,7 +89,7 @@ describe("PaymentConfigPage", () => {
   it("enables submit button when all fields are filled", async () => {
     renderPage();
 
-    fillPaymentForm("123456", "test-api-key", "test-crc-key");
+    fillPaymentForm("123456", API_KEY, CRC_KEY);
 
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /save configuration/i })).toBeEnabled();
@@ -98,14 +100,14 @@ describe("PaymentConfigPage", () => {
     mockUpdateP24Config.mockResolvedValueOnce(undefined);
     renderPage();
 
-    fillPaymentForm("123456", "my-api-key", "my-crc-key");
+    fillPaymentForm("123456", API_KEY, CRC_KEY);
     clickSaveConfiguration();
 
     await waitFor(() => {
       expect(mockUpdateP24Config).toHaveBeenCalledWith("550e8400-e29b-41d4-a716-446655440000", {
         p24_merchantid: 123456,
-        p24_api: "my-api-key",
-        p24_crc: "my-crc-key",
+        p24_api: API_KEY,
+        p24_crc: CRC_KEY,
       });
     });
   });
@@ -114,7 +116,7 @@ describe("PaymentConfigPage", () => {
     mockUpdateP24Config.mockResolvedValueOnce(undefined);
     renderPage();
 
-    fillPaymentForm("123456", "test-api-key", "test-crc-key");
+    fillPaymentForm("123456", API_KEY, CRC_KEY);
     clickSaveConfiguration();
 
     await waitFor(() => {
@@ -126,7 +128,7 @@ describe("PaymentConfigPage", () => {
     mockUpdateP24Config.mockRejectedValueOnce(new Error("Network error"));
     renderPage();
 
-    fillPaymentForm("123456", "test-api-key", "test-crc-key");
+    fillPaymentForm("123456", API_KEY, CRC_KEY);
     clickSaveConfiguration();
 
     await waitFor(() => {
@@ -145,8 +147,8 @@ describe("PaymentConfigPage", () => {
     });
     renderPage();
 
-    fillPaymentForm("123456", "", "test-crc-key");
-    fillPaymentForm("123456", "test-api-key", "test-crc-key");
+    fillPaymentForm("123456", "", CRC_KEY);
+    fillPaymentForm("123456", API_KEY, CRC_KEY);
     clickSaveConfiguration();
 
     await waitFor(() => {
@@ -161,11 +163,10 @@ describe("PaymentConfigPage", () => {
     mockUpdateP24Config.mockReturnValueOnce(new Promise<void>((resolve) => (resolvePromise = resolve)));
     renderPage();
 
-    fillPaymentForm("123456", "test-api-key", "test-crc-key");
+    fillPaymentForm("123456", API_KEY, CRC_KEY);
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /save configuration/i })).toBeEnabled();
     });
-
     clickSaveConfiguration();
 
     await waitFor(() => {
@@ -183,14 +184,14 @@ describe("PaymentConfigPage", () => {
     mockUpdateP24Config.mockResolvedValueOnce(undefined);
     renderPage();
 
-    fillPaymentForm("123456", "test-api-key", "test-crc-key");
+    fillPaymentForm("123456", API_KEY, CRC_KEY);
     clickSaveConfiguration();
 
     await waitFor(() => {
       expect(screen.getByText(/p24 configuration updated successfully/i)).toBeInTheDocument();
     });
 
-    fireEvent.change(screen.getByLabelText(/p24 api key/i), { target: { value: "test-api-keyx" } });
+    fireEvent.change(screen.getByLabelText(/p24 api key/i), { target: { value: "c".repeat(32) } });
 
     expect(screen.getByText(/p24 configuration updated successfully/i)).toBeInTheDocument();
   });
@@ -209,14 +210,14 @@ describe("PaymentConfigPage", () => {
     mockUpdateP24Config.mockResolvedValueOnce(undefined);
     renderPage();
 
-    fillPaymentForm("100", "  key  ", "  crc  ");
+    fillPaymentForm("100", `  ${API_KEY}  `, `  ${CRC_KEY}  `);
     clickSaveConfiguration();
 
     await waitFor(() => {
       expect(mockUpdateP24Config).toHaveBeenCalledWith("some-id", {
         p24_merchantid: 100,
-        p24_api: "key",
-        p24_crc: "crc",
+        p24_api: API_KEY,
+        p24_crc: CRC_KEY,
       });
     });
   });
@@ -258,7 +259,7 @@ describe("PaymentConfigPage", () => {
     });
     renderPage();
 
-    fillPaymentForm("123456", "test-api-key", "test-crc-key");
+    fillPaymentForm("123456", API_KEY, CRC_KEY);
     clickSaveConfiguration();
 
     await waitFor(() => {
