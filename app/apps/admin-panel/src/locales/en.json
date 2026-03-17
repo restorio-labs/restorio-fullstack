@@ -40,6 +40,7 @@
       "qrCodeGenerator": "QR Code Generator",
       "tenantProfile": "Profile",
       "paymentConfig": "Payment Config",
+      "transactions": "Transactions",
       "staff": "Staff"
     },
     "mobile": {
@@ -240,6 +241,29 @@
     "actions": {
       "save": "Save Configuration",
       "saving": "Saving..."
+    }
+  },
+  "transactions": {
+    "title": "Transaction List",
+    "description": "View transactions for the selected venue",
+    "list": {
+      "title": "Transactions (newest first)",
+      "loading": "Loading transactions...",
+      "selectTenant": "Select a restaurant to view transactions.",
+      "error": "Failed to load transactions. Please try again.",
+      "empty": "No transactions found for the selected venue."
+    },
+    "fields": {
+      "status": "Status",
+      "orderId": "P24 order ID",
+      "note": "Note"
+    },
+    "status": {
+      "0": "Unpaid",
+      "1": "Unposted",
+      "2": "Payment accepted",
+      "3": "Refunded",
+      "unknown": "Unknown"
     }
   },
   "qrGenerator": {
