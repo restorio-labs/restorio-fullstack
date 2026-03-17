@@ -9,7 +9,7 @@ import { AppLayout } from "./layouts/AppLayout";
 import {
   FloorEditorPage,
   MenuCreatorPage,
-  MenuPageConfiguratorPage,
+  // MenuPageConfiguratorPage,
   PaymentConfigPage,
   QRCodeGeneratorPage,
   QRCodePrintPage,
@@ -41,7 +41,7 @@ export const App = (): ReactElement => {
           <Route index element={<FloorEditorPage />} />
           <Route path="restaurant-creator" element={<RestaurantCreatorPage />} />
           <Route path="menu-creator" element={<MenuCreatorPage />} />
-          <Route path="main-page-configurator" element={<MenuPageConfiguratorPage />} />
+          {/* <Route path="main-page-configurator" element={<MenuPageConfiguratorPage />} /> */}
           <Route path="qr-code-generator" element={<QRCodeGeneratorPage />} />
           <Route path="payment-config" element={<PaymentConfigPage />} />
           <Route path="profile" element={<TenantProfilePage />} />

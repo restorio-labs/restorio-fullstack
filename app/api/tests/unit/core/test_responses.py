@@ -9,6 +9,9 @@ from core.foundation.http.responses import (
     UnauthorizedResponse,
 )
 
+HTTP_UNAUTHORIZED = 401
+HTTP_FORBIDDEN = 403
+
 
 class TestUnauthenticatedResponse:
     def test_default_message(self) -> None:
@@ -29,34 +32,34 @@ class TestUnauthorizedResponse:
 class TestNotFoundResponse:
     def test_default_message(self) -> None:
         r = NotFoundResponse()
-        assert r.message == "Not found"
+        assert r.model_dump() == {"message": "Not found"}
 
 
 class TestConflictResponse:
     def test_default_message(self) -> None:
         r = ConflictResponse()
-        assert r.message == "Conflict"
+        assert r.model_dump() == {"message": "Conflict"}
 
 
 class TestBadRequestResponse:
     def test_default_message(self) -> None:
         r = BadRequestResponse()
-        assert r.message == "Bad request"
+        assert r.model_dump() == {"message": "Bad request"}
 
 
 class TestGoneResponse:
     def test_default_message(self) -> None:
         r = GoneResponse()
-        assert r.message == "Gone"
+        assert r.model_dump() == {"message": "Gone"}
 
 
 class TestTooManyRequestsResponse:
     def test_default_message(self) -> None:
         r = TooManyRequestsResponse()
-        assert r.message == "Too many requests"
+        assert r.model_dump() == {"message": "Too many requests"}
 
 
 class TestServiceUnavailableResponse:
     def test_default_message(self) -> None:
         r = ServiceUnavailableResponse()
-        assert r.message == "Service unavailable"
+        assert r.model_dump() == {"message": "Service unavailable"}

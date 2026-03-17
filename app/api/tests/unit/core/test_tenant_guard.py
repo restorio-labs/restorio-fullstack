@@ -122,3 +122,31 @@ class TestResolveAndAuthorizeTenant:
 
         with pytest.raises(ForbiddenError):
             await resolve_and_authorize_tenant("pub-abc", request, session)
+
+    @pytest.mark.asyncio
+    async def test_raises_access_denied_when_subject_invalid_and_tenant_ids_exist(self) -> None:
+        request = MagicMock()
+        request.state.user = {"tenant_ids": ["pub-abc"], "sub": "not-a-uuid"}
+
+        session = AsyncMock()
+
+        with pytest.raises(ForbiddenError) as exc_info:
+            await resolve_and_authorize_tenant("pub-other", request, session)
+
+        assert exc_info.value.detail == "Access denied to this tenant"
+
+    @pytest.mark.asyncio
+    async def test_raises_no_tenant_access_when_subject_valid_but_db_has_no_role(self) -> None:
+        user_id = uuid4()
+        request = MagicMock()
+        request.state.user = {"sub": str(user_id)}
+
+        mock_result = MagicMock()
+        mock_result.scalar_one_or_none.return_value = None
+        session = AsyncMock()
+        session.execute.return_value = mock_result
+
+        with pytest.raises(ForbiddenError) as exc_info:
+            await resolve_and_authorize_tenant("pub-abc", request, session)
+
+        assert exc_info.value.detail == "No tenant access"

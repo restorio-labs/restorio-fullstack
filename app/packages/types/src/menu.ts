@@ -1,52 +1,24 @@
-export interface Menu {
-  id: string;
-  restaurantId: string;
+export interface TenantMenuItem {
   name: string;
-  description?: string;
-  isActive: boolean;
-  categories: MenuCategory[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface MenuCategory {
-  id: string;
-  name: string;
-  description?: string;
-  sortOrder: number;
-  items: MenuItem[];
-}
-
-export interface MenuItem {
-  id: string;
-  name: string;
-  description?: string;
   price: number;
-  imageUrl?: string;
-  isAvailable: boolean;
-  allergens: string[];
-  nutritionalInfo?: NutritionalInfo;
-  modifiers: MenuModifier[];
-  sortOrder: number;
+  promoted: 0 | 1;
+  active: 0 | 1;
+  desc: string;
+  tags: string[];
 }
 
-export interface MenuModifier {
-  id: string;
+export interface TenantMenuCategory {
   name: string;
-  options: ModifierOption[];
-  required: boolean;
-  multiSelect: boolean;
+  order: number;
+  items: TenantMenuItem[];
 }
 
-export interface ModifierOption {
-  id: string;
-  name: string;
-  priceAdjustment: number;
+export interface TenantMenu {
+  menu: Record<string, Record<string, unknown>>;
+  categories: TenantMenuCategory[];
+  updatedAt?: string;
 }
 
-export interface NutritionalInfo {
-  calories?: number;
-  protein?: number;
-  carbs?: number;
-  fat?: number;
+export interface SaveTenantMenuPayload {
+  categories: TenantMenuCategory[];
 }
