@@ -18,6 +18,7 @@ import {
   RestaurantQRCodePage,
   StaffPage,
   TableQRCodePage,
+  TransactionListPage,
 } from "./pages";
 
 const AdminShell = (): ReactElement => {
@@ -44,6 +45,7 @@ export const App = (): ReactElement => {
           {/* <Route path="main-page-configurator" element={<MenuPageConfiguratorPage />} /> */}
           <Route path="qr-code-generator" element={<QRCodeGeneratorPage />} />
           <Route path="payment-config" element={<PaymentConfigPage />} />
+          <Route path="transactions" element={<TransactionListPage />} />
           <Route path="profile" element={<TenantProfilePage />} />
           <Route path="staff" element={<StaffPage />} />
         </Route>
