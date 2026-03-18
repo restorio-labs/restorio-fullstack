@@ -3,6 +3,7 @@ import { useEffect, useRef, type ReactNode, type ReactElement } from "react";
 import { cn } from "../../../utils";
 
 export type ModalSize = "sm" | "md" | "lg" | "xl" | "full";
+export type ModalVariant = "default" | "cookie";
 
 export interface ModalProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ export interface ModalProps {
   closeOnEscape?: boolean;
   className?: string;
   closeButtonAriaLabel?: string;
+  variant?: ModalVariant;
 }
 
 const sizeStyles: Record<ModalSize, string> = {
@@ -34,6 +36,7 @@ export const Modal = ({
   closeOnEscape = true,
   className,
   closeButtonAriaLabel = "Close modal",
+  variant = "default",
 }: ModalProps): ReactElement | null => {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -69,7 +72,9 @@ export const Modal = ({
   }
 
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>): void => {
-    if (closeOnOverlayClick && e.target === e.currentTarget) {
+    const shouldCloseOnOverlay = closeOnOverlayClick && variant !== "cookie";
+
+    if (shouldCloseOnOverlay && e.target === e.currentTarget) {
       onClose();
     }
   };
@@ -88,6 +93,7 @@ export const Modal = ({
           "relative z-[1001] w-full rounded-lg bg-surface-primary shadow-lg",
           "focus:outline-none",
           sizeStyles[size],
+          variant === "cookie" && "border border-border-default",
           className,
         )}
         role="document"

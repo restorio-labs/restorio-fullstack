@@ -1,8 +1,9 @@
 "use client";
 
-import { Button, Checkbox, Form, FormActions, FormField, Input } from "@restorio/ui";
+import { Button, Form, FormActions, FormField, Input } from "@restorio/ui";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useState, type ReactElement } from "react";
+import { useId, useState, type ReactElement } from "react";
 
 import { api } from "@/api/client";
 import { PasswordRulesPin } from "@/components/password/RulesPin";
@@ -20,6 +21,23 @@ export const RegisterContent = (): ReactElement => {
   const [feedbackStatus, setFeedbackStatus] = useState<"success" | "error" | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const t = useTranslations("register");
+
+  const checkboxId = useId();
+  const errorId = `${checkboxId}-error`;
+
+  const linkedTermsText: ReactElement = (
+    <>
+      {t("fields.accept")}{" "}
+      <Link href="/privacy" target="_blank" className="text-text-primary underline underline-offset-2 hover:underline">
+        {t("fields.statute")}
+      </Link>{" "}
+      {t("fields.and")}{" "}
+      <Link href="/terms" target="_blank" className="text-text-primary underline underline-offset-2 hover:underline">
+        {t("fields.terms")}
+      </Link>{" "}
+      {t("fields.ofService")}
+    </>
+  );
 
   const { passwordChecks, passwordValid, isPasswordFormValid } = getPasswordFieldsValidation(
     password,
@@ -158,7 +176,7 @@ export const RegisterContent = (): ReactElement => {
               onFocus={() => setShowPasswordRules(true)}
               onBlur={() => setShowPasswordRules(false)}
               error={passwordError}
-            className={passwordInputStatusClassName}
+              className={passwordInputStatusClassName}
               required
             />
             {showPasswordRules && <PasswordRulesPin checks={passwordChecks} />}
@@ -191,13 +209,30 @@ export const RegisterContent = (): ReactElement => {
         </FormField>
 
         <FormField>
-          <Checkbox
-            label={t("fields.terms")}
-            checked={acceptTerms}
-            onChange={(event) => setAcceptTerms(event.target.checked)}
-            error={termsError}
-            required
-          />
+          <div className="w-full">
+            <div className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                id={checkboxId}
+                className={`mt-0.5 w-4 h-4 text-interactive-primary bg-surface-primary border-border-default rounded-sm focus:ring-2 focus:ring-border-focus focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  termsError ? "border-status-error-border" : ""
+                }`}
+                aria-invalid={termsError ? "true" : undefined}
+                aria-describedby={termsError ? errorId : undefined}
+                checked={acceptTerms}
+                onChange={(event) => setAcceptTerms(event.target.checked)}
+                required
+              />
+              <label htmlFor={checkboxId} className="text-sm font-medium text-text-primary cursor-pointer">
+                {linkedTermsText}
+              </label>
+            </div>
+            {termsError && (
+              <span id={errorId} className="block mt-1 text-sm text-status-error-text" role="alert">
+                {termsError}
+              </span>
+            )}
+          </div>
         </FormField>
 
         <FormActions align="stretch">

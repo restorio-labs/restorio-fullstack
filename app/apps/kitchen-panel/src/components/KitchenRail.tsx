@@ -10,13 +10,7 @@ const ordersIcon = (
   />
 );
 
-const menuIcon = (
-  <path
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    d="M4 6h16M4 12h16M4 18h7"
-  />
-);
+const menuIcon = <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h7" />;
 
 export const KitchenRail = (): ReactElement => {
   const location = useLocation();

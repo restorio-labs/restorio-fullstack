@@ -2,8 +2,8 @@ import { forwardRef, type ReactElement } from "react";
 
 import { cn } from "../../utils";
 
-export type ButtonVariant = "primary" | "secondary" | "danger";
-export type ButtonSize = "sm" | "md" | "lg";
+export type ButtonVariant = "primary" | "secondary" | "danger" | "ghost" | "outline";
+export type ButtonSize = "sm" | "md" | "lg" | "icon";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -18,12 +18,17 @@ const variantStyles: Record<ButtonVariant, string> = {
     "bg-interactive-secondary text-text-primary hover:bg-interactive-secondaryHover active:bg-interactive-secondaryActive focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus",
   danger:
     "bg-interactive-danger text-text-inverse hover:bg-interactive-dangerHover active:bg-interactive-dangerActive focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-interactive-danger-active, #b81e28)] shadow-[0px_8px_16px_rgba(239,43,45,0.35)]",
+  ghost:
+    "bg-transparent text-text-primary hover:bg-surface-secondary active:bg-surface-secondary/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus",
+  outline:
+    "border border-border-default bg-transparent text-text-primary hover:bg-surface-secondary/60 active:bg-surface-secondary/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
   sm: "px-3 py-1.5 text-sm rounded-button",
   md: "px-4 py-2 text-base rounded-button",
   lg: "px-6 py-3 text-lg rounded-button",
+  icon: "h-8 w-8 rounded-full",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(

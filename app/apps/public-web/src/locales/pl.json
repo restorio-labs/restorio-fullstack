@@ -55,7 +55,11 @@
       "password": "Hasło",
       "confirmPassword": "Potwierdź hasło",
       "restaurantName": "Nazwa restauracji",
-      "terms": "Akceptuję regulamin"
+      "accept": "Akceptuję",
+      "statute": "regulamin",
+      "and": "i",
+      "terms": "Warunki",
+      "ofService": "świadczenia usługi"
     },
     "errors": {
       "emailRequired": "Adres e-mail jest wymagany",
@@ -121,7 +125,7 @@
     "subtitle": "Od zamawiania przez kod QR po zarządzanie kuchnią, Restorio zapewnia kompletne rozwiązanie dla nowoczesnych restauracji.",
     "waiterless": {
       "title": "Zamawianie Bez Kelnera",
-      "description": "Klienci skanują kody QR, aby przeglądać menu i składać zamówienia bezpośrednio ze swoich telefonów."
+      "description": "Klienci skanują kody QR, aby przeglądać menu i składają zamówienia bezpośrednio z telefonu."
     },
     "kitchen": {
       "title": "Kuchnia w Czasie Rzeczywistym",
@@ -244,7 +248,7 @@
     "description": "Nowoczesna, wielodostępna platforma zarządzania restauracją zaprojektowana dla przyszłości gastronomii.",
     "sections": {
       "product": "Produkt",
-      "company": "Firma"
+      "company": "Projekt"
     },
     "navigation": {
       "features": "Funkcje",
@@ -255,5 +259,283 @@
       "terms": "Warunki"
     },
     "copyright": "© {year} Platforma Restorio. Akademicki Projekt Open Source."
+  },
+  "legal": {
+    "termsAndConditions": {
+      "title": "Regulamin Serwisu",
+      "description": "Regulamin serwisu platformy Restorio do zarządzania restauracją, określający zasady korzystania i świadczenia usług.",
+      "lastUpdated": "Data ostatniej aktualizacji: {date}",
+      "sections": {
+        "generalProvisions": {
+          "title": "§1. Postanowienia ogólne",
+          "content": [
+            "Niniejszy Regulamin określa zasady korzystania z platformy do zarządzania restauracją dostępnej pod adresem [ADRES_SERWISU].",
+            "Właścicielem i operatorem Serwisu jest [NAZWA_FIRMY] z siedzibą w [ADRES], NIP: [NIP], REGON: [REGON].",
+            "Korzystanie z Serwisu oznacza akceptację niniejszego Regulaminu.",
+            "Serwis umożliwia zarządzanie restauracją, w tym: zarządzanie menu, zamówieniami, rezerwacjami, personelem oraz raportowanie."
+          ]
+        },
+        "definitions": {
+          "title": "§2. Definicje",
+          "items": {
+            "service": "Serwis – platforma internetowa do zarządzania restauracją",
+            "user": "Użytkownik – osoba fizyczna, prawna lub jednostka organizacyjna korzystająca z Serwisu",
+            "account": "Konto – indywidualne konto Użytkownika w Serwisie",
+            "restaurant": "Restauracja – lokal gastronomiczny zarządzany za pomocą Serwisu",
+            "subscription": "Subskrypcja – płatny plan dostępu do funkcji Serwisu"
+          }
+        },
+        "registration": {
+          "title": "§3. Rejestracja i Konto",
+          "content": [
+            "Rejestracja w Serwisie jest dobrowolna i bezpłatna.",
+            "Użytkownik zobowiązany jest podać prawdziwe dane podczas rejestracji.",
+            "Użytkownik odpowiada za zachowanie poufności danych logowania.",
+            "Jedno Konto może być przypisane do wielu lokali gastronomicznych w ramach jednej organizacji.",
+            "Operator zastrzega prawo do weryfikacji danych Użytkownika."
+          ]
+        },
+        "subscriptionAndPayments": {
+          "title": "§4. Subskrypcja i Płatności",
+          "content": [
+            "Serwis oferuje różne plany subskrypcyjne z różnym zakresem funkcjonalności.",
+            "Opłaty za subskrypcję są pobierane z góry za wybrany okres rozliczeniowy.",
+            "Ceny podane są w złotych polskich (PLN) i zawierają podatek VAT.",
+            "Płatności realizowane są za pośrednictwem zewnętrznego operatora płatności.",
+            "Faktury VAT wystawiane są automatycznie i dostępne w panelu Użytkownika.",
+            "W przypadku braku płatności dostęp do płatnych funkcji zostanie ograniczony."
+          ]
+        },
+        "userRights": {
+          "title": "§5. Prawa i Obowiązki Użytkownika",
+          "content": [
+            "Użytkownik ma prawo do korzystania z Serwisu zgodnie z jego przeznaczeniem.",
+            "Użytkownik zobowiązuje się do niepodejmowania działań mogących zakłócić działanie Serwisu.",
+            "Zabrania się wykorzystywania Serwisu do celów niezgodnych z prawem.",
+            "Użytkownik ponosi odpowiedzialność za treści wprowadzane do Serwisu.",
+            "Użytkownik zobowiązuje się do przestrzegania przepisów dotyczących ochrony danych osobowych."
+          ]
+        },
+        "operatorRights": {
+          "title": "§6. Prawa i Obowiązki Operatora",
+          "content": [
+            "Operator zobowiązuje się do zapewnienia dostępności Serwisu na poziomie 99.5% w skali miesiąca.",
+            "Operator zastrzega prawo do przerw technicznych, o których Użytkownicy będą informowani z wyprzedzeniem.",
+            "Operator nie ponosi odpowiedzialności za szkody wynikłe z przyczyn niezależnych od Operatora.",
+            "Operator zastrzega prawo do modyfikacji funkcjonalności Serwisu.",
+            "Operator zapewnia wsparcie techniczne w godzinach pracy."
+          ]
+        },
+        "dataProtection": {
+          "title": "§7. Ochrona Danych Osobowych",
+          "content": [
+            "Administratorem danych osobowych jest Platforma Restorio.",
+            "Dane osobowe przetwarzane są zgodnie z RODO oraz ustawą o ochronie danych osobowych.",
+            "Szczegółowe informacje dotyczące przetwarzania danych znajdują się w Polityce Prywatności.",
+            "Użytkownik ma prawo dostępu do swoich danych, ich sprostowania, usunięcia oraz przenoszenia.",
+            "Dane są przechowywane na serwerach zlokalizowanych na terenie Unii Europejskiej."
+          ]
+        },
+        "intellectualProperty": {
+          "title": "§8. Własność Intelektualna",
+          "content": [
+            "Wszelkie prawa do Serwisu, w tym prawa autorskie, należą do Operatora.",
+            "Użytkownik otrzymuje niewyłączną licencję na korzystanie z Serwisu.",
+            "Kopiowanie, modyfikowanie lub rozpowszechnianie elementów Serwisu jest zabronione.",
+            "Użytkownik zachowuje prawa do danych wprowadzonych do Serwisu."
+          ]
+        },
+        "termination": {
+          "title": "§9. Rozwiązanie Umowy",
+          "content": [
+            "Użytkownik może w każdej chwili zrezygnować z korzystania z Serwisu.",
+            "Operator może rozwiązać umowę w przypadku naruszenia Regulaminu przez Użytkownika.",
+            "Po rozwiązaniu umowy dane Użytkownika będą przechowywane przez okres wymagany przepisami prawa.",
+            "Użytkownik może zażądać eksportu swoich danych przed usunięciem konta."
+          ]
+        },
+        "liability": {
+          "title": "§10. Odpowiedzialność",
+          "content": [
+            "Operator nie ponosi odpowiedzialności za decyzje biznesowe podjęte na podstawie danych z Serwisu.",
+            "Odpowiedzialność Operatora ograniczona jest do wysokości opłat wniesionych przez Użytkownika w okresie 12 miesięcy.",
+            "Operator nie odpowiada za szkody wynikłe z działania siły wyższej.",
+            "Operator nie odpowiada za czasową niedostępność Serwisu wynikającą z przyczyn technicznych."
+          ]
+        },
+        "complaints": {
+          "title": "§11. Reklamacje",
+          "content": [
+            "Reklamacje należy zgłaszać drogą elektroniczną na adres: [EMAIL_KONTAKTOWY].",
+            "Reklamacja powinna zawierać opis problemu oraz dane kontaktowe Użytkownika.",
+            "Operator rozpatruje reklamacje w terminie 14 dni roboczych.",
+            "O wyniku rozpatrzenia reklamacji Użytkownik zostanie poinformowany drogą elektroniczną."
+          ]
+        },
+        "finalProvisions": {
+          "title": "§12. Postanowienia Końcowe",
+          "content": [
+            "Regulamin wchodzi w życie z dniem publikacji w Serwisie.",
+            "Operator zastrzega prawo do zmiany Regulaminu, o czym Użytkownicy zostaną powiadomieni.",
+            "W sprawach nieuregulowanych stosuje się przepisy prawa polskiego.",
+            "Spory rozstrzygane będą przez sąd właściwy dla siedziby Operatora.",
+            "Jeśli którekolwiek z postanowień Regulaminu zostanie uznane za nieważne, pozostałe postanowienia pozostają w mocy."
+          ]
+        }
+      }
+    },
+    "privacyPolicy": {
+      "title": "Polityka Prywatności",
+      "sections": {
+        "introduction": {
+          "title": "§1. Informacje Ogólne",
+          "content": [
+            "Niniejsza Polityka Prywatności określa zasady przetwarzania danych osobowych w Serwisie.",
+            "Administratorem danych osobowych jest [NAZWA_FIRMY], [ADRES].",
+            "Kontakt z Inspektorem Ochrony Danych: [EMAIL_IOD]."
+          ]
+        },
+        "dataCollection": {
+          "title": "§2. Zakres Zbieranych Danych",
+          "content": [
+            "Dane podane podczas rejestracji: imię, nazwisko, adres e-mail, numer telefonu.",
+            "Dane restauracji: nazwa, adres, NIP, dane kontaktowe.",
+            "Dane pracowników wprowadzone do systemu przez Użytkownika.",
+            "Dane dotyczące zamówień i rezerwacji klientów restauracji.",
+            "Dane techniczne: adres IP, typ przeglądarki, system operacyjny."
+          ]
+        },
+        "dataProcessingPurpose": {
+          "title": "§3. Cele Przetwarzania Danych",
+          "content": [
+            "Świadczenie usług dostępnych w Serwisie (art. 6 ust. 1 lit. b RODO).",
+            "Realizacja obowiązków prawnych, w tym podatkowych (art. 6 ust. 1 lit. c RODO).",
+            "Marketing bezpośredni własnych produktów i usług (art. 6 ust. 1 lit. f RODO).",
+            "Analiza i ulepszanie działania Serwisu (art. 6 ust. 1 lit. f RODO).",
+            "Obsługa zapytań i reklamacji (art. 6 ust. 1 lit. b RODO)."
+          ]
+        },
+        "dataRetention": {
+          "title": "§4. Okres Przechowywania Danych",
+          "content": [
+            "Dane konta przechowywane są przez okres korzystania z Serwisu oraz 3 lata po jego zakończeniu.",
+            "Dane księgowe przechowywane są przez okres 5 lat zgodnie z przepisami podatkowymi.",
+            "Dane marketingowe przechowywane są do momentu wycofania zgody.",
+            "Logi systemowe przechowywane są przez okres 12 miesięcy."
+          ]
+        },
+        "userRights": {
+          "title": "§5. Prawa Użytkownika",
+          "content": [
+            "Prawo dostępu do swoich danych osobowych.",
+            "Prawo do sprostowania nieprawidłowych danych.",
+            "Prawo do usunięcia danych ('prawo do bycia zapomnianym').",
+            "Prawo do ograniczenia przetwarzania.",
+            "Prawo do przenoszenia danych.",
+            "Prawo do wniesienia sprzeciwu wobec przetwarzania.",
+            "Prawo do wycofania zgody w dowolnym momencie.",
+            "Prawo do wniesienia skargi do Prezesa UODO."
+          ]
+        },
+        "dataSharing": {
+          "title": "§6. Udostępnianie Danych",
+          "content": [
+            "Dane mogą być udostępniane podmiotom przetwarzającym na zlecenie Administratora.",
+            "Kategorie odbiorców: dostawcy usług hostingowych, operatorzy płatności, dostawcy usług e-mail.",
+            "Dane mogą być udostępnione organom państwowym na podstawie przepisów prawa.",
+            "Dane nie są przekazywane do państw trzecich poza EOG."
+          ]
+        },
+        "dataSecurity": {
+          "title": "§7. Bezpieczeństwo Danych",
+          "content": [
+            "Stosujemy szyfrowanie SSL/TLS dla wszystkich połączeń.",
+            "Dane przechowywane są w zaszyfrowanych bazach danych.",
+            "Regularnie wykonujemy kopie zapasowe danych.",
+            "Dostęp do danych mają wyłącznie upoważnieni pracownicy.",
+            "Przeprowadzamy regularne audyty bezpieczeństwa."
+          ]
+        }
+      }
+    },
+    "cookiePolicy": {
+      "title": "Polityka Cookies",
+      "sections": {
+        "whatAreCookies": {
+          "title": "§1. Czym są pliki Cookies?",
+          "content": [
+            "Cookies to małe pliki tekstowe zapisywane na urządzeniu Użytkownika.",
+            "Pliki te pozwalają na prawidłowe działanie Serwisu i zapamiętywanie preferencji Użytkownika."
+          ]
+        },
+        "cookieTypes": {
+          "title": "§2. Rodzaje wykorzystywanych Cookies",
+          "items": {
+            "necessary": {
+              "name": "Niezbędne",
+              "description": "Wymagane do prawidłowego działania Serwisu. Nie można ich wyłączyć.",
+              "examples": "sesja użytkownika, token autoryzacji, preferencje języka"
+            },
+            "functional": {
+              "name": "Funkcjonalne",
+              "description": "Zapamiętują preferencje i ustawienia Użytkownika.",
+              "examples": "układ interfejsu, wybrane filtry, ostatnio przeglądane elementy"
+            },
+            "analytical": {
+              "name": "Analityczne",
+              "description": "Pomagają zrozumieć, jak Użytkownicy korzystają z Serwisu.",
+              "examples": "Google Analytics, statystyki odwiedzin, ścieżki nawigacji"
+            },
+            "marketing": {
+              "name": "Marketingowe",
+              "description": "Wykorzystywane do personalizacji reklam.",
+              "examples": "remarketing, śledzenie konwersji"
+            }
+          }
+        },
+        "cookieManagement": {
+          "title": "§3. Zarządzanie Cookies",
+          "content": [
+            "Użytkownik może zarządzać preferencjami cookies w ustawieniach.",
+            "Większość przeglądarek zezwala na blokowanie lub usuwanie cookies.",
+            "Wyłączenie cookies niezbędnych może uniemożliwić korzystanie z Serwisu.",
+            "Zmiana ustawień cookies nie wpływa na legalność wcześniejszego przetwarzania."
+          ]
+        },
+        "thirdPartyCookies": {
+          "title": "§4. Cookies Podmiotów Trzecich",
+          "content": [
+            "Serwis może wykorzystywać cookies podmiotów trzecich:",
+            "\u00A0\u00A0- Google Analytics – analiza ruchu na stronie",
+            "\u00A0\u00A0- Przelewy24 – obsługa płatności",
+            "\u00A0\u00A0- Intercom – obsługa czatu pomocy technicznej"
+          ]
+        }
+      }
+    },
+    "cookieConsent": {
+      "banner": {
+        "title": "Ta strona wykorzystuje pliki cookies",
+        "description": "Używamy cookies, aby zapewnić najlepszą jakość korzystania z naszego serwisu. Możesz zarządzać swoimi preferencjami lub zaakceptować wszystkie cookies.",
+        "acceptAll": "Akceptuj wszystkie",
+        "acceptNecessary": "Tylko niezbędne",
+        "customize": "Dostosuj",
+        "savePreferences": "Zapisz preferencje",
+        "privacyPolicy": "Polityka Prywatności"
+      },
+      "categories": {
+        "necessary": "Niezbędne",
+        "functional": "Funkcjonalne",
+        "analytical": "Analityczne",
+        "marketing": "Marketingowe"
+      }
+    },
+    "common": {
+      "backToHome": "Powrót do strony głównej",
+      "tableOfContents": "Spis treści",
+      "lastUpdated": "Ostatnia aktualizacja",
+      "printPage": "Drukuj",
+      "downloadPdf": "Pobierz PDF"
+    }
   }
 }

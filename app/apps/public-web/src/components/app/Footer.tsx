@@ -22,8 +22,8 @@ export const Footer = (): ReactElement => {
       title: t("sections.company"),
       links: [
         { href: "/about", label: t("navigation.about") },
-        { href: "#", label: t("navigation.privacy") },
-        { href: "#", label: t("navigation.terms") },
+        { href: "/privacy", label: t("navigation.privacy") },
+        { href: "/terms", label: t("navigation.terms") },
       ],
     },
   ];
