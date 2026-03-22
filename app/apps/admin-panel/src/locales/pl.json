@@ -148,9 +148,44 @@
   },
   "menuCreator": {
     "title": "Kreator menu",
-    "description": "Twórz i zarządzaj menu swoich restauracji",
-    "placeholderTitle": "Kreator menu",
-    "placeholderDescription": "Projektuj menu z kategoriami, pozycjami i cenami"
+    "description": "Twórz i zarządzaj kategoriami oraz pozycjami menu najemcy",
+    "loading": "Wczytywanie menu...",
+    "emptyState": "Brak kategorii. Dodaj pierwszą kategorię, aby rozpocząć tworzenie menu.",
+    "success": "Menu zostało zapisane.",
+    "actions": {
+      "save": "Zapisz menu",
+      "saving": "Zapisywanie...",
+      "addCategory": "Dodaj kategorię",
+      "removeCategory": "Usuń kategorię",
+      "moveCategoryUp": "Przesuń kategorię w górę",
+      "moveCategoryDown": "Przesuń kategorię w dół",
+      "addItem": "Dodaj pozycję",
+      "removeItem": "Usuń pozycję",
+      "addTag": "Dodaj tag",
+      "removeTag": "Usuń tag"
+    },
+    "fields": {
+      "categoryName": "Nazwa kategorii",
+      "categoryOrderControls": "Kolejność",
+      "itemName": "Nazwa pozycji",
+      "itemPrice": "Cena",
+      "itemActive": "Aktywna",
+      "itemPromoted": "Promowana",
+      "itemDescription": "Opis",
+      "itemTags": "Tagi"
+    },
+    "placeholders": {
+      "categoryName": "np. Przystawki",
+      "itemName": "np. Produkt {{index}}",
+      "itemDescription": "Opisz pozycję menu",
+      "itemTags": "Wpisz tag i kliknij +"
+    },
+    "errors": {
+      "selectRestaurant": "Najpierw wybierz restaurację z przełącznika tenantów.",
+      "saveFailed": "Nie udało się zapisać menu. Spróbuj ponownie.",
+      "invalidCategory": "Każda kategoria musi mieć poprawną nazwę.",
+      "invalidItem": "Każda pozycja musi mieć poprawną nazwę i nieujemną cenę."
+    }
   },
   "menuConfigurator": {
     "title": "Konfigurator strony",
@@ -178,23 +213,23 @@
       "apiKey": {
         "label": "Klucz API P24",
         "placeholder": "Wpisz klucz API Przelewy24",
-        "helper": "Maks. 32 znaki",
-        "error": "Klucz API jest wymagany (maks. 32 znaki)"
+        "helper": "Dokładnie 32 znaki",
+        "error": "Klucz API jest wymagany i musi mieć dokładnie 32 znaki"
       },
       "crcKey": {
         "label": "Klucz CRC P24",
         "placeholder": "Wpisz klucz CRC Przelewy24",
-        "helper": "Maks. 16 znaków",
-        "error": "Klucz CRC jest wymagany (maks. 16 znaków)"
+        "helper": "Dokładnie 16 znaków",
+        "error": "Klucz CRC jest wymagany i musi mieć dokładnie 16 znaków"
       },
       "p24Merchantid": {
         "error": "Identyfikator sprzedawcy musi być między 0 a 999999"
       },
       "p24Api": {
-        "error": "Klucz API jest wymagany (maks. 32 znaki)"
+        "error": "Klucz API jest wymagany i musi mieć dokładnie 32 znaki"
       },
       "p24Crc": {
-        "error": "Klucz CRC jest wymagany (maks. 16 znaków)"
+        "error": "Klucz CRC jest wymagany i musi mieć dokładnie 16 znaków"
       }
     },
     "success": "Konfiguracja P24 została zaktualizowana.",

@@ -42,5 +42,9 @@ class UpdateP24ConfigDTO(BaseDTO):
     p24_merchantid: int = Field(
         ..., ge=0, le=999_999, description="Przelewy24 merchant ID (max 6 digits)"
     )
-    p24_api: str = Field(..., max_length=32, description="Przelewy24 API key")
-    p24_crc: str = Field(..., max_length=16, description="Przelewy24 CRC key")
+    p24_api: str = Field(
+        ..., min_length=32, max_length=32, description="Przelewy24 API key (exactly 32 characters)"
+    )
+    p24_crc: str = Field(
+        ..., min_length=16, max_length=16, description="Przelewy24 CRC key (exactly 16 characters)"
+    )
