@@ -28,7 +28,7 @@ export const FloorBar = ({
           "focus-within:outline focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-border-focus",
         )}
       >
-        <span className="font-medium" aria-hidden="true">
+        <span className="text-xs md:text-sm lg:text-base font-medium" aria-hidden="true">
           {label}
         </span>
       </div>

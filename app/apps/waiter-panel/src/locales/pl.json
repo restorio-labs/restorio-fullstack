@@ -1,0 +1,46 @@
+{
+  "waiterDashboard": {
+    "title": "Panel kelnera",
+    "description": "Podglad sali na zywo na podstawie konfiguracji z panelu administracyjnego.",
+    "activeFloorLabel": "Aktywna sala",
+    "activeFloorNone": "Nie wybrano sali",
+    "activeFloorNoConfigured": "Brak skonfigurowanej sali",
+    "refresh": "Odswiez",
+    "refreshing": "Odswiezanie...",
+    "logout": "Wyloguj",
+    "loggingOut": "Wylogowywanie...",
+    "loadingRestaurants": "Ladowanie restauracji...",
+    "loadRestaurantsError": "Nie udalo sie zaladowac restauracji.",
+    "noRestaurants": "Brak dostepnych restauracji dla tego konta.",
+    "restaurantLabel": "Restauracja",
+    "loadingFloor": "Ladowanie widoku sali...",
+    "loadFloorError": "Nie udalo sie zaladowac widoku sali.",
+    "selectedElement": "Wybrany stolik/element",
+    "tableGroupLabel": "Stoliki {{numbers}}",
+    "tableSeats": "Miejsca: {{seats}}",
+    "closePanel": "Zamknij",
+    "tableAvailable": "Stolik dostepny",
+    "tableOccupied": "Stolik zajety",
+    "beginOrder": "Rozpocznij zamowienie",
+    "addItemLabel": "Dodaj pozycje z menu",
+    "selectMenuItem": "Wybierz pozycje z menu",
+    "addItem": "Dodaj pozycje",
+    "noItemsYet": "Brak pozycji w zamowieniu.",
+    "orderTotal": "Suma: {{total}}",
+    "confirmPayment": "Potwierdz platnosc",
+    "zoomLabel": "Powiekszenie: {{value}}%",
+    "zoomIn": "Przybliz",
+    "zoomOut": "Oddal",
+    "zoomReset": "Reset"
+  },
+  "floorRuntime": {
+    "noLayout": "Brak ukladu sali dla tego lokalu."
+  },
+  "floorEditor": {
+    "tableLabel": "Stolik {{number}}",
+    "panel": {
+      "name": "Nazwa",
+      "seats": "Miejsca"
+    }
+  }
+}
