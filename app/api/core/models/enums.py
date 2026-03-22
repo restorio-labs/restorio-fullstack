@@ -18,6 +18,8 @@ class OrderStatus(str, Enum):
     CONFIRMED = "confirmed"
     PREPARING = "preparing"
     READY = "ready"
+    REJECTED = "rejected"
+    REFUNDED = "refunded"
 
 
 class PaymentProvider(str, Enum):

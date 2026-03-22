@@ -1,7 +1,7 @@
 import type { FloorCanvas as FloorCanvasType } from "@restorio/types";
 import type { DragResizeMode, useTheme } from "@restorio/ui";
 
-export const GRID_CELL = 20;
+export const GRID_CELL = 10;
 export const MIN_CANVAS_WIDTH = 1000;
 export const MIN_CANVAS_HEIGHT = 800;
 export const HANDLE_SIZE = 12;
@@ -51,18 +51,43 @@ export const clampElementBounds = (
   bounds: { x: number; y: number; w: number; h: number; rotation?: number },
   layout: FloorCanvasType,
 ): { x: number; y: number; w: number; h: number; rotation?: number } => {
-  const width = Math.min(Math.max(GRID_CELL, bounds.w), layout.width);
-  const height = Math.min(Math.max(GRID_CELL, bounds.h), layout.height);
-  const maxX = Math.max(0, layout.width - width);
-  const maxY = Math.max(0, layout.height - height);
+  let x = bounds.x;
+  let y = bounds.y;
+  const minW = Math.max(GRID_CELL, bounds.w);
+  const minH = Math.max(GRID_CELL, bounds.h);
 
-  return {
-    ...bounds,
-    w: width,
-    h: height,
-    x: Math.min(Math.max(0, bounds.x), maxX),
-    y: Math.min(Math.max(0, bounds.y), maxY),
-  };
+  let right = Math.min(x + minW, layout.width);
+  let bottom = Math.min(y + minH, layout.height);
+  x = Math.max(0, x);
+  y = Math.max(0, y);
+
+  if (y >= bottom) {
+    y = Math.max(0, bottom - minH);
+  }
+
+  if (right < x) {
+    right = Math.min(layout.width, x + minW);
+    right = Math.max(right, x + GRID_CELL);
+  }
+
+  let w = right - x;
+  let h = bottom - y;
+
+  if (w < GRID_CELL) {
+    w = GRID_CELL;
+    right = Math.min(x + w, layout.width);
+    x = right - w;
+    x = Math.max(0, x);
+  }
+
+  if (h < GRID_CELL) {
+    h = GRID_CELL;
+    bottom = Math.min(y + h, layout.height);
+    y = bottom - h;
+    y = Math.max(0, y);
+  }
+
+  return { ...bounds, x, y, w, h, rotation: bounds.rotation };
 };
 
 export const isTextEditingTarget = (target: EventTarget | null): boolean => {

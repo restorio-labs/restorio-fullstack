@@ -2,7 +2,7 @@ import type { Tenant, TenantSummary } from "@restorio/types";
 import { TENANT_STORAGE_KEY } from "@restorio/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { ReactElement, ReactNode } from "react";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 import { api } from "../api/client";
 import { useTenants } from "../hooks/useTenants";
@@ -31,12 +31,43 @@ export const tenantDetailsQueryKey = (tenantId: string): readonly string[] => ["
 export const TenantProvider = ({ children }: TenantProviderProps): ReactElement => {
   const { tenants, state, refresh } = useTenants();
   const [selectedTenantId, setSelectedTenantIdState] = useState<string | null>(null);
+  const didApplyTenantFromQuery = useRef(false);
 
   useEffect(() => {
     const storedTenantId = localStorage.getItem(TENANT_STORAGE_KEY);
 
     setSelectedTenantIdState(storedTenantId);
   }, []);
+
+  useEffect(() => {
+    if (state !== "loaded" || didApplyTenantFromQuery.current) {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const fromQuery = params.get("tenant");
+
+    if (fromQuery === null || fromQuery === "") {
+      return;
+    }
+
+    const matches = tenants.some((tenant) => tenant.id === fromQuery);
+
+    if (!matches) {
+      return;
+    }
+
+    didApplyTenantFromQuery.current = true;
+    setSelectedTenantIdState(fromQuery);
+
+    const url = new URL(window.location.href);
+
+    url.searchParams.delete("tenant");
+    const nextSearch = url.searchParams.toString();
+    const next = `${url.pathname}${nextSearch !== "" ? `?${nextSearch}` : ""}${url.hash}`;
+
+    window.history.replaceState({}, "", next);
+  }, [state, tenants]);
 
   useEffect(() => {
     if (state !== "loaded") {

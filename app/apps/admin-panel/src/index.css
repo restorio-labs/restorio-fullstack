@@ -20,8 +20,7 @@
   }
 
   body {
-    @apply bg-background-primary text-text-primary;
-    font-family: theme("fontFamily.sans");
+    @apply bg-background-primary font-sans text-text-primary;
   }
 }
 

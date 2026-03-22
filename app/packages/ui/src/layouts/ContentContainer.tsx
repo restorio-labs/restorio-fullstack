@@ -8,6 +8,7 @@ export interface ContentContainerProps {
   children: ReactNode;
   maxWidth?: ContentContainerMaxWidth;
   padding?: boolean;
+  fullWidth?: boolean;
   className?: string;
 }
 
@@ -24,10 +25,18 @@ export const ContentContainer = ({
   children,
   maxWidth = "xl",
   padding = true,
+  fullWidth = false,
   className,
 }: ContentContainerProps): ReactElement => {
   return (
-    <div className={cn("w-full mx-auto", maxWidthStyles[maxWidth], padding && "px-4 sm:px-6 lg:px-8", className)}>
+    <div
+      className={cn(
+        "w-full mx-auto",
+        !fullWidth && maxWidthStyles[maxWidth],
+        padding && "px-4 sm:px-6 lg:px-8",
+        className,
+      )}
+    >
       {children}
     </div>
   );

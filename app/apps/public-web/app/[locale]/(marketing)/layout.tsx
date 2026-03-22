@@ -4,6 +4,8 @@ import { Footer } from "@components/app/Footer";
 import { Header } from "@components/app/Header";
 import type { ReactElement, ReactNode } from "react";
 
+import CookieConsentBanner from "@/components/legal/CookieConsentBanner";
+
 interface MarketingLayoutProps {
   children: ReactNode;
 }
@@ -16,6 +18,7 @@ export default function MarketingLayout({ children }: MarketingLayoutProps): Rea
         {children}
       </main>
       <Footer />
+      <CookieConsentBanner />
     </div>
   );
 }

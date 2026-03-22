@@ -8,13 +8,6 @@
     "save": "Guardar",
     "close": "Cerrar"
   },
-  "auth": {
-    "title": "Inicio de Sesión de Cocina",
-    "description": "Ingrese su código de acceso de 6 dígitos para continuar.",
-    "accessCode": "Código de acceso",
-    "accessCodePlaceholder": "123-456",
-    "signIn": "Iniciar sesión"
-  },
   "kitchen": {
     "title": "Pedidos de Cocina",
     "activeRestaurant": "Restaurante activo: {{name}}",

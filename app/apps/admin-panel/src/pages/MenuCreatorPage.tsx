@@ -13,7 +13,7 @@ interface MenuItemFormState {
   name: string;
   price: string;
   promoted: boolean;
-  active: boolean;
+  isAvailable: boolean;
   desc: string;
   tags: string[];
   tagInput: string;
@@ -45,7 +45,7 @@ const createEmptyItem = (): MenuItemFormState => ({
   name: "",
   price: "",
   promoted: false,
-  active: true,
+  isAvailable: true,
   desc: "",
   tags: [],
   tagInput: "",
@@ -65,8 +65,8 @@ const toFormCategories = (categories: TenantMenuCategory[]): MenuCategoryFormSta
       id: createLocalId(),
       name: item.name,
       price: String(item.price),
-      promoted: item.promoted === 1,
-      active: item.active !== 0,
+      promoted: item.promoted,
+      isAvailable: item.isAvailable,
       desc: item.desc,
       tags: item.tags,
       tagInput: "",
@@ -348,8 +348,8 @@ export const MenuCreatorPage = (): ReactElement => {
         normalizedItems.push({
           name: itemName,
           price: itemPrice,
-          promoted: item.promoted ? 1 : 0,
-          active: item.active ? 1 : 0,
+          promoted: item.promoted,
+          isAvailable: item.isAvailable,
           desc: item.desc.trim(),
           tags: item.tags,
         });
@@ -560,8 +560,10 @@ export const MenuCreatorPage = (): ReactElement => {
                           <input
                             id={`active-${item.id}`}
                             type="checkbox"
-                            checked={item.active}
-                            onChange={(event) => updateItem(category.id, item.id, { active: event.target.checked })}
+                            checked={item.isAvailable}
+                            onChange={(event) =>
+                              updateItem(category.id, item.id, { isAvailable: event.target.checked })
+                            }
                           />
                           <label htmlFor={`active-${item.id}`} className="text-xs text-text-secondary">
                             {t("menuCreator.fields.itemActive")}

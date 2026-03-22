@@ -1,14 +1,13 @@
 import { ApiClient, RestorioApi } from "@restorio/api-client";
-import { TokenStorage } from "@restorio/auth";
-
-import { API_BASE_URL, PUBLIC_WEB_URL } from "../config";
+import { AUTH_LOGIN_REDIRECT_URL, TokenStorage } from "@restorio/auth";
+import { resolveApiBaseUrl } from "@restorio/utils";
 
 const apiClient = new ApiClient({
-  baseURL: API_BASE_URL,
+  baseURL: resolveApiBaseUrl(),
   refreshPath: "auth/refresh",
   getAccessToken: (): string | null => TokenStorage.getAccessToken(),
   onUnauthorized: (): void => {
-    window.location.href = `${PUBLIC_WEB_URL}/login`;
+    window.location.href = AUTH_LOGIN_REDIRECT_URL;
   },
 });
 

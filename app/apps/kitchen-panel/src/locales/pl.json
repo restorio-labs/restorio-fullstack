@@ -6,14 +6,9 @@
     "cancel": "Anuluj",
     "confirm": "Potwierdź",
     "save": "Zapisz",
-    "close": "Zamknij"
-  },
-  "auth": {
-    "title": "Logowanie do Kuchni",
-    "description": "Wprowadź swój 6-cyfrowy kod dostępu, aby kontynuować.",
-    "accessCode": "Kod dostępu",
-    "accessCodePlaceholder": "123-456",
-    "signIn": "Zaloguj się"
+    "close": "Zamknij",
+    "items": "pozycji",
+    "refresh": "Odśwież"
   },
   "kitchen": {
     "title": "Zamówienia Kuchni",
@@ -33,8 +28,36 @@
     "status": {
       "new": "Nowe",
       "preparing": "W przygotowaniu",
-      "ready": "Gotowe"
+      "ready": "Gotowe",
+      "rejected": "Odrzucone",
+      "refunded": "Zwrócone"
+    },
+    "actions": {
+      "approve": "Zatwierdź",
+      "reject": "Odrzuć",
+      "markReady": "Gotowe",
+      "refund": "Zwrot"
+    },
+    "rejection": {
+      "title": "Powód odrzucenia",
+      "selectReason": "Wybierz powód odrzucenia",
+      "customReason": "Inny powód",
+      "confirm": "Potwierdź odrzucenie"
     }
+  },
+  "menu": {
+    "title": "Dostępność Menu",
+    "description": "Zarządzaj dostępnością pozycji w menu",
+    "available": "Dostępne",
+    "unavailable": "Niedostępne",
+    "toggleAvailability": "Zmień dostępność",
+    "noMenu": "Brak menu do wyświetlenia",
+    "loading": "Ładowanie menu..."
+  },
+  "ws": {
+    "connected": "Połączono",
+    "disconnected": "Rozłączono",
+    "reconnecting": "Ponowne łączenie..."
   },
   "aria": {
     "kitchenControls": "Elementy sterowania panelem kuchni",
@@ -46,31 +69,20 @@
     "moveOrderDown": "Przesuń {{id}} w dół",
     "newOrders": "Nowe zamówienia",
     "preparingOrders": "Zamówienia w przygotowaniu",
-    "readyOrders": "Gotowe do odbioru"
+    "readyOrders": "Gotowe do odbioru",
+    "rejectedOrders": "Odrzucone zamówienia",
+    "refundedOrders": "Zwrócone zamówienia",
+    "kitchenNavigation": "Nawigacja kuchni",
+    "ordersNav": "Zamówienia",
+    "menuNav": "Menu"
   },
-  "restaurants": {
-    "demo": {
-      "north": {
-        "name": "Restorio Północ",
-        "description": "Lokalizacja Hala Północna",
-        "city": "Miasto Demo",
-        "country": "Kraj Demo"
-      },
-      "east": {
-        "name": "Restorio Wschód",
-        "description": "Lokalizacja Skrzydło Wschodnie",
-        "city": "Miasto Demo",
-        "country": "Kraj Demo"
-      },
-      "main": {
-        "name": "Restorio Główna",
-        "description": "Lokalizacja Główna",
-        "city": "Miasto Demo",
-        "country": "Kraj Demo"
-      }
-    }
+  "nav": {
+    "orders": "Zamówienia",
+    "menu": "Menu"
   },
   "errors": {
-    "rootElementNotFound": "Nie znaleziono elementu głównego"
+    "rootElementNotFound": "Nie znaleziono elementu głównego",
+    "loadOrdersFailed": "Nie udało się załadować zamówień",
+    "updateStatusFailed": "Nie udało się zaktualizować statusu zamówienia"
   }
 }

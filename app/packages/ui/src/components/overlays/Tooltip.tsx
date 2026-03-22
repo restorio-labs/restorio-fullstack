@@ -63,15 +63,15 @@ export const Tooltip = ({
   };
 
   const arrowStyles: Record<TooltipPlacement, string> = {
-    top: "top-full start-1/2 -translate-x-1/2 rtl:translate-x-1/2 border-t-surface-overlay",
-    bottom: "bottom-full start-1/2 -translate-x-1/2 rtl:translate-x-1/2 border-b-surface-overlay",
-    left: "start-full top-1/2 -translate-y-1/2 border-s-surface-overlay",
-    right: "end-full top-1/2 -translate-y-1/2 border-e-surface-overlay",
+    top: "top-full start-1/2 -translate-x-1/2 rtl:translate-x-1/2 border-t-surface-elevated",
+    bottom: "bottom-full start-1/2 -translate-x-1/2 rtl:translate-x-1/2 border-b-surface-elevated",
+    left: "start-full top-1/2 -translate-y-1/2 border-s-surface-elevated",
+    right: "end-full top-1/2 -translate-y-1/2 border-e-surface-elevated",
   };
 
   return (
     <div
-      className="relative inline-block"
+      className="relative inline-flex items-center"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onFocus={handleMouseEnter}
@@ -83,7 +83,7 @@ export const Tooltip = ({
         <div
           id={tooltipId}
           className={cn(
-            "absolute z-tooltip px-2 py-1 text-sm text-text-inverse bg-surface-overlay rounded-tooltip whitespace-nowrap",
+            "absolute z-tooltip border border-border-default bg-surface-elevated px-2 py-1 text-sm text-text-primary shadow-dropdown rounded-tooltip whitespace-nowrap",
             placementStyles[placement],
             className,
           )}

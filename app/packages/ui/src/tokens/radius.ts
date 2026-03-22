@@ -1,21 +1,22 @@
 export const radiusTokens = {
   none: "0",
-  sm: "0.25rem",
-  md: "0.5rem",
-  lg: "0.75rem",
-  xl: "1rem",
-  "2xl": "1.5rem",
-  "3xl": "2rem",
+  sm: "0.5rem",
+  default: "1rem",
+  md: "1.5rem",
+  lg: "2rem",
+  xl: "3rem",
+  "2xl": "4rem",
+  "3xl": "5rem",
   full: "9999px",
 } as const;
 
 export const radiusSemantic = {
-  button: radiusTokens.md,
-  card: radiusTokens.lg,
-  modal: radiusTokens.xl,
+  button: radiusTokens.xl,
+  card: radiusTokens.default,
+  modal: radiusTokens.lg,
   input: radiusTokens.md,
   badge: radiusTokens.full,
-  tooltip: radiusTokens.md,
+  tooltip: radiusTokens.sm,
 } as const;
 
 export type RadiusToken = keyof typeof radiusTokens;

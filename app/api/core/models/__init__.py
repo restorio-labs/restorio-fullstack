@@ -1,4 +1,5 @@
 from core.models.activation_link import ActivationLink
+from core.models.archived_order import ArchivedOrder
 from core.models.audit_log import AuditLog
 from core.models.enums import (
     OrderStatus,
@@ -19,6 +20,7 @@ from core.models.user import User
 
 __all__ = [
     "ActivationLink",
+    "ArchivedOrder",
     "AuditLog",
     "CreatePaymentRequest",
     "FloorCanvas",

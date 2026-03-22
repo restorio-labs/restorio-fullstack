@@ -105,7 +105,8 @@
       "undo": "Undo",
       "redo": "Redo",
       "save": "Save",
-      "add": "Add"
+      "add": "Add",
+      "showGrid": "Show grid"
     },
     "addMenu": {
       "table": "Add table",
@@ -124,6 +125,7 @@
       "name": "Name",
       "color": "Color",
       "seats": "Seats",
+      "move": "Move",
       "tableCustomLabel": "Table label",
       "label": "Label",
       "delete": "Delete",

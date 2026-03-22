@@ -1,4 +1,4 @@
-import { Box, cn, Stack, Text, usePrefersReducedMotion } from "@restorio/ui";
+import { Box, cn, Stack, Text, useI18n, usePrefersReducedMotion } from "@restorio/ui";
 import { type ReactElement } from "react";
 
 export interface DropPlaceholderProps {
@@ -11,6 +11,7 @@ export interface DropPlaceholderProps {
 
 export const DropPlaceholder = ({ orderId, table, itemCount, time, className }: DropPlaceholderProps): ReactElement => {
   const prefersReducedMotion = usePrefersReducedMotion();
+  const { t } = useI18n();
 
   return (
     <Box
@@ -26,7 +27,7 @@ export const DropPlaceholder = ({ orderId, table, itemCount, time, className }: 
             {orderId}
           </Text>
           <Text as="p" variant="body-sm" className="text-text-secondary">
-            {table} · {itemCount} items
+            {table} · {itemCount} {t("common.items")}
           </Text>
         </Stack>
         <Text as="span" variant="body-sm" weight="medium" className="text-text-secondary">

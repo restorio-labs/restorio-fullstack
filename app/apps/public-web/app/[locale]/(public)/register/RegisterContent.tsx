@@ -1,15 +1,18 @@
 "use client";
 
-import { Button, Checkbox, Form, FormActions, FormField, Input } from "@restorio/ui";
+import { Button, Form, FormActions, FormField, Input, useAuthRoute } from "@restorio/ui";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useState, type ReactElement } from "react";
+import { useId, useState, type ReactElement } from "react";
 
 import { api } from "@/api/client";
+import { AuthenticatedAppPicker } from "@/components/auth/AuthenticatedAppPicker";
 import { PasswordRulesPin } from "@/components/password/RulesPin";
 import { getPasswordFieldsValidation } from "@/services/passwordFieldsValidation";
-import { isEmailValid } from "@/services/validation";
+import { MIN_PASSWORD_LENGTH, isEmailValid } from "@/services/validation";
 
 export const RegisterContent = (): ReactElement => {
+  const { authStatus } = useAuthRoute();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -20,6 +23,23 @@ export const RegisterContent = (): ReactElement => {
   const [feedbackStatus, setFeedbackStatus] = useState<"success" | "error" | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const t = useTranslations("register");
+
+  const checkboxId = useId();
+  const errorId = `${checkboxId}-error`;
+
+  const linkedTermsText: ReactElement = (
+    <>
+      {t("fields.accept")}{" "}
+      <Link href="/privacy" target="_blank" className="text-text-primary underline underline-offset-2 hover:underline">
+        {t("fields.statute")}
+      </Link>{" "}
+      {t("fields.and")}{" "}
+      <Link href="/terms" target="_blank" className="text-text-primary underline underline-offset-2 hover:underline">
+        {t("fields.terms")}
+      </Link>{" "}
+      {t("fields.ofService")}
+    </>
+  );
 
   const { passwordChecks, passwordValid, isPasswordFormValid } = getPasswordFieldsValidation(
     password,
@@ -56,6 +76,21 @@ export const RegisterContent = (): ReactElement => {
   const termsError = submitted && !acceptTerms ? t("errors.termsRequired") : undefined;
 
   const isFormValid = isEmailValid(email) && isPasswordFormValid && restaurantName.trim().length > 0 && acceptTerms;
+
+  const confirmPasswordMeetsLength = confirmPassword.length >= MIN_PASSWORD_LENGTH;
+  const passwordsMatchByLength = confirmPasswordMeetsLength && confirmPassword === password;
+
+  const passwordInputStatusClassName =
+    !passwordError && passwordsMatchByLength
+      ? "border-status-success-border focus:ring-status-success-border focus:border-status-success-border"
+      : undefined;
+
+  const confirmPasswordInputStatusClassName =
+    !confirmPasswordError && passwordsMatchByLength
+      ? "border-status-success-border focus:ring-status-success-border focus:border-status-success-border"
+      : !confirmPasswordError && confirmPasswordMeetsLength && confirmPassword !== password
+        ? "border-status-error-border focus:ring-status-error-border focus:border-status-error-border"
+        : undefined;
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
@@ -97,6 +132,14 @@ export const RegisterContent = (): ReactElement => {
       setFeedbackMessage(apiMessage);
     }
   };
+
+  if (authStatus === "loading") {
+    return <p className="text-center text-text-secondary">{t("common.loading")}</p>;
+  }
+
+  if (authStatus === "authenticated") {
+    return <AuthenticatedAppPicker />;
+  }
 
   return (
     <>
@@ -143,6 +186,7 @@ export const RegisterContent = (): ReactElement => {
               onFocus={() => setShowPasswordRules(true)}
               onBlur={() => setShowPasswordRules(false)}
               error={passwordError}
+              className={passwordInputStatusClassName}
               required
             />
             {showPasswordRules && <PasswordRulesPin checks={passwordChecks} />}
@@ -157,6 +201,7 @@ export const RegisterContent = (): ReactElement => {
             value={confirmPassword}
             onChange={(event) => setConfirmPassword(event.target.value)}
             error={confirmPasswordError}
+            className={confirmPasswordInputStatusClassName}
             required
           />
         </FormField>
@@ -174,13 +219,30 @@ export const RegisterContent = (): ReactElement => {
         </FormField>
 
         <FormField>
-          <Checkbox
-            label={t("fields.terms")}
-            checked={acceptTerms}
-            onChange={(event) => setAcceptTerms(event.target.checked)}
-            error={termsError}
-            required
-          />
+          <div className="w-full">
+            <div className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                id={checkboxId}
+                className={`mt-0.5 w-4 h-4 text-interactive-primary bg-surface-primary border-border-default rounded-sm focus:ring-2 focus:ring-border-focus focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  termsError ? "border-status-error-border" : ""
+                }`}
+                aria-invalid={termsError ? "true" : undefined}
+                aria-describedby={termsError ? errorId : undefined}
+                checked={acceptTerms}
+                onChange={(event) => setAcceptTerms(event.target.checked)}
+                required
+              />
+              <label htmlFor={checkboxId} className="text-sm font-medium text-text-primary cursor-pointer">
+                {linkedTermsText}
+              </label>
+            </div>
+            {termsError && (
+              <span id={errorId} className="block mt-1 text-sm text-status-error-text" role="alert">
+                {termsError}
+              </span>
+            )}
+          </div>
         </FormField>
 
         <FormActions align="stretch">

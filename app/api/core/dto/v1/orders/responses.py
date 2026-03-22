@@ -1,26 +1,36 @@
-from datetime import datetime
-from decimal import Decimal
-
 from pydantic import Field
 
-from core.dto.v1.common import BaseDTO, CurrencyCode, EntityId, OrderStatus
+from core.dto.v1.common import BaseDTO
 
 
 class OrderItemResponseDTO(BaseDTO):
-    id: EntityId = Field(..., description="Order item identifier")
-    product_id: str = Field(..., description="Product identifier")
-    name: str = Field(..., description="Item name snapshot")
-    quantity: int = Field(..., description="Item quantity")
-    unit_price: Decimal = Field(..., description="Unit price at time of order")
+    id: str = Field(..., description="Item identifier")
+    menu_item_id: str = Field(..., alias="menuItemId", description="Menu item identifier")
+    name: str = Field(..., description="Item display name")
+    quantity: int = Field(..., description="Quantity")
+    base_price: float = Field(..., alias="basePrice", description="Base price")
+    selected_modifiers: list[dict] = Field(
+        default_factory=list, alias="selectedModifiers", description="Selected modifiers"
+    )
+    total_price: float = Field(..., alias="totalPrice", description="Total line price")
+    notes: str | None = Field(None, description="Item notes")
 
 
 class OrderResponseDTO(BaseDTO):
-    id: EntityId = Field(..., description="Order identifier")
-    tenant_id: EntityId = Field(..., description="Tenant identifier")
-    table_id: EntityId = Field(..., description="Table identifier")
-    status: OrderStatus = Field(..., description="Order status")
-    total_amount: Decimal = Field(..., description="Total order amount")
-    currency: CurrencyCode = Field(..., description="Currency code (ISO 4217)")
-    created_at: datetime = Field(..., description="Timestamp when order was created")
-    updated_at: datetime = Field(..., description="Timestamp when order was last updated")
+    id: str = Field(..., description="Order identifier")
+    tenant_id: str = Field(..., alias="tenantId", description="Tenant identifier")
+    table_id: str | None = Field(None, alias="tableId", description="Table identifier")
+    session_id: str = Field(default="", alias="sessionId", description="Session identifier")
     items: list[OrderItemResponseDTO] = Field(default_factory=list, description="Order items")
+    status: str = Field(..., description="Order status")
+    payment_status: str = Field(default="pending", alias="paymentStatus", description="Payment status")
+    subtotal: float = Field(default=0, description="Subtotal")
+    tax: float = Field(default=0, description="Tax")
+    total: float = Field(default=0, description="Total")
+    table_number: str = Field(default="", alias="tableNumber", description="Table number")
+    floor_canvas_id: str = Field(default="", alias="floorCanvasId", description="Floor canvas identifier")
+    time: str = Field(default="", description="Order time")
+    notes: str | None = Field(None, description="Order notes")
+    rejection_reason: str | None = Field(None, alias="rejectionReason", description="Rejection reason")
+    created_at: str = Field(..., alias="createdAt", description="Created timestamp")
+    updated_at: str = Field(..., alias="updatedAt", description="Updated timestamp")

@@ -8,13 +8,6 @@
     "save": "Save",
     "close": "Close"
   },
-  "auth": {
-    "title": "Kitchen Login",
-    "description": "Enter your 6-digit access code to continue.",
-    "accessCode": "Access code",
-    "accessCodePlaceholder": "123-456",
-    "signIn": "Sign in"
-  },
   "kitchen": {
     "title": "Kitchen Orders",
     "activeRestaurant": "Active restaurant: {{name}}",

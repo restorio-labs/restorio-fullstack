@@ -84,7 +84,9 @@
     "demo": "Demo",
     "privacy": "Privacidad",
     "terms": "Términos",
-    "getStarted": "Comenzar"
+    "getStarted": "Comenzar",
+    "login": "Iniciar sesión",
+    "register": "Registrarse"
   },
   "hero": {
     "title": "El Futuro de la Gestión de Restaurantes",
