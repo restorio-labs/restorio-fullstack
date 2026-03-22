@@ -1,9 +1,8 @@
-import { AuthGuard } from "@restorio/auth";
+import { AUTH_REVALIDATE_INTERVAL_MS, AuthGuard, AUTH_LOGIN_REDIRECT_URL } from "@restorio/auth";
 import type { ReactElement } from "react";
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 
 import { api } from "./api/client";
-import { AUTH_REVALIDATE_INTERVAL_MS, PUBLIC_WEB_URL } from "./config";
 import { AdminSidebar } from "./features/sidebar/AdminSidebar";
 import { AppLayout } from "./layouts/AppLayout";
 import {
@@ -31,7 +30,7 @@ const AdminShell = (): ReactElement => {
 export const App = (): ReactElement => {
   return (
     <AuthGuard
-      redirectTo={`${PUBLIC_WEB_URL}/login`}
+      redirectTo={AUTH_LOGIN_REDIRECT_URL}
       client={api}
       revalidateIntervalMs={AUTH_REVALIDATE_INTERVAL_MS}
       fallback={<div />}

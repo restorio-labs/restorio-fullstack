@@ -10,19 +10,6 @@
     "items": "pozycji",
     "refresh": "Odśwież"
   },
-  "auth": {
-    "title": "Logowanie do Kuchni",
-    "description": "Zaloguj się, aby kontynuować.",
-    "email": "E-mail",
-    "password": "Hasło",
-    "signIn": "Zaloguj się",
-    "submitting": "Logowanie...",
-    "errors": {
-      "emailInvalid": "Podaj poprawny adres e-mail",
-      "passwordInvalid": "Hasło musi mieć co najmniej 6 znaków",
-      "generic": "Nie udało się zalogować. Spróbuj ponownie."
-    }
-  },
   "kitchen": {
     "title": "Zamówienia Kuchni",
     "activeRestaurant": "Aktywna restauracja: {{name}}",

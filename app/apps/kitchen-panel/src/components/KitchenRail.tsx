@@ -25,7 +25,7 @@ export const KitchenRail = (): ReactElement => {
         as={Link}
         to={tenantId ? `/${tenantId}` : "/"}
         href={tenantId ? `/${tenantId}` : "/"}
-        active={!isMenuPath && !location.pathname.includes("login")}
+        active={!isMenuPath}
         touchTarget
         aria-label={t("nav.orders")}
         role="menuitem"

@@ -13,7 +13,8 @@
     "test:unit": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" && eslint . --fix",
-    "check": "prettier --check \"**/*.{ts,tsx,json,md}\" && eslint . --ext ts,tsx"
+    "check": "prettier --check \"**/*.{ts,tsx,json,md}\" && eslint . --ext ts,tsx",
+    "check:locales": "node scripts/check-locale-keys.mjs"
   },
   "dependencies": {
     "@restorio/api-client": "workspace:*",

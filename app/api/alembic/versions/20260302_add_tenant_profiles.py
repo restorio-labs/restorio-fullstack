@@ -1,6 +1,6 @@
 """add_tenant_profiles
 
-Revision ID: a1b2c3d4e5f6
+Revision ID: 7f8e9d0c1b2a
 Revises: 932c4186f8ba
 Create Date: 2026-03-02 20:30:00.000000
 

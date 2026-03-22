@@ -60,6 +60,7 @@ export const createTailwindThemeConfig = (): Config["theme"] => {
       },
       borderRadius: {
         ...radiusTokens,
+        DEFAULT: radiusTokens.default,
         ...radiusSemantic,
       },
       fontFamily: typographyTokens.fontFamily,

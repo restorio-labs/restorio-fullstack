@@ -1,28 +1,4 @@
-import type { TenantProfile } from "@restorio/types";
-
-export interface ProfileFormData {
-  nip: string;
-  companyName: string;
-  contactEmail: string;
-  phone: string;
-  addressStreetName: string;
-  addressStreetNumber: string;
-  addressCity: string;
-  addressPostalCode: string;
-  addressCountry: string;
-  ownerFirstName: string;
-  ownerLastName: string;
-  ownerEmail: string;
-  ownerPhone: string;
-  contactPersonFirstName: string;
-  contactPersonLastName: string;
-  contactPersonEmail: string;
-  contactPersonPhone: string;
-  socialFacebook: string;
-  socialInstagram: string;
-  socialTiktok: string;
-  socialWebsite: string;
-}
+import type { ProfileFormData, TenantProfile } from "@restorio/types";
 
 export const EMPTY_FORM: ProfileFormData = {
   nip: "",

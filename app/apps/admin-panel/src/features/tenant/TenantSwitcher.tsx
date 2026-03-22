@@ -58,12 +58,12 @@ export const TenantSwitcher = (): ReactElement | null => {
           </div>
         }
       >
-        <div className="max-h-90 overflow-y-auto p-2">
+        <div className="flex max-h-90 flex-col gap-0.5 overflow-y-auto p-2">
           {tenants.map((tenant) => (
             <button
               key={tenant.id}
               type="button"
-              className={`w-full rounded-md px-4 py-2 text-left text-base hover:bg-surface-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-border-focus ${
+              className={`w-full rounded-sm px-4 py-2 text-left text-base hover:bg-surface-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-border-focus ${
                 tenant.id === selectedTenantId ? "font-semibold text-interactive-primary" : "text-text-primary"
               }`}
               onClick={() => {
@@ -77,7 +77,7 @@ export const TenantSwitcher = (): ReactElement | null => {
           <div className="my-2 border-t border-border-default" />
           <button
             type="button"
-            className="w-full rounded-md px-4 py-2 text-left text-base font-semibold text-interactive-primary hover:bg-surface-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-border-focus"
+            className="w-full rounded-sm px-4 py-2 text-left text-base font-semibold text-interactive-primary hover:bg-surface-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-border-focus"
             onClick={() => {
               navigate("/restaurant-creator");
               setIsOpen(false);

@@ -105,7 +105,8 @@
       "undo": "Cofnij",
       "redo": "Ponów",
       "save": "Zapisz",
-      "add": "Dodaj"
+      "add": "Dodaj",
+      "showGrid": "Pokaż siatkę"
     },
     "addMenu": {
       "table": "Stolik",
@@ -124,6 +125,7 @@
       "name": "Nazwa",
       "color": "Kolor",
       "seats": "Miejsca",
+      "move": "Przesuń",
       "tableCustomLabel": "Etykieta stolika",
       "label": "Etykieta",
       "delete": "Usuń",

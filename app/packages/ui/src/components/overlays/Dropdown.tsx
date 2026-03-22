@@ -1,4 +1,14 @@
-import { useEffect, useRef, useState, useCallback, type ReactNode, type ReactElement } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type ReactNode,
+  type ReactElement,
+} from "react";
+import { createPortal } from "react-dom";
 
 import { cn } from "../../utils";
 
@@ -12,7 +22,11 @@ export interface DropdownProps {
   onOpenChange?: (isOpen: boolean) => void;
   className?: string;
   closeOnSelect?: boolean;
+  portal?: boolean;
 }
+
+const MENU_GAP_PX = 4;
+const VIEWPORT_PAD_PX = 8;
 
 export const Dropdown = ({
   trigger,
@@ -22,10 +36,12 @@ export const Dropdown = ({
   onOpenChange,
   className,
   closeOnSelect = false,
+  portal = false,
 }: DropdownProps): ReactElement => {
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
+  const [portalCoords, setPortalCoords] = useState<{ top: number; left: number } | null>(null);
 
   const isControlled = controlledIsOpen !== undefined;
   const isOpen = isControlled ? controlledIsOpen : internalIsOpen;
@@ -71,6 +87,105 @@ export const Dropdown = ({
     };
   }, [isOpen, setIsOpen]);
 
+  const updatePortalPosition = useCallback((): void => {
+    const trigger = triggerRef.current;
+    const menu = dropdownRef.current;
+
+    if (!trigger || !menu || !isOpen || !portal) {
+      return;
+    }
+
+    const tr = trigger.getBoundingClientRect();
+    const { width: mw, height: mh } = menu.getBoundingClientRect();
+
+    if (mw === 0 && mh === 0) {
+      return;
+    }
+
+    const { left: trLeft, right: trRight, top: trTop, bottom: trBottom } = tr;
+
+    let top = 0;
+    let left = 0;
+
+    switch (placement) {
+      case "bottom-end": {
+        top = trBottom + MENU_GAP_PX;
+        left = trRight - mw;
+
+        break;
+      }
+      case "bottom-start": {
+        top = trBottom + MENU_GAP_PX;
+        left = trLeft;
+
+        break;
+      }
+      case "top-end": {
+        top = trTop - mh - MENU_GAP_PX;
+        left = trRight - mw;
+
+        break;
+      }
+      case "top-start": {
+        top = trTop - mh - MENU_GAP_PX;
+        left = trLeft;
+
+        break;
+      }
+    }
+
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    left = Math.min(Math.max(VIEWPORT_PAD_PX, left), vw - mw - VIEWPORT_PAD_PX);
+    top = Math.min(Math.max(VIEWPORT_PAD_PX, top), vh - mh - VIEWPORT_PAD_PX);
+
+    setPortalCoords({ top, left });
+  }, [isOpen, placement, portal]);
+
+  useLayoutEffect(() => {
+    if (!isOpen || !portal) {
+      setPortalCoords(null);
+
+      return;
+    }
+
+    updatePortalPosition();
+    const frame = requestAnimationFrame(() => {
+      updatePortalPosition();
+    });
+
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, [isOpen, portal, updatePortalPosition]);
+
+  useEffect(() => {
+    if (!isOpen || !portal) {
+      return;
+    }
+
+    const menu = dropdownRef.current;
+
+    if (!menu) {
+      return;
+    }
+
+    const ro = new ResizeObserver(() => {
+      updatePortalPosition();
+    });
+
+    ro.observe(menu);
+    window.addEventListener("scroll", updatePortalPosition, true);
+    window.addEventListener("resize", updatePortalPosition);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("scroll", updatePortalPosition, true);
+      window.removeEventListener("resize", updatePortalPosition);
+    };
+  }, [isOpen, portal, updatePortalPosition]);
+
   const placementStyles: Record<DropdownPlacement, string> = {
     "bottom-start": "top-full mt-1 start-0",
     "bottom-end": "top-full mt-1 end-0",
@@ -78,7 +193,7 @@ export const Dropdown = ({
     "top-end": "bottom-full mb-1 end-0",
   };
 
-  const handleTriggerKeyDown = (e: React.KeyboardEvent<HTMLDivElement>): void => {
+  const handleTriggerKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>): void => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       setIsOpen(!isOpen);
@@ -102,6 +217,32 @@ export const Dropdown = ({
     [closeOnSelect, setIsOpen],
   );
 
+  const menuClassName = cn(
+    "z-dropdown min-w-[200px] overflow-hidden rounded-md border border-border-default bg-surface-primary shadow-lg",
+    portal ? "fixed" : cn("absolute", placementStyles[placement]),
+    className,
+  );
+
+  const menuStyle =
+    portal && portalCoords
+      ? { top: portalCoords.top, left: portalCoords.left }
+      : portal
+        ? { top: 0, left: 0, visibility: "hidden" as const, pointerEvents: "none" as const }
+        : undefined;
+
+  const menu = isOpen ? (
+    <div
+      ref={dropdownRef}
+      className={menuClassName}
+      style={menuStyle}
+      role="menu"
+      aria-orientation="vertical"
+      onClick={handleMenuClick}
+    >
+      {children}
+    </div>
+  ) : null;
+
   return (
     <div className="relative inline-block" ref={triggerRef}>
       <div
@@ -114,21 +255,7 @@ export const Dropdown = ({
       >
         {trigger}
       </div>
-      {isOpen && (
-        <div
-          ref={dropdownRef}
-          className={cn(
-            "absolute z-dropdown min-w-[200px] bg-surface-primary border border-border-default rounded-md shadow-lg",
-            placementStyles[placement],
-            className,
-          )}
-          role="menu"
-          aria-orientation="vertical"
-          onClick={handleMenuClick}
-        >
-          {children}
-        </div>
-      )}
+      {portal && menu ? createPortal(menu, document.body) : menu}
     </div>
   );
 };

@@ -1,37 +1,31 @@
-import { AuthGuard } from "@restorio/auth";
+import { AUTH_REVALIDATE_INTERVAL_MS, AuthGuard, AUTH_LOGIN_REDIRECT_URL } from "@restorio/auth";
 import type { ReactElement } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import { api } from "./api/client";
 import { KitchenRail } from "./components/KitchenRail";
+import { TenantRouteGuard } from "./components/TenantRouteGuard";
 import { AppLayout } from "./layouts/AppLayout";
 import { KitchenView } from "./views/KitchenView";
-import { LoginView } from "./views/LoginView";
 import { MenuAvailabilityView } from "./views/MenuAvailabilityView";
 
 export const App = (): ReactElement => {
   return (
-    <AppLayout sidebar={<KitchenRail />}>
-      <Routes>
-        <Route path="/login" element={<LoginView />} />
-        <Route
-          path="/:tenantId"
-          element={
-            <AuthGuard loginPath="/login" client={api}>
-              <KitchenView />
-            </AuthGuard>
-          }
-        />
-        <Route
-          path="/:tenantId/menu"
-          element={
-            <AuthGuard loginPath="/login" client={api}>
-              <MenuAvailabilityView />
-            </AuthGuard>
-          }
-        />
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    </AppLayout>
+    <AuthGuard
+      redirectTo={AUTH_LOGIN_REDIRECT_URL}
+      client={api}
+      revalidateIntervalMs={AUTH_REVALIDATE_INTERVAL_MS}
+      fallback={<div />}
+    >
+      <AppLayout sidebar={<KitchenRail />}>
+        <Routes>
+          <Route path="/:tenantId" element={<TenantRouteGuard />}>
+            <Route index element={<KitchenView />} />
+            <Route path="menu" element={<MenuAvailabilityView />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AppLayout>
+    </AuthGuard>
   );
 };

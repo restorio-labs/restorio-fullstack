@@ -8,13 +8,6 @@
     "save": "حفظ",
     "close": "إغلاق"
   },
-  "auth": {
-    "title": "تسجيل دخول المطبخ",
-    "description": "أدخل رمز الوصول المكون من 6 أرقام للمتابعة.",
-    "accessCode": "رمز الوصول",
-    "accessCodePlaceholder": "123-456",
-    "signIn": "تسجيل الدخول"
-  },
   "kitchen": {
     "title": "طلبات المطبخ",
     "activeRestaurant": "المطعم النشط: {{name}}",

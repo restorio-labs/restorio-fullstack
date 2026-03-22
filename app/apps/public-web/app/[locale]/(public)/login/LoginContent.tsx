@@ -1,7 +1,7 @@
 "use client";
 
 import { APP_SLUGS, type AppSlug } from "@restorio/types";
-import { Button, ChooseApp, Form, FormActions, FormField, Input } from "@restorio/ui";
+import { Button, Form, FormActions, FormField, Input, useAuthRoute } from "@restorio/ui";
 import {
   getApiErrorData,
   getApiErrorMessage,
@@ -15,6 +15,7 @@ import type { ReactElement } from "react";
 import { useMemo, useState } from "react";
 
 import { api } from "@/api/client";
+import { AuthenticatedAppPicker } from "@/components/auth/AuthenticatedAppPicker";
 import { isEmailValid, MIN_PASSWORD_LENGTH } from "@/services/validation";
 
 type ViewState = "form" | "choosing_app";
@@ -41,6 +42,7 @@ const extractFieldErrors = (data: unknown, t: ReturnType<typeof useTranslations>
 };
 
 export const LoginContent = (): ReactElement => {
+  const { authStatus } = useAuthRoute();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -126,21 +128,12 @@ export const LoginContent = (): ReactElement => {
     }
   };
 
-  if (view === "choosing_app") {
-    const chooseAppLabels = {
-      adminPanel: t("chooseApp.labels.adminPanel"),
-      kitchenPanel: t("chooseApp.labels.kitchenPanel"),
-      waiterPanel: t("chooseApp.labels.waiterPanel"),
-    };
+  if (authStatus === "loading") {
+    return <p className="text-center text-text-secondary">{t("common.loading")}</p>;
+  }
 
-    return (
-      <ChooseApp
-        onSelectApp={(slug) => goToApp(slug)}
-        labels={chooseAppLabels}
-        title={t("chooseApp.title")}
-        subtitle={t("chooseApp.subtitle")}
-      />
-    );
+  if (authStatus === "authenticated" || view === "choosing_app") {
+    return <AuthenticatedAppPicker />;
   }
 
   return (

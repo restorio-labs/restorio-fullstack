@@ -55,9 +55,10 @@ export const FloorTableGroup = ({
       <div
         className={cn(
           "relative flex h-full w-full flex-col items-center justify-center rounded-lg border-2 text-text-primary",
-          "focus-within:outline focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-border-focus",
+          !isSelected &&
+            "focus-within:outline focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-border-focus",
           stateStyles[state],
-          isSelected && "ring-2 ring-border-focus ring-offset-2 ring-offset-background-primary",
+          isSelected && "!border-interactive-primary !bg-interactive-primary text-text-inverse",
         )}
       >
         {needHelp && (
@@ -69,14 +70,23 @@ export const FloorTableGroup = ({
             Help
           </span>
         )}
-        <span className="font-medium" aria-hidden="true">
+        <span className="text-sm font-medium" aria-hidden="true">
           {tablesLabel}
         </span>
-        <span className="text-xs text-text-secondary" aria-hidden="true">
+        <span
+          className={cn(
+            "font-semibold tabular-nums",
+            isSelected ? "text-xl text-text-inverse" : "text-lg text-text-secondary",
+          )}
+          aria-hidden="true"
+        >
           {guests != null ? `${guests}/${seats}` : seats}
         </span>
         {orderStatus && (
-          <span className="text-xs text-text-tertiary" aria-hidden="true">
+          <span
+            className={cn("text-xs", isSelected ? "text-text-inverse/85" : "text-text-tertiary")}
+            aria-hidden="true"
+          >
             {orderStatusLabel[orderStatus] ?? orderStatus}
           </span>
         )}

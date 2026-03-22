@@ -1,7 +1,8 @@
 import type { FloorCanvas as FloorCanvasType, Tenant } from "@restorio/types";
-import { Button, Modal, useI18n, useMediaQuery, useToast } from "@restorio/ui";
+import { Button, cn, Dropdown, Modal, useI18n, useMediaQuery, useToast } from "@restorio/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState, type ReactElement } from "react";
+import { TbChevronDown } from "react-icons/tb";
 import { useNavigate } from "react-router-dom";
 
 import { api } from "../api/client";
@@ -41,6 +42,7 @@ export const FloorEditorPage = (): ReactElement => {
   const [pendingNavigationPath, setPendingNavigationPath] = useState<string | null>(null);
   const [floorNameDraft, setFloorNameDraft] = useState("");
   const [isDeletingCanvas, setIsDeletingCanvas] = useState(false);
+  const [isFloorSelectOpen, setIsFloorSelectOpen] = useState(false);
   const { showToast } = useToast();
 
   const handleHeaderActionsChange = useCallback((actions: ReactElement | null) => {
@@ -308,23 +310,54 @@ export const FloorEditorPage = (): ReactElement => {
     tenant,
   ]);
 
+  const floorCanvasCount = tenant?.floorCanvases.length ?? 0;
+  const showFloorPicker = floorCanvasCount > 1;
+
   const floorSelector = activeCanvasForEditor ? (
     <div className="flex flex-wrap items-center gap-3">
-      <label className="flex items-center gap-2 text-sm text-text-secondary">
-        <span>{t("floorEditor.floorSelector.label")}</span>
-        <select
-          value={activeCanvasForEditor.id}
-          onChange={(event) => handleCanvasSelectionChange(event.target.value)}
-          className="min-w-[180px] rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
-          disabled={!canManageFloor}
-        >
-          {tenant?.floorCanvases.map((canvas) => (
-            <option key={canvas.id} value={canvas.id}>
-              {canvas.name}
-            </option>
-          ))}
-        </select>
-      </label>
+      {showFloorPicker ? (
+        <div className="flex items-center gap-2 text-sm text-text-secondary">
+          <span className="shrink-0">{t("floorEditor.floorSelector.label")}</span>
+          {!canManageFloor ? (
+            <div className="min-w-[180px] max-w-[min(100vw-2rem,20rem)] truncate rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary opacity-50">
+              {activeCanvasForEditor.name}
+            </div>
+          ) : (
+            <Dropdown
+              placement="bottom-start"
+              portal
+              isOpen={isFloorSelectOpen}
+              onOpenChange={setIsFloorSelectOpen}
+              className="min-w-[180px] max-w-[min(100vw-2rem,20rem)] p-0"
+              trigger={
+                <div className="flex w-full min-w-[180px] cursor-pointer items-center justify-between gap-2 rounded-md border border-border-default bg-surface-primary py-2 pl-3 pr-3 text-left text-sm text-text-primary transition-colors hover:bg-surface-secondary/50">
+                  <span className="min-w-0 flex-1 truncate">{activeCanvasForEditor.name}</span>
+                  <TbChevronDown className="size-4 shrink-0 text-text-secondary" aria-hidden />
+                </div>
+              }
+            >
+              <div className="flex max-h-[min(18rem,50vh)] flex-col gap-1 overflow-y-auto p-1.5">
+                {(tenant?.floorCanvases ?? []).map((canvas) => (
+                  <button
+                    key={canvas.id}
+                    type="button"
+                    className={cn(
+                      "w-full rounded-md px-3 py-2 text-left text-sm text-text-primary outline-none transition-colors hover:bg-surface-secondary focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-0",
+                      canvas.id === activeCanvasForEditor.id && "bg-surface-secondary font-medium",
+                    )}
+                    onClick={() => {
+                      handleCanvasSelectionChange(canvas.id);
+                      setIsFloorSelectOpen(false);
+                    }}
+                  >
+                    {canvas.name}
+                  </button>
+                ))}
+              </div>
+            </Dropdown>
+          )}
+        </div>
+      ) : null}
       <label className="flex items-center gap-2 text-sm text-text-secondary">
         <span>{t("floorEditor.floorSelector.renameLabel")}</span>
         <input

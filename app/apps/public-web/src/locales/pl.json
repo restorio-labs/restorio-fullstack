@@ -88,6 +88,8 @@
     "demo": "Demo",
     "privacy": "Prywatność",
     "terms": "Warunki",
+    "contact": "Kontakt",
+    "status": "Status",
     "getStarted": "Rozpocznij",
     "login": "Zaloguj się",
     "register": "Zarejestruj się"
@@ -106,6 +108,68 @@
       "adminPanel": "Panel administracyjny",
       "kitchenPanel": "Panel kuchni",
       "waiterPanel": "Panel kelnerski"
+    }
+  },
+  "landing": {
+    "nav": {
+      "mission": "Misja"
+    },
+    "hero": {
+      "title": "Przyszłość Twojej <br></br><accent>Restauracji</accent>",
+      "subtitle": "Kompletny ekosystem zarządzania, który łączy kuchnię, obsługę i gości w jeden płynny organizm. QR, KDS i analityka w jednym miejscu.",
+      "ctaTrial": "Rozpocznij bezpłatnie",
+      "ctaDemo": "Obejrzyj demo",
+      "previewLabel": "Podgląd platformy"
+    },
+    "mission": {
+      "title": "Nasza misja",
+      "body": "Wierzymy, że technologia w gastronomii nie powinna być barierą, lecz paliwem dla kreatywności. Budujemy otwarty, intuicyjny system, który pozwala restauratorom skupić się na jedzeniu i ludziach.",
+      "goalsTitle": "Cele projektu",
+      "goalsBody": "Optymalizacja pracy personelu dzięki inteligentnemu kolejkowaniu zamówień i automatyzacji obiegu informacji.",
+      "sustainTitle": "Zrównoważony rozwój",
+      "sustainBody": "Mniej marnotrawstwa dzięki lepszemu planowaniu i przejrzystym danym operacyjnym."
+    },
+    "pillars": {
+      "title": "Dla kogo budujemy przyszłość?",
+      "ownersTitle": "Właściciele",
+      "ownersBody": "Pełna kontrola nad finansami, marżą i personelem z dowolnego miejsca w czasie rzeczywistym.",
+      "ownersB1": "Raporty i KPI",
+      "ownersB2": "Zarządzanie kosztami",
+      "ownersB3": "Wiele lokalizacji",
+      "staffTitle": "Personel",
+      "staffBody": "Intuicyjny interfejs, który redukuje błędy w zamówieniach i usprawnia komunikację z kuchnią.",
+      "staffB1": "Szybka obsługa",
+      "staffB2": "Podział rachunków",
+      "staffB3": "Powiadomienia na żywo",
+      "guestsTitle": "Goście",
+      "guestsBody": "Nowoczesne zamawianie, lojalność i wygodne płatności przy stoliku.",
+      "guestsB1": "Zamówienia QR",
+      "guestsB2": "Programy lojalnościowe",
+      "guestsB3": "Płatności mobilne"
+    },
+    "precision": {
+      "title": "Precyzja w każdym pikselu",
+      "body": "To nie tylko tabele i listy — narzędzia wizualne do sali, statusów dań w czasie rzeczywistym i szybkiej reakcji na potrzeby gości.",
+      "qrTitle": "QR Ordering",
+      "qrBody": "Zamówienia ze stolika do kuchni w ułamku sekundy.",
+      "kdsTitle": "Real-time KDS",
+      "kdsBody": "Widzisz postęp każdego dania na ekranie kuchni."
+    },
+    "community": {
+      "title": "Napędzane przez społeczność",
+      "body": "Restorio rozwija się jako projekt o otwartym rdzeniu. Dołącz do społeczności, która ustala standardy dla HoReCa.",
+      "github": "GitHub",
+      "discord": "Discord",
+      "contact": "Skontaktuj się"
+    },
+    "finalCta": {
+      "title": "Gotowy na zmianę w swojej restauracji?",
+      "subtitle": "Uruchom darmowy okres próbny i zobacz ekosystem w akcji.",
+      "primary": "Zacznij darmowy okres próbny",
+      "secondary": "Dowiedz się więcej",
+      "note": "Bez karty. Możesz zrezygnować w dowolnym momencie.",
+      "loggedTitle": "Wracaj do pracy",
+      "loggedSubtitle": "Wybierz aplikację w menu lub przejdź od razu do panelu."
     }
   },
   "hero": {
@@ -191,25 +255,25 @@
     "mission": {
       "title": "Nasza Misja",
       "subtitle": "Wspieranie małych restauracji narzędziami klasy korporacyjnej.",
-      "description": "Restorio to platforma zarządzania restauracją o otwartym kodzie źródłowym stworzona w celu demokratyzacji dostępu do potężnych narzędzi SaaS. Wierzymy, że każda restauracja, niezależnie od wielkości, zasługuje na nowoczesną technologię, aby konkurować i prosperować."
+      "description": "Wierzymy w demokratyzację dostępu do technologii. Przez lata zaawansowane systemy SaaS były zarezerwowane dla wielkich sieci. Restorio zmienia reguły gry, dostarczając innowacyjne rozwiązania, które pozwalają lokalnym przedsiębiorstwom konkurować na najwyższym poziomie bez bariery finansowej. Skupiamy się na inżynierii jutra, by serce Twojej restauracji biło rytmem technologii."
     },
     "goals": {
       "title": "Cele Projektu",
       "waiterless": {
         "title": "Zamawianie Bez Kelnera",
-        "description": "Umożliwienie klientom skanowania kodów QR i składania zamówień bez pomocy kelnera."
+        "description": "Zoptymalizowany proces samoobsługowy dla klientów."
       },
       "multiLocation": {
         "title": "Wsparcie Wielu Lokalizacji",
-        "description": "Zarządzanie wieloma restauracjami pod jednym najemcą z ustawieniami specyficznymi dla lokalizacji."
+        "description": "Zarządzaj całym ekosystemem z jednego panelu."
       },
       "secure": {
         "title": "Bezpieczne i Skalowalne",
-        "description": "Zbudowane na nowoczesnej infrastrukturze z uwierzytelnianiem JWT i backendem FastAPI."
+        "description": "Infrastruktura gotowa na Twój dynamiczny wzrost."
       },
       "costEfficient": {
         "title": "Ekonomiczne",
-        "description": "Open source i możliwe do samodzielnego hostowania, aby zminimalizować koszty cykliczne dla małych firm."
+        "description": "Najlepszy stosunek jakości do ceny na rynku."
       }
     },
     "openSource": {
@@ -217,22 +281,31 @@
       "description": "Ten projekt powstał jako akademicki projekt inżynierski na NTNU. Kod źródłowy jest otwarty i zachęcamy do wkładu społeczności. Udostępniając technologię restauracyjną, dążymy do wspierania małych firm w ich transformacji cyfrowej."
     },
     "problem": {
-      "title": "Problem",
-      "description": "Tradycyjne operacje restauracyjne są pracochłonne i podatne na nieefektywność. Małe i średnie restauracje często nie mają zasobów, aby przyjąć technologię na poziomie korporacyjnym, co prowadzi do ręcznego przyjmowania zamówień, błędów komunikacji w kuchni i ograniczonej skalowalności. Istniejące rozwiązania SaaS są drogie i nie są dostosowane do mniejszych lokali."
+      "title": "Dlaczego to robimy?",
+      "description": "Tradycyjne operacje restauracyjne są pracochłonne i podatne na nieefektywność. Małe i średnie restauracje często nie mają zasobów, aby przyjąć technologię na poziomie korporacyjnym, co prowadzi do ręcznego przyjmowania zamówień, błędów komunikacji w kuchni i ograniczonej skalowalności. Istniejące rozwiązania SaaS są drogie i nie są dostosowane do mniejszych lokali.",
+      "manual": {
+        "title": "Problem Procesów Manualnych",
+        "description": "Wielu właścicieli wciąż polega na papierze i pamięci. Błędy w zamówieniach, chaos w kuchni i brak przejrzystości kosztują czas i pieniądze, których małe restauracje nie mogą tracić."
+      },
+      "cost": {
+        "title": "Bariera Kosztowa",
+        "description": "Istniejące rozwiązania klasy Enterprise są często nieosiągalne cenowo lub wymagają skomplikowanej infrastruktury. Restorio eliminuje te przeszkody, oferując lekkość i skalowalność."
+      }
     },
     "users": {
-      "title": "Docelowi Użytkownicy",
+      "title": "Dla kogo budujemy przyszłość?",
+      "subtitle": "Trzy filary sukcesu każdej nowoczesnej restauracji.",
       "owners": {
         "title": "Właściciele Restauracji",
-        "description": "Zarządzaj operacjami, przeglądaj analitykę i konfiguruj menu w wielu lokalizacjach."
+        "description": "Pełna kontrola nad marżą, zapasami i analityką sprzedaży w czasie rzeczywistym."
       },
       "staff": {
         "title": "Personel i Kuchnia",
-        "description": "Otrzymuj zamówienia w czasie rzeczywistym i efektywnie zarządzaj przepływem pracy w kuchni."
+        "description": "Koniec z nieczytelnymi bonami. Przejrzysty system KDS dla płynnej pracy."
       },
       "customers": {
         "title": "Klienci Końcowi",
-        "description": "Przeglądaj menu, składaj zamówienia i śledź status zamówienia bez interakcji z kelnerem."
+        "description": "Szybkie zamawianie, bezpieczne płatności i nowoczesne doświadczenie."
       }
     },
     "engineering": {
@@ -245,7 +318,6 @@
   },
   "footer": {
     "brand": "Restorio",
-    "description": "Nowoczesna, wielodostępna platforma zarządzania restauracją zaprojektowana dla przyszłości gastronomii.",
     "sections": {
       "product": "Produkt",
       "company": "Projekt"

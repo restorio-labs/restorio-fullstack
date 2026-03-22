@@ -132,7 +132,7 @@ export const StaffPage = (): ReactElement => {
   return (
     <PageLayout title={t("staff.title")} description={t("staff.description")}>
       <div className="w-full p-6 space-y-4">
-        <div className="rounded-lg border border-border-default bg-surface-secondary p-4">
+        <div className="overflow-hidden rounded-lg border border-border-default bg-surface-secondary p-4">
           <Button type="button" onClick={() => setShowForm((current) => !current)}>
             {showForm ? t("staff.toggleForm.hide") : t("staff.toggleForm.show")}
           </Button>
@@ -183,14 +183,14 @@ export const StaffPage = (): ReactElement => {
           )}
         </div>
 
-        <div className="rounded-lg border border-border-default">
-          <div className="border-b border-border-default px-4 py-3 text-sm font-medium text-text-secondary">
+        <div className="overflow-hidden rounded-lg border border-border-default">
+          <div className="border-b border-border-default px-6 py-4 text-sm font-medium text-text-secondary">
             {t("staff.list.title")}
           </div>
-          <div className="px-4">
+          <div className="px-6">
             {isLoadingUsers && <p className="text-sm text-text-tertiary">{t("staff.list.loading")}</p>}
             {!isLoadingUsers && users.length === 0 && (
-              <p className="text-sm text-text-tertiary">{t("staff.list.empty")}</p>
+              <p className="text-sm text-text-tertiary px-6 py-2">{t("staff.list.empty")}</p>
             )}
             {!isLoadingUsers && users.length > 0 && (
               <ul className="m-0 list-none divide-y divide-border-default p-0">

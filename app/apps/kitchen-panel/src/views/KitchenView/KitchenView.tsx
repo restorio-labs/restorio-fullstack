@@ -12,6 +12,7 @@ import {
   useI18n,
   useMediaQuery,
 } from "@restorio/ui";
+import { logger } from "@restorio/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useMemo, useState, type ReactElement } from "react";
 import { useParams } from "react-router-dom";
@@ -39,7 +40,7 @@ const getRestaurantLabel = (restaurant: Restaurant): string => {
 };
 
 type StatusKey = keyof typeof statusConfigRaw;
-type StatusIconKey = (typeof statusConfigRaw)[StatusKey]["iconKey"];
+type StatusIconKey = (typeof statusConfigRaw)[StatusKey]["iconKey"] | "undo";
 
 const iconPaths: Record<StatusIconKey, React.ReactNode> = {
   add: <path d="M12 5v14M5 12h14" />,
@@ -81,9 +82,12 @@ export const KitchenView = (): ReactElement => {
   const { data: kitchenConfigData } = useQuery({
     queryKey: ["kitchen-config", selectedRestaurantId],
     queryFn: async () => {
-      if (!selectedRestaurantId) return null;
+      if (!selectedRestaurantId) {
+        return null;
+      }
       const response = await api.orders.getKitchenConfig(selectedRestaurantId);
-      return (response as { data: { rejectionLabels: string[] } }).data;
+
+      return response.data;
     },
     enabled: Boolean(selectedRestaurantId),
   });
@@ -148,11 +152,14 @@ export const KitchenView = (): ReactElement => {
     [statusKeys, statusConfig, t],
   );
 
-  const wsIndicator = wsStatus === "connected"
-    ? "bg-status-success-background"
-    : wsStatus === "reconnecting"
-      ? "bg-status-warning-background"
-      : "bg-status-error-background";
+  const wsIndicator =
+    wsStatus === "connected"
+      ? "bg-status-success-background"
+      : wsStatus === "reconnecting"
+        ? "bg-status-warning-background"
+        : "bg-status-error-background";
+
+  logger.debug(`wsStatus: ${wsStatus}\nwsIndicator: ${wsIndicator}`); // const wsIcon = wsStatus === "connected" ? "check" : wsStatus === "reconnecting" ? "clock" : "x";
 
   return (
     <div className="h-full flex flex-col">
@@ -163,10 +170,6 @@ export const KitchenView = (): ReactElement => {
               <Text as="h1" variant="h3" weight="semibold">
                 {t("kitchen.title")}
               </Text>
-              <span
-                className={`inline-block h-2.5 w-2.5 rounded-full ${wsIndicator}`}
-                title={t(`ws.${wsStatus}`)}
-              />
             </div>
             <Text as="p" variant="body-sm" className="text-text-secondary">
               {headerDescription}
@@ -179,7 +182,9 @@ export const KitchenView = (): ReactElement => {
                 size="md"
                 onClick={toggleViewMode}
                 className="flex items-center gap-2"
-                aria-label={t("aria.switchViewMode", { mode: viewMode === "sliding" ? t("kitchen.viewMode.all") : t("kitchen.viewMode.sliding") })}
+                aria-label={t("aria.switchViewMode", {
+                  mode: viewMode === "sliding" ? t("kitchen.viewMode.all") : t("kitchen.viewMode.sliding"),
+                })}
               >
                 <Icon size="md" viewBox="0 0 24 24">
                   {viewMode === "sliding" ? (
@@ -209,7 +214,9 @@ export const KitchenView = (): ReactElement => {
 
       {isLoading && (
         <div className="flex-1 flex items-center justify-center">
-          <Text as="p" variant="body-md" className="text-text-secondary">{t("common.loading")}</Text>
+          <Text as="p" variant="body-md" className="text-text-secondary">
+            {t("common.loading")}
+          </Text>
         </div>
       )}
 
@@ -340,37 +347,21 @@ export const KitchenView = (): ReactElement => {
                               <Stack direction="row" spacing="sm" className="pt-2">
                                 {isNewOrder && (
                                   <>
-                                    <Button
-                                      size="sm"
-                                      variant="primary"
-                                      onClick={() => approveOrder(order.id)}
-                                    >
+                                    <Button size="sm" variant="primary" onClick={() => approveOrder(order.id)}>
                                       {t("orders.actions.approve")}
                                     </Button>
-                                    <Button
-                                      size="sm"
-                                      variant="danger"
-                                      onClick={() => handleOpenRejection(order.id)}
-                                    >
+                                    <Button size="sm" variant="danger" onClick={() => handleOpenRejection(order.id)}>
                                       {t("orders.actions.reject")}
                                     </Button>
                                   </>
                                 )}
                                 {isPreparingOrder && (
-                                  <Button
-                                    size="sm"
-                                    variant="primary"
-                                    onClick={() => markReady(order.id)}
-                                  >
+                                  <Button size="sm" variant="primary" onClick={() => markReady(order.id)}>
                                     {t("orders.actions.markReady")}
                                   </Button>
                                 )}
                                 {isRejected && (
-                                  <Button
-                                    size="sm"
-                                    variant="secondary"
-                                    onClick={() => refundOrder(order.id)}
-                                  >
+                                  <Button size="sm" variant="secondary" onClick={() => refundOrder(order.id)}>
                                     {t("orders.actions.refund")}
                                   </Button>
                                 )}

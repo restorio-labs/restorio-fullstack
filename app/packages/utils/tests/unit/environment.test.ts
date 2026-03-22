@@ -1,7 +1,17 @@
 import { APP_SLUGS, Environment } from "@restorio/types";
 import { describe, expect, it, vi, afterEach } from "vitest";
 
-import { getAppHref, getAppUrl, getEnvMode, getEnvironmentFromEnv, goToApp, redirectTo } from "@restorio/utils";
+import {
+  getAppBaseUrl,
+  getAppHref,
+  getAppUrl,
+  getEnvMode,
+  getEnvironmentFromEnv,
+  getMergedRuntimeEnv,
+  goToApp,
+  redirectTo,
+  resolveApiBaseUrl,
+} from "@restorio/utils";
 
 describe("Environment", () => {
   it("defines the supported runtime environments", () => {
@@ -108,6 +118,53 @@ describe("getAppHref", () => {
   });
 });
 
+describe("getAppBaseUrl", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("returns override from VITE_PUBLIC_WEB_URL when set", () => {
+    vi.stubEnv("VITE_PUBLIC_WEB_URL", "https://public.example");
+
+    expect(getAppBaseUrl("public-web")).toBe("https://public.example");
+  });
+
+  it("returns override from VITE_ADMIN_PANEL_URL when set", () => {
+    vi.stubEnv("VITE_ADMIN_PANEL_URL", "https://admin.example");
+
+    expect(getAppBaseUrl("admin-panel")).toBe("https://admin.example");
+  });
+
+  it("falls back to getAppHref when no override", () => {
+    vi.stubEnv("ENV", "development");
+
+    expect(getAppBaseUrl("public-web")).toBe("http://localhost:3000");
+    expect(getAppBaseUrl("kitchen-panel")).toBe("http://localhost:3002");
+  });
+});
+
+describe("resolveApiBaseUrl", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("returns localhost default when no env", () => {
+    expect(resolveApiBaseUrl()).toBe("http://localhost:8000/api/v1");
+  });
+
+  it("returns VITE_API_BASE_URL when set", () => {
+    vi.stubEnv("VITE_API_BASE_URL", "https://api.example.com/api/v1");
+
+    expect(resolveApiBaseUrl()).toBe("https://api.example.com/api/v1");
+  });
+});
+
+describe("getMergedRuntimeEnv", () => {
+  it("is a function", () => {
+    expect(typeof getMergedRuntimeEnv).toBe("function");
+  });
+});
+
 describe("goToApp", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -144,6 +201,9 @@ describe("utils barrel exports", () => {
     expect(typeof redirectTo).toBe("function");
     expect(typeof getEnvMode).toBe("function");
     expect(typeof getAppHref).toBe("function");
+    expect(typeof getAppBaseUrl).toBe("function");
+    expect(typeof resolveApiBaseUrl).toBe("function");
+    expect(typeof getMergedRuntimeEnv).toBe("function");
     expect(typeof goToApp).toBe("function");
   });
 });

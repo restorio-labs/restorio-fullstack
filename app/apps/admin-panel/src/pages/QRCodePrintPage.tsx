@@ -67,8 +67,8 @@ export const QRCodePrintPage = (): ReactElement => {
 
   if (tables.length === 0) {
     return (
-      <div className="p-6 text-center text-sm text-text-tertiary">
-        <p className="mb-2">{t("qrPrint.noTablesTitle")}</p>
+      <div className="p-6 text-center text-sm text-text-tertiary ">
+        <p className="mb-2 text-center text-text-tertiary">{t("qrPrint.noTablesTitle")}</p>
         <Link to="/floor-editor" className="text-interactive-primary hover:underline">
           {t("qrPrint.noTablesAction")}
         </Link>

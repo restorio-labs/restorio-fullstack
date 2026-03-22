@@ -18,7 +18,7 @@ class OrderItemResponseDTO(BaseDTO):
 
 class OrderResponseDTO(BaseDTO):
     id: str = Field(..., description="Order identifier")
-    restaurant_id: str = Field(..., alias="restaurantId", description="Restaurant identifier")
+    tenant_id: str = Field(..., alias="tenantId", description="Tenant identifier")
     table_id: str | None = Field(None, alias="tableId", description="Table identifier")
     session_id: str = Field(default="", alias="sessionId", description="Session identifier")
     items: list[OrderItemResponseDTO] = Field(default_factory=list, description="Order items")
@@ -27,7 +27,8 @@ class OrderResponseDTO(BaseDTO):
     subtotal: float = Field(default=0, description="Subtotal")
     tax: float = Field(default=0, description="Tax")
     total: float = Field(default=0, description="Total")
-    table: str = Field(default="", description="Table label")
+    table_number: str = Field(default="", alias="tableNumber", description="Table number")
+    floor_canvas_id: str = Field(default="", alias="floorCanvasId", description="Floor canvas identifier")
     time: str = Field(default="", description="Order time")
     notes: str | None = Field(None, description="Order notes")
     rejection_reason: str | None = Field(None, alias="rejectionReason", description="Rejection reason")

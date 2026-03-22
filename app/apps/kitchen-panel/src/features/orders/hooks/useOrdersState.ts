@@ -32,7 +32,7 @@ export const useOrdersState = (restaurantId: string | null): UseOrdersStateRetur
     queryFn: async () => {
       if (!restaurantId) return [];
       const response = await api.orders.list(restaurantId);
-      return (response as { data: Order[] }).data ?? (response as Order[]);
+      return response.data;
     },
     enabled: Boolean(restaurantId),
     refetchInterval: 30000,

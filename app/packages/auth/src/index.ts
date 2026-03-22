@@ -1,3 +1,5 @@
+export * from "./authConfig";
+
 export * from "./storage";
 
 export * from "./permissions";

@@ -1,16 +1,18 @@
 "use client";
 
-import { Button, Form, FormActions, FormField, Input } from "@restorio/ui";
+import { Button, Form, FormActions, FormField, Input, useAuthRoute } from "@restorio/ui";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useId, useState, type ReactElement } from "react";
 
 import { api } from "@/api/client";
+import { AuthenticatedAppPicker } from "@/components/auth/AuthenticatedAppPicker";
 import { PasswordRulesPin } from "@/components/password/RulesPin";
 import { getPasswordFieldsValidation } from "@/services/passwordFieldsValidation";
 import { MIN_PASSWORD_LENGTH, isEmailValid } from "@/services/validation";
 
 export const RegisterContent = (): ReactElement => {
+  const { authStatus } = useAuthRoute();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -130,6 +132,14 @@ export const RegisterContent = (): ReactElement => {
       setFeedbackMessage(apiMessage);
     }
   };
+
+  if (authStatus === "loading") {
+    return <p className="text-center text-text-secondary">{t("common.loading")}</p>;
+  }
+
+  if (authStatus === "authenticated") {
+    return <AuthenticatedAppPicker />;
+  }
 
   return (
     <>

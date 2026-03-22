@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import type { ReactElement } from "react";
 
 import { HomeContent } from "./HomeContent";
-import { MarketingAuthProvider } from "./MarketingAuthProvider";
 
 import { getPageMetadata } from "@/i18n/metadata";
 
@@ -17,9 +16,5 @@ export async function generateMetadata({ params }: MetadataParams): Promise<Meta
 }
 
 export default function HomePage(): ReactElement {
-  return (
-    <MarketingAuthProvider>
-      <HomeContent />
-    </MarketingAuthProvider>
-  );
+  return <HomeContent />;
 }

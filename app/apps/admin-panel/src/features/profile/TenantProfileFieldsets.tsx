@@ -1,8 +1,7 @@
+import type { ProfileFormData } from "@restorio/types";
 import { Input } from "@restorio/ui";
 import type { ChangeEventHandler, ReactNode, ReactElement } from "react";
 import type { UseFormRegister } from "react-hook-form";
-
-import type { ProfileFormData } from "./profileForm";
 
 interface BaseFieldsetProps {
   children: ReactNode;
@@ -25,7 +24,7 @@ interface CompanyFieldsetProps extends FormFieldsetProps {
 
 const FieldsetCard = ({ children, title }: BaseFieldsetProps): ReactElement => {
   return (
-    <fieldset className="h-fit rounded-xl border border-border-default bg-surface-secondary/60 p-4 shadow-sm">
+    <fieldset className="h-fit rounded-xl border border-border-default bg-surface-secondary/60 p-4 shadow-sm p-6">
       <legend className="mb-0 text-sm font-semibold text-text-primary">{title}</legend>
       <div className="space-y-4">{children}</div>
     </fieldset>
@@ -52,7 +51,7 @@ export const CompanyFieldset = ({
         label={t("tenantProfile.fields.nip.label")}
         placeholder={t("tenantProfile.fields.nip.placeholder")}
         maxLength={10}
-        helperText={t("tenantProfile.fields.nip.helper")}
+        labelTooltip={t("tenantProfile.fields.nip.helper")}
         error={getFieldError("nip")}
         {...register("nip", { required: true, pattern: /^\d{10}$/ })}
       />
@@ -69,7 +68,8 @@ export const CompanyFieldset = ({
             label={t("tenantProfile.fields.logo.label")}
             type="file"
             accept="image/png,image/jpeg,image/webp"
-            helperText={isSaving ? t("tenantProfile.fields.logo.uploading") : t("tenantProfile.fields.logo.helper")}
+            labelTooltip={t("tenantProfile.fields.logo.helper")}
+            helperText={isSaving ? t("tenantProfile.fields.logo.uploading") : undefined}
             error={logoFieldError}
             onChange={handleLogoChangeSafe}
           />
