@@ -354,6 +354,9 @@
       "submit": "Create user",
       "submitting": "Creating..."
     },
+    "emptyState": {
+      "heading": "Let's start by adding new members to the team 🚀"
+    },
     "list": {
       "title": "All users",
       "loading": "Loading users...",

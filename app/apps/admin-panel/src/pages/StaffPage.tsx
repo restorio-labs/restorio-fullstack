@@ -1,4 +1,4 @@
-import { Button, Input, Select, useI18n } from "@restorio/ui";
+import { Button, FormActions, Input, Select, useI18n } from "@restorio/ui";
 import { isEmailValid } from "@restorio/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useMemo, useState } from "react";
@@ -129,70 +129,99 @@ export const StaffPage = (): ReactElement => {
     deleteMutation.mutate(userId);
   };
 
+  const hasUsers = !isLoadingUsers && users.length > 0;
+  const showEmptyState = !isLoadingUsers && users.length === 0;
+  const showFormCard = hasUsers || showForm;
+
   return (
-    <PageLayout title={t("staff.title")} description={t("staff.description")}>
+    <PageLayout
+      title={t("staff.title")}
+      description={t("staff.description")}
+      headerActions={
+        showEmptyState && !showForm ? (
+          <FormActions>
+            <Button type="button" onClick={() => setShowForm(true)}>
+              {t("staff.toggleForm.show")}
+            </Button>
+          </FormActions>
+        ) : undefined
+      }
+    >
       <div className="w-full p-6 space-y-4">
-        <div className="overflow-hidden rounded-lg border border-border-default bg-surface-secondary p-4">
-          <Button type="button" onClick={() => setShowForm((current) => !current)}>
-            {showForm ? t("staff.toggleForm.hide") : t("staff.toggleForm.show")}
-          </Button>
+        {isLoadingUsers && <p className="text-sm text-text-tertiary">{t("staff.list.loading")}</p>}
 
-          {showForm && (
-            <form
-              className="mt-4 grid gap-3 md:grid-cols-[1fr_200px_auto]"
-              onSubmit={(event) => void handleSubmit(event)}
-            >
-              <Input
-                label={t("staff.form.emailLabel")}
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                required
-              />
-              <Select
-                label={t("staff.form.accessLabel")}
-                value={accessLevel}
-                onChange={(event) => {
-                  const nextValue = toAccessLevel(event.target.value);
+        {showEmptyState && (
+          <h1 className="text-2xl mt-4 font-semibold text-center text-text-primary">{t("staff.emptyState.heading")}</h1>
+        )}
 
-                  if (nextValue !== null) {
-                    setAccessLevel(nextValue);
-                  }
-                }}
-                options={accessOptions}
-              />
-              <div className="md:self-end">
-                <Button type="submit" disabled={!isFormValid || createMutation.isPending}>
-                  {createMutation.isPending ? t("staff.form.submitting") : t("staff.form.submit")}
+        {showFormCard && (
+          <div className="overflow-hidden rounded-lg border border-border-default bg-surface-secondary p-4">
+            <div className="flex flex-wrap items-center gap-2">
+              {hasUsers && (
+                <Button type="button" onClick={() => setShowForm((current) => !current)}>
+                  {showForm ? t("staff.toggleForm.hide") : t("staff.toggleForm.show")}
                 </Button>
-              </div>
-            </form>
-          )}
-
-          {feedback && (
-            <div
-              className={`mt-4 rounded-md border px-3 py-2 text-sm ${
-                feedback.type === "success"
-                  ? "border-green-300 bg-green-50 text-green-800 dark:border-green-700 dark:bg-green-900/20 dark:text-green-300"
-                  : "border-red-300 bg-red-50 text-red-800 dark:border-red-700 dark:bg-red-900/20 dark:text-red-300"
-              }`}
-            >
-              {feedback.message}
+              )}
+              {!hasUsers && showForm && (
+                <Button type="button" variant="secondary" onClick={() => setShowForm(false)}>
+                  {t("staff.toggleForm.hide")}
+                </Button>
+              )}
             </div>
-          )}
-        </div>
 
-        <div className="overflow-hidden rounded-lg border border-border-default">
-          <div className="border-b border-border-default px-6 py-4 text-sm font-medium text-text-secondary">
-            {t("staff.list.title")}
-          </div>
-          <div className="px-6">
-            {isLoadingUsers && <p className="text-sm text-text-tertiary">{t("staff.list.loading")}</p>}
-            {!isLoadingUsers && users.length === 0 && (
-              <p className="text-sm text-text-tertiary px-6 py-2">{t("staff.list.empty")}</p>
+            {showForm && (
+              <form
+                className="mt-4 grid gap-3 md:grid-cols-[1fr_200px_auto]"
+                onSubmit={(event) => void handleSubmit(event)}
+              >
+                <Input
+                  label={t("staff.form.emailLabel")}
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  required
+                />
+                <Select
+                  label={t("staff.form.accessLabel")}
+                  value={accessLevel}
+                  onChange={(event) => {
+                    const nextValue = toAccessLevel(event.target.value);
+
+                    if (nextValue !== null) {
+                      setAccessLevel(nextValue);
+                    }
+                  }}
+                  options={accessOptions}
+                />
+                <div className="md:self-end">
+                  <Button type="submit" disabled={!isFormValid || createMutation.isPending}>
+                    {createMutation.isPending ? t("staff.form.submitting") : t("staff.form.submit")}
+                  </Button>
+                </div>
+              </form>
             )}
-            {!isLoadingUsers && users.length > 0 && (
+
+            {feedback && (
+              <div
+                className={`mt-4 rounded-md border px-3 py-2 text-sm ${
+                  feedback.type === "success"
+                    ? "border-green-300 bg-green-50 text-green-800 dark:border-green-700 dark:bg-green-900/20 dark:text-green-300"
+                    : "border-red-300 bg-red-50 text-red-800 dark:border-red-700 dark:bg-red-900/20 dark:text-red-300"
+                }`}
+              >
+                {feedback.message}
+              </div>
+            )}
+          </div>
+        )}
+
+        {hasUsers && (
+          <div className="overflow-hidden rounded-lg border border-border-default">
+            <div className="border-b border-border-default px-6 py-4 text-sm font-medium text-text-secondary">
+              {t("staff.list.title")}
+            </div>
+            <div className="px-6">
               <ul className="m-0 list-none divide-y divide-border-default p-0">
                 {users.map((user) => (
                   <li key={user.id} className="flex items-center justify-between py-3">
@@ -253,9 +282,9 @@ export const StaffPage = (): ReactElement => {
                   </li>
                 ))}
               </ul>
-            )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </PageLayout>
   );

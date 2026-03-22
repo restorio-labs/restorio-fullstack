@@ -350,6 +350,9 @@
       "submit": "Utwórz użytkownika",
       "submitting": "Tworzenie..."
     },
+    "emptyState": {
+      "heading": "Zacznijmy od dodania nowych członków zespołu 🚀"
+    },
     "list": {
       "title": "Wszyscy użytkownicy",
       "loading": "Ładowanie użytkowników...",
