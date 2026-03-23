@@ -37,6 +37,27 @@ export interface CreateStaffUserRequest {
   access_level: "kitchen" | "waiter";
 }
 
+export interface BulkCreateStaffUserRequest {
+  users: CreateStaffUserRequest[];
+}
+
+export interface BulkCreateStaffUserResult {
+  email: string;
+  status: "created" | "failed";
+  error?: string;
+  data?: {
+    user_id: string;
+    tenant_id: string;
+    tenant_name: string;
+    tenant_slug: string;
+  };
+}
+
+export interface BulkCreateStaffUserResponse {
+  message: string;
+  results: BulkCreateStaffUserResult[];
+}
+
 export interface StaffUserData {
   id: string;
   email: string;

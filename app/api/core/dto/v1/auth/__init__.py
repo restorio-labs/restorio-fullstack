@@ -60,6 +60,10 @@ class CreateUserDTO(BaseDTO):
         return value
 
 
+class BulkCreateUsersDTO(BaseDTO):
+    users: list[CreateUserDTO] = Field(..., min_length=1, max_length=50, description="List of users to create")
+
+
 class SetPasswordDTO(BaseDTO):
     activation_id: UUID = Field(..., description="Activation link ID")
     password: str = Field(..., min_length=8, max_length=128, description="New password")

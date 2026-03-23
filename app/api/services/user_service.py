@@ -92,11 +92,26 @@ class UserService:
         tenant_id: UUID,
         account_type: AccountType,
         force_password_change: bool = False,
-    ) -> tuple[User, TenantRole]:
+    ) -> tuple[User, TenantRole, bool]:
         existing_user = await session.scalar(select(User).where(User.email == email))
         if existing_user:
-            msg = "Email already registered"
-            raise ConflictError(msg)
+            existing_role = await session.scalar(
+                select(TenantRole).where(
+                    TenantRole.account_id == existing_user.id,
+                    TenantRole.tenant_id == tenant_id,
+                )
+            )
+            if existing_role is not None:
+                msg = "User already belongs to this tenant"
+                raise ConflictError(msg)
+            tenant_role = TenantRole(
+                account_id=existing_user.id,
+                tenant_id=tenant_id,
+                account_type=account_type,
+            )
+            session.add(tenant_role)
+            await session.flush()
+            return existing_user, tenant_role, False
 
         user = User(
             email=email,
@@ -117,4 +132,4 @@ class UserService:
         session.add(tenant_role)
         await session.flush()
 
-        return user, tenant_role
+        return user, tenant_role, True

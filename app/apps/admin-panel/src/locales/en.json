@@ -345,14 +345,17 @@
       "waiter": "Waiter"
     },
     "toggleForm": {
-      "show": "Add user",
+      "show": "Add users",
       "hide": "Cancel"
     },
     "form": {
       "emailLabel": "Email",
       "accessLabel": "Access level",
-      "submit": "Create user",
-      "submitting": "Creating..."
+      "addRow": "Add another",
+      "removeRow": "Remove",
+      "saveSingle": "Save this user",
+      "submit": "Save all",
+      "submitting": "Saving..."
     },
     "emptyState": {
       "heading": "Let's start by adding new members to the team 🚀"
@@ -363,9 +366,30 @@
       "empty": "No users yet."
     },
     "validation": {
-      "invalidEmail": "Enter a valid email address."
+      "invalidEmail": "One or more email addresses are invalid.",
+      "duplicateEmail": "Duplicate emails found. Each email must be unique.",
+      "existingEmail": "Already in this tenant: {{emails}}"
+    },
+    "toast": {
+      "bulkSuccessTitle": "Users added",
+      "bulkSuccessDescription": "All users created successfully. Activation emails will be sent shortly.",
+      "bulkPartialTitle": "Partial success",
+      "bulkPartialDescription": "{{created}} of {{total}} users created. Some failed — check the list for details.",
+      "bulkErrorTitle": "Could not add users",
+      "bulkErrorDescription": "Unable to create users.",
+      "singleSuccessTitle": "User added",
+      "singleSuccessDescription": "User created. Activation email will be sent shortly.",
+      "singleErrorTitle": "Could not add user",
+      "singleErrorDescription": "Unable to create user.",
+      "deleteSuccessTitle": "User removed",
+      "deleteSuccessDescription": "User deleted successfully.",
+      "deleteErrorTitle": "Could not remove user",
+      "deleteErrorDescription": "Unable to delete user."
     },
     "feedback": {
+      "bulkSuccess": "All users created successfully. Activation emails will be sent shortly.",
+      "bulkPartial": "{{created}} of {{total}} users created. Some failed — check the list for details.",
+      "bulkError": "Unable to create users.",
       "createSuccess": "User created. Activation email should be sent shortly.",
       "createError": "Unable to create user.",
       "deleteSuccess": "User deleted successfully.",

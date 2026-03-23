@@ -43,7 +43,9 @@
       "emailInvalid": "Podaj prawidłowy adres e-mail",
       "passwordRequired": "Hasło jest wymagane",
       "passwordInvalid": "Hasło nie spełnia wymagań",
-      "passwordMinLength": "Hasło musi mieć co najmniej {min} znaków"
+      "passwordMinLength": "Hasło musi mieć co najmniej {min} znaków",
+      "invalidCredentials": "Nieprawidłowy adres e-mail lub hasło",
+      "accountNotActive": "To konto nie jest jeszcze aktywne"
     }
   },
   "register": {
@@ -70,7 +72,9 @@
       "confirmPasswordMismatch": "Hasła nie są takie same",
       "restaurantNameRequired": "Nazwa restauracji jest wymagana",
       "termsRequired": "Musisz zaakceptować regulamin",
-      "generic": "Nie udało się utworzyć konta. Spróbuj ponownie."
+      "generic": "Nie udało się utworzyć konta. Spróbuj ponownie.",
+      "emailAlreadyRegistered": "Ten adres e-mail jest już zarejestrowany",
+      "restaurantSlugExists": "Restauracja o tej nazwie jest już zarejestrowana"
     },
     "passwordRules": {
       "minLength": "- Co najmniej 8 znaków",

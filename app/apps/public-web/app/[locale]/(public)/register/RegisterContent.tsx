@@ -1,6 +1,7 @@
 "use client";
 
 import { Button, Form, FormActions, FormField, Input, useAuthRoute } from "@restorio/ui";
+import { getApiErrorData, getApiErrorMessage } from "@restorio/utils";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useId, useState, type ReactElement } from "react";
@@ -8,6 +9,7 @@ import { useId, useState, type ReactElement } from "react";
 import { api } from "@/api/client";
 import { AuthenticatedAppPicker } from "@/components/auth/AuthenticatedAppPicker";
 import { PasswordRulesPin } from "@/components/password/RulesPin";
+import { translateRegisterApiMessage } from "@/services/authApiMessages";
 import { getPasswordFieldsValidation } from "@/services/passwordFieldsValidation";
 import { MIN_PASSWORD_LENGTH, isEmailValid } from "@/services/validation";
 
@@ -113,19 +115,9 @@ export const RegisterContent = (): ReactElement => {
       setFeedbackMessage(String(response.message));
       setSubmitted(false);
     } catch (err: unknown) {
-      interface AxiosErrorData {
-        response?: { data?: { message?: string; detail?: string } };
-      }
-      const data =
-        err && typeof err === "object" && "response" in err ? (err as AxiosErrorData).response?.data : undefined;
-
-      let apiMessage = t("errors.generic");
-
-      if (typeof data?.detail === "string" && data.detail.trim().length > 0) {
-        apiMessage = data.detail;
-      } else if (typeof data?.message === "string" && data.message.trim().length > 0) {
-        apiMessage = data.message;
-      }
+      const data = getApiErrorData(err);
+      const rawMessage = getApiErrorMessage(data);
+      const apiMessage = translateRegisterApiMessage(rawMessage, t) ?? t("errors.generic");
 
       setFeedbackStatus("error");
 

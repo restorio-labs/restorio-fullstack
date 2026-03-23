@@ -341,14 +341,17 @@
       "waiter": "Kelner"
     },
     "toggleForm": {
-      "show": "Dodaj użytkownika",
+      "show": "Dodaj użytkowników",
       "hide": "Anuluj"
     },
     "form": {
       "emailLabel": "Email",
       "accessLabel": "Poziom dostępu",
-      "submit": "Utwórz użytkownika",
-      "submitting": "Tworzenie..."
+      "addRow": "Dodaj kolejnego",
+      "removeRow": "Usuń",
+      "saveSingle": "Zapisz tego użytkownika",
+      "submit": "Zapisz wszystkich",
+      "submitting": "Zapisywanie..."
     },
     "emptyState": {
       "heading": "Zacznijmy od dodania nowych członków zespołu 🚀"
@@ -359,9 +362,30 @@
       "empty": "Brak użytkowników."
     },
     "validation": {
-      "invalidEmail": "Podaj prawidłowy adres e-mail."
+      "invalidEmail": "Co najmniej jeden adres e-mail jest nieprawidłowy.",
+      "duplicateEmail": "Znaleziono powtarzające się adresy e-mail. Każdy musi być unikalny.",
+      "existingEmail": "Już w tym lokalu: {{emails}}"
+    },
+    "toast": {
+      "bulkSuccessTitle": "Dodano użytkowników",
+      "bulkSuccessDescription": "Wszyscy użytkownicy zostali utworzeni. Linki aktywacyjne zostaną wkrótce wysłane.",
+      "bulkPartialTitle": "Częściowy sukces",
+      "bulkPartialDescription": "Utworzono {{created}} z {{total}} użytkowników. Niektóre nie powiodły się — sprawdź listę.",
+      "bulkErrorTitle": "Nie udało się dodać użytkowników",
+      "bulkErrorDescription": "Nie udało się utworzyć użytkowników.",
+      "singleSuccessTitle": "Dodano użytkownika",
+      "singleSuccessDescription": "Użytkownik utworzony. Link aktywacyjny zostanie wkrótce wysłany.",
+      "singleErrorTitle": "Nie udało się dodać użytkownika",
+      "singleErrorDescription": "Nie udało się utworzyć użytkownika.",
+      "deleteSuccessTitle": "Użytkownik usunięty",
+      "deleteSuccessDescription": "Użytkownik został usunięty.",
+      "deleteErrorTitle": "Nie udało się usunąć",
+      "deleteErrorDescription": "Nie udało się usunąć użytkownika."
     },
     "feedback": {
+      "bulkSuccess": "Wszyscy użytkownicy zostali utworzeni. Linki aktywacyjne zostaną wkrótce wysłane.",
+      "bulkPartial": "Utworzono {{created}} z {{total}} użytkowników. Niektóre nie powiodły się — sprawdź listę.",
+      "bulkError": "Nie udało się utworzyć użytkowników.",
       "createSuccess": "Użytkownik utworzony. Link aktywacyjny zostanie wkrótce wysłany.",
       "createError": "Nie udało się utworzyć użytkownika.",
       "deleteSuccess": "Użytkownik został usunięty.",

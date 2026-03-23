@@ -8,7 +8,6 @@ import {
   getApiValidationFieldLeafs,
   LAST_VISITED_APP_STORAGE_KEY,
   getAppHref,
-  goToApp,
 } from "@restorio/utils";
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
@@ -16,6 +15,7 @@ import { useMemo, useState } from "react";
 
 import { api } from "@/api/client";
 import { AuthenticatedAppPicker } from "@/components/auth/AuthenticatedAppPicker";
+import { translateLoginApiMessage } from "@/services/authApiMessages";
 import { isEmailValid, MIN_PASSWORD_LENGTH } from "@/services/validation";
 
 type ViewState = "form" | "choosing_app";
@@ -116,7 +116,8 @@ export const LoginContent = (): ReactElement => {
       const data = getApiErrorData(err);
       const extractedFieldErrors = extractFieldErrors(data, t);
       const hasFieldErrors = Object.keys(extractedFieldErrors).length > 0;
-      const apiMessage = getApiErrorMessage(data);
+      const rawApiMessage = getApiErrorMessage(data);
+      const apiMessage = translateLoginApiMessage(rawApiMessage, t);
 
       if (hasFieldErrors) {
         setFieldErrors(extractedFieldErrors);

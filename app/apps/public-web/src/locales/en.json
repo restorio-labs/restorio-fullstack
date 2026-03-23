@@ -43,7 +43,9 @@
       "emailInvalid": "Enter a valid email address",
       "passwordRequired": "Password is required",
       "passwordInvalid": "Password does not meet the requirements",
-      "passwordMinLength": "Password must be at least {min} characters"
+      "passwordMinLength": "Password must be at least {min} characters",
+      "invalidCredentials": "Invalid email or password",
+      "accountNotActive": "This account is not active yet"
     }
   },
   "register": {
@@ -66,7 +68,9 @@
       "confirmPasswordMismatch": "Passwords do not match",
       "restaurantNameRequired": "Restaurant name is required",
       "termsRequired": "You must accept the terms and conditions",
-      "generic": "Unable to create account. Please try again."
+      "generic": "Unable to create account. Please try again.",
+      "emailAlreadyRegistered": "This email is already registered",
+      "restaurantSlugExists": "A restaurant with this name is already registered"
     },
     "passwordRules": {
       "minLength": "- At least 8 characters",
