@@ -42,6 +42,8 @@ export const FloorEditorPage = (): ReactElement => {
   const [pendingNavigationPath, setPendingNavigationPath] = useState<string | null>(null);
   const [floorNameDraft, setFloorNameDraft] = useState("");
   const [isDeletingCanvas, setIsDeletingCanvas] = useState(false);
+  const [isDeleteFloorModalOpen, setIsDeleteFloorModalOpen] = useState(false);
+  const [deleteFloorConfirmName, setDeleteFloorConfirmName] = useState("");
   const [isFloorSelectOpen, setIsFloorSelectOpen] = useState(false);
   const { showToast } = useToast();
 
@@ -272,16 +274,18 @@ export const FloorEditorPage = (): ReactElement => {
     ? floorNameDraft.trim() !== "" && floorNameDraft.trim() !== activeCanvasForEditor.name
     : false;
   const canManageFloor = !isSavingCanvas && !isCreatingCanvas && !isDeletingCanvas;
+  const deleteFloorNameMatches =
+    activeCanvasForEditor !== null && deleteFloorConfirmName.trim() === activeCanvasForEditor.name.trim();
 
-  const handleDeleteCanvas = useCallback(async (): Promise<void> => {
+  const handleDeleteCanvas = useCallback(async (): Promise<boolean> => {
     if (!tenant || !activeCanvasForEditor || isFirstFloor || !canManageFloor) {
-      return;
+      return false;
     }
 
     const fallbackCanvas = tenant.floorCanvases.find((canvas) => canvas.id !== activeCanvasForEditor.id);
 
     if (!fallbackCanvas) {
-      return;
+      return false;
     }
 
     setIsDeletingCanvas(true);
@@ -293,9 +297,13 @@ export const FloorEditorPage = (): ReactElement => {
       setSelectedCanvasId(fallbackCanvas.id);
       setIsDirty(false);
       showToast("success", t("floorEditor.deleteSuccessTitle"), t("floorEditor.deleteSuccessMessage"));
+
+      return true;
     } catch (error) {
       console.error("Failed to delete floor:", error);
       showToast("error", t("floorEditor.deleteErrorTitle"), t("floorEditor.deleteErrorMessage"));
+
+      return false;
     } finally {
       setIsDeletingCanvas(false);
     }
@@ -314,7 +322,7 @@ export const FloorEditorPage = (): ReactElement => {
   const showFloorPicker = floorCanvasCount > 1;
 
   const floorSelector = activeCanvasForEditor ? (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="flex w-full flex-wrap items-center justify-center gap-3">
       {showFloorPicker ? (
         <div className="flex items-center gap-2 text-sm text-text-secondary">
           <span className="shrink-0">{t("floorEditor.floorSelector.label")}</span>
@@ -381,7 +389,10 @@ export const FloorEditorPage = (): ReactElement => {
         type="button"
         variant="danger"
         size="sm"
-        onClick={() => void handleDeleteCanvas()}
+        onClick={() => {
+          setDeleteFloorConfirmName("");
+          setIsDeleteFloorModalOpen(true);
+        }}
         disabled={isFirstFloor || !canManageFloor || isDirty || isFloorNameChanged}
       >
         {isDeletingCanvas ? t("floorEditor.deletingButton") : t("floorEditor.floorSelector.deleteFloor")}
@@ -446,9 +457,10 @@ export const FloorEditorPage = (): ReactElement => {
 
   if (!hasCanvases) {
     return (
-      <PageLayout title={t("floorEditor.title")} description={tenant.name}>
-        <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
-          <p className="text-sm text-text-tertiary">{t("floorEditor.emptyMessage")}</p>
+      <PageLayout
+        title={t("floorEditor.title")}
+        description={tenant.name}
+        headerActions={
           <button
             type="button"
             onClick={() => void handleCreateCanvas()}
@@ -457,6 +469,10 @@ export const FloorEditorPage = (): ReactElement => {
           >
             {isCreatingCanvas ? t("floorEditor.creatingButton") : t("floorEditor.createButton")}
           </button>
+        }
+      >
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
+          <p className="text-sm text-text-tertiary">{t("floorEditor.emptyMessage")}</p>
         </div>
       </PageLayout>
     );
@@ -497,6 +513,68 @@ export const FloorEditorPage = (): ReactElement => {
               disabled={isSavingCanvas}
             >
               {t("floorEditor.unsavedChanges.discard")}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+      <Modal
+        isOpen={isDeleteFloorModalOpen}
+        onClose={() => {
+          if (isDeletingCanvas) {
+            return;
+          }
+
+          setIsDeleteFloorModalOpen(false);
+          setDeleteFloorConfirmName("");
+        }}
+        title={t("floorEditor.deleteConfirm.title")}
+        size="sm"
+        closeOnOverlayClick={!isDeletingCanvas}
+        closeOnEscape={!isDeletingCanvas}
+      >
+        <div className="flex flex-col gap-4">
+          <p className="text-sm text-text-secondary">
+            {t("floorEditor.deleteConfirm.message", { name: activeCanvasForEditor?.name ?? "" })}
+          </p>
+          <label className="flex flex-col gap-1.5 text-sm text-text-secondary">
+            <span>{t("floorEditor.deleteConfirm.inputLabel")}</span>
+            <input
+              type="text"
+              value={deleteFloorConfirmName}
+              onChange={(event) => setDeleteFloorConfirmName(event.target.value)}
+              autoComplete="off"
+              disabled={isDeletingCanvas}
+              className="rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
+            />
+          </label>
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                setIsDeleteFloorModalOpen(false);
+                setDeleteFloorConfirmName("");
+              }}
+              disabled={isDeletingCanvas}
+            >
+              {t("floorEditor.deleteConfirm.cancel")}
+            </Button>
+            <Button
+              type="button"
+              variant="danger"
+              disabled={!deleteFloorNameMatches || isDeletingCanvas}
+              onClick={() => {
+                void (async (): Promise<void> => {
+                  const ok = await handleDeleteCanvas();
+
+                  if (ok) {
+                    setIsDeleteFloorModalOpen(false);
+                    setDeleteFloorConfirmName("");
+                  }
+                })();
+              }}
+            >
+              {isDeletingCanvas ? t("floorEditor.deletingButton") : t("floorEditor.deleteConfirm.confirm")}
             </Button>
           </div>
         </div>

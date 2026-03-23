@@ -41,6 +41,9 @@ export const Modal = ({
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
+
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     if (!isOpen) {
@@ -51,7 +54,7 @@ export const Modal = ({
 
     const handleEscape = (e: KeyboardEvent): void => {
       if (closeOnEscape && e.key === "Escape") {
-        onClose();
+        onCloseRef.current();
       }
     };
 
@@ -65,7 +68,7 @@ export const Modal = ({
       document.body.style.overflow = "";
       previousActiveElement.current?.focus();
     };
-  }, [isOpen, closeOnEscape, onClose]);
+  }, [isOpen, closeOnEscape]);
 
   if (!isOpen) {
     return null;

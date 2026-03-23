@@ -33,6 +33,13 @@
     "deleteSuccessMessage": "تم حذف الطابق.",
     "deleteErrorTitle": "فشل الحذف",
     "deleteErrorMessage": "تعذّر حذف هذا الطابق. حاول مرة أخرى.",
+    "deleteConfirm": {
+      "title": "حذف هذا الطابق؟",
+      "message": "سيؤدي ذلك إلى حذف تصميم الطابق «{{name}}» نهائيًا. اكتب هذا الاسم حرفيًا للتأكيد.",
+      "inputLabel": "اسم الطابق",
+      "cancel": "إلغاء",
+      "confirm": "حذف الطابق"
+    },
     "floorSelector": {
       "label": "الطابق",
       "addFloor": "إضافة طابق",

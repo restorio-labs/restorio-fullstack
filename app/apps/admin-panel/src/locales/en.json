@@ -92,6 +92,13 @@
     "deleteErrorTitle": "Delete failed",
     "deleteErrorMessage": "Could not delete this floor. Please try again.",
     "deletingButton": "Deleting...",
+    "deleteConfirm": {
+      "title": "Delete this floor?",
+      "message": "This permanently deletes the floor layout “{{name}}”. Type that exact name to confirm.",
+      "inputLabel": "Floor name",
+      "cancel": "Cancel",
+      "confirm": "Delete floor"
+    },
     "mobileUnavailableTitle": "Floor editor unavailable on mobile",
     "mobileUnavailableMessage": "Use a tablet or desktop device to edit floor layouts in the admin panel.",
     "floorSelector": {

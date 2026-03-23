@@ -33,6 +33,13 @@
     "deleteSuccessMessage": "El piso fue eliminado.",
     "deleteErrorTitle": "No se pudo eliminar",
     "deleteErrorMessage": "No se pudo eliminar este piso. Inténtalo de nuevo.",
+    "deleteConfirm": {
+      "title": "¿Eliminar este piso?",
+      "message": "Esto eliminará permanentemente el diseño del piso «{{name}}». Escribe exactamente ese nombre para confirmar.",
+      "inputLabel": "Nombre del piso",
+      "cancel": "Cancelar",
+      "confirm": "Eliminar piso"
+    },
     "floorSelector": {
       "label": "Piso",
       "addFloor": "Añadir piso",

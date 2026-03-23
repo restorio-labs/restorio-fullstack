@@ -12,7 +12,13 @@ import { createPortal } from "react-dom";
 
 import { cn } from "../../utils";
 
-export type DropdownPlacement = "bottom-start" | "bottom-end" | "top-start" | "top-end";
+export type DropdownPlacement =
+  | "bottom-start"
+  | "bottom-center"
+  | "bottom-end"
+  | "top-start"
+  | "top-center"
+  | "top-end";
 
 export interface DropdownProps {
   trigger: ReactNode;
@@ -102,7 +108,7 @@ export const Dropdown = ({
       return;
     }
 
-    const { left: trLeft, right: trRight, top: trTop, bottom: trBottom } = tr;
+    const { left: trLeft, right: trRight, top: trTop, bottom: trBottom, width: trWidth } = tr;
 
     let top = 0;
     let left = 0;
@@ -111,6 +117,12 @@ export const Dropdown = ({
       case "bottom-end": {
         top = trBottom + MENU_GAP_PX;
         left = trRight - mw;
+
+        break;
+      }
+      case "bottom-center": {
+        top = trBottom + MENU_GAP_PX;
+        left = trLeft + trWidth / 2 - mw / 2;
 
         break;
       }
@@ -123,6 +135,12 @@ export const Dropdown = ({
       case "top-end": {
         top = trTop - mh - MENU_GAP_PX;
         left = trRight - mw;
+
+        break;
+      }
+      case "top-center": {
+        top = trTop - mh - MENU_GAP_PX;
+        left = trLeft + trWidth / 2 - mw / 2;
 
         break;
       }
@@ -188,8 +206,10 @@ export const Dropdown = ({
 
   const placementStyles: Record<DropdownPlacement, string> = {
     "bottom-start": "top-full mt-1 start-0",
+    "bottom-center": "top-full mt-1 left-1/2 -translate-x-1/2",
     "bottom-end": "top-full mt-1 end-0",
     "top-start": "bottom-full mb-1 start-0",
+    "top-center": "bottom-full mb-1 left-1/2 -translate-x-1/2",
     "top-end": "bottom-full mb-1 end-0",
   };
 

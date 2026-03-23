@@ -92,6 +92,13 @@
     "deleteErrorTitle": "Nie udało się usunąć",
     "deleteErrorMessage": "Nie można usunąć tej sali. Spróbuj ponownie.",
     "deletingButton": "Usuwanie...",
+    "deleteConfirm": {
+      "title": "Usunąć tę salę?",
+      "message": "To trwale usunie układ pomieszczenia „{{name}}”. Wpisz dokładnie tę nazwę, aby potwierdzić.",
+      "inputLabel": "Nazwa sali",
+      "cancel": "Anuluj",
+      "confirm": "Usuń salę"
+    },
     "mobileUnavailableTitle": "Edytor układu sali niedostępny na telefonie",
     "mobileUnavailableMessage": "Aby edytować układ sali w panelu administratora, użyj tabletu lub komputera.",
     "floorSelector": {

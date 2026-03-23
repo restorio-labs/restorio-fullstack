@@ -1,15 +1,47 @@
-import { Dropdown, useI18n } from "@restorio/ui";
+import type { TenantSummary } from "@restorio/types";
+import { Dropdown, useBreakpoint, useI18n } from "@restorio/ui";
+import { deslug } from "@restorio/utils";
 import type { ReactElement } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useCurrentTenant } from "../../context/TenantContext";
 
+interface TenantSwitcherItemTextProps {
+  tenant: TenantSummary;
+  isSelected: boolean;
+}
+
+interface TenantSwitcherTriggerTextProps {
+  tenant: TenantSummary;
+}
+
+const TenantSwitcherItemText = ({ tenant, isSelected }: TenantSwitcherItemTextProps): ReactElement => (
+  <span className="flex min-w-0 flex-col items-start gap-0.5 text-left">
+    <span
+      className={`truncate text-base ${isSelected ? "font-semibold text-interactive-primary" : "font-medium text-text-primary"}`}
+    >
+      {tenant.name}
+    </span>
+    <span className={`truncate text-xs ${isSelected ? "text-interactive-primary/80" : "text-text-tertiary"}`}>
+      {deslug(tenant.slug)}
+    </span>
+  </span>
+);
+
+const TenantSwitcherTriggerText = ({ tenant }: TenantSwitcherTriggerTextProps): ReactElement => (
+  <span className="flex min-w-0 flex-col items-start gap-0.5 text-left">
+    <span className="truncate text-base font-medium text-text-primary">{tenant.name}</span>
+    <span className="truncate text-xs text-text-tertiary">{deslug(tenant.slug)}</span>
+  </span>
+);
+
 export const TenantSwitcher = (): ReactElement | null => {
   const { t } = useI18n();
   const { tenants, tenantsState, selectedTenantId, selectedTenant, setSelectedTenantId } = useCurrentTenant();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const isDesktopUp = useBreakpoint("lg");
 
   if (tenantsState === "error") {
     return <div className="text-sm text-status-error-text">{t("tenantSwitcher.loadError")}</div>;
@@ -39,11 +71,15 @@ export const TenantSwitcher = (): ReactElement | null => {
       <Dropdown
         isOpen={isOpen}
         onOpenChange={setIsOpen}
-        placement="bottom-start"
-        className="w-full"
+        placement={isDesktopUp ? "bottom-center" : "bottom-end"}
+        className="min-w-full w-max mr-3"
         trigger={
-          <div className="flex w-full items-center justify-between rounded-lg border border-border-default bg-surface-primary px-5 py-4 text-base font-medium text-text-primary shadow-sm transition hover:bg-surface-secondary">
-            <span className="truncate">{selectedTenant?.name ?? t("tenantSwitcher.select")}</span>
+          <div className="flex w-full items-center justify-between gap-2 rounded-lg border border-border-default bg-surface-primary px-5 py-4 text-text-primary shadow-sm transition hover:bg-surface-secondary">
+            {selectedTenant ? (
+              <TenantSwitcherTriggerText tenant={selectedTenant} />
+            ) : (
+              <span className="truncate text-base font-medium">{t("tenantSwitcher.select")}</span>
+            )}
             <svg
               className="ml-3 h-5 w-5 shrink-0 text-text-secondary"
               viewBox="0 0 24 24"
@@ -63,15 +99,13 @@ export const TenantSwitcher = (): ReactElement | null => {
             <button
               key={tenant.id}
               type="button"
-              className={`w-full rounded-sm px-4 py-2 text-left text-base hover:bg-surface-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-border-focus ${
-                tenant.id === selectedTenantId ? "font-semibold text-interactive-primary" : "text-text-primary"
-              }`}
+              className="w-full rounded-sm px-4 py-2 text-left text-base hover:bg-surface-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-border-focus"
               onClick={() => {
                 setSelectedTenantId(tenant.id);
                 setIsOpen(false);
               }}
             >
-              {tenant.name}
+              <TenantSwitcherItemText tenant={tenant} isSelected={tenant.id === selectedTenantId} />
             </button>
           ))}
           <div className="my-2 border-t border-border-default" />
