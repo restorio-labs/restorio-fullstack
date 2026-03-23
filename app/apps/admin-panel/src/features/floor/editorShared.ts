@@ -51,13 +51,14 @@ export const clampElementBounds = (
   bounds: { x: number; y: number; w: number; h: number; rotation?: number },
   layout: FloorCanvasType,
 ): { x: number; y: number; w: number; h: number; rotation?: number } => {
-  let x = bounds.x;
-  let y = bounds.y;
+  let { x } = bounds;
+  let { y } = bounds;
   const minW = Math.max(GRID_CELL, bounds.w);
   const minH = Math.max(GRID_CELL, bounds.h);
 
   let right = Math.min(x + minW, layout.width);
   let bottom = Math.min(y + minH, layout.height);
+
   x = Math.max(0, x);
   y = Math.max(0, y);
 
