@@ -23,11 +23,9 @@ export class UserResource extends BaseResource {
     data: BulkCreateStaffUserRequest,
     signal?: AbortSignal,
   ): Promise<BulkCreateStaffUserResponse> {
-    return this.client.post<BulkCreateStaffUserResponse>(
-      `users/${encodeURIComponent(tenantId)}/bulk`,
-      data,
-      { signal },
-    );
+    return this.client.post<BulkCreateStaffUserResponse>(`users/${encodeURIComponent(tenantId)}/bulk`, data, {
+      signal,
+    });
   }
 
   /**

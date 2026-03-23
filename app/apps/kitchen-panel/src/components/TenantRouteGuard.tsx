@@ -1,13 +1,14 @@
-import { api } from "../api/client";
-import { buildInvalidKitchenTenantRedirectUrl } from "../utils/invalidTenantRedirect";
 import { useQuery } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 import { useEffect, useRef } from "react";
 import { Outlet, useParams } from "react-router-dom";
 
+import { api } from "../api/client";
+import { buildInvalidKitchenTenantRedirectUrl } from "../utils/invalidTenantRedirect";
+
 const getErrorStatus = (err: unknown): number | undefined => {
   if (typeof err === "object" && err !== null && "response" in err) {
-    const response = (err as { response?: { status?: number } }).response;
+    const { response } = err as { response?: { status?: number } };
 
     return response?.status;
   }

@@ -30,14 +30,10 @@ export const tenantDetailsQueryKey = (tenantId: string): readonly string[] => ["
 
 export const TenantProvider = ({ children }: TenantProviderProps): ReactElement => {
   const { tenants, state, refresh } = useTenants();
-  const [selectedTenantId, setSelectedTenantIdState] = useState<string | null>(null);
+  const [selectedTenantId, setSelectedTenantIdState] = useState<string | null>(() =>
+    localStorage.getItem(TENANT_STORAGE_KEY),
+  );
   const didApplyTenantFromQuery = useRef(false);
-
-  useEffect(() => {
-    const storedTenantId = localStorage.getItem(TENANT_STORAGE_KEY);
-
-    setSelectedTenantIdState(storedTenantId);
-  }, []);
 
   useEffect(() => {
     if (state !== "loaded" || didApplyTenantFromQuery.current) {

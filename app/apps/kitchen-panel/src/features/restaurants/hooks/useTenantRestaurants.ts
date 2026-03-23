@@ -15,7 +15,7 @@ export const useTenantRestaurants = (_tenantId: string): TenantRestaurantsResult
     queryFn: () => api.restaurants.list(),
   });
 
-  const restaurants: readonly Restaurant[] = (data as Restaurant[] | undefined) ?? [];
+  const restaurants: readonly Restaurant[] = data ?? [];
   const defaultRestaurantId = restaurants[0]?.id ?? null;
 
   return { restaurants, defaultRestaurantId, isLoading };

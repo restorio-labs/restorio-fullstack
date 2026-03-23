@@ -1,5 +1,5 @@
 import type { TenantSummary } from "@restorio/types";
-import { Dropdown, useBreakpoint, useI18n } from "@restorio/ui";
+import { Dropdown, useI18n } from "@restorio/ui";
 import { deslug } from "@restorio/utils";
 import type { ReactElement } from "react";
 import { useState } from "react";
@@ -41,7 +41,6 @@ export const TenantSwitcher = (): ReactElement | null => {
   const { tenants, tenantsState, selectedTenantId, selectedTenant, setSelectedTenantId } = useCurrentTenant();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
-  const isDesktopUp = useBreakpoint("lg");
 
   if (tenantsState === "error") {
     return <div className="text-sm text-status-error-text">{t("tenantSwitcher.loadError")}</div>;
@@ -71,7 +70,7 @@ export const TenantSwitcher = (): ReactElement | null => {
       <Dropdown
         isOpen={isOpen}
         onOpenChange={setIsOpen}
-        placement={isDesktopUp ? "bottom-center" : "bottom-end"}
+        placement="bottom-center"
         className="min-w-full w-max mr-3"
         trigger={
           <div className="flex w-full items-center justify-between gap-2 rounded-lg border border-border-default bg-surface-primary px-5 py-4 text-text-primary shadow-sm transition hover:bg-surface-secondary">

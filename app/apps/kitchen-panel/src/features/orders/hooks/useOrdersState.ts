@@ -30,8 +30,11 @@ export const useOrdersState = (restaurantId: string | null): UseOrdersStateRetur
   const { data, isLoading, error } = useQuery({
     queryKey: ordersQueryKey(restaurantId ?? ""),
     queryFn: async () => {
-      if (!restaurantId) return [];
+      if (!restaurantId) {
+        return [];
+      }
       const response = await api.orders.list(restaurantId);
+
       return response.data;
     },
     enabled: Boolean(restaurantId),
@@ -42,7 +45,10 @@ export const useOrdersState = (restaurantId: string | null): UseOrdersStateRetur
 
   const statusMutation = useMutation({
     mutationFn: async (params: { orderId: string; status: OrderStatus; rejectionReason?: string }) => {
-      if (!restaurantId) throw new Error("No restaurant selected");
+      if (!restaurantId) {
+        throw new Error("No restaurant selected");
+      }
+
       return api.orders.updateStatus(restaurantId, params.orderId, params.status, params.rejectionReason);
     },
     onSuccess: () => {
@@ -82,7 +88,10 @@ export const useOrdersState = (restaurantId: string | null): UseOrdersStateRetur
 
   const refundMutation = useMutation({
     mutationFn: async (params: { orderId: string }) => {
-      if (!restaurantId) throw new Error("No restaurant selected");
+      if (!restaurantId) {
+        throw new Error("No restaurant selected");
+      }
+
       return api.orders.refund(restaurantId, params.orderId);
     },
     onSuccess: () => {
@@ -110,7 +119,7 @@ export const useOrdersState = (restaurantId: string | null): UseOrdersStateRetur
   return {
     orders,
     isLoading,
-    error: error as Error | null,
+    error,
     moveOrder,
     moveOrderUp,
     moveOrderDown,

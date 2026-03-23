@@ -31,13 +31,19 @@ export class OrdersResource extends BaseResource {
     signal?: AbortSignal,
   ): Promise<SuccessResponse<Order>> {
     const payload: UpdateStatusPayload = { status };
+
     if (rejectionReason) {
       payload.rejectionReason = rejectionReason;
     }
+
     return this.client.patch(`/restaurants/${restaurantId}/orders/${orderId}/status`, payload, { signal });
   }
 
-  archive(restaurantId: string, orderId: string, signal?: AbortSignal): Promise<SuccessResponse<{ id: string; originalOrderId: string }>> {
+  archive(
+    restaurantId: string,
+    orderId: string,
+    signal?: AbortSignal,
+  ): Promise<SuccessResponse<{ id: string; originalOrderId: string }>> {
     return this.client.post(`/restaurants/${restaurantId}/orders/${orderId}/archive`, {}, { signal });
   }
 
@@ -45,7 +51,11 @@ export class OrdersResource extends BaseResource {
     return this.client.get(`/restaurants/${restaurantId}/kitchen-config`, { signal });
   }
 
-  refund(restaurantId: string, orderId: string, signal?: AbortSignal): Promise<SuccessResponse<{ orderId: string; status: string }>> {
+  refund(
+    restaurantId: string,
+    orderId: string,
+    signal?: AbortSignal,
+  ): Promise<SuccessResponse<{ orderId: string; status: string }>> {
     return this.client.post(`/restaurants/${restaurantId}/orders/${orderId}/refund`, {}, { signal });
   }
 }

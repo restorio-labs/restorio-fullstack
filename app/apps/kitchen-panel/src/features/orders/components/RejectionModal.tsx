@@ -22,7 +22,10 @@ export const RejectionModal = ({
 
   const handleConfirm = (): void => {
     const reason = selectedReason === "__custom" ? customReason.trim() : selectedReason;
-    if (!reason) return;
+
+    if (!reason) {
+      return;
+    }
     onConfirm(orderId, reason);
     setSelectedReason(null);
     setCustomReason("");
@@ -35,7 +38,9 @@ export const RejectionModal = ({
     onClose();
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title={t("orders.rejection.title")}>

@@ -133,6 +133,7 @@ export const StaffPage = (): ReactElement => {
       resetForm();
 
       const created = response.results.filter((r) => r.status === "created").length;
+
       const total = response.results.length;
 
       if (created === total) {

@@ -81,10 +81,7 @@ export interface KitchenStatusConfig {
   iconKey: KitchenStatusIconKey;
 }
 
-export type KitchenOrderEventType =
-  | "order_created"
-  | "order_updated"
-  | "order_archived";
+export type KitchenOrderEventType = "order_created" | "order_updated" | "order_archived";
 
 export interface KitchenOrderEvent {
   type: KitchenOrderEventType;

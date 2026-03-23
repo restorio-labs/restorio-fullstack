@@ -19,7 +19,9 @@ export const useKitchenWebSocket = (restaurantId: string | null): UseKitchenWebS
 
   const handleEvent = useCallback(
     (event: KitchenOrderEvent): void => {
-      if (!restaurantId) return;
+      if (!restaurantId) {
+        return;
+      }
       void queryClient.invalidateQueries({ queryKey: ["orders", restaurantId] });
 
       if (event.type === "order_created") {
@@ -32,6 +34,7 @@ export const useKitchenWebSocket = (restaurantId: string | null): UseKitchenWebS
   useEffect(() => {
     if (!restaurantId) {
       setStatus("disconnected");
+
       return;
     }
 
@@ -45,6 +48,7 @@ export const useKitchenWebSocket = (restaurantId: string | null): UseKitchenWebS
       const url = `${protocol}//${host}:${port}/api/v1/ws/kitchen/${restaurantId}`;
 
       const ws = new WebSocket(url);
+
       wsRef.current = ws;
 
       ws.onopen = (): void => {
@@ -55,6 +59,7 @@ export const useKitchenWebSocket = (restaurantId: string | null): UseKitchenWebS
       ws.onmessage = (messageEvent): void => {
         try {
           const data = JSON.parse(messageEvent.data as string) as KitchenOrderEvent;
+
           handleEvent(data);
         } catch {
           // ignore malformed messages
@@ -63,15 +68,15 @@ export const useKitchenWebSocket = (restaurantId: string | null): UseKitchenWebS
 
       ws.onclose = (): void => {
         wsRef.current = null;
+
         if (!shouldReconnect) {
           setStatus("disconnected");
+
           return;
         }
         setStatus("reconnecting");
-        const delay = Math.min(
-          BASE_RECONNECT_DELAY * Math.pow(2, retryCountRef.current),
-          MAX_RECONNECT_DELAY,
-        );
+        const delay = Math.min(BASE_RECONNECT_DELAY * Math.pow(2, retryCountRef.current), MAX_RECONNECT_DELAY);
+
         retryCountRef.current += 1;
         timeoutId = setTimeout(connect, delay);
       };

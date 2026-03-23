@@ -68,6 +68,7 @@ export const MenuAvailabilityView = (): ReactElement => {
               <Stack spacing="sm">
                 {category.items.map((item) => {
                   const available = item.isAvailable !== false;
+
                   return (
                     <Box
                       key={`${category.order}-${item.name}`}
