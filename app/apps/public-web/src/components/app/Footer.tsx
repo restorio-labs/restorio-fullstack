@@ -1,13 +1,11 @@
 "use client";
 
-import { useBreakpoint } from "@restorio/ui";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
 export const Footer = (): ReactElement => {
   const t = useTranslations();
-  const isMdUp = useBreakpoint("md");
   const currentYear = new Date().getFullYear();
 
   const navLinks = [
@@ -20,55 +18,39 @@ export const Footer = (): ReactElement => {
   const leftLinks = navLinks.slice(0, 2);
   const rightLinks = navLinks.slice(2);
 
-  return (
-    <footer className="w-full border-t border-slate-800/20 bg-[#0a0e14] px-8 py-12">
-      <div
-        className={`mx-auto flex max-w-7xl items-center justify-between ${isMdUp ? "flex-row gap-8" : "flex-col gap-6"}`}
-      >
-        <div className="text-lg font-bold text-slate-200">{t("footer.brand")}</div>
+  const linkClassName = "text-slate-500 opacity-80 transition-opacity hover:text-white hover:opacity-100 p-2";
 
-        {isMdUp ? (
-          <div className="flex flex-row flex-wrap justify-center gap-8 font-inter text-xs uppercase tracking-widest">
-            {navLinks.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                className="text-slate-500 opacity-80 transition-opacity hover:text-white hover:opacity-100"
-              >
+  return (
+    <footer className="w-full border-t border-slate-800/20 bg-[#0a0e14] px-6 py-8">
+      <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 md:flex-row md:gap-8">
+        <div className="text-lg font-bold text-slate-200 md:text-xl">{t("footer.brand")}</div>
+
+        <div className="flex max-md:hidden flex-row flex-wrap justify-center gap-8 font-inter text-sm uppercase tracking-widest">
+          {navLinks.map((link) => (
+            <Link key={link.label} href={link.href} className={linkClassName}>
+              {link.label}
+            </Link>
+          ))}
+        </div>
+
+        <div className="flex w-full max-w-xs justify-center gap-8 md:hidden">
+          <div className="flex flex-col gap-4 text-center font-inter text-xs uppercase tracking-widest">
+            {leftLinks.map((link) => (
+              <Link key={link.label} href={link.href} className={linkClassName}>
                 {link.label}
               </Link>
             ))}
           </div>
-        ) : (
-          <div className="flex w-full gap-8 max-w-xs justify-center gap-x-8">
-            <div className="flex flex-col gap-4 text-center font-inter text-xs uppercase tracking-widest">
-              {leftLinks.map((link) => (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  className="text-slate-500 opacity-80 transition-opacity hover:text-white hover:opacity-100"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-            <div className="flex flex-col gap-4 text-center font-inter text-xs uppercase tracking-widest">
-              {rightLinks.map((link) => (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  className="text-slate-500 opacity-80 transition-opacity hover:text-white hover:opacity-100"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
+          <div className="flex flex-col gap-4 text-center font-inter text-xs uppercase tracking-widest">
+            {rightLinks.map((link) => (
+              <Link key={link.label} href={link.href} className={linkClassName}>
+                {link.label}
+              </Link>
+            ))}
           </div>
-        )}
+        </div>
 
-        <div
-          className={`font-inter text-[10px] uppercase tracking-widest text-slate-400 ${isMdUp ? "" : "w-full text-center"}`}
-        >
+        <div className="w-full text-center font-inter text-xs uppercase tracking-widest text-slate-400 md:w-auto md:text-sm">
           © {currentYear} Restorio Ecosystem. All rights reserved.
         </div>
       </div>
