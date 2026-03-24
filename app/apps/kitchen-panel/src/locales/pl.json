@@ -10,6 +10,14 @@
     "items": "pozycji",
     "refresh": "Odśwież"
   },
+  "tenantSelect": {
+    "title": "Restauracje",
+    "description": "Wybierz restaurację, aby otworzyć panel kuchni.",
+    "loading": "Ładowanie listy restauracji…",
+    "loadError": "Nie udało się wczytać restauracji.",
+    "none": "Brak przypisanych restauracji dla tego konta.",
+    "slugLabel": "Slug"
+  },
   "kitchen": {
     "title": "Zamówienia Kuchni",
     "activeRestaurant": "Aktywna restauracja: {{name}}",

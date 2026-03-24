@@ -92,7 +92,9 @@
     "status": "Status",
     "getStarted": "Get Started",
     "login": "Log in",
-    "register": "Register"
+    "register": "Register",
+    "logout": "Log out",
+    "logoutLoading": "Logging out..."
   },
   "sidebar": {
     "items": {

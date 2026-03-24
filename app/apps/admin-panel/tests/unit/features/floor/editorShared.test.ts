@@ -7,6 +7,7 @@ import {
   MIN_CANVAS_WIDTH,
   clampElementBounds,
   ensureMinimumCanvasSize,
+  getDisabledResizeModes,
   getMaxZIndex,
   getMinZIndex,
   isTextEditingTarget,
@@ -54,6 +55,49 @@ describe("editorShared", () => {
       y: 0,
       w: GRID_CELL,
       h: 220,
+    });
+  });
+
+  it("disables only handles whose edge lies on the canvas boundary", () => {
+    const layout = createLayout({ width: 500, height: 400 });
+
+    expect([...getDisabledResizeModes({ x: 0, y: 100, w: 80, h: 60 }, layout)].sort()).toEqual(["resize-w"]);
+
+    expect([...getDisabledResizeModes({ x: 420, y: 100, w: 80, h: 60 }, layout)].sort()).toEqual(["resize-e"]);
+
+    expect([...getDisabledResizeModes({ x: 100, y: 0, w: 80, h: 60 }, layout)].sort()).toEqual(["resize-n"]);
+
+    expect([...getDisabledResizeModes({ x: 100, y: 340, w: 80, h: 60 }, layout)].sort()).toEqual(["resize-s"]);
+
+    expect(getDisabledResizeModes({ x: 100, y: 100, w: 80, h: 60 }, layout).size).toBe(0);
+
+    expect([...getDisabledResizeModes({ x: 0, y: 0, w: 80, h: 60 }, layout)].sort()).toEqual(
+      ["resize-n", "resize-nw", "resize-w"].sort(),
+    );
+
+    expect([...getDisabledResizeModes({ x: 0, y: 100, w: 500, h: 60 }, layout)].sort()).toEqual(
+      ["resize-e", "resize-w"].sort(),
+    );
+  });
+
+  it("keeps size when position is past canvas edge (e.g. pointer outside while dragging)", () => {
+    const layout = createLayout({ width: 1000, height: 800 });
+
+    const clamped = clampElementBounds(
+      {
+        x: 1400,
+        y: -100,
+        w: 120,
+        h: 80,
+      },
+      layout,
+    );
+
+    expect(clamped).toEqual({
+      x: 880,
+      y: 0,
+      w: 120,
+      h: 80,
     });
   });
 

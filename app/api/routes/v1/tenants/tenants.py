@@ -30,7 +30,7 @@ router = APIRouter()
 
 
 @router.get(
-    "/",
+    "",
     status_code=status.HTTP_200_OK,
     response_model=SuccessResponse[list[TenantSummaryResponseDTO]],
 )
@@ -56,7 +56,7 @@ async def list_tenants(
 
 
 @router.post(
-    "/",
+    "",
     status_code=status.HTTP_201_CREATED,
     response_model=CreatedResponse[TenantResponseDTO],
 )

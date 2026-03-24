@@ -18,7 +18,37 @@ interface DragState {
   startX: number;
   startY: number;
   startBounds: CanvasBounds;
+  lockDx: boolean;
+  lockDy: boolean;
 }
+
+const EDGE_EPS = 1e-6;
+
+const computeResizeAxisLocks = (
+  mode: DragResizeMode,
+  bounds: { x: number; y: number; w: number; h: number },
+  canvas: { width: number; height: number },
+): { lockDx: boolean; lockDy: boolean } => {
+  if (mode === "move") {
+    return { lockDx: false, lockDy: false };
+  }
+
+  const { x, y, w, h } = bounds;
+  const atLeft = x <= EDGE_EPS;
+  const atRight = x + w >= canvas.width - EDGE_EPS;
+  const atTop = y <= EDGE_EPS;
+  const atBottom = y + h >= canvas.height - EDGE_EPS;
+
+  const affectsNorth = mode === "resize-n" || mode === "resize-nw" || mode === "resize-ne";
+  const affectsSouth = mode === "resize-s" || mode === "resize-sw" || mode === "resize-se";
+  const affectsWest = mode === "resize-w" || mode === "resize-nw" || mode === "resize-sw";
+  const affectsEast = mode === "resize-e" || mode === "resize-ne" || mode === "resize-se";
+
+  return {
+    lockDx: (affectsWest && atLeft) || (affectsEast && atRight),
+    lockDy: (affectsNorth && atTop) || (affectsSouth && atBottom),
+  };
+};
 
 export interface UseDragResizeOptions {
   onBoundsChange?: (id: string, bounds: CanvasBounds) => void;
@@ -26,6 +56,7 @@ export interface UseDragResizeOptions {
   snapSize?: (w: number, h: number) => { w: number; h: number };
   minWidth?: number;
   minHeight?: number;
+  canvasBounds?: { width: number; height: number } | null;
 }
 
 export interface UseDragResizeReturn {
@@ -43,7 +74,14 @@ const defaultSnap = (x: number, y: number): { x: number; y: number } => ({ x, y 
 const defaultSnapSize = (w: number, h: number): { w: number; h: number } => ({ w, h });
 
 export const useDragResize = (options: UseDragResizeOptions = {}): UseDragResizeReturn => {
-  const { onBoundsChange, snap = defaultSnap, snapSize = defaultSnapSize, minWidth = 40, minHeight = 40 } = options;
+  const {
+    onBoundsChange,
+    snap = defaultSnap,
+    snapSize = defaultSnapSize,
+    minWidth = 40,
+    minHeight = 40,
+    canvasBounds = null,
+  } = options;
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -58,17 +96,24 @@ export const useDragResize = (options: UseDragResizeOptions = {}): UseDragResize
 
       setIsDragging(isMove);
       setIsResizing(!isMove);
+      const locks =
+        canvasBounds && !isMove
+          ? computeResizeAxisLocks(mode, currentBounds, canvasBounds)
+          : { lockDx: false, lockDy: false };
+
       const newState: DragState = {
         id,
         mode,
         startX: e.clientX,
         startY: e.clientY,
         startBounds: currentBounds,
+        lockDx: locks.lockDx,
+        lockDy: locks.lockDy,
       };
 
       dragStateRef.current = newState;
     },
-    [],
+    [canvasBounds],
   );
 
   const handlePointerMove = useCallback(
@@ -79,8 +124,10 @@ export const useDragResize = (options: UseDragResizeOptions = {}): UseDragResize
         return;
       }
 
-      const dx = e.clientX - state.startX;
-      const dy = e.clientY - state.startY;
+      const rawDx = e.clientX - state.startX;
+      const rawDy = e.clientY - state.startY;
+      const dx = state.lockDx ? 0 : rawDx;
+      const dy = state.lockDy ? 0 : rawDy;
       const { id } = state;
       const { mode } = state;
       const { startBounds } = state;

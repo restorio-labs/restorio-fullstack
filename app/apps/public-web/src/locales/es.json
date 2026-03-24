@@ -86,7 +86,9 @@
     "terms": "Términos",
     "getStarted": "Comenzar",
     "login": "Iniciar sesión",
-    "register": "Registrarse"
+    "register": "Registrarse",
+    "logout": "Cerrar sesión",
+    "logoutLoading": "Cerrando sesión..."
   },
   "hero": {
     "title": "El Futuro de la Gestión de Restaurantes",

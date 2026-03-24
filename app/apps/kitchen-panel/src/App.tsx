@@ -6,6 +6,7 @@ import { api } from "./api/client";
 import { KitchenRail } from "./components/KitchenRail";
 import { TenantRouteGuard } from "./components/TenantRouteGuard";
 import { AppLayout } from "./layouts/AppLayout";
+import { KitchenTenantSelectView } from "./views/KitchenTenantSelectView";
 import { KitchenView } from "./views/KitchenView";
 import { MenuAvailabilityView } from "./views/MenuAvailabilityView";
 
@@ -17,15 +18,21 @@ export const App = (): ReactElement => {
       revalidateIntervalMs={AUTH_REVALIDATE_INTERVAL_MS}
       fallback={<div />}
     >
-      <AppLayout sidebar={<KitchenRail />}>
-        <Routes>
-          <Route path="/:tenantId" element={<TenantRouteGuard />}>
-            <Route index element={<KitchenView />} />
-            <Route path="menu" element={<MenuAvailabilityView />} />
-          </Route>
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </AppLayout>
+      <Routes>
+        <Route path="/" element={<KitchenTenantSelectView />} />
+        <Route
+          path="/:tenantId"
+          element={
+            <AppLayout sidebar={<KitchenRail />}>
+              <TenantRouteGuard />
+            </AppLayout>
+          }
+        >
+          <Route index element={<KitchenView />} />
+          <Route path="menu" element={<MenuAvailabilityView />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </AuthGuard>
   );
 };

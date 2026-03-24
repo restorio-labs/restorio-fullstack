@@ -47,48 +47,67 @@ export const ensureMinimumCanvasSize = (layout: FloorCanvasType): FloorCanvasTyp
   height: Math.max(layout.height, MIN_CANVAS_HEIGHT),
 });
 
+const CANVAS_EDGE_EPS = 1e-6;
+
+export const getDisabledResizeModes = (
+  bounds: { x: number; y: number; w: number; h: number },
+  layout: Pick<FloorCanvasType, "width" | "height">,
+): Set<DragResizeMode> => {
+  const { x, y, w, h } = bounds;
+  const { width: canvasW, height: canvasH } = layout;
+  const atLeft = x <= CANVAS_EDGE_EPS;
+  const atRight = x + w >= canvasW - CANVAS_EDGE_EPS;
+  const atTop = y <= CANVAS_EDGE_EPS;
+  const atBottom = y + h >= canvasH - CANVAS_EDGE_EPS;
+
+  const disabled = new Set<DragResizeMode>();
+
+  if (atLeft) {
+    disabled.add("resize-w");
+  }
+
+  if (atRight) {
+    disabled.add("resize-e");
+  }
+
+  if (atTop) {
+    disabled.add("resize-n");
+  }
+
+  if (atBottom) {
+    disabled.add("resize-s");
+  }
+
+  if (atLeft && atTop) {
+    disabled.add("resize-nw");
+  }
+
+  if (atRight && atTop) {
+    disabled.add("resize-ne");
+  }
+
+  if (atRight && atBottom) {
+    disabled.add("resize-se");
+  }
+
+  if (atLeft && atBottom) {
+    disabled.add("resize-sw");
+  }
+
+  return disabled;
+};
 export const clampElementBounds = (
   bounds: { x: number; y: number; w: number; h: number; rotation?: number },
   layout: FloorCanvasType,
 ): { x: number; y: number; w: number; h: number; rotation?: number } => {
-  let { x } = bounds;
-  let { y } = bounds;
-  const minW = Math.max(GRID_CELL, bounds.w);
-  const minH = Math.max(GRID_CELL, bounds.h);
+  const w = Math.max(GRID_CELL, bounds.w);
+  const h = Math.max(GRID_CELL, bounds.h);
+  const maxW = Math.min(w, layout.width);
+  const maxH = Math.min(h, layout.height);
+  const x = Math.max(0, Math.min(bounds.x, layout.width - maxW));
+  const y = Math.max(0, Math.min(bounds.y, layout.height - maxH));
 
-  let right = Math.min(x + minW, layout.width);
-  let bottom = Math.min(y + minH, layout.height);
-
-  x = Math.max(0, x);
-  y = Math.max(0, y);
-
-  if (y >= bottom) {
-    y = Math.max(0, bottom - minH);
-  }
-
-  if (right < x) {
-    right = Math.min(layout.width, x + minW);
-    right = Math.max(right, x + GRID_CELL);
-  }
-
-  let w = right - x;
-  let h = bottom - y;
-
-  if (w < GRID_CELL) {
-    w = GRID_CELL;
-    right = Math.min(x + w, layout.width);
-    x = right - w;
-    x = Math.max(0, x);
-  }
-
-  if (h < GRID_CELL) {
-    h = GRID_CELL;
-    bottom = Math.min(y + h, layout.height);
-    y = bottom - h;
-    y = Math.max(0, y);
-  }
-
-  return { ...bounds, x, y, w, h, rotation: bounds.rotation };
+  return { ...bounds, x, y, w: maxW, h: maxH, rotation: bounds.rotation };
 };
 
 export const isTextEditingTarget = (target: EventTarget | null): boolean => {

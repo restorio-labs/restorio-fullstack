@@ -322,7 +322,7 @@ export const FloorEditorPage = (): ReactElement => {
   const showFloorPicker = floorCanvasCount > 1;
 
   const floorSelector = activeCanvasForEditor ? (
-    <div className="flex w-full flex-wrap items-center justify-center gap-3">
+    <div className="flex w-full flex-wrap items-center justify-start gap-3">
       {showFloorPicker ? (
         <div className="flex items-center gap-2 text-sm text-text-secondary">
           <span className="shrink-0">{t("floorEditor.floorSelector.label")}</span>

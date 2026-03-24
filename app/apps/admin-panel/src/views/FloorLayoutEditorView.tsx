@@ -126,6 +126,7 @@ export const FloorLayoutEditorView = ({
     snapSize: (w, h) => snapGridSize(w, h),
     minWidth: GRID_CELL,
     minHeight: GRID_CELL,
+    canvasBounds: { width: state.layout.width, height: state.layout.height },
   });
   const { setSelectedId } = dragResize;
 

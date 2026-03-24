@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 import { useEffect, useRef } from "react";
-import { Outlet, useParams } from "react-router-dom";
+import { Navigate, Outlet, useParams } from "react-router-dom";
 
 import { api } from "../api/client";
 import { buildInvalidKitchenTenantRedirectUrl } from "../utils/invalidTenantRedirect";
@@ -17,7 +17,7 @@ const getErrorStatus = (err: unknown): number | undefined => {
 };
 
 export const TenantRouteGuard = (): ReactElement => {
-  const { tenantId = "" } = useParams();
+  const { tenantId } = useParams<{ tenantId: string }>();
   const redirectStarted = useRef(false);
 
   useEffect(() => {
@@ -26,9 +26,9 @@ export const TenantRouteGuard = (): ReactElement => {
 
   const query = useQuery({
     queryKey: ["kitchen-tenant-access", tenantId],
-    queryFn: () => api.tenants.get(tenantId),
+    queryFn: () => api.tenants.get(tenantId ?? ""),
     retry: false,
-    enabled: tenantId.length > 0,
+    enabled: typeof tenantId === "string" && tenantId.trim() !== "",
   });
 
   useEffect(() => {
@@ -46,8 +46,8 @@ export const TenantRouteGuard = (): ReactElement => {
     window.location.href = buildInvalidKitchenTenantRedirectUrl();
   }, [query.isError, query.error, query.isLoading]);
 
-  if (tenantId.length === 0) {
-    return <div />;
+  if (typeof tenantId !== "string" || tenantId.trim() === "") {
+    return <Navigate to="/" replace />;
   }
 
   if (query.isLoading) {

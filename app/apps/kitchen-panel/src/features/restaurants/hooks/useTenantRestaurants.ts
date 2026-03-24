@@ -1,5 +1,6 @@
-import type { Restaurant } from "@restorio/types";
+import type { Restaurant, TenantSummary } from "@restorio/types";
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 
 import { api } from "../../../api/client";
 
@@ -9,13 +10,37 @@ interface TenantRestaurantsResult {
   isLoading: boolean;
 }
 
-export const useTenantRestaurants = (_tenantId: string): TenantRestaurantsResult => {
+const tenantSummaryToRestaurant = (tenant: TenantSummary): Restaurant => ({
+  id: tenant.id,
+  tenantId: tenant.id,
+  name: tenant.name,
+  address: { street: "", city: "", postalCode: "", country: "" },
+  contactInfo: {},
+  openingHours: [],
+  createdAt: tenant.createdAt,
+  updatedAt: tenant.createdAt,
+});
+
+export const useTenantRestaurants = (tenantId: string): TenantRestaurantsResult => {
   const { data, isLoading } = useQuery({
-    queryKey: ["restaurants"],
-    queryFn: () => api.restaurants.list(),
+    queryKey: ["tenants"],
+    queryFn: () => api.tenants.list(),
   });
 
-  const restaurants: readonly Restaurant[] = data ?? [];
+  const restaurants: readonly Restaurant[] = useMemo(() => {
+    if (!data) {
+      return [];
+    }
+
+    const match = data.find((tenant) => tenant.id === tenantId);
+
+    if (!match) {
+      return [];
+    }
+
+    return [tenantSummaryToRestaurant(match)];
+  }, [data, tenantId]);
+
   const defaultRestaurantId = restaurants[0]?.id ?? null;
 
   return { restaurants, defaultRestaurantId, isLoading };

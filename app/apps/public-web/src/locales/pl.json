@@ -96,7 +96,9 @@
     "status": "Status",
     "getStarted": "Rozpocznij",
     "login": "Zaloguj się",
-    "register": "Zarejestruj się"
+    "register": "Zarejestruj się",
+    "logout": "Wyloguj",
+    "logoutLoading": "Wylogowywanie..."
   },
   "sidebar": {
     "items": {
