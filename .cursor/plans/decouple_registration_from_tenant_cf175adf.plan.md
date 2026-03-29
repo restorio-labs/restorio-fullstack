@@ -4,40 +4,40 @@ overview: Separate user registration from tenant/restaurant creation. Registrati
 todos:
   - id: backend-migration
     content: Create Alembic migration to make ActivationLink.tenant_id nullable
-    status: pending
+    status: completed
   - id: backend-auth-service
     content: Add create_user method, update create_activation_link (optional tenant_id), update activate_account (handle no tenant)
-    status: pending
+    status: completed
   - id: backend-dto
     content: Update RegisterDTO (remove restaurant_name), RegisterCreatedData (remove tenant fields), ActivateResponseData (optional tenant_slug)
-    status: pending
+    status: completed
   - id: backend-routes
     content: Update register, activate, resend-activation routes for user-only flow
-    status: pending
+    status: completed
   - id: backend-email
     content: Update send_activation_email to handle no restaurant_name
-    status: pending
+    status: completed
   - id: backend-tenant-guard
     content: Update POST /tenants/ to allow authenticated users with no roles to create their first tenant
-    status: pending
+    status: completed
   - id: types-package
     content: Update RegisterRequest, RegisterCreatedData, TenantSlugData in packages/types
-    status: pending
+    status: completed
   - id: public-web-register
     content: Remove restaurantName field from RegisterContent.tsx and update translations
-    status: pending
+    status: completed
   - id: public-web-activate
     content: Update ActivateContent.tsx to handle no-tenant activation
-    status: pending
+    status: completed
   - id: admin-onboarding-modal
     content: Create OnboardingModal component with restaurant creation form
-    status: pending
+    status: completed
   - id: admin-integration
     content: Hook OnboardingModal into AdminShell, handle post-creation token refresh
-    status: pending
+    status: completed
   - id: admin-translations
     content: Add onboarding translations to all 4 admin-panel locales
-    status: pending
+    status: completed
 isProject: false
 ---
 
@@ -138,13 +138,14 @@ Currently, registration in public-web creates both a user AND a tenant (restaura
 - File: [RegisterContent.tsx](app/apps/public-web/app/[locale]/(public)/register/RegisterContent.tsx)
 - Remove `restaurantName` state, validation, and form field
 - Remove `restaurant_name` from API call payload
+- add requiredfields for tenantName-street-nameNumber-city so we match new slug creation 
 
 ### 3.2 Update ActivateContent.tsx
 
 - File: [ActivateContent.tsx](app/apps/public-web/app/[locale]/(public)/activate/ActivateContent.tsx)
 - Handle activation response without tenant slug (redirect to admin panel directly)
 
-### 3.3 Update translations (all 4 locales: en, pl, es, ar)
+### 3.3 Update translations (all MVP locales (2): en, pl)
 
 - Remove `register.fields.restaurantName` and `register.errors.restaurantNameRequired`
 
