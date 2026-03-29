@@ -1,7 +1,5 @@
 import type {
-  // CreateTransactionData,
-  // CreateTransactionRequest,
-  // TransactionListData,
+  TransactionListData,
   UpdateP24ConfigData,
   UpdateP24ConfigRequest,
   UpdatedResponse,
@@ -37,14 +35,12 @@ export class PaymentsResource extends BaseResource {
   //   return response.data;
   // }
 
-  // async listTransactions(
-  //   signal?: AbortSignal,
-  // ): Promise<TransactionListData> {
-  //   const response = await this.client.get<TransactionListData>(
-  //     `/payments/transactions`,
-  //     { signal },
-  //   );
-
-  //   return response.data;
-  // }
+  listTransactions(tenantId: string, signal?: AbortSignal): Promise<TransactionListData> {
+    return this.client.get<TransactionListData>("/payments/transactions", {
+      signal,
+      params: {
+        tenant_public_id: tenantId,
+      },
+    });
+  }
 }

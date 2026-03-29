@@ -9,3 +9,4 @@ export { TenantProfilePage } from "./TenantProfilePage";
 export { RestaurantQRCodePage } from "./RestaurantQRCodePage";
 export { StaffPage } from "./StaffPage";
 export { TableQRCodePage } from "./TableQRCodePage";
+export { TransactionListPage } from "./TransactionListPage";

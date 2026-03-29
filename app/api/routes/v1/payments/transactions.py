@@ -1,10 +1,9 @@
 from typing import Annotated
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
 
 from core.dto.v1.payments import TransactionListItemDTO, TransactionListQueryDTO
-from core.foundation.dependencies import P24ServiceDep, PostgresSession
+from core.foundation.dependencies import AuthorizedTenantId, P24ServiceDep, PostgresSession
 from core.foundation.http.responses import PaginatedResponse
 
 router = APIRouter()
@@ -16,7 +15,7 @@ router = APIRouter()
     response_model=PaginatedResponse[TransactionListItemDTO],
 )
 async def list_transactions(
-    tenant_id: UUID,
+    tenant_id: AuthorizedTenantId,
     session: PostgresSession,
     p24_service: P24ServiceDep,
     query: Annotated[TransactionListQueryDTO, Depends()],

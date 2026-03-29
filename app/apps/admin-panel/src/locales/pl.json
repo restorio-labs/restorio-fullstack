@@ -40,6 +40,7 @@
       "qrCodeGenerator": "Generator kodów QR",
       "tenantProfile": "Profil lokalu",
       "paymentConfig": "Konfiguracja płatności",
+      "transactions": "Transakcje",
       "staff": "Personel"
     },
     "mobile": {
@@ -236,6 +237,29 @@
     "actions": {
       "save": "Zapisz konfigurację",
       "saving": "Zapisywanie..."
+    }
+  },
+  "transactions": {
+    "title": "Lista transakcji",
+    "description": "Podgląd transakcji dla wybranej restauracji",
+    "list": {
+      "title": "Transakcje od najnowszych",
+      "loading": "Ładowanie transakcji...",
+      "selectTenant": "Wybierz restaurację, aby wyświetlić transakcje.",
+      "error": "Nie udało się pobrać transakcji. Spróbuj ponownie.",
+      "empty": "Brak transakcji dla wybranej restauracji."
+    },
+    "fields": {
+      "status": "Status",
+      "orderId": "ID zamówienia P24",
+      "note": "Notatka"
+    },
+    "status": {
+      "0": "Nieopłacona",
+      "1": "Niezaksięgowana",
+      "2": "Płatność przyjęta",
+      "3": "Zwrócona",
+      "unknown": "Nieznany"
     }
   },
   "qrGenerator": {
