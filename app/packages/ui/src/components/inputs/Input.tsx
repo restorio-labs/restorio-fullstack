@@ -1,4 +1,4 @@
-import { forwardRef, useId, type ReactElement } from "react";
+import { forwardRef, useId, type ReactElement, type ReactNode } from "react";
 import { BsQuestion } from "react-icons/bs";
 
 import { cn } from "../../utils";
@@ -9,10 +9,11 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   error?: string;
   helperText?: string;
   labelTooltip?: string;
+  endAdornment?: ReactNode;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, helperText, labelTooltip, id, className, ...props }, ref): ReactElement => {
+  ({ label, error, helperText, labelTooltip, id, className, endAdornment, ...props }, ref): ReactElement => {
     const generatedId = useId();
     const inputId = id ?? generatedId;
     const errorId = `${inputId}-error`;
@@ -46,21 +47,42 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ) : null}
           </div>
         )}
-        <input
-          ref={ref}
-          id={inputId}
-          className={cn(
-            "w-full px-4 py-2 text-base text-text-primary bg-surface-primary border border-border-default rounded-input",
-            "placeholder:text-text-tertiary",
-            "focus:outline-none focus:ring-2 focus:ring-border-focus focus:border-border-focus",
-            "disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-surface-secondary",
-            error && "border-status-error-border focus:ring-status-error-border focus:border-status-error-border",
-            className,
-          )}
-          aria-invalid={error ? "true" : undefined}
-          aria-describedby={describedBy || undefined}
-          {...props}
-        />
+        {endAdornment ? (
+          <div className="relative">
+            <input
+              ref={ref}
+              id={inputId}
+              className={cn(
+                "w-full px-4 py-2 pr-11 text-base text-text-primary bg-surface-primary border border-border-default rounded-input",
+                "placeholder:text-text-tertiary",
+                "focus:outline-none focus:ring-2 focus:ring-border-focus focus:border-border-focus",
+                "disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-surface-secondary",
+                error && "border-status-error-border focus:ring-status-error-border focus:border-status-error-border",
+                className,
+              )}
+              aria-invalid={error ? "true" : undefined}
+              aria-describedby={describedBy || undefined}
+              {...props}
+            />
+            <div className="absolute right-2 top-1/2 z-[1] -translate-y-1/2 text-text-secondary">{endAdornment}</div>
+          </div>
+        ) : (
+          <input
+            ref={ref}
+            id={inputId}
+            className={cn(
+              "w-full px-4 py-2 text-base text-text-primary bg-surface-primary border border-border-default rounded-input",
+              "placeholder:text-text-tertiary",
+              "focus:outline-none focus:ring-2 focus:ring-border-focus focus:border-border-focus",
+              "disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-surface-secondary",
+              error && "border-status-error-border focus:ring-status-error-border focus:border-status-error-border",
+              className,
+            )}
+            aria-invalid={error ? "true" : undefined}
+            aria-describedby={describedBy || undefined}
+            {...props}
+          />
+        )}
         {error && (
           <span id={errorId} className="block mt-1 text-sm text-status-error-text" role="alert">
             {error}

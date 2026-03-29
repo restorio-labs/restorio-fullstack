@@ -36,6 +36,20 @@ describe("Button", () => {
     expect(button.className).toContain("bg-interactive-danger");
   });
 
+  it("should apply teal variant styles", () => {
+    render(<Button variant="teal">Teal</Button>);
+    const button = screen.getByRole("button");
+
+    expect(button.className).toContain("bg-interactive-accentTeal");
+  });
+
+  it("should apply warm variant styles", () => {
+    render(<Button variant="warm">Warm</Button>);
+    const button = screen.getByRole("button");
+
+    expect(button.className).toContain("bg-interactive-accentWarm");
+  });
+
   it("should apply size classes", () => {
     const { rerender } = render(<Button size="sm">Small</Button>);
 

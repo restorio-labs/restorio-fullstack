@@ -26,8 +26,6 @@ export const translateRegisterApiMessage = (message: string | undefined, t: Regi
   switch (message) {
     case "Email already registered":
       return t("errors.emailAlreadyRegistered");
-    case "Restaurant slug already exists":
-      return t("errors.restaurantSlugExists");
     default:
       return message;
   }

@@ -408,6 +408,12 @@
       "cancel": "Cancel",
       "confirm": "Confirm",
       "deleting": "Deleting..."
+    },
+    "modal": {
+      "alreadyMemberTitle": "Already on the team",
+      "alreadyMemberDescription": "This email is already linked to this restaurant, so you can't add it again as staff.",
+      "ok": "OK",
+      "closeAria": "Close"
     }
   },
   "tenantProfile": {
@@ -558,6 +564,39 @@
     "actions": {
       "save": "Save Profile",
       "saving": "Saving..."
+    }
+  },
+  "onboarding": {
+    "title": "Create your first restaurant",
+    "description": "To get started, add your first restaurant. You can always add more later.",
+    "fields": {
+      "name": {
+        "label": "Restaurant name",
+        "placeholder": "e.g. Bella Italia",
+        "error": "Restaurant name is required"
+      },
+      "street": {
+        "label": "Street",
+        "placeholder": "e.g. Main Street",
+        "error": "Street is required"
+      },
+      "streetNumber": {
+        "label": "Number",
+        "placeholder": "e.g. 12",
+        "error": "Number is required"
+      },
+      "city": {
+        "label": "City",
+        "placeholder": "e.g. Warsaw",
+        "error": "City is required"
+      }
+    },
+    "actions": {
+      "create": "Create restaurant",
+      "creating": "Creating..."
+    },
+    "errors": {
+      "createFailed": "Failed to create restaurant. Please try again."
     }
   }
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { APP_SLUGS, type AppSlug } from "@restorio/types";
-import { Button, Form, FormActions, FormField, Input, useAuthRoute } from "@restorio/ui";
+import { Button, Form, FormActions, FormField, Input, PasswordInput, useAuthRoute } from "@restorio/ui";
 import {
   getApiErrorData,
   getApiErrorMessage,
@@ -173,9 +173,8 @@ export const LoginContent = (): ReactElement => {
         </FormField>
 
         <FormField>
-          <Input
+          <PasswordInput
             label={t("login.password")}
-            type="password"
             autoComplete="current-password"
             value={password}
             onChange={(event) => {

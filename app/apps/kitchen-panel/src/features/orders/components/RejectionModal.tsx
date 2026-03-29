@@ -88,7 +88,7 @@ export const RejectionModal = ({
         )}
 
         <div className="flex justify-end gap-3 pt-2">
-          <Button variant="secondary" onClick={handleClose}>
+          <Button variant="ghost" onClick={handleClose}>
             {t("common.cancel")}
           </Button>
           <Button

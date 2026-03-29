@@ -38,7 +38,7 @@ export const TenantRouteGuard = (): ReactElement => {
 
     const status = getErrorStatus(query.error);
 
-    if (status !== 403 && status !== 404) {
+    if (status !== 403) {
       return;
     }
 
@@ -57,7 +57,11 @@ export const TenantRouteGuard = (): ReactElement => {
   if (query.isError) {
     const status = getErrorStatus(query.error);
 
-    if (status === 403 || status === 404) {
+    if (status === 404) {
+      return <Navigate to="/" replace />;
+    }
+
+    if (status === 403) {
       return <div />;
     }
 

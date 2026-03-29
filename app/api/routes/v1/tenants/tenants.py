@@ -20,7 +20,7 @@ from core.foundation.http.responses import (
     UnauthenticatedResponse,
     UpdatedResponse,
 )
-from core.foundation.role_guard import RequireOwner
+from core.foundation.role_guard import RequireOwner, RequireOwnerOrNoRole
 from routes.v1.mappers.tenant_mappers import (
     tenant_to_response,
     tenant_to_summary,
@@ -61,7 +61,7 @@ async def list_tenants(
     response_model=CreatedResponse[TenantResponseDTO],
 )
 async def create_tenant(
-    _role: RequireOwner,
+    _role: RequireOwnerOrNoRole,
     request: Request,
     body: CreateTenantDTO,
     session: PostgresSession,

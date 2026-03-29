@@ -1,5 +1,6 @@
 import type { TenantSummary } from "@restorio/types";
 import { PageLayout, Text, useI18n } from "@restorio/ui";
+import { deslug } from "@restorio/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 import { Link } from "react-router-dom";
@@ -44,9 +45,7 @@ export const KitchenTenantSelectView = (): ReactElement => {
               className="rounded-lg border border-border-default bg-surface-primary p-5 shadow-card transition-colors hover:border-border-strong"
             >
               <div className="text-base font-semibold text-text-primary">{tenant.name}</div>
-              <div className="mt-1 text-sm text-text-secondary">
-                {t("tenantSelect.slugLabel")}: {tenant.slug}
-              </div>
+              <div className="mt-1 text-sm text-text-secondary">{deslug(tenant.slug)}</div>
             </Link>
           ))}
         </div>

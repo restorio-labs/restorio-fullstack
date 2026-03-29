@@ -56,7 +56,6 @@
       "email": "Email",
       "password": "Password",
       "confirmPassword": "Confirm password",
-      "restaurantName": "Restaurant name",
       "terms": "I accept the terms and conditions"
     },
     "errors": {
@@ -66,11 +65,9 @@
       "passwordInvalid": "Password does not meet the requirements",
       "confirmPasswordRequired": "Confirm your password",
       "confirmPasswordMismatch": "Passwords do not match",
-      "restaurantNameRequired": "Restaurant name is required",
       "termsRequired": "You must accept the terms and conditions",
       "generic": "Unable to create account. Please try again.",
-      "emailAlreadyRegistered": "This email is already registered",
-      "restaurantSlugExists": "A restaurant with this name is already registered"
+      "emailAlreadyRegistered": "This email is already registered"
     },
     "passwordRules": {
       "minLength": "- At least 8 characters",

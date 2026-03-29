@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Form, FormActions, FormField, Input, useAuthRoute } from "@restorio/ui";
+import { Button, Form, FormActions, FormField, Input, PasswordInput, useAuthRoute } from "@restorio/ui";
 import { getApiErrorData, getApiErrorMessage } from "@restorio/utils";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -18,13 +18,13 @@ export const RegisterContent = (): ReactElement => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [restaurantName, setRestaurantName] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [showPasswordRules, setShowPasswordRules] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [feedbackStatus, setFeedbackStatus] = useState<"success" | "error" | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const t = useTranslations("register");
+  const tCommon = useTranslations("common");
 
   const checkboxId = useId();
   const errorId = `${checkboxId}-error`;
@@ -73,14 +73,17 @@ export const RegisterContent = (): ReactElement => {
         : undefined
     : undefined;
 
-  const restaurantNameError =
-    submitted && restaurantName.trim().length === 0 ? t("errors.restaurantNameRequired") : undefined;
   const termsError = submitted && !acceptTerms ? t("errors.termsRequired") : undefined;
 
-  const isFormValid = isEmailValid(email) && isPasswordFormValid && restaurantName.trim().length > 0 && acceptTerms;
+  const isFormValid = isEmailValid(email) && isPasswordFormValid && acceptTerms;
 
   const confirmPasswordMeetsLength = confirmPassword.length >= MIN_PASSWORD_LENGTH;
   const passwordsMatchByLength = confirmPasswordMeetsLength && confirmPassword === password;
+  const confirmPasswordMismatchHighlight =
+    password.trim().length > 0 &&
+    confirmPasswordMeetsLength &&
+    confirmPassword !== password &&
+    !confirmPasswordError;
 
   const passwordInputStatusClassName =
     !passwordError && passwordsMatchByLength
@@ -90,7 +93,7 @@ export const RegisterContent = (): ReactElement => {
   const confirmPasswordInputStatusClassName =
     !confirmPasswordError && passwordsMatchByLength
       ? "border-status-success-border focus:ring-status-success-border focus:border-status-success-border"
-      : !confirmPasswordError && confirmPasswordMeetsLength && confirmPassword !== password
+      : confirmPasswordMismatchHighlight
         ? "border-status-error-border focus:ring-status-error-border focus:border-status-error-border"
         : undefined;
 
@@ -108,7 +111,6 @@ export const RegisterContent = (): ReactElement => {
       const response = await api.auth.register({
         email: email.trim(),
         password,
-        restaurant_name: restaurantName.trim(),
       });
 
       setFeedbackStatus("success");
@@ -126,7 +128,7 @@ export const RegisterContent = (): ReactElement => {
   };
 
   if (authStatus === "loading") {
-    return <p className="text-center text-text-secondary">{t("common.loading")}</p>;
+    return <p className="text-center text-text-secondary">{tCommon("loading")}</p>;
   }
 
   if (authStatus === "authenticated") {
@@ -169,9 +171,8 @@ export const RegisterContent = (): ReactElement => {
 
         <FormField>
           <div className="relative">
-            <Input
+            <PasswordInput
               label={t("fields.password")}
-              type="password"
               autoComplete="new-password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
@@ -186,26 +187,13 @@ export const RegisterContent = (): ReactElement => {
         </FormField>
 
         <FormField>
-          <Input
+          <PasswordInput
             label={t("fields.confirmPassword")}
-            type="password"
             autoComplete="new-password"
             value={confirmPassword}
             onChange={(event) => setConfirmPassword(event.target.value)}
             error={confirmPasswordError}
             className={confirmPasswordInputStatusClassName}
-            required
-          />
-        </FormField>
-
-        <FormField>
-          <Input
-            label={t("fields.restaurantName")}
-            type="text"
-            autoComplete="organization"
-            value={restaurantName}
-            onChange={(event) => setRestaurantName(event.target.value)}
-            error={restaurantNameError}
             required
           />
         </FormField>

@@ -77,7 +77,8 @@ export const AppLayout = ({ children, header, footer, sidebar }: AppLayoutProps)
               isMobileSidebarOpen ? "translate-x-0" : "translate-x-full",
             ].join(" ")}
             aria-label={t("sidebar.ariaLabel")}
-            aria-hidden={!isMobileSidebarOpen}
+            // @ts-expect-error - inert is not yet in React 18 types
+            inert={!isMobileSidebarOpen ? "" : undefined}
           >
             {sidebar}
           </aside>

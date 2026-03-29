@@ -54,7 +54,6 @@
       "email": "البريد الإلكتروني",
       "password": "كلمة المرور",
       "confirmPassword": "تأكيد كلمة المرور",
-      "restaurantName": "اسم المطعم",
       "terms": "أوافق على الشروط والأحكام"
     },
     "errors": {
@@ -64,12 +63,11 @@
       "passwordInvalid": "كلمة المرور لا تستوفي المتطلبات",
       "confirmPasswordRequired": "يرجى تأكيد كلمة المرور",
       "confirmPasswordMismatch": "كلمتا المرور غير متطابقتين",
-      "restaurantNameRequired": "اسم المطعم مطلوب",
       "termsRequired": "يجب الموافقة على الشروط والأحكام",
       "generic": "تعذر إنشاء الحساب. يرجى المحاولة مرة أخرى."
     },
     "passwordRules": {
-      "minLength": "- 8 أحرف على الأقل",
+      "minLength": "- 5 أحرف على الأقل",
       "lowercase": "- حرف صغير واحد",
       "uppercase": "- حرف كبير واحد",
       "number": "- رقم واحد",

@@ -371,7 +371,7 @@
     "validation": {
       "invalidEmail": "Co najmniej jeden adres e-mail jest nieprawidłowy.",
       "duplicateEmail": "Znaleziono powtarzające się adresy e-mail. Każdy musi być unikalny.",
-      "existingEmail": "Już w tym lokalu: {{emails}}"
+      "existingEmail": "{{emails}} jest już w tym lokalu"
     },
     "toast": {
       "bulkSuccessTitle": "Dodano użytkowników",
@@ -404,6 +404,12 @@
       "cancel": "Anuluj",
       "confirm": "Potwierdź",
       "deleting": "Usuwanie..."
+    },
+    "modal": {
+      "alreadyMemberTitle": "Już w zespole",
+      "alreadyMemberDescription": "Ten adres e-mail jest już powiązany z tym lokalem — nie możesz dodać go ponownie jako personelu.",
+      "ok": "OK",
+      "closeAria": "Zamknij"
     }
   },
   "tenantProfile": {
@@ -560,5 +566,38 @@
     "generateError": "Nie udało się wygenerować kodu QR dla stolika {{table}}:",
     "loadError": "Nie udało się wczytać kodu QR stolika.",
     "title": "Stolik {{table}}"
+  },
+  "onboarding": {
+    "title": "Utwórz swoją pierwszą restaurację",
+    "description": "Aby rozpocząć, dodaj swoją pierwszą restaurację. Zawsze możesz dodać więcej później.",
+    "fields": {
+      "name": {
+        "label": "Nazwa restauracji",
+        "placeholder": "np. Bella Italia",
+        "error": "Nazwa restauracji jest wymagana"
+      },
+      "street": {
+        "label": "Ulica",
+        "placeholder": "np. Marszałkowska",
+        "error": "Ulica jest wymagana"
+      },
+      "streetNumber": {
+        "label": "Numer",
+        "placeholder": "np. 12",
+        "error": "Numer jest wymagany"
+      },
+      "city": {
+        "label": "Miasto",
+        "placeholder": "np. Warszawa",
+        "error": "Miasto jest wymagane"
+      }
+    },
+    "actions": {
+      "create": "Utwórz restaurację",
+      "creating": "Tworzenie..."
+    },
+    "errors": {
+      "createFailed": "Nie udało się utworzyć restauracji. Spróbuj ponownie."
+    }
   }
 }

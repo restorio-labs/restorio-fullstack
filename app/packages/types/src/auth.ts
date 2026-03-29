@@ -1,15 +1,11 @@
 export interface RegisterRequest {
   email: string;
   password: string;
-  restaurant_name: string;
 }
 
 export interface RegisterCreatedData {
   user_id: string;
   email: string;
-  tenant_id: string;
-  tenant_name: string;
-  tenant_slug: string;
 }
 
 export interface RegisterResponse {
@@ -18,7 +14,7 @@ export interface RegisterResponse {
 }
 
 export interface TenantSlugData {
-  tenant_slug: string;
+  tenant_slug: string | null;
   requires_password_change?: boolean;
 }
 

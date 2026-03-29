@@ -1,8 +1,10 @@
-import { AUTH_REVALIDATE_INTERVAL_MS, AuthGuard, AUTH_LOGIN_REDIRECT_URL } from "@restorio/auth";
+import { AppWrapper } from "@restorio/auth";
 import { lazy, Suspense, type ReactElement } from "react";
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 
 import { api } from "./api/client";
+import { useCurrentTenant } from "./context/TenantContext";
+import { OnboardingModal } from "./features/onboarding/OnboardingModal";
 import { AdminSidebar } from "./features/sidebar/AdminSidebar";
 import { AppLayout } from "./layouts/AppLayout";
 
@@ -36,8 +38,12 @@ const QRCodePrintPage = lazy(async () =>
 );
 
 const AdminShell = (): ReactElement => {
+  const { tenants, tenantsState } = useCurrentTenant();
+  const showOnboarding = tenantsState === "loaded" && tenants.length === 0;
+
   return (
     <AppLayout sidebar={<AdminSidebar />}>
+      {showOnboarding && <OnboardingModal />}
       <Outlet />
     </AppLayout>
   );
@@ -45,12 +51,7 @@ const AdminShell = (): ReactElement => {
 
 export const App = (): ReactElement => {
   return (
-    <AuthGuard
-      redirectTo={AUTH_LOGIN_REDIRECT_URL}
-      client={api}
-      revalidateIntervalMs={AUTH_REVALIDATE_INTERVAL_MS}
-      fallback={<div />}
-    >
+    <AppWrapper client={api}>
       <Suspense fallback={<div />}>
         <Routes>
           <Route element={<AdminShell />}>
@@ -69,6 +70,6 @@ export const App = (): ReactElement => {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
-    </AuthGuard>
+    </AppWrapper>
   );
 };

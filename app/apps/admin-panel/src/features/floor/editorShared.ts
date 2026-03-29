@@ -47,55 +47,6 @@ export const ensureMinimumCanvasSize = (layout: FloorCanvasType): FloorCanvasTyp
   height: Math.max(layout.height, MIN_CANVAS_HEIGHT),
 });
 
-const CANVAS_EDGE_EPS = 1e-6;
-
-export const getDisabledResizeModes = (
-  bounds: { x: number; y: number; w: number; h: number },
-  layout: Pick<FloorCanvasType, "width" | "height">,
-): Set<DragResizeMode> => {
-  const { x, y, w, h } = bounds;
-  const { width: canvasW, height: canvasH } = layout;
-  const atLeft = x <= CANVAS_EDGE_EPS;
-  const atRight = x + w >= canvasW - CANVAS_EDGE_EPS;
-  const atTop = y <= CANVAS_EDGE_EPS;
-  const atBottom = y + h >= canvasH - CANVAS_EDGE_EPS;
-
-  const disabled = new Set<DragResizeMode>();
-
-  if (atLeft) {
-    disabled.add("resize-w");
-  }
-
-  if (atRight) {
-    disabled.add("resize-e");
-  }
-
-  if (atTop) {
-    disabled.add("resize-n");
-  }
-
-  if (atBottom) {
-    disabled.add("resize-s");
-  }
-
-  if (atLeft && atTop) {
-    disabled.add("resize-nw");
-  }
-
-  if (atRight && atTop) {
-    disabled.add("resize-ne");
-  }
-
-  if (atRight && atBottom) {
-    disabled.add("resize-se");
-  }
-
-  if (atLeft && atBottom) {
-    disabled.add("resize-sw");
-  }
-
-  return disabled;
-};
 export const clampElementBounds = (
   bounds: { x: number; y: number; w: number; h: number; rotation?: number },
   layout: FloorCanvasType,

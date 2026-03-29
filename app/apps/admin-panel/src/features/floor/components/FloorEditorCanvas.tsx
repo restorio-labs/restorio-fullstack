@@ -1,9 +1,8 @@
 import type { FloorCanvas as FloorCanvasType, FloorElement } from "@restorio/types";
 import { cn, FloorCanvas, type DragResizeMode, useI18n } from "@restorio/ui";
 import type { PointerEvent as ReactPointerEvent, ReactElement } from "react";
-import { useMemo } from "react";
 
-import { getDisabledResizeModes, GRID_CELL, HANDLE_SIZE, RESIZE_HANDLES } from "../editorShared";
+import { GRID_CELL, HANDLE_SIZE, RESIZE_HANDLES } from "../editorShared";
 
 interface FloorEditorCanvasProps {
   className?: string;
@@ -33,16 +32,6 @@ export const FloorEditorCanvas = ({
 }: FloorEditorCanvasProps): ReactElement => {
   const { t } = useI18n();
   const hasMultiSelection = selectedIds.length > 1;
-  const disabledResizeModes = useMemo(
-    () =>
-      selectedElement
-        ? getDisabledResizeModes(
-            { x: selectedElement.x, y: selectedElement.y, w: selectedElement.w, h: selectedElement.h },
-            layout,
-          )
-        : new Set<DragResizeMode>(),
-    [layout, selectedElement],
-  );
 
   return (
     <div className={cn("flex min-h-0 min-w-0 flex-1 flex-col bg-background-secondary", className)}>
@@ -79,45 +68,34 @@ export const FloorEditorCanvas = ({
                 height: selectedElement.h,
               }}
             >
-              {RESIZE_HANDLES.map(({ mode, left, top, cursor }) => {
-                const isResizeDisabled = disabledResizeModes.has(mode);
+              {RESIZE_HANDLES.map(({ mode, left, top, cursor }) => (
+                <div
+                  key={mode}
+                  className={cn(
+                    "pointer-events-auto absolute box-border rounded-full bg-surface-primary ring-2 ring-border-focus",
+                  )}
+                  style={{
+                    cursor,
+                    width: HANDLE_SIZE,
+                    height: HANDLE_SIZE,
+                    left: left === "50%" ? "50%" : left === "100%" ? "100%" : left,
+                    top: top === "50%" ? "50%" : top === "100%" ? "100%" : top,
+                    transform: "translate(-50%, -50%)",
+                  }}
+                  onPointerDown={(e) => {
+                    e.preventDefault();
 
-                return (
-                  <div
-                    key={mode}
-                    className={cn(
-                      "pointer-events-auto absolute box-border rounded-full bg-surface-primary ring-2 ring-border-focus",
-                    )}
-                    style={{
-                      cursor,
-                      width: HANDLE_SIZE,
-                      height: HANDLE_SIZE,
-                      left: left === "50%" ? "50%" : left === "100%" ? "100%" : left,
-                      top: top === "50%" ? "50%" : top === "100%" ? "100%" : top,
-                      transform: "translate(-50%, -50%)",
-                    }}
-                    onPointerDown={(e) => {
-                      e.preventDefault();
-
-                      if (isResizeDisabled) {
-                        e.stopPropagation();
-
-                        return;
-                      }
-
-                      onElementPointerDown(selectedElement.id, e, mode, {
-                        x: selectedElement.x,
-                        y: selectedElement.y,
-                        w: selectedElement.w,
-                        h: selectedElement.h,
-                        rotation: selectedElement.rotation,
-                      });
-                    }}
-                    aria-disabled={isResizeDisabled}
-                    aria-label={t("floorEditor.aria.resizeHandle", { mode })}
-                  />
-                );
-              })}
+                    onElementPointerDown(selectedElement.id, e, mode, {
+                      x: selectedElement.x,
+                      y: selectedElement.y,
+                      w: selectedElement.w,
+                      h: selectedElement.h,
+                      rotation: selectedElement.rotation,
+                    });
+                  }}
+                  aria-label={t("floorEditor.aria.resizeHandle", { mode })}
+                />
+              ))}
             </div>
           )}
         </div>

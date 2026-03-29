@@ -18,21 +18,17 @@ interface DragState {
   startX: number;
   startY: number;
   startBounds: CanvasBounds;
-  lockDx: boolean;
-  lockDy: boolean;
 }
 
 const EDGE_EPS = 1e-6;
 
-const computeResizeAxisLocks = (
+export const applyResizeEdgeLocks = (
   mode: DragResizeMode,
+  rawDx: number,
+  rawDy: number,
   bounds: { x: number; y: number; w: number; h: number },
   canvas: { width: number; height: number },
-): { lockDx: boolean; lockDy: boolean } => {
-  if (mode === "move") {
-    return { lockDx: false, lockDy: false };
-  }
-
+): { dx: number; dy: number } => {
   const { x, y, w, h } = bounds;
   const atLeft = x <= EDGE_EPS;
   const atRight = x + w >= canvas.width - EDGE_EPS;
@@ -44,10 +40,26 @@ const computeResizeAxisLocks = (
   const affectsWest = mode === "resize-w" || mode === "resize-nw" || mode === "resize-sw";
   const affectsEast = mode === "resize-e" || mode === "resize-ne" || mode === "resize-se";
 
-  return {
-    lockDx: (affectsWest && atLeft) || (affectsEast && atRight),
-    lockDy: (affectsNorth && atTop) || (affectsSouth && atBottom),
-  };
+  let dx = rawDx;
+  let dy = rawDy;
+
+  if (affectsWest && atLeft && dx < 0) {
+    dx = 0;
+  }
+
+  if (affectsEast && atRight && dx > 0) {
+    dx = 0;
+  }
+
+  if (affectsNorth && atTop && dy < 0) {
+    dy = 0;
+  }
+
+  if (affectsSouth && atBottom && dy > 0) {
+    dy = 0;
+  }
+
+  return { dx, dy };
 };
 
 export interface UseDragResizeOptions {
@@ -96,10 +108,6 @@ export const useDragResize = (options: UseDragResizeOptions = {}): UseDragResize
 
       setIsDragging(isMove);
       setIsResizing(!isMove);
-      const locks =
-        canvasBounds && !isMove
-          ? computeResizeAxisLocks(mode, currentBounds, canvasBounds)
-          : { lockDx: false, lockDy: false };
 
       const newState: DragState = {
         id,
@@ -107,13 +115,11 @@ export const useDragResize = (options: UseDragResizeOptions = {}): UseDragResize
         startX: e.clientX,
         startY: e.clientY,
         startBounds: currentBounds,
-        lockDx: locks.lockDx,
-        lockDy: locks.lockDy,
       };
 
       dragStateRef.current = newState;
     },
-    [canvasBounds],
+    [],
   );
 
   const handlePointerMove = useCallback(
@@ -126,11 +132,14 @@ export const useDragResize = (options: UseDragResizeOptions = {}): UseDragResize
 
       const rawDx = e.clientX - state.startX;
       const rawDy = e.clientY - state.startY;
-      const dx = state.lockDx ? 0 : rawDx;
-      const dy = state.lockDy ? 0 : rawDy;
       const { id } = state;
       const { mode } = state;
       const { startBounds } = state;
+
+      const { dx, dy } =
+        canvasBounds && mode !== "move"
+          ? applyResizeEdgeLocks(mode, rawDx, rawDy, startBounds, canvasBounds)
+          : { dx: rawDx, dy: rawDy };
 
       if (mode === "move") {
         const snapped = snap(startBounds.x + dx, startBounds.y + dy);
@@ -228,7 +237,7 @@ export const useDragResize = (options: UseDragResizeOptions = {}): UseDragResize
         rotation,
       });
     },
-    [minWidth, minHeight, snap, snapSize, onBoundsChange],
+    [minWidth, minHeight, snap, snapSize, onBoundsChange, canvasBounds],
   );
 
   const handlePointerUp = useCallback((): void => {

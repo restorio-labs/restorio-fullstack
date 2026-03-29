@@ -221,7 +221,7 @@ export const KitchenView = (): ReactElement => {
       )}
 
       {!isLoading && (
-        <div className="flex-1 overflow-hidden relative">
+        <div className="flex-1 overflow-hidden relative h-full">
           <OrdersBoard
             ref={boardRef}
             ariaLabel={t("aria.ordersBoard")}
@@ -244,7 +244,7 @@ export const KitchenView = (): ReactElement => {
                   ariaLabel={t(config.ariaLabelKey)}
                   zoneId={statusKey}
                   enableSnapScroll={useHorizontalLayout}
-                  minWidth={useHorizontalLayout ? "400px" : undefined}
+                  minWidth={useHorizontalLayout ? "380px" : undefined}
                   isActive={isActiveDropZone}
                   statusIndicator={
                     <Box

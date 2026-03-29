@@ -378,7 +378,7 @@ export const FloorEditorPage = (): ReactElement => {
       </label>
       <Button
         type="button"
-        variant="secondary"
+        variant="primary"
         size="sm"
         onClick={() => void handleCreateCanvas()}
         disabled={!canManageFloor}

@@ -38,8 +38,7 @@ def _validate_password_complexity(value: str) -> str:
 
 class RegisterDTO(BaseDTO):
     email: EmailStr = Field(..., description="User email address")
-    password: str = Field(..., min_length=8, max_length=128, description="User password")
-    restaurant_name: str = Field(..., min_length=1, max_length=255, description="Restaurant name")
+    password: str = Field(..., min_length=5, max_length=128, description="User password")
 
     @field_validator("password")
     @classmethod
@@ -66,7 +65,7 @@ class BulkCreateUsersDTO(BaseDTO):
 
 class SetPasswordDTO(BaseDTO):
     activation_id: UUID = Field(..., description="Activation link ID")
-    password: str = Field(..., min_length=8, max_length=128, description="New password")
+    password: str = Field(..., min_length=5, max_length=128, description="New password")
 
     @field_validator("password")
     @classmethod
@@ -77,9 +76,6 @@ class SetPasswordDTO(BaseDTO):
 class RegisterCreatedData(BaseDTO):
     user_id: str = Field(..., description="Created user ID")
     email: EmailStr = Field(..., description="User email")
-    tenant_id: str = Field(..., description="Created tenant ID")
-    tenant_name: str = Field(..., description="Tenant name")
-    tenant_slug: str = Field(..., description="Tenant slug")
 
 
 class RegisterResponseDTO(BaseDTO):
@@ -96,11 +92,11 @@ class RegisterResponseDTO(BaseDTO):
 
 
 class TenantSlugData(BaseDTO):
-    tenant_slug: str = Field(..., description="Tenant slug")
+    tenant_slug: str | None = Field(default=None, description="Tenant slug")
 
 
 class ActivateResponseData(BaseDTO):
-    tenant_slug: str = Field(..., description="Tenant slug")
+    tenant_slug: str | None = Field(default=None, description="Tenant slug")
     requires_password_change: bool = Field(
         default=False, description="Whether user must set password first"
     )

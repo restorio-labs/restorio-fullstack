@@ -1,6 +1,6 @@
 import { TokenStorage } from "@restorio/auth";
 import type { BulkCreateStaffUserResponse, CreateStaffUserRequest } from "@restorio/types";
-import { Button, FormActions, Input, Select, useI18n, useToast } from "@restorio/ui";
+import { Button, FormActions, Input, Modal, Dropdown, useI18n, useToast } from "@restorio/ui";
 import { isEmailValid } from "@restorio/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type ReactElement, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -37,6 +37,51 @@ const toAccessLevel = (value: unknown): AccessLevel | null => {
 };
 
 const staffQueryKey = ["staff-users"] as const;
+
+const tenantProfileQueryKey = (tenantId: string): readonly string[] => ["tenant-profile", tenantId];
+
+const STAFF_ALREADY_MEMBER_BACKEND_DETAIL = "User already belongs to this tenant";
+
+interface HttpErrorLike {
+  response?: {
+    status?: number;
+    data?: unknown;
+  };
+}
+
+const getHttpErrorDetail = (error: unknown): string | null => {
+  if (error && typeof error === "object" && "response" in error) {
+    const data = (error as HttpErrorLike).response?.data;
+
+    if (data && typeof data === "object" && "detail" in data) {
+      const { detail } = data as { detail: unknown };
+
+      if (typeof detail === "string") {
+        return detail;
+      }
+    }
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return null;
+};
+
+const isStaffAlreadyMemberConflict = (error: unknown): boolean => {
+  if (!error || typeof error !== "object" || !("response" in error)) {
+    return false;
+  }
+
+  const status = (error as HttpErrorLike).response?.status;
+
+  if (status !== 409) {
+    return false;
+  }
+
+  return getHttpErrorDetail(error) === STAFF_ALREADY_MEMBER_BACKEND_DETAIL;
+};
 
 let nextRowKey = 0;
 
@@ -78,6 +123,7 @@ export const StaffPage = (): ReactElement => {
   const deleteButtonRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const [formError, setFormError] = useState<string | null>(null);
   const [savingRowKey, setSavingRowKey] = useState<number | null>(null);
+  const [isAlreadyMemberModalOpen, setIsAlreadyMemberModalOpen] = useState(false);
 
   const currentUserEmail = useMemo((): string | null => {
     const token = TokenStorage.getAccessToken();
@@ -102,6 +148,12 @@ export const StaffPage = (): ReactElement => {
 
       return parseUsers(raw);
     },
+    enabled: selectedTenantId !== null,
+  });
+
+  const { data: tenantProfile } = useQuery({
+    queryKey: tenantProfileQueryKey(selectedTenantId ?? ""),
+    queryFn: () => api.tenantProfiles.get(selectedTenantId!),
     enabled: selectedTenantId !== null,
   });
 
@@ -174,6 +226,13 @@ export const StaffPage = (): ReactElement => {
     },
     onError: (error: unknown) => {
       setSavingRowKey(null);
+
+      if (isStaffAlreadyMemberConflict(error)) {
+        setIsAlreadyMemberModalOpen(true);
+
+        return;
+      }
+
       const message =
         error instanceof Error && error.message.trim() !== "" ? error.message : t("staff.toast.singleErrorDescription");
 
@@ -190,8 +249,16 @@ export const StaffPage = (): ReactElement => {
       return;
     }
 
+    const trimmed = row.email.trim();
+
+    if (blockedEmails.has(trimmed.toLowerCase())) {
+      setFormError(t("staff.validation.existingEmail", { emails: trimmed }));
+
+      return;
+    }
+
     setSavingRowKey(row.key);
-    singleCreateMutation.mutate({ email: row.email.trim(), access_level: row.accessLevel });
+    singleCreateMutation.mutate({ email: trimmed, access_level: row.accessLevel });
   };
 
   const deleteMutation = useMutation({
@@ -257,7 +324,25 @@ export const StaffPage = (): ReactElement => {
 
   const isFormValid = rows.length > 0 && rows.every((row) => isEmailValid(row.email));
 
-  const existingEmails = useMemo(() => new Set(users.map((u) => u.email.toLowerCase())), [users]);
+  const blockedEmails = useMemo((): Set<string> => {
+    const set = new Set<string>();
+
+    for (const u of users) {
+      set.add(u.email.toLowerCase());
+    }
+
+    if (currentUserEmail) {
+      set.add(currentUserEmail.toLowerCase());
+    }
+
+    const owner = tenantProfile?.ownerEmail?.trim();
+
+    if (owner) {
+      set.add(owner.toLowerCase());
+    }
+
+    return set;
+  }, [users, currentUserEmail, tenantProfile?.ownerEmail]);
 
   const hasDuplicateEmails = (): boolean => {
     const emails = rows.map((r) => r.email.trim().toLowerCase());
@@ -265,12 +350,7 @@ export const StaffPage = (): ReactElement => {
     return new Set(emails).size !== emails.length;
   };
 
-  const getExistingConflicts = (emails: string[]): string[] =>
-    emails.filter((e) => {
-      const lower = e.toLowerCase();
-
-      return existingEmails.has(lower) || (currentUserEmail !== null && lower === currentUserEmail.toLowerCase());
-    });
+  const getExistingConflicts = (emails: string[]): string[] => emails.filter((e) => blockedEmails.has(e.toLowerCase()));
 
   const handleSubmit = (): void => {
     setFormError(null);
@@ -464,12 +544,32 @@ export const StaffPage = (): ReactElement => {
                     />
                   </div>
                   <div className="w-48">
-                    <Select
-                      label={t("staff.form.accessLabel")}
-                      value={row.accessLevel}
-                      onChange={(event) => updateRow(row.key, "accessLevel", event.target.value)}
-                      options={accessOptions}
-                    />
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-sm font-medium text-text-primary">{t("staff.form.accessLabel")}</label>
+                      <Dropdown
+                        trigger={
+                          <Button variant="outline" className="w-full justify-between font-normal">
+                            {accessOptions.find((opt) => opt.value === row.accessLevel)?.label}
+                          </Button>
+                        }
+                        placement="bottom-start"
+                        className="w-48"
+                        closeOnSelect
+                      >
+                        <div className="flex flex-col p-1">
+                          {accessOptions.map((option) => (
+                            <button
+                              key={option.value}
+                              type="button"
+                              className="w-12 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-surface-secondary"
+                              onClick={() => updateRow(row.key, "accessLevel", option.value)}
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </div>
+                      </Dropdown>
+                    </div>
                   </div>
                   <Button
                     type="button"
@@ -560,6 +660,30 @@ export const StaffPage = (): ReactElement => {
         )}
 
         {deleteConfirmPortal}
+
+        <Modal
+          isOpen={isAlreadyMemberModalOpen}
+          onClose={() => {
+            setIsAlreadyMemberModalOpen(false);
+          }}
+          title={t("staff.modal.alreadyMemberTitle")}
+          size="sm"
+          className="border-2 border-status-warning-border"
+          closeButtonAriaLabel={t("staff.modal.closeAria")}
+        >
+          <p className="text-sm text-text-secondary">{t("staff.modal.alreadyMemberDescription")}</p>
+          <div className="mt-6 flex justify-end">
+            <Button
+              type="button"
+              variant="primary"
+              onClick={() => {
+                setIsAlreadyMemberModalOpen(false);
+              }}
+            >
+              {t("staff.modal.ok")}
+            </Button>
+          </div>
+        </Modal>
       </div>
     </PageLayout>
   );

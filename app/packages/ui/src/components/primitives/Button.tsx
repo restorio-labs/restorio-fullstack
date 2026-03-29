@@ -2,7 +2,7 @@ import { forwardRef, type ReactElement } from "react";
 
 import { cn } from "../../utils";
 
-export type ButtonVariant = "primary" | "secondary" | "danger" | "ghost" | "outline";
+export type ButtonVariant = "primary" | "secondary" | "danger" | "ghost" | "outline" | "teal" | "warm";
 export type ButtonSize = "sm" | "md" | "lg" | "icon";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -13,15 +13,17 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-interactive-primary text-text-inverse hover:bg-interactive-primaryHover active:bg-interactive-primaryActive focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus",
+    "bg-interactive-primary text-text-inverse hover:bg-interactive-primaryHover active:bg-interactive-primaryHover active:brightness-[0.92] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus [&_svg]:text-interactive-primaryIcon",
   secondary:
     "bg-interactive-secondary text-text-primary hover:bg-interactive-secondaryHover active:bg-interactive-secondaryActive focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus",
   danger:
-    "bg-interactive-danger text-text-inverse hover:bg-interactive-dangerHover active:bg-interactive-dangerActive focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-interactive-danger-active, #b81e28)] shadow-[0px_8px_16px_rgba(239,43,45,0.35)]",
+    "bg-interactive-danger text-text-inverse hover:bg-interactive-dangerHover active:bg-interactive-dangerHover active:brightness-[0.92] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-interactive-danger-active, #b81e28)] [&_svg]:text-interactive-dangerIcon",
   ghost:
     "bg-transparent text-text-primary hover:bg-surface-secondary active:bg-surface-secondary/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus",
   outline:
     "border border-border-default bg-transparent text-text-primary hover:bg-surface-secondary/60 active:bg-surface-secondary/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus",
+  teal: "bg-interactive-accentTeal text-interactive-accentTealForeground hover:bg-interactive-accentTealHover active:bg-interactive-accentTealActive focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus [&_svg]:text-interactive-accentTealIcon",
+  warm: "bg-interactive-accentWarm text-interactive-accentWarmForeground hover:bg-interactive-accentWarmHover active:bg-interactive-accentWarmActive focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus [&_svg]:text-interactive-accentWarmIcon",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -42,7 +44,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         type="button"
         disabled={disabled}
         className={cn(
-          "inline-flex items-center justify-center font-medium transition-colors duration-200",
+          "inline-flex items-center justify-center gap-2 font-medium transition-colors duration-200 [&_svg]:pointer-events-none [&_svg]:shrink-0",
           "disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none",
           variantStyles[variant],
           sizeStyles[size],

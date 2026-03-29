@@ -41,7 +41,14 @@ export const OrdersBoard = forwardRef<HTMLDivElement, OrdersBoardProps>(
           ref={ref}
           orientation={scrollOrientation}
           tabIndex={0}
-          className={cn("w-full h-full px-4 py-4", overscrollClass, snapClass, className)}
+          className={cn(
+            "w-full h-full py-4",
+            overscrollClass,
+            snapClass,
+            isHorizontal &&
+              "[&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-neutral-300 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-600 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar]:block",
+            className,
+          )}
           {...props}
         >
           <div

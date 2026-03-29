@@ -238,7 +238,7 @@ export const Dropdown = ({
   );
 
   const menuClassName = cn(
-    "z-dropdown min-w-[200px] overflow-hidden rounded-md border border-border-default bg-surface-primary shadow-lg",
+    "z-dropdown  overflow-hidden rounded-md border border-border-default bg-surface-primary shadow-lg",
     portal ? "fixed" : cn("absolute", placementStyles[placement]),
     className,
   );

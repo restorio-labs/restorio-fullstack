@@ -1,4 +1,4 @@
-import { Text, Input, Button } from "@restorio/ui";
+import { Text, Button, PasswordInput } from "@restorio/ui";
 import { useTranslations } from "next-intl";
 import type { FormEvent, ReactElement } from "react";
 
@@ -42,6 +42,11 @@ export const ActivateSetPasswordView = ({
 
   const confirmPasswordMeetsLength = confirmPassword.length >= MIN_PASSWORD_LENGTH;
   const passwordsMatchByLength = confirmPasswordMeetsLength && confirmPassword === password;
+  const confirmPasswordMismatchHighlight =
+    password.trim().length > 0 &&
+    confirmPasswordMeetsLength &&
+    confirmPassword !== password &&
+    !confirmPasswordError;
 
   const passwordInputStatusClassName =
     !passwordError && passwordsMatchByLength
@@ -51,7 +56,7 @@ export const ActivateSetPasswordView = ({
   const confirmPasswordInputStatusClassName =
     !confirmPasswordError && passwordsMatchByLength
       ? "border-status-success-border focus:ring-status-success-border focus:border-status-success-border"
-      : !confirmPasswordError && confirmPasswordMeetsLength && confirmPassword !== password
+      : confirmPasswordMismatchHighlight
         ? "border-status-error-border focus:ring-status-error-border focus:border-status-error-border"
         : undefined;
 
@@ -65,9 +70,8 @@ export const ActivateSetPasswordView = ({
       </Text>
       <form className="w-full space-y-4 text-left" onSubmit={onSubmit}>
         <div className="relative">
-          <Input
+          <PasswordInput
             label="Password"
-            type="password"
             autoComplete="new-password"
             value={password}
             onChange={(event) => onPasswordChange(event.target.value)}
@@ -79,9 +83,8 @@ export const ActivateSetPasswordView = ({
           />
           {showPasswordRules && <PasswordRulesPin checks={passwordChecks} />}
         </div>
-        <Input
+        <PasswordInput
           label="Repeat password"
-          type="password"
           autoComplete="new-password"
           value={confirmPassword}
           onChange={(event) => onConfirmPasswordChange(event.target.value)}

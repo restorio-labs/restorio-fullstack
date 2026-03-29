@@ -56,7 +56,6 @@
       "email": "Adres e-mail",
       "password": "Hasło",
       "confirmPassword": "Potwierdź hasło",
-      "restaurantName": "Nazwa restauracji",
       "accept": "Akceptuję",
       "statute": "regulamin",
       "and": "i",
@@ -70,11 +69,9 @@
       "passwordInvalid": "Hasło nie spełnia wymagań",
       "confirmPasswordRequired": "Potwierdź hasło",
       "confirmPasswordMismatch": "Hasła nie są takie same",
-      "restaurantNameRequired": "Nazwa restauracji jest wymagana",
       "termsRequired": "Musisz zaakceptować regulamin",
       "generic": "Nie udało się utworzyć konta. Spróbuj ponownie.",
-      "emailAlreadyRegistered": "Ten adres e-mail jest już zarejestrowany",
-      "restaurantSlugExists": "Restauracja o tej nazwie jest już zarejestrowana"
+      "emailAlreadyRegistered": "Ten adres e-mail jest już zarejestrowany"
     },
     "passwordRules": {
       "minLength": "- Co najmniej 8 znaków",

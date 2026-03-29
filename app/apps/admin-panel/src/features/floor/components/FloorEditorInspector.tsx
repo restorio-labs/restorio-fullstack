@@ -137,7 +137,7 @@ export const FloorEditorInspector = ({
                   portal
                   isOpen={isMoveOpen}
                   onOpenChange={setIsMoveOpen}
-                  className="min-w-[180px] p-0"
+                  className="p-0"
                 >
                   <div className="flex flex-col gap-px">
                     <button

@@ -1,5 +1,5 @@
 import type { ElementToAdd, FloorCanvas as FloorCanvasType } from "@restorio/types";
-import { Button, Dropdown, useI18n } from "@restorio/ui";
+import { Button, Checkbox, Dropdown, useI18n } from "@restorio/ui";
 import type { Dispatch, ReactElement } from "react";
 
 import type { FloorEditorHistoryAction } from "../floorLayoutState";
@@ -44,21 +44,18 @@ export const FloorEditorToolbar = ({
   const gridToggleId = "floor-editor-show-grid";
   const gridToggle =
     typeof showCanvasGrid === "boolean" && typeof onShowCanvasGridChange === "function" ? (
-      <div className="flex shrink-0 items-center gap-2">
-        <input
-          id={gridToggleId}
-          type="checkbox"
-          checked={showCanvasGrid}
-          onChange={(e) => onShowCanvasGridChange(e.target.checked)}
-          className="h-4 w-4 shrink-0 cursor-pointer rounded border-border-default text-interactive-primary focus:ring-2 focus:ring-border-focus focus:ring-offset-0"
-        />
-        <label htmlFor={gridToggleId} className="cursor-pointer select-none text-sm text-text-secondary">
-          {t("floorEditor.toolbar.showGrid")}
-        </label>
-      </div>
+      <Checkbox
+        id={gridToggleId}
+        label={t("floorEditor.toolbar.showGrid")}
+        checked={showCanvasGrid}
+        onChange={(e) => onShowCanvasGridChange(e.target.checked)}
+        containerClassName="w-fit shrink-0"
+        labelClassName="font-normal text-text-secondary select-none"
+        className="shrink-0 cursor-pointer"
+      />
     ) : null;
   const addMenuItemClassName =
-    "w-full rounded-none px-3 py-2 pr-4 text-left text-sm text-text-primary hover:bg-surface-secondary first:rounded-t-md first:last:rounded-md last:rounded-b-md";
+    "w-full rounded-none px-4 py-2.5 pr-4 text-left text-sm text-text-primary hover:bg-surface-secondary first:rounded-t-md first:last:rounded-md last:rounded-b-md";
   const addDropdown = (
     <Dropdown
       trigger={
@@ -70,7 +67,7 @@ export const FloorEditorToolbar = ({
       portal
       isOpen={isAddOpen}
       onOpenChange={setIsAddOpen}
-      className="min-w-[180px] p-0"
+      className="p-0"
     >
       <div className="flex flex-col gap-px">
         <button
@@ -138,6 +135,7 @@ export const FloorEditorToolbar = ({
           }
         >
           {gridToggle}
+          {isRow ? <div className="shrink-0">{addDropdown}</div> : null}
           <Button
             variant="secondary"
             size="sm"
@@ -169,7 +167,6 @@ export const FloorEditorToolbar = ({
             </Button>
           )}
         </div>
-        {isRow ? <div className="shrink-0">{addDropdown}</div> : null}
       </div>
       {!isRow ? addDropdown : null}
     </div>
