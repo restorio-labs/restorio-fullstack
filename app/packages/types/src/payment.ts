@@ -20,16 +20,26 @@ export interface UpdateP24ConfigResponse {
   data: UpdateP24ConfigData;
 }
 
-export interface TransactionListItem {
-  session_id: string;
-  p24_order_id: number | null;
-  amount: number;
-  email: string;
-  status: number;
-  description: string;
-  order: Record<string, unknown> | null;
-  note: string | null;
-  created_at: string;
+export interface PublicOrderItemRequest {
+  name: string;
+  quantity: number;
+  unitPrice: number;
 }
 
-export type TransactionListData = PaginatedResponse<TransactionListItem>;
+export interface PublicCreateOrderPaymentRequest {
+  tenantSlug: string;
+  tableNumber: number;
+  email: string;
+  items: PublicOrderItemRequest[];
+  note?: string;
+}
+
+export interface PublicCreateOrderPaymentData {
+  token: string;
+  redirectUrl: string;
+}
+
+export interface PublicTenantInfo {
+  name: string;
+  slug: string;
+}
