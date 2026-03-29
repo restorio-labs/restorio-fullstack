@@ -1,3 +1,4 @@
+import type { PaginatedResponse } from "./common";
 import type { TenantStatus } from "./tenant";
 
 export interface UpdateP24ConfigRequest {
