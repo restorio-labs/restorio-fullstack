@@ -18,3 +18,27 @@ export interface UpdateP24ConfigResponse {
   message: string;
   data: UpdateP24ConfigData;
 }
+
+export interface PublicOrderItemRequest {
+  name: string;
+  quantity: number;
+  unitPrice: number;
+}
+
+export interface PublicCreateOrderPaymentRequest {
+  tenantSlug: string;
+  tableNumber: number;
+  email: string;
+  items: PublicOrderItemRequest[];
+  note?: string;
+}
+
+export interface PublicCreateOrderPaymentData {
+  token: string;
+  redirectUrl: string;
+}
+
+export interface PublicTenantInfo {
+  name: string;
+  slug: string;
+}

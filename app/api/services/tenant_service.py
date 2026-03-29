@@ -55,6 +55,16 @@ class TenantService:
 
         return tenant
 
+    async def get_tenant_by_slug(self, session: AsyncSession, slug: str) -> Tenant:
+        query = select(Tenant).where(Tenant.slug == slug)
+        result = await session.execute(query)
+        tenant = result.scalar_one_or_none()
+
+        if not tenant:
+            raise NotFoundResponse(self._RESOURCE, slug)
+
+        return tenant
+
     async def create_tenant(
         self, session: AsyncSession, data: CreateTenantDTO, owner_id: UUID
     ) -> Tenant:

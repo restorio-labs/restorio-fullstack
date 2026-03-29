@@ -8,3 +8,4 @@ export * from "./tenants";
 export * from "./floor-canvases";
 export * from "./menus";
 export * from "./orders";
+export * from "./public";
