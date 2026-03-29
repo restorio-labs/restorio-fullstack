@@ -51,6 +51,7 @@
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-hook-form": "^7.71.2",
+        "react-icons": "^5.6.0",
         "react-router-dom": "^6.21.1",
         "zustand": "^5.0.11",
       },
@@ -281,19 +282,6 @@
         "vitest": "^4.0.16",
       },
     },
-    "app/packages/services": {
-      "name": "@restorio/services",
-      "version": "1.0.0",
-      "dependencies": {
-        "@restorio/types": "workspace:*",
-      },
-      "devDependencies": {
-        "@vitest/coverage-v8": "^4.0.16",
-        "tsup": "^8.5.1",
-        "typescript": "^5.9.0",
-        "vitest": "^4.0.16",
-      },
-    },
     "app/packages/types": {
       "name": "@restorio/types",
       "version": "1.0.0",
@@ -309,6 +297,7 @@
         "@restorio/utils": "workspace:*",
         "@testing-library/user-event": "^14.6.1",
         "@types/node": "^22",
+        "react-icons": "^5.6.0",
       },
       "devDependencies": {
         "@testing-library/jest-dom": "^6.1.5",
@@ -642,8 +631,6 @@
     "@restorio/mobile-app": ["@restorio/mobile-app@workspace:app/apps/mobile-app"],
 
     "@restorio/public-web": ["@restorio/public-web@workspace:app/apps/public-web"],
-
-    "@restorio/services": ["@restorio/services@workspace:app/packages/services"],
 
     "@restorio/types": ["@restorio/types@workspace:app/packages/types"],
 

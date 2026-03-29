@@ -21,11 +21,25 @@ class FakeAsyncSession:
         self.tenant_roles: list[TenantRole] = []
         self.added_objects: list[object] = []
 
-    async def scalar(self, query: object) -> User | Tenant | None:
+    async def scalar(self, query: object) -> User | Tenant | TenantRole | None:
         query_str = str(query)
         query_params: dict[str, object] = {}
         if hasattr(query, "compile"):
-            query_params = query.compile().params
+            compiled = query.compile()
+            query_params = dict(compiled.params) if compiled.params else {}
+
+        if "tenant_roles" in query_str and "account_id" in query_str:
+            account_id = query_params.get("account_id_1")
+            tenant_id = query_params.get("tenant_id_1")
+            if account_id is not None and tenant_id is not None:
+                return next(
+                    (
+                        r
+                        for r in self.tenant_roles
+                        if r.account_id == account_id and r.tenant_id == tenant_id
+                    ),
+                    None,
+                )
 
         if "users.email" in query_str:
             email = next(iter(query_params.values()), None)
@@ -199,7 +213,7 @@ async def test_create_user_for_tenant_success() -> None:
     session = FakeAsyncSession()
     tenant_id = uuid4()
 
-    user, tenant_role = await user_service.create_user_for_tenant(
+    user, tenant_role, send_activation_email = await user_service.create_user_for_tenant(
         session=session,
         email="kitchen@example.com",
         password="StrongPass1!",
@@ -207,6 +221,7 @@ async def test_create_user_for_tenant_success() -> None:
         account_type=AccountType.KITCHEN,
     )
 
+    assert send_activation_email is True
     assert user.email == "kitchen@example.com"
     assert user.is_active is False
     assert user.force_password_change is False
@@ -222,7 +237,7 @@ async def test_create_user_for_tenant_can_force_password_change() -> None:
     session = FakeAsyncSession()
     tenant_id = uuid4()
 
-    user, _ = await user_service.create_user_for_tenant(
+    user, _, send_activation_email = await user_service.create_user_for_tenant(
         session=session,
         email="waiter@example.com",
         password="StrongPass1!",
@@ -231,18 +246,61 @@ async def test_create_user_for_tenant_can_force_password_change() -> None:
         force_password_change=True,
     )
 
+    assert send_activation_email is True
     assert user.force_password_change is True
 
 
 @pytest.mark.asyncio
-async def test_create_user_for_tenant_duplicate_email() -> None:
+async def test_create_user_for_tenant_existing_user_new_tenant() -> None:
     session = FakeAsyncSession()
-    session.users.append(
-        User(
-            id=uuid4(),
-            email="existing@example.com",
-            password_hash="hashed",
-            is_active=True,
+    tenant_a = uuid4()
+    tenant_b = uuid4()
+    existing = User(
+        id=uuid4(),
+        email="existing@example.com",
+        password_hash="hashed",
+        is_active=True,
+        tenant_id=tenant_a,
+    )
+    session.users.append(existing)
+    session.tenant_roles.append(
+        TenantRole(
+            account_id=existing.id,
+            tenant_id=tenant_a,
+            account_type=AccountType.WAITER,
+        )
+    )
+
+    user, tenant_role, send_activation_email = await user_service.create_user_for_tenant(
+        session=session,
+        email="existing@example.com",
+        password="StrongPass1!",
+        tenant_id=tenant_b,
+        account_type=AccountType.KITCHEN,
+    )
+
+    assert send_activation_email is False
+    assert user.id == existing.id
+    assert tenant_role.tenant_id == tenant_b
+    assert tenant_role.account_type == AccountType.KITCHEN
+
+
+@pytest.mark.asyncio
+async def test_create_user_for_tenant_user_already_in_tenant() -> None:
+    session = FakeAsyncSession()
+    tenant_id = uuid4()
+    existing = User(
+        id=uuid4(),
+        email="existing@example.com",
+        password_hash="hashed",
+        is_active=True,
+    )
+    session.users.append(existing)
+    session.tenant_roles.append(
+        TenantRole(
+            account_id=existing.id,
+            tenant_id=tenant_id,
+            account_type=AccountType.WAITER,
         )
     )
 
@@ -251,8 +309,8 @@ async def test_create_user_for_tenant_duplicate_email() -> None:
             session=session,
             email="existing@example.com",
             password="StrongPass1!",
-            tenant_id=uuid4(),
-            account_type=AccountType.WAITER,
+            tenant_id=tenant_id,
+            account_type=AccountType.KITCHEN,
         )
 
-    assert "Email already registered" in str(exc_info.value)
+    assert "User already belongs to this tenant" in str(exc_info.value)

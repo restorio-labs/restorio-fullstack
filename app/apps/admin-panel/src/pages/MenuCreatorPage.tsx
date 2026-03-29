@@ -1,5 +1,5 @@
 import type { SaveTenantMenuPayload, TenantMenuCategory } from "@restorio/types";
-import { Button, FormActions, useI18n } from "@restorio/ui";
+import { Button, FormActions, useI18n, Loader } from "@restorio/ui";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 import { useEffect, useMemo, useState } from "react";
@@ -13,7 +13,7 @@ interface MenuItemFormState {
   name: string;
   price: string;
   promoted: boolean;
-  active: boolean;
+  isAvailable: boolean;
   desc: string;
   tags: string[];
   tagInput: string;
@@ -45,7 +45,7 @@ const createEmptyItem = (): MenuItemFormState => ({
   name: "",
   price: "",
   promoted: false,
-  active: true,
+  isAvailable: true,
   desc: "",
   tags: [],
   tagInput: "",
@@ -65,8 +65,8 @@ const toFormCategories = (categories: TenantMenuCategory[]): MenuCategoryFormSta
       id: createLocalId(),
       name: item.name,
       price: String(item.price),
-      promoted: item.promoted === 1,
-      active: item.active !== 0,
+      promoted: item.promoted,
+      isAvailable: item.isAvailable,
       desc: item.desc,
       tags: item.tags,
       tagInput: "",
@@ -348,8 +348,8 @@ export const MenuCreatorPage = (): ReactElement => {
         normalizedItems.push({
           name: itemName,
           price: itemPrice,
-          promoted: item.promoted ? 1 : 0,
-          active: item.active ? 1 : 0,
+          promoted: item.promoted,
+          isAvailable: item.isAvailable,
           desc: item.desc.trim(),
           tags: item.tags,
         });
@@ -400,7 +400,12 @@ export const MenuCreatorPage = (): ReactElement => {
           </div>
         )}
 
-        {isLoading && tenantId !== null && <div className="text-sm text-text-tertiary">{t("menuCreator.loading")}</div>}
+        {isLoading && tenantId !== null && (
+          <div className="flex items-center gap-2 text-sm text-text-tertiary">
+            <Loader size="sm" />
+            <span>{t("menuCreator.loading")}</span>
+          </div>
+        )}
 
         {errorMessage !== "" && (
           <div className="mb-4 rounded-lg border border-status-error-border bg-status-error-background px-4 py-3 text-sm text-status-error-text">
@@ -560,8 +565,10 @@ export const MenuCreatorPage = (): ReactElement => {
                           <input
                             id={`active-${item.id}`}
                             type="checkbox"
-                            checked={item.active}
-                            onChange={(event) => updateItem(category.id, item.id, { active: event.target.checked })}
+                            checked={item.isAvailable}
+                            onChange={(event) =>
+                              updateItem(category.id, item.id, { isAvailable: event.target.checked })
+                            }
                           />
                           <label htmlFor={`active-${item.id}`} className="text-xs text-text-secondary">
                             {t("menuCreator.fields.itemActive")}

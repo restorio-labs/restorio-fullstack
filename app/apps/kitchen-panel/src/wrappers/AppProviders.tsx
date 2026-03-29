@@ -6,8 +6,7 @@ import { useState } from "react";
 import { BrowserRouter } from "react-router-dom";
 
 import { createQueryClient } from "../lib/queryClient";
-
-const EMPTY_MESSAGES = {};
+import plMessages from "../locales/pl.json";
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -18,7 +17,7 @@ export const AppProviders = ({ children }: AppProvidersProps): ReactNode => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <I18nProvider locale="en" messages={EMPTY_MESSAGES}>
+      <I18nProvider locale="pl" messages={plMessages}>
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <ThemeProvider defaultMode="system" storageKey={THEME_STORAGE_KEY}>
             {children}

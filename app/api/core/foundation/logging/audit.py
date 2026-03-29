@@ -79,7 +79,7 @@ class AuditLogger:
     def token_reuse_detected(self, *, request: Request, user_id: str | None, family: str) -> None:
         self._emit("token_reuse_detected", request, user_id=user_id, family=family)
 
-    def activation_success(self, *, request: Request, user_id: str, tenant_id: str) -> None:
+    def activation_success(self, *, request: Request, user_id: str, tenant_id: str | None = None) -> None:
         self._emit("activation_success", request, user_id=user_id, tenant_id=tenant_id)
 
     def password_set(self, *, request: Request, user_id: str) -> None:
@@ -88,8 +88,8 @@ class AuditLogger:
     def rate_limited(self, *, request: Request) -> None:
         self._emit("rate_limited", request)
 
-    def register(self, *, request: Request, email: str, tenant_name: str) -> None:
-        self._emit("register", request, email=email, tenant_name=tenant_name)
+    def register(self, *, request: Request, email: str) -> None:
+        self._emit("register", request, email=email)
 
 
 audit = AuditLogger()

@@ -1,4 +1,6 @@
 import type {
+  BulkCreateStaffUserRequest,
+  BulkCreateStaffUserResponse,
   CreateStaffUserRequest,
   DeleteUserData,
   RegisterResponse,
@@ -12,8 +14,18 @@ export class UserResource extends BaseResource {
   /**
    * Create staff user (kitchen/waiter).
    */
-  create(data: CreateStaffUserRequest, signal?: AbortSignal): Promise<RegisterResponse> {
-    return this.client.post("users", data, { signal });
+  create(tenantId: string, data: CreateStaffUserRequest, signal?: AbortSignal): Promise<RegisterResponse> {
+    return this.client.post(`users/${encodeURIComponent(tenantId)}`, data, { signal });
+  }
+
+  bulkCreate(
+    tenantId: string,
+    data: BulkCreateStaffUserRequest,
+    signal?: AbortSignal,
+  ): Promise<BulkCreateStaffUserResponse> {
+    return this.client.post<BulkCreateStaffUserResponse>(`users/${encodeURIComponent(tenantId)}/bulk`, data, {
+      signal,
+    });
   }
 
   /**
@@ -30,10 +42,11 @@ export class UserResource extends BaseResource {
   /**
    * Delete staff user by id.
    */
-  async delete(userId: string, signal?: AbortSignal): Promise<DeleteUserData> {
-    const { data } = await this.client.delete<SuccessResponse<DeleteUserData>>(`users/${encodeURIComponent(userId)}`, {
-      signal,
-    });
+  async delete(tenantId: string, userId: string, signal?: AbortSignal): Promise<DeleteUserData> {
+    const { data } = await this.client.delete<SuccessResponse<DeleteUserData>>(
+      `users/${encodeURIComponent(tenantId)}/${encodeURIComponent(userId)}`,
+      { signal },
+    );
 
     return data;
   }

@@ -1,20 +1,21 @@
 "use client";
 
 import { APP_SLUGS, type AppSlug } from "@restorio/types";
-import { Button, ChooseApp, Form, FormActions, FormField, Input } from "@restorio/ui";
+import { Button, Form, FormActions, FormField, Input, PasswordInput, useAuthRoute, Loader } from "@restorio/ui";
 import {
   getApiErrorData,
   getApiErrorMessage,
   getApiValidationFieldLeafs,
   LAST_VISITED_APP_STORAGE_KEY,
   getAppHref,
-  goToApp,
 } from "@restorio/utils";
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 import { useMemo, useState } from "react";
 
 import { api } from "@/api/client";
+import { AuthenticatedAppPicker } from "@/components/auth/AuthenticatedAppPicker";
+import { translateLoginApiMessage } from "@/services/authApiMessages";
 import { isEmailValid, MIN_PASSWORD_LENGTH } from "@/services/validation";
 
 type ViewState = "form" | "choosing_app";
@@ -41,6 +42,7 @@ const extractFieldErrors = (data: unknown, t: ReturnType<typeof useTranslations>
 };
 
 export const LoginContent = (): ReactElement => {
+  const { authStatus } = useAuthRoute();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -114,7 +116,8 @@ export const LoginContent = (): ReactElement => {
       const data = getApiErrorData(err);
       const extractedFieldErrors = extractFieldErrors(data, t);
       const hasFieldErrors = Object.keys(extractedFieldErrors).length > 0;
-      const apiMessage = getApiErrorMessage(data);
+      const rawApiMessage = getApiErrorMessage(data);
+      const apiMessage = translateLoginApiMessage(rawApiMessage, t);
 
       if (hasFieldErrors) {
         setFieldErrors(extractedFieldErrors);
@@ -126,21 +129,17 @@ export const LoginContent = (): ReactElement => {
     }
   };
 
-  if (view === "choosing_app") {
-    const chooseAppLabels = {
-      adminPanel: t("chooseApp.labels.adminPanel"),
-      kitchenPanel: t("chooseApp.labels.kitchenPanel"),
-      waiterPanel: t("chooseApp.labels.waiterPanel"),
-    };
-
+  if (authStatus === "loading") {
     return (
-      <ChooseApp
-        onSelectApp={(slug) => goToApp(slug)}
-        labels={chooseAppLabels}
-        title={t("chooseApp.title")}
-        subtitle={t("chooseApp.subtitle")}
-      />
+      <div className="flex flex-col items-center justify-center gap-4 py-8">
+        <Loader />
+        <p className="text-center text-text-secondary">{t("common.loading")}</p>
+      </div>
     );
+  }
+
+  if (authStatus === "authenticated" || view === "choosing_app") {
+    return <AuthenticatedAppPicker />;
   }
 
   return (
@@ -179,9 +178,8 @@ export const LoginContent = (): ReactElement => {
         </FormField>
 
         <FormField>
-          <Input
+          <PasswordInput
             label={t("login.password")}
-            type="password"
             autoComplete="current-password"
             value={password}
             onChange={(event) => {

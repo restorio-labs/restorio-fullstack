@@ -1,7 +1,7 @@
 import type { FloorCanvas as FloorCanvasType } from "@restorio/types";
 import type { DragResizeMode, useTheme } from "@restorio/ui";
 
-export const GRID_CELL = 20;
+export const GRID_CELL = 10;
 export const MIN_CANVAS_WIDTH = 1000;
 export const MIN_CANVAS_HEIGHT = 800;
 export const HANDLE_SIZE = 12;
@@ -51,18 +51,14 @@ export const clampElementBounds = (
   bounds: { x: number; y: number; w: number; h: number; rotation?: number },
   layout: FloorCanvasType,
 ): { x: number; y: number; w: number; h: number; rotation?: number } => {
-  const width = Math.min(Math.max(GRID_CELL, bounds.w), layout.width);
-  const height = Math.min(Math.max(GRID_CELL, bounds.h), layout.height);
-  const maxX = Math.max(0, layout.width - width);
-  const maxY = Math.max(0, layout.height - height);
+  const w = Math.max(GRID_CELL, bounds.w);
+  const h = Math.max(GRID_CELL, bounds.h);
+  const maxW = Math.min(w, layout.width);
+  const maxH = Math.min(h, layout.height);
+  const x = Math.max(0, Math.min(bounds.x, layout.width - maxW));
+  const y = Math.max(0, Math.min(bounds.y, layout.height - maxH));
 
-  return {
-    ...bounds,
-    w: width,
-    h: height,
-    x: Math.min(Math.max(0, bounds.x), maxX),
-    y: Math.min(Math.max(0, bounds.y), maxY),
-  };
+  return { ...bounds, x, y, w: maxW, h: maxH, rotation: bounds.rotation };
 };
 
 export const isTextEditingTarget = (target: EventTarget | null): boolean => {

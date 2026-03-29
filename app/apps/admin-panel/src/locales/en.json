@@ -93,6 +93,13 @@
     "deleteErrorTitle": "Delete failed",
     "deleteErrorMessage": "Could not delete this floor. Please try again.",
     "deletingButton": "Deleting...",
+    "deleteConfirm": {
+      "title": "Delete this floor?",
+      "message": "This permanently deletes the floor layout “{{name}}”. Type that exact name to confirm.",
+      "inputLabel": "Floor name",
+      "cancel": "Cancel",
+      "confirm": "Delete floor"
+    },
     "mobileUnavailableTitle": "Floor editor unavailable on mobile",
     "mobileUnavailableMessage": "Use a tablet or desktop device to edit floor layouts in the admin panel.",
     "floorSelector": {
@@ -106,7 +113,8 @@
       "undo": "Undo",
       "redo": "Redo",
       "save": "Save",
-      "add": "Add"
+      "add": "Add",
+      "showGrid": "Show grid"
     },
     "addMenu": {
       "table": "Add table",
@@ -125,6 +133,7 @@
       "name": "Name",
       "color": "Color",
       "seats": "Seats",
+      "move": "Move",
       "tableCustomLabel": "Table label",
       "label": "Label",
       "delete": "Delete",
@@ -367,14 +376,20 @@
       "waiter": "Waiter"
     },
     "toggleForm": {
-      "show": "Add user",
+      "show": "Add users",
       "hide": "Cancel"
     },
     "form": {
       "emailLabel": "Email",
       "accessLabel": "Access level",
-      "submit": "Create user",
-      "submitting": "Creating..."
+      "addRow": "Add another",
+      "removeRow": "Remove",
+      "saveSingle": "Save this user",
+      "submit": "Save all",
+      "submitting": "Saving..."
+    },
+    "emptyState": {
+      "heading": "Let's start by adding new members to the team 🚀"
     },
     "list": {
       "title": "All users",
@@ -382,9 +397,30 @@
       "empty": "No users yet."
     },
     "validation": {
-      "invalidEmail": "Enter a valid email address."
+      "invalidEmail": "One or more email addresses are invalid.",
+      "duplicateEmail": "Duplicate emails found. Each email must be unique.",
+      "existingEmail": "Already in this tenant: {{emails}}"
+    },
+    "toast": {
+      "bulkSuccessTitle": "Users added",
+      "bulkSuccessDescription": "All users created successfully. Activation emails will be sent shortly.",
+      "bulkPartialTitle": "Partial success",
+      "bulkPartialDescription": "{{created}} of {{total}} users created. Some failed — check the list for details.",
+      "bulkErrorTitle": "Could not add users",
+      "bulkErrorDescription": "Unable to create users.",
+      "singleSuccessTitle": "User added",
+      "singleSuccessDescription": "User created. Activation email will be sent shortly.",
+      "singleErrorTitle": "Could not add user",
+      "singleErrorDescription": "Unable to create user.",
+      "deleteSuccessTitle": "User removed",
+      "deleteSuccessDescription": "User deleted successfully.",
+      "deleteErrorTitle": "Could not remove user",
+      "deleteErrorDescription": "Unable to delete user."
     },
     "feedback": {
+      "bulkSuccess": "All users created successfully. Activation emails will be sent shortly.",
+      "bulkPartial": "{{created}} of {{total}} users created. Some failed — check the list for details.",
+      "bulkError": "Unable to create users.",
       "createSuccess": "User created. Activation email should be sent shortly.",
       "createError": "Unable to create user.",
       "deleteSuccess": "User deleted successfully.",
@@ -396,6 +432,12 @@
       "cancel": "Cancel",
       "confirm": "Confirm",
       "deleting": "Deleting..."
+    },
+    "modal": {
+      "alreadyMemberTitle": "Already on the team",
+      "alreadyMemberDescription": "This email is already linked to this restaurant, so you can't add it again as staff.",
+      "ok": "OK",
+      "closeAria": "Close"
     }
   },
   "tenantProfile": {
@@ -546,6 +588,39 @@
     "actions": {
       "save": "Save Profile",
       "saving": "Saving..."
+    }
+  },
+  "onboarding": {
+    "title": "Create your first restaurant",
+    "description": "To get started, add your first restaurant. You can always add more later.",
+    "fields": {
+      "name": {
+        "label": "Restaurant name",
+        "placeholder": "e.g. Bella Italia",
+        "error": "Restaurant name is required"
+      },
+      "street": {
+        "label": "Street",
+        "placeholder": "e.g. Main Street",
+        "error": "Street is required"
+      },
+      "streetNumber": {
+        "label": "Number",
+        "placeholder": "e.g. 12",
+        "error": "Number is required"
+      },
+      "city": {
+        "label": "City",
+        "placeholder": "e.g. Warsaw",
+        "error": "City is required"
+      }
+    },
+    "actions": {
+      "create": "Create restaurant",
+      "creating": "Creating..."
+    },
+    "errors": {
+      "createFailed": "Failed to create restaurant. Please try again."
     }
   }
 }

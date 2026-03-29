@@ -1,15 +1,11 @@
 export interface RegisterRequest {
   email: string;
   password: string;
-  restaurant_name: string;
 }
 
 export interface RegisterCreatedData {
   user_id: string;
   email: string;
-  tenant_id: string;
-  tenant_name: string;
-  tenant_slug: string;
 }
 
 export interface RegisterResponse {
@@ -18,7 +14,7 @@ export interface RegisterResponse {
 }
 
 export interface TenantSlugData {
-  tenant_slug: string;
+  tenant_slug: string | null;
   requires_password_change?: boolean;
 }
 
@@ -35,6 +31,27 @@ export interface SetActivationPasswordRequest {
 export interface CreateStaffUserRequest {
   email: string;
   access_level: "kitchen" | "waiter";
+}
+
+export interface BulkCreateStaffUserRequest {
+  users: CreateStaffUserRequest[];
+}
+
+export interface BulkCreateStaffUserResult {
+  email: string;
+  status: "created" | "failed";
+  error?: string;
+  data?: {
+    user_id: string;
+    tenant_id: string;
+    tenant_name: string;
+    tenant_slug: string;
+  };
+}
+
+export interface BulkCreateStaffUserResponse {
+  message: string;
+  results: BulkCreateStaffUserResult[];
 }
 
 export interface StaffUserData {

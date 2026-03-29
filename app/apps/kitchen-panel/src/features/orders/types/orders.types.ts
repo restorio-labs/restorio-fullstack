@@ -1,9 +1,9 @@
 export interface StatusConfig {
-  label: string;
-  ariaLabel: string;
+  labelKey: string;
+  ariaLabelKey: string;
   indicatorClassName: string;
   iconClassName: string;
-  iconKey: "add" | "clock" | "check";
+  iconKey: "add" | "clock" | "check" | "x" | "undo";
 }
 
 export interface DropZone {

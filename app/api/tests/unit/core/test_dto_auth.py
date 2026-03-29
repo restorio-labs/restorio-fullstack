@@ -19,27 +19,23 @@ class TestRegisterDTO:
         dto = RegisterDTO(
             email="user@example.com",
             password="SecurePass1!",
-            restaurant_name="My Restaurant",
         )
         assert dto.email == "user@example.com"
         assert dto.password == "SecurePass1!"
-        assert dto.restaurant_name == "My Restaurant"
 
     def test_password_too_short_raises_validation_error(self) -> None:
         with pytest.raises(PydanticValidationError) as exc_info:
             RegisterDTO(
                 email="user@example.com",
-                password="Short1!",
-                restaurant_name="Restaurant",
+                password="Ab1!",
             )
-        assert "8" in str(exc_info.value)
+        assert "5" in str(exc_info.value)
 
     def test_password_missing_lowercase_raises_validation_error(self) -> None:
         with pytest.raises(ValidationError) as exc_info:
             RegisterDTO(
                 email="user@example.com",
                 password="SECUREPASS1!",
-                restaurant_name="Restaurant",
             )
         assert "lowercase" in exc_info.value.detail
 
@@ -48,7 +44,6 @@ class TestRegisterDTO:
             RegisterDTO(
                 email="user@example.com",
                 password="securepass1!",
-                restaurant_name="Restaurant",
             )
         assert "uppercase" in exc_info.value.detail
 
@@ -57,7 +52,6 @@ class TestRegisterDTO:
             RegisterDTO(
                 email="user@example.com",
                 password="SecurePass!",
-                restaurant_name="Restaurant",
             )
         assert "number" in exc_info.value.detail
 
@@ -66,7 +60,6 @@ class TestRegisterDTO:
             RegisterDTO(
                 email="user@example.com",
                 password="SecurePass123",
-                restaurant_name="Restaurant",
             )
         assert "special" in exc_info.value.detail
 
@@ -115,15 +108,9 @@ class TestRegisterCreatedData:
         dto = RegisterCreatedData(
             user_id="user-123",
             email="user@example.com",
-            tenant_id="tenant-456",
-            tenant_name="My Venue",
-            tenant_slug="my-venue",
         )
         assert dto.user_id == "user-123"
         assert dto.email == "user@example.com"
-        assert dto.tenant_id == "tenant-456"
-        assert dto.tenant_name == "My Venue"
-        assert dto.tenant_slug == "my-venue"
 
 
 class TestRegisterResponseDTO:
@@ -156,11 +143,20 @@ class TestTenantSlugData:
         dto = TenantSlugData(tenant_slug="my-restaurant")
         assert dto.tenant_slug == "my-restaurant"
 
+    def test_null_slug(self) -> None:
+        dto = TenantSlugData()
+        assert dto.tenant_slug is None
+
 
 class TestActivateResponseData:
     def test_defaults(self) -> None:
         dto = ActivateResponseData(tenant_slug="my-restaurant")
         assert dto.tenant_slug == "my-restaurant"
+        assert dto.requires_password_change is False
+
+    def test_no_tenant(self) -> None:
+        dto = ActivateResponseData()
+        assert dto.tenant_slug is None
         assert dto.requires_password_change is False
 
 

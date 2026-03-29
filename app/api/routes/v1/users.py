@@ -2,10 +2,9 @@ from uuid import UUID
 
 from fastapi import APIRouter, Request, status
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.dto.v1.auth import CreateUserDTO, RegisterCreatedData
-from core.exceptions import NotFoundResponse
+from core.dto.v1.auth import BulkCreateUsersDTO, CreateUserDTO, RegisterCreatedData
+from core.exceptions import ConflictError, NotFoundResponse
 from core.foundation.dependencies import (
     AuthorizedTenantId,
     AuthServiceDep,
@@ -24,27 +23,122 @@ from core.models.user import User
 router = APIRouter()
 
 
-async def get_tenant_id_from_request(request: Request, session: AsyncSession) -> UUID:
-    user = getattr(request.state, "user", None)
-    if not isinstance(user, dict):
+@router.post(
+    "/{tenant_public_id}/bulk",
+    status_code=status.HTTP_200_OK,
+    summary="Create multiple staff users",
+    description="Create multiple inactive staff users and send activation emails. Returns partial results.",
+)
+async def bulk_create_users(
+    _role: RequireOwner,
+    data: BulkCreateUsersDTO,
+    request: Request,
+    tenant_id: AuthorizedTenantId,
+    session: PostgresSession,
+    auth_service: AuthServiceDep,
+    user_service: UserServiceDep,
+    email_service: EmailServiceDep,
+) -> dict:
+    tenant = await session.get(Tenant, tenant_id)
+    if tenant is None:
         raise UnauthenticatedResponse(message="Unauthorized")
 
-    tenant_ids_value = user.get("tenant_ids")
-    if isinstance(tenant_ids_value, list):
-        for tenant_public_id in tenant_ids_value:
-            if isinstance(tenant_public_id, str) and tenant_public_id != "":
-                result = await session.execute(
-                    select(Tenant.id).where(Tenant.public_id == tenant_public_id)
-                )
-                internal_id = result.scalar_one_or_none()
-                if internal_id is not None:
-                    return internal_id
+    requester = getattr(request.state, "user", None)
+    requester_email = (
+        requester.get("email", "").lower()
+        if isinstance(requester, dict)
+        else ""
+    )
 
-    raise UnauthenticatedResponse(message="Unauthorized")
+    seen: set[str] = set()
+    results: list[dict[str, str | dict | None]] = []
+
+    for entry in data.users:
+        email_lower = entry.email.lower()
+
+        if email_lower == requester_email:
+            results.append({
+                "email": entry.email,
+                "status": "failed",
+                "error": "Cannot add yourself as a staff member",
+            })
+            continue
+
+        if email_lower in seen:
+            results.append({
+                "email": entry.email,
+                "status": "failed",
+                "error": "Duplicate email in request",
+            })
+            continue
+
+        seen.add(email_lower)
+
+    rejected_emails = {str(r["email"]).lower() for r in results}
+
+    for entry in data.users:
+        if entry.email.lower() in rejected_emails:
+            continue
+
+        try:
+            temp_password = user_service.generate_temporary_password()
+            created_user, _, send_activation_email = await user_service.create_user_for_tenant(
+                session=session,
+                email=entry.email,
+                password=temp_password,
+                tenant_id=tenant_id,
+                account_type=entry.access_level,
+                force_password_change=True,
+            )
+
+            if send_activation_email:
+                activation = await auth_service.create_activation_link(
+                    session=session,
+                    email=created_user.email,
+                    user_id=created_user.id,
+                    tenant_id=tenant.id,
+                )
+                activation_link = f"{settings.FRONTEND_URL}/activate?activation_id={activation.id}"
+                await email_service.send_activation_email(
+                    to_email=created_user.email,
+                    restaurant_name=tenant.name,
+                    activation_link=activation_link,
+                )
+
+            results.append({
+                "email": entry.email,
+                "status": "created",
+                "data": {
+                    "user_id": str(created_user.id),
+                    "tenant_id": tenant.public_id,
+                    "tenant_name": tenant.name,
+                    "tenant_slug": tenant.slug,
+                },
+            })
+        except ConflictError as exc:
+            results.append({
+                "email": entry.email,
+                "status": "failed",
+                "error": str(exc),
+            })
+        except Exception as exc:
+            results.append({
+                "email": entry.email,
+                "status": "failed",
+                "error": str(exc) if str(exc) else "Unexpected error",
+            })
+
+    created_count = sum(1 for r in results if r["status"] == "created")
+    total = len(results)
+
+    return {
+        "message": f"{created_count}/{total} users created successfully",
+        "results": results,
+    }
 
 
 @router.post(
-    "/",
+    "/{tenant_public_id}",
     status_code=status.HTTP_201_CREATED,
     response_model=CreatedResponse[RegisterCreatedData],
     summary="Create an inactive staff user",
@@ -54,18 +148,24 @@ async def create_user(
     _role: RequireOwner,
     data: CreateUserDTO,
     request: Request,
+    tenant_id: AuthorizedTenantId,
     session: PostgresSession,
     auth_service: AuthServiceDep,
     user_service: UserServiceDep,
     email_service: EmailServiceDep,
 ) -> CreatedResponse[RegisterCreatedData]:
-    tenant_id = await get_tenant_id_from_request(request, session)
     tenant = await session.get(Tenant, tenant_id)
     if tenant is None:
         raise UnauthenticatedResponse(message="Unauthorized")
 
+    requester = getattr(request.state, "user", None)
+    if isinstance(requester, dict):
+        requester_email = requester.get("email", "").lower()
+        if data.email.lower() == requester_email:
+            raise ConflictError("Cannot add yourself as a staff member")
+
     temp_password = user_service.generate_temporary_password()
-    created_user, _ = await user_service.create_user_for_tenant(
+    created_user, _, send_activation_email = await user_service.create_user_for_tenant(
         session=session,
         email=data.email,
         password=temp_password,
@@ -74,18 +174,19 @@ async def create_user(
         force_password_change=True,
     )
 
-    activation = await auth_service.create_activation_link(
-        session=session,
-        email=created_user.email,
-        user_id=created_user.id,
-        tenant_id=tenant.id,
-    )
-    activation_link = f"{settings.FRONTEND_URL}/activate?activation_id={activation.id}"
-    await email_service.send_activation_email(
-        to_email=created_user.email,
-        restaurant_name=tenant.name,
-        activation_link=activation_link,
-    )
+    if send_activation_email:
+        activation = await auth_service.create_activation_link(
+            session=session,
+            email=created_user.email,
+            user_id=created_user.id,
+            tenant_id=tenant.id,
+        )
+        activation_link = f"{settings.FRONTEND_URL}/activate?activation_id={activation.id}"
+        await email_service.send_activation_email(
+            to_email=created_user.email,
+            restaurant_name=tenant.name,
+            activation_link=activation_link,
+        )
 
     return CreatedResponse(
         data=RegisterCreatedData(
@@ -95,7 +196,11 @@ async def create_user(
             tenant_name=tenant.name,
             tenant_slug=tenant.slug,
         ),
-        message="User created successfully, activation email sent",
+        message=(
+            "User created successfully, activation email sent"
+            if send_activation_email
+            else "User added to tenant"
+        ),
     )
 
 
@@ -143,26 +248,30 @@ async def list_tenant_users(
 
 
 @router.delete(
-    "/{user_id}",
+    "/{tenant_public_id}/{user_id}",
     status_code=status.HTTP_200_OK,
     response_model=SuccessResponse[dict[str, str]],
     summary="Delete staff user",
-    description="Delete a user from current tenant",
+    description="Remove a staff user from the current tenant",
 )
 async def delete_user(
     _role: RequireOwner,
+    tenant_id: AuthorizedTenantId,
     user_id: UUID,
-    request: Request,
     session: PostgresSession,
 ) -> SuccessResponse[dict[str, str]]:
-    tenant_id = await get_tenant_id_from_request(request, session)
     resource_name = "User"
 
-    user = await session.scalar(select(User).where(User.id == user_id, User.tenant_id == tenant_id))
-    if user is None:
+    stmt = select(TenantRole).where(
+        TenantRole.account_id == user_id,
+        TenantRole.tenant_id == tenant_id,
+        TenantRole.account_type.in_([AccountType.WAITER, AccountType.KITCHEN]),
+    )
+    role = await session.scalar(stmt)
+    if role is None:
         raise NotFoundResponse(resource_name, str(user_id))
 
-    await session.delete(user)
+    await session.delete(role)
     await session.flush()
 
     return SuccessResponse(

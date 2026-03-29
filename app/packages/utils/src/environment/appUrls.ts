@@ -63,11 +63,60 @@ export const getAppHref = (slug: AppSlug): string => {
   return getAppUrl(getEnvironmentFromEnv(envMode), slug);
 };
 
+export const getMergedRuntimeEnv = (): Record<string, unknown> => {
+  const viteEnv =
+    typeof import.meta !== "undefined" ? (import.meta as { env?: Record<string, unknown> }).env : undefined;
+  const processEnv = typeof process !== "undefined" ? (process.env as Record<string, unknown>) : undefined;
+
+  return { ...(processEnv ?? {}), ...(viteEnv ?? {}) };
+};
+
+const APP_URL_OVERRIDE_KEYS: Partial<Record<AppSlug, readonly string[]>> = {
+  "public-web": ["VITE_PUBLIC_WEB_URL", "NEXT_PUBLIC_PUBLIC_WEB_URL"],
+  "admin-panel": ["VITE_ADMIN_PANEL_URL", "NEXT_PUBLIC_ADMIN_PANEL_URL"],
+};
+
+export const PUBLIC_WEB_LOCALE_PATH_PREFIX = "/pl";
+
+export const getAppBaseUrl = (slug: AppSlug): string => {
+  const keys = APP_URL_OVERRIDE_KEYS[slug];
+
+  if (keys !== undefined && keys.length > 0) {
+    const merged = getMergedRuntimeEnv();
+    const override = resolveNextEnvVar(merged, ...keys);
+
+    if (override !== undefined) {
+      return override;
+    }
+  }
+
+  return getAppHref(slug);
+};
+
 export const goToApp = (slug: AppSlug): void => {
   if (typeof window === "undefined") {
     return;
   }
 
   localStorage.setItem(LAST_VISITED_APP_STORAGE_KEY, slug);
-  window.location.href = getAppHref(slug);
+  window.location.href = getAppBaseUrl(slug);
+};
+
+export interface ResolveApiBaseUrlOptions {
+  readonly preferRelativeInBrowser?: boolean;
+}
+
+export const resolveApiBaseUrl = (options?: ResolveApiBaseUrlOptions): string => {
+  const merged = getMergedRuntimeEnv();
+  const fromEnv = resolveNextEnvVar(merged, "VITE_API_BASE_URL", "NEXT_PUBLIC_API_BASE_URL");
+
+  if (typeof fromEnv === "string" && fromEnv.length > 0) {
+    return fromEnv;
+  }
+
+  if (options?.preferRelativeInBrowser === true && typeof window !== "undefined") {
+    return "/api/v1";
+  }
+
+  return "http://localhost:8000/api/v1";
 };

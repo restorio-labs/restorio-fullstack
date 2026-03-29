@@ -152,8 +152,8 @@ export const FloorCanvas = ({
 
   if (centered) {
     return (
-      <div className={cn("flex min-h-0 min-w-0 flex-1 items-center justify-center overflow-auto", className)}>
-        {inner}
+      <div className={cn("flex min-h-0 min-w-0 flex-1 overflow-auto", className)}>
+        <div className="m-auto min-h-0 min-w-0">{inner}</div>
       </div>
     );
   }

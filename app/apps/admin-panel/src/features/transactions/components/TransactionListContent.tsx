@@ -1,5 +1,5 @@
 import type { TransactionListItem } from "@restorio/types";
-import { useI18n } from "@restorio/ui";
+import { useI18n, Loader } from "@restorio/ui";
 import type { ReactElement } from "react";
 
 import { useTransactions } from "../hooks/useTransactions";
@@ -28,7 +28,7 @@ const formatAmount = (amount: number): string =>
     currency: "PLN",
   }).format(amount / 100);
 
-const toTransactionStatusCode = (value: number): TransactionStatusCode | null => {
+const toTransactionStatusCode = (value: unknown): TransactionStatusCode | null => {
   if (value === 0 || value === 1 || value === 2 || value === 3) {
     return value;
   }
@@ -76,17 +76,22 @@ export const TransactionListContent = (): ReactElement => {
   return (
     <div className="w-full p-6">
       <div className="rounded-lg border border-border-default">
-        <div className="border-b border-border-default px-4 py-3 text-sm font-medium text-text-secondary">
+        <div className="border-b border-border-default px-5 py-4 text-sm font-medium text-text-secondary">
           {t("transactions.list.title")}
         </div>
         <div className="px-4 py-3">
-          {isLoading && <p className="text-sm text-text-tertiary">{t("transactions.list.loading")}</p>}
+          {isLoading && (
+            <div className="flex items-center gap-2 text-sm text-text-tertiary">
+              <Loader size="sm" />
+              <span>{t("transactions.list.loading")}</span>
+            </div>
+          )}
           {!isLoading && selectedTenantId === null && (
             <p className="text-sm text-text-tertiary">{t("transactions.list.selectTenant")}</p>
           )}
           {!isLoading && isError && <p className="text-sm text-status-error-text">{t("transactions.list.error")}</p>}
           {!isLoading && !isError && selectedTenantId !== null && transactions.length === 0 && (
-            <p className="text-sm text-text-tertiary">{t("transactions.list.empty")}</p>
+            <p className="text-sm px-4 text-text-tertiary">{t("transactions.list.empty")}</p>
           )}
           {!isLoading && !isError && transactions.length > 0 && (
             <ul className="m-0 list-none divide-y divide-border-default p-0">

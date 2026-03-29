@@ -1,14 +1,17 @@
 from datetime import UTC, datetime
+from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
 
-from core.dto.v1 import (
+from core.dto.v1.menus import (
     MenuCategoryDTO,
     MenuItemDTO,
     TenantMenuResponseDTO,
+    ToggleItemAvailabilityDTO,
     UpsertTenantMenuDTO,
 )
-from core.foundation.dependencies import AuthorizedTenantId, MongoDB
+
+from core.foundation.dependencies import MongoDB
 from core.foundation.http.responses import (
     SuccessResponse,
     UpdatedResponse,
@@ -50,9 +53,9 @@ def _build_raw_menu(data: UpsertTenantMenuDTO) -> dict[str, dict]:
             bucket[item.name] = {
                 "price": item.price,
                 "promoted": item.promoted,
-                "active": item.active,
                 "desc": item.desc,
                 "tags": item.tags,
+                "isAvailable": item.is_available,
             }
         raw_menu[str(category.order)] = bucket
     return raw_menu
@@ -85,29 +88,29 @@ def _normalize_categories(raw_menu: dict[str, dict]) -> list[MenuCategoryDTO]:
                 continue
 
             raw_price = item_payload.get("price", 0)
-            raw_promoted = item_payload.get("promoted", 0)
-            raw_active = item_payload.get("active", 1)
+            raw_promoted = item_payload.get("promoted", False)
             raw_desc = item_payload.get("desc", "")
             raw_tags = item_payload.get("tags", [])
+            raw_available = item_payload.get("isAvailable", True)
 
             price = float(raw_price) if isinstance(raw_price, int | float) else 0.0
-            promoted = 1 if raw_promoted == 1 else 0
-            active = 0 if raw_active == 0 else 1
+            promoted = bool(raw_promoted) if raw_promoted is not None else False
             desc = raw_desc if isinstance(raw_desc, str) else ""
             tags = (
                 [tag for tag in raw_tags if isinstance(tag, str)]
                 if isinstance(raw_tags, list)
                 else []
             )
+            is_available = bool(raw_available) if raw_available is not None else True
 
             items.append(
                 MenuItemDTO(
                     name=item_name,
                     price=price,
                     promoted=promoted,
-                    active=active,
                     desc=desc,
                     tags=tags,
+                    is_available=is_available,
                 )
             )
 
@@ -126,12 +129,9 @@ def _normalize_categories(raw_menu: dict[str, dict]) -> list[MenuCategoryDTO]:
     "/{tenant_public_id}/menu",
     status_code=status.HTTP_200_OK,
     response_model=SuccessResponse[TenantMenuResponseDTO],
-    summary="Get tenant menu",
-    description="Get menu definition for a tenant from MongoDB",
 )
 async def get_tenant_menu(
     tenant_public_id: str,
-    _tenant_id: AuthorizedTenantId,
     db: MongoDB,
 ) -> SuccessResponse[TenantMenuResponseDTO]:
     document = await db[_MENU_COLLECTION].find_one({"tenantPublicId": tenant_public_id})
@@ -146,7 +146,7 @@ async def get_tenant_menu(
         )
 
     raw_menu = document.get("menu", {})
-    normalized_menu = raw_menu if isinstance(raw_menu, dict) else {}
+    normalized_menu: dict[str, Any] = raw_menu if isinstance(raw_menu, dict) else {}
     categories = _normalize_categories(normalized_menu)
 
     return SuccessResponse(
@@ -163,12 +163,9 @@ async def get_tenant_menu(
     "/{tenant_public_id}/menu",
     status_code=status.HTTP_200_OK,
     response_model=UpdatedResponse[TenantMenuResponseDTO],
-    summary="Create or update tenant menu",
-    description="Save menu definition for a tenant in MongoDB",
 )
 async def upsert_tenant_menu(
     tenant_public_id: str,
-    _tenant_id: AuthorizedTenantId,
     payload: UpsertTenantMenuDTO,
     db: MongoDB,
 ) -> UpdatedResponse[TenantMenuResponseDTO]:
@@ -188,6 +185,54 @@ async def upsert_tenant_menu(
         data=TenantMenuResponseDTO(
             menu=raw_menu,
             categories=_normalize_categories(raw_menu),
+            updatedAt=now,
+        ),
+    )
+
+
+@router.patch(
+    "/{tenant_public_id}/menu/categories/{category_order}/items/{item_name}/availability",
+    status_code=status.HTTP_200_OK,
+    response_model=UpdatedResponse[TenantMenuResponseDTO],
+)
+async def toggle_item_availability(
+    tenant_public_id: str,
+    category_order: int,
+    item_name: str,
+    payload: ToggleItemAvailabilityDTO,
+    db: MongoDB,
+) -> UpdatedResponse[TenantMenuResponseDTO]:
+    document = await db[_MENU_COLLECTION].find_one({"tenantPublicId": tenant_public_id})
+    if document is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Menu not found")
+
+    raw_menu = document.get("menu", {})
+    category_key = str(category_order)
+    category_data = raw_menu.get(category_key)
+
+    if not isinstance(category_data, dict) or item_name not in category_data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Menu item not found")
+
+    now = datetime.now(UTC)
+    await db[_MENU_COLLECTION].update_one(
+        {"tenantPublicId": tenant_public_id},
+        {
+            "$set": {
+                f"menu.{category_key}.{item_name}.isAvailable": payload.is_available,
+                "updatedAt": now,
+            }
+        },
+    )
+
+    updated_doc = await db[_MENU_COLLECTION].find_one({"tenantPublicId": tenant_public_id})
+    updated_menu = updated_doc.get("menu", {}) if updated_doc else {}
+    normalized_menu: dict[str, Any] = updated_menu if isinstance(updated_menu, dict) else {}
+
+    return UpdatedResponse(
+        message="Item availability updated successfully",
+        data=TenantMenuResponseDTO(
+            menu=normalized_menu,
+            categories=_normalize_categories(normalized_menu),
             updatedAt=now,
         ),
     )

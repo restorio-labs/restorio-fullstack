@@ -39,6 +39,12 @@ describe("Input", () => {
     expect(screen.getByText("Enter your email address")).toBeInTheDocument();
   });
 
+  it("should render label tooltip trigger when labelTooltip is provided", () => {
+    render(<Input label="Logo" labelTooltip="PNG or JPEG, max 5 MB" />);
+    // @ts-expect-error - test purposes
+    expect(screen.getByRole("button", { name: "PNG or JPEG, max 5 MB" })).toBeInTheDocument();
+  });
+
   it("should not show helper text when error is present", () => {
     render(<Input error="Error" helperText="Helper" />);
     // @ts-expect-error - test purposes

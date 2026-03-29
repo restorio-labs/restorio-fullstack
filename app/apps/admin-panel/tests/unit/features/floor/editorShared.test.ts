@@ -57,6 +57,27 @@ describe("editorShared", () => {
     });
   });
 
+  it("keeps size when position is past canvas edge (e.g. pointer outside while dragging)", () => {
+    const layout = createLayout({ width: 1000, height: 800 });
+
+    const clamped = clampElementBounds(
+      {
+        x: 1400,
+        y: -100,
+        w: 120,
+        h: 80,
+      },
+      layout,
+    );
+
+    expect(clamped).toEqual({
+      x: 880,
+      y: 0,
+      w: 120,
+      h: 80,
+    });
+  });
+
   it("detects text editing targets and non-editable targets", () => {
     const input = document.createElement("input");
     const textArea = document.createElement("textarea");

@@ -46,27 +46,42 @@ export const ChooseApp = ({
       <div className={cn("flex w-full justify-end", className)}>
         <Dropdown
           trigger={
-            <Button variant="primary" size="sm" className="w-max[300px] px-2 py-1 text-xs" aria-label={ariaLabel}>
+            <Button
+              variant="primary"
+              size="sm"
+              className="min-w-0 max-w-[300px] truncate px-2 py-1 text-xs"
+              aria-label={ariaLabel}
+            >
               {items.find(({ slug }) => slug === value)?.label}
             </Button>
           }
           placement="bottom-end"
           className="min-w-[100px]"
         >
-          <div className="p-1">
+          <div className="flex flex-col gap-0">
             {items
               .filter(({ slug }) => slug !== value)
-              .map(({ slug, label }) => (
-                <button
-                  key={slug}
-                  type="button"
-                  className="w-full rounded px-2 py-1.5 text-left text-xs text-text-primary hover:bg-surface-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-border-focus"
-                  onClick={() => onSelectApp(slug)}
-                  aria-label={ariaLabel}
-                >
-                  {label}
-                </button>
-              ))}
+              .map(({ slug, label }, index, arr) => {
+                const isFirst = index === 0;
+                const isLast = index === arr.length - 1;
+                const yPadding =
+                  isFirst && isLast ? "py-2.5" : isFirst ? "pt-2.5 pb-1.5" : isLast ? "pt-1.5 pb-2.5" : "py-2";
+
+                return (
+                  <button
+                    key={slug}
+                    type="button"
+                    className={cn(
+                      "w-full rounded-none px-3 text-left text-xs text-text-primary hover:bg-surface-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-border-focus",
+                      yPadding,
+                    )}
+                    onClick={() => onSelectApp(slug)}
+                    aria-label={ariaLabel}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
           </div>
         </Dropdown>
       </div>

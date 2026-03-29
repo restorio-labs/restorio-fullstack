@@ -103,6 +103,8 @@ export function ActivateContent(): ReactElement {
         if (status === 410) {
           setErrorMessage(msg ?? "");
           setResult("expired");
+        } else if (status === 404) {
+          window.location.href = "/";
         } else {
           setErrorMessage(msg ?? "");
           setResult("error");

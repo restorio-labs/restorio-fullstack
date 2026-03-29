@@ -5,17 +5,19 @@ import { cn } from "../../utils";
 export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
   label?: string;
   error?: string;
+  containerClassName?: string;
+  labelClassName?: string;
 }
 
 export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
-  ({ label, error, id, className, ...props }, ref) => {
+  ({ label, error, id, className, containerClassName, labelClassName, ...props }, ref) => {
     const generatedId = useId();
     const checkboxId = id ?? generatedId;
     const errorId = `${checkboxId}-error`;
     const helperId = `${checkboxId}-helper`;
 
     return (
-      <div className="w-full">
+      <div className={cn("w-full", containerClassName)}>
         <div className="flex items-start gap-2">
           <input
             ref={ref}
@@ -33,7 +35,10 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             {...props}
           />
           {label && (
-            <label htmlFor={checkboxId} className="text-sm font-medium text-text-primary cursor-pointer">
+            <label
+              htmlFor={checkboxId}
+              className={cn("text-sm font-medium text-text-primary cursor-pointer", labelClassName)}
+            >
               {label}
             </label>
           )}

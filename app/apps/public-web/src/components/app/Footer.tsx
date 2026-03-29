@@ -1,71 +1,59 @@
 "use client";
 
-import { ContentContainer, Text } from "@restorio/ui";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
 export const Footer = (): ReactElement => {
-  const t = useTranslations("footer");
+  const t = useTranslations();
   const currentYear = new Date().getFullYear();
-  const listLinkClassName = "text-sm text-text-secondary transition-colors hover:text-interactive-primary";
-  const footerSections = [
-    {
-      title: t("sections.product"),
-      links: [
-        { href: "#", label: t("navigation.features") },
-        { href: "#", label: t("navigation.pricing") },
-        { href: "#", label: t("navigation.demo") },
-      ],
-    },
-    {
-      title: t("sections.company"),
-      links: [
-        { href: "/about", label: t("navigation.about") },
-        { href: "#", label: t("navigation.privacy") },
-        { href: "#", label: t("navigation.terms") },
-      ],
-    },
+
+  const navLinks = [
+    { href: "/privacy", label: t("navigation.privacy") },
+    { href: "/contact", label: t("navigation.contact") },
+    { href: "/terms", label: t("navigation.terms") },
+    { href: "/status", label: t("navigation.status") },
   ];
 
+  const leftLinks = navLinks.slice(0, 2);
+  const rightLinks = navLinks.slice(2);
+
+  const linkClassName = "text-slate-500 opacity-80 transition-opacity hover:text-white hover:opacity-100 p-2";
+
   return (
-    <footer className="border-t border-border-default bg-surface-secondary py-12">
-      <ContentContainer maxWidth="2xl" padding>
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-4">
-          <div className="col-span-1 sm:col-span-2 md:col-span-2">
-            <div className="mb-4 flex items-center gap-2">
-              <div className="h-6 w-6 rounded bg-interactive-primary" />
-              <Text variant="h4" weight="bold">
-                {t("brand")}
-              </Text>
-            </div>
-            <Text variant="body-sm" className="max-w-xs text-text-secondary">
-              {t("description")}
-            </Text>
-          </div>
-          {footerSections.map((section) => (
-            <div key={section.title} className="col-span-1">
-              <Text variant="body-sm" weight="semibold" className="mb-4 uppercase tracking-wider text-text-primary">
-                {section.title}
-              </Text>
-              <ul className="space-y-2">
-                {section.links.map((link) => (
-                  <li key={link.label}>
-                    <Link href={link.href} className={listLinkClassName}>
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+    <footer className="w-full border-t border-slate-800/20 bg-[#0a0e14] px-6 py-8">
+      <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 md:flex-row md:gap-8">
+        <div className="text-lg font-bold text-slate-200 md:text-xl">{t("footer.brand")}</div>
+
+        <div className="flex max-md:hidden flex-row flex-wrap justify-center gap-8 font-inter text-sm uppercase tracking-widest">
+          {navLinks.map((link) => (
+            <Link key={link.label} href={link.href} className={linkClassName}>
+              {link.label}
+            </Link>
           ))}
         </div>
-        <div className="mt-12 border-t border-border-default pt-8">
-          <Text variant="body-sm" className="text-center text-text-tertiary">
-            {t("copyright", { year: currentYear })}
-          </Text>
+
+        <div className="flex w-full max-w-xs justify-center gap-8 md:hidden">
+          <div className="flex flex-col gap-4 text-center font-inter text-xs uppercase tracking-widest">
+            {leftLinks.map((link) => (
+              <Link key={link.label} href={link.href} className={linkClassName}>
+                {link.label}
+              </Link>
+            ))}
+          </div>
+          <div className="flex flex-col gap-4 text-center font-inter text-xs uppercase tracking-widest">
+            {rightLinks.map((link) => (
+              <Link key={link.label} href={link.href} className={linkClassName}>
+                {link.label}
+              </Link>
+            ))}
+          </div>
         </div>
-      </ContentContainer>
+
+        <div className="w-full text-center font-inter text-xs uppercase tracking-widest text-slate-400 md:w-auto md:text-sm">
+          © {currentYear} Restorio Ecosystem. All rights reserved.
+        </div>
+      </div>
     </footer>
   );
 };

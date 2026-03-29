@@ -93,6 +93,13 @@
     "deleteErrorTitle": "Nie udało się usunąć",
     "deleteErrorMessage": "Nie można usunąć tej sali. Spróbuj ponownie.",
     "deletingButton": "Usuwanie...",
+    "deleteConfirm": {
+      "title": "Usunąć tę salę?",
+      "message": "To trwale usunie układ pomieszczenia „{{name}}”. Wpisz dokładnie tę nazwę, aby potwierdzić.",
+      "inputLabel": "Nazwa sali",
+      "cancel": "Anuluj",
+      "confirm": "Usuń salę"
+    },
     "mobileUnavailableTitle": "Edytor układu sali niedostępny na telefonie",
     "mobileUnavailableMessage": "Aby edytować układ sali w panelu administratora, użyj tabletu lub komputera.",
     "floorSelector": {
@@ -106,7 +113,8 @@
       "undo": "Cofnij",
       "redo": "Ponów",
       "save": "Zapisz",
-      "add": "Dodaj"
+      "add": "Dodaj",
+      "showGrid": "Pokaż siatkę"
     },
     "addMenu": {
       "table": "Stolik",
@@ -125,6 +133,7 @@
       "name": "Nazwa",
       "color": "Kolor",
       "seats": "Miejsca",
+      "move": "Przesuń",
       "tableCustomLabel": "Etykieta stolika",
       "label": "Etykieta",
       "delete": "Usuń",
@@ -363,14 +372,20 @@
       "waiter": "Kelner"
     },
     "toggleForm": {
-      "show": "Dodaj użytkownika",
+      "show": "Dodaj użytkowników",
       "hide": "Anuluj"
     },
     "form": {
       "emailLabel": "Email",
       "accessLabel": "Poziom dostępu",
-      "submit": "Utwórz użytkownika",
-      "submitting": "Tworzenie..."
+      "addRow": "Dodaj kolejnego",
+      "removeRow": "Usuń",
+      "saveSingle": "Zapisz tego użytkownika",
+      "submit": "Zapisz wszystkich",
+      "submitting": "Zapisywanie..."
+    },
+    "emptyState": {
+      "heading": "Zacznijmy od dodania nowych członków zespołu 🚀"
     },
     "list": {
       "title": "Wszyscy użytkownicy",
@@ -378,9 +393,30 @@
       "empty": "Brak użytkowników."
     },
     "validation": {
-      "invalidEmail": "Podaj prawidłowy adres e-mail."
+      "invalidEmail": "Co najmniej jeden adres e-mail jest nieprawidłowy.",
+      "duplicateEmail": "Znaleziono powtarzające się adresy e-mail. Każdy musi być unikalny.",
+      "existingEmail": "{{emails}} jest już w tym lokalu"
+    },
+    "toast": {
+      "bulkSuccessTitle": "Dodano użytkowników",
+      "bulkSuccessDescription": "Wszyscy użytkownicy zostali utworzeni. Linki aktywacyjne zostaną wkrótce wysłane.",
+      "bulkPartialTitle": "Częściowy sukces",
+      "bulkPartialDescription": "Utworzono {{created}} z {{total}} użytkowników. Niektóre nie powiodły się — sprawdź listę.",
+      "bulkErrorTitle": "Nie udało się dodać użytkowników",
+      "bulkErrorDescription": "Nie udało się utworzyć użytkowników.",
+      "singleSuccessTitle": "Dodano użytkownika",
+      "singleSuccessDescription": "Użytkownik utworzony. Link aktywacyjny zostanie wkrótce wysłany.",
+      "singleErrorTitle": "Nie udało się dodać użytkownika",
+      "singleErrorDescription": "Nie udało się utworzyć użytkownika.",
+      "deleteSuccessTitle": "Użytkownik usunięty",
+      "deleteSuccessDescription": "Użytkownik został usunięty.",
+      "deleteErrorTitle": "Nie udało się usunąć",
+      "deleteErrorDescription": "Nie udało się usunąć użytkownika."
     },
     "feedback": {
+      "bulkSuccess": "Wszyscy użytkownicy zostali utworzeni. Linki aktywacyjne zostaną wkrótce wysłane.",
+      "bulkPartial": "Utworzono {{created}} z {{total}} użytkowników. Niektóre nie powiodły się — sprawdź listę.",
+      "bulkError": "Nie udało się utworzyć użytkowników.",
       "createSuccess": "Użytkownik utworzony. Link aktywacyjny zostanie wkrótce wysłany.",
       "createError": "Nie udało się utworzyć użytkownika.",
       "deleteSuccess": "Użytkownik został usunięty.",
@@ -392,6 +428,12 @@
       "cancel": "Anuluj",
       "confirm": "Potwierdź",
       "deleting": "Usuwanie..."
+    },
+    "modal": {
+      "alreadyMemberTitle": "Już w zespole",
+      "alreadyMemberDescription": "Ten adres e-mail jest już powiązany z tym lokalem — nie możesz dodać go ponownie jako personelu.",
+      "ok": "OK",
+      "closeAria": "Zamknij"
     }
   },
   "tenantProfile": {
@@ -447,7 +489,7 @@
       },
       "addressStreetName": {
         "label": "Nazwa ulicy",
-        "placeholder": "Marszałkowska",
+        "placeholder": "Wierzbięcice",
         "error": "Nazwa ulicy jest wymagana"
       },
       "addressStreetNumber": {
@@ -457,7 +499,7 @@
       },
       "addressCity": {
         "label": "Miasto",
-        "placeholder": "Warszawa",
+        "placeholder": "Poznań",
         "error": "Miasto jest wymagane"
       },
       "addressPostalCode": {
@@ -548,5 +590,38 @@
     "generateError": "Nie udało się wygenerować kodu QR dla stolika {{table}}:",
     "loadError": "Nie udało się wczytać kodu QR stolika.",
     "title": "Stolik {{table}}"
+  },
+  "onboarding": {
+    "title": "Utwórz swoją pierwszą restaurację",
+    "description": "Aby rozpocząć, dodaj swoją pierwszą restaurację!",
+    "fields": {
+      "name": {
+        "label": "Nazwa restauracji",
+        "placeholder": "np. Bella Italia",
+        "error": "Nazwa restauracji jest wymagana"
+      },
+      "street": {
+        "label": "Ulica",
+        "placeholder": "Wierzbięcice",
+        "error": "Ulica jest wymagana"
+      },
+      "streetNumber": {
+        "label": "Numer",
+        "placeholder": "12",
+        "error": "Numer jest wymagany"
+      },
+      "city": {
+        "label": "Miasto",
+        "placeholder": "Poznań",
+        "error": "Miasto jest wymagane"
+      }
+    },
+    "actions": {
+      "create": "Utwórz restaurację",
+      "creating": "Tworzenie..."
+    },
+    "errors": {
+      "createFailed": "Nie udało się utworzyć restauracji. Spróbuj ponownie."
+    }
   }
 }
