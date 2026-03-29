@@ -11,6 +11,7 @@ import {
   TbLayoutDashboardFilled,
   TbQrcode,
   TbUsersGroup,
+  TbTransactionDollar,
 } from "react-icons/tb";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
@@ -180,6 +181,12 @@ export const AdminSidebar = (): ReactElement => {
             active={isActive("/transactions")}
             role="menuitem"
             onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/transactions")}
+            className={NAV_ITEM_ROW_CLASS}
+            icon={
+              <NavIcon className={NAV_ITEM_ICON_CLASS}>
+                <TbTransactionDollar className={NAV_ITEM_ICON_CLASS} />
+              </NavIcon>
+            }
           >
             {t("sidebar.items.transactions")}
           </NavItem>

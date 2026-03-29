@@ -16,6 +16,7 @@ export interface ModalProps {
   className?: string;
   closeButtonAriaLabel?: string;
   variant?: ModalVariant;
+  hideCloseButton?: boolean;
 }
 
 const sizeStyles: Record<ModalSize, string> = {
@@ -37,6 +38,7 @@ export const Modal = ({
   className,
   closeButtonAriaLabel = "Close modal",
   variant = "default",
+  hideCloseButton = false,
 }: ModalProps): ReactElement | null => {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -105,17 +107,19 @@ export const Modal = ({
           <h2 id="modal-title" className="text-xl font-semibold text-text-primary">
             {title}
           </h2>
-          <button
-            ref={closeButtonRef}
-            type="button"
-            onClick={onClose}
-            className="p-1 text-text-secondary hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus rounded-sm"
-            aria-label={closeButtonAriaLabel}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          {!hideCloseButton && (
+            <button
+              ref={closeButtonRef}
+              type="button"
+              onClick={onClose}
+              className="p-1 text-text-secondary hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus rounded-sm"
+              aria-label={closeButtonAriaLabel}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
         <div className="p-6">{children}</div>
       </div>

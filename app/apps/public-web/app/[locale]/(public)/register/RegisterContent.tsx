@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Form, FormActions, FormField, Input, PasswordInput, useAuthRoute } from "@restorio/ui";
+import { Button, Form, FormActions, FormField, Input, PasswordInput, useAuthRoute, Loader } from "@restorio/ui";
 import { getApiErrorData, getApiErrorMessage } from "@restorio/utils";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -80,10 +80,7 @@ export const RegisterContent = (): ReactElement => {
   const confirmPasswordMeetsLength = confirmPassword.length >= MIN_PASSWORD_LENGTH;
   const passwordsMatchByLength = confirmPasswordMeetsLength && confirmPassword === password;
   const confirmPasswordMismatchHighlight =
-    password.trim().length > 0 &&
-    confirmPasswordMeetsLength &&
-    confirmPassword !== password &&
-    !confirmPasswordError;
+    password.trim().length > 0 && confirmPasswordMeetsLength && confirmPassword !== password && !confirmPasswordError;
 
   const passwordInputStatusClassName =
     !passwordError && passwordsMatchByLength
@@ -128,7 +125,12 @@ export const RegisterContent = (): ReactElement => {
   };
 
   if (authStatus === "loading") {
-    return <p className="text-center text-text-secondary">{tCommon("loading")}</p>;
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 py-8">
+        <Loader />
+        <p className="text-center text-text-secondary">{tCommon("loading")}</p>
+      </div>
+    );
   }
 
   if (authStatus === "authenticated") {

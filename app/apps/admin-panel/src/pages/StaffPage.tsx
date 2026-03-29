@@ -1,6 +1,6 @@
 import { TokenStorage } from "@restorio/auth";
 import type { BulkCreateStaffUserResponse, CreateStaffUserRequest } from "@restorio/types";
-import { Button, FormActions, Input, Modal, Dropdown, useI18n, useToast } from "@restorio/ui";
+import { Button, FormActions, Input, Modal, Dropdown, useI18n, useToast, Loader } from "@restorio/ui";
 import { isEmailValid } from "@restorio/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type ReactElement, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -516,7 +516,12 @@ export const StaffPage = (): ReactElement => {
   return (
     <PageLayout title={t("staff.title")} description={t("staff.description")} headerActions={headerActions}>
       <div className="relative min-w-0 w-full space-y-4 p-6">
-        {isLoadingUsers && <p className="text-sm text-text-tertiary">{t("staff.list.loading")}</p>}
+        {isLoadingUsers && (
+          <div className="flex items-center gap-2 text-sm text-text-tertiary">
+            <Loader size="sm" />
+            <span>{t("staff.list.loading")}</span>
+          </div>
+        )}
 
         {showEmptyState && !showForm && (
           <h1 className="text-2xl mt-4 font-semibold text-center text-text-primary">{t("staff.emptyState.heading")}</h1>

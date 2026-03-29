@@ -4,6 +4,7 @@ import { slugify } from "@restorio/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { FormEvent, ReactElement } from "react";
 import { useForm } from "react-hook-form";
+
 import { api } from "../../api/client";
 import { tenantDetailsQueryKey, useCurrentTenant } from "../../context/TenantContext";
 import { tenantsQueryKey } from "../../hooks/useTenants";
@@ -48,6 +49,7 @@ export const OnboardingModal = (): ReactElement => {
         slug: generatedSlug,
         status: "active",
       });
+
       return createdTenant;
     },
     onSuccess: async (createdTenant) => {
@@ -58,6 +60,7 @@ export const OnboardingModal = (): ReactElement => {
 
       queryClient.setQueryData<TenantSummary[]>(tenantsQueryKey, (current = []) => {
         const filtered = current.filter((tenant) => tenant.id !== createdSummary.id);
+
         return [createdSummary, ...filtered];
       });
       void queryClient.invalidateQueries({ queryKey: tenantDetailsQueryKey(createdTenant.id) });
@@ -83,11 +86,14 @@ export const OnboardingModal = (): ReactElement => {
   return (
     <Modal
       isOpen
-      onClose={() => {}}
+      onClose={() => {
+        // Modal cannot be closed during onboarding
+      }}
       title={t("onboarding.title")}
       size="md"
       closeOnOverlayClick={false}
       closeOnEscape={false}
+      hideCloseButton
     >
       <p className="mb-6 text-sm text-text-secondary">{t("onboarding.description")}</p>
       <Form

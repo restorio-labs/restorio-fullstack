@@ -1,3 +1,4 @@
+import { Loader } from "@restorio/ui";
 import { useQuery } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 import { useEffect, useRef } from "react";
@@ -51,7 +52,11 @@ export const TenantRouteGuard = (): ReactElement => {
   }
 
   if (query.isLoading) {
-    return <div />;
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader />
+      </div>
+    );
   }
 
   if (query.isError) {

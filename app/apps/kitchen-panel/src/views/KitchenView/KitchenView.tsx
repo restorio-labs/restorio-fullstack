@@ -11,6 +11,7 @@ import {
   Text,
   useI18n,
   useMediaQuery,
+  Loader,
 } from "@restorio/ui";
 import { logger } from "@restorio/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -213,7 +214,8 @@ export const KitchenView = (): ReactElement => {
       </div>
 
       {isLoading && (
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex flex-col items-center justify-center gap-4">
+          <Loader />
           <Text as="p" variant="body-md" className="text-text-secondary">
             {t("common.loading")}
           </Text>

@@ -36,6 +36,9 @@ const RestaurantQRCodePage = lazy(async () =>
 const QRCodePrintPage = lazy(async () =>
   import("./pages/QRCodePrintPage").then((module) => ({ default: module.QRCodePrintPage })),
 );
+const TransactionListPage = lazy(async () =>
+  import("./pages/TransactionListPage").then((module) => ({ default: module.TransactionListPage })),
+);
 
 const AdminShell = (): ReactElement => {
   const { tenants, tenantsState } = useCurrentTenant();
@@ -63,6 +66,7 @@ export const App = (): ReactElement => {
             <Route path="payment-config" element={<PaymentConfigPage />} />
             <Route path="profile" element={<TenantProfilePage />} />
             <Route path="staff" element={<StaffPage />} />
+            <Route path="transactions" element={<TransactionListPage />} />
           </Route>
           <Route path="/qr-code/table/:tableId" element={<TableQRCodePage />} />
           <Route path="/qr-code/restaurant" element={<RestaurantQRCodePage />} />

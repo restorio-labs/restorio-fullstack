@@ -1,4 +1,4 @@
-import { useI18n } from "@restorio/ui";
+import { Loader, useI18n } from "@restorio/ui";
 import type { ReactElement } from "react";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
@@ -40,7 +40,8 @@ export const QRCodePrintPage = (): ReactElement => {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-8">
+      <div className="flex min-h-screen items-center justify-center p-8 flex-col gap-4">
+        <Loader />
         <div className="text-sm text-text-tertiary">{t("qrPrint.loadingRestaurant")}</div>
       </div>
     );

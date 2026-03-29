@@ -1,5 +1,5 @@
 import type { SaveTenantMenuPayload, TenantMenuCategory } from "@restorio/types";
-import { Button, FormActions, useI18n } from "@restorio/ui";
+import { Button, FormActions, useI18n, Loader } from "@restorio/ui";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 import { useEffect, useMemo, useState } from "react";
@@ -400,7 +400,12 @@ export const MenuCreatorPage = (): ReactElement => {
           </div>
         )}
 
-        {isLoading && tenantId !== null && <div className="text-sm text-text-tertiary">{t("menuCreator.loading")}</div>}
+        {isLoading && tenantId !== null && (
+          <div className="flex items-center gap-2 text-sm text-text-tertiary">
+            <Loader size="sm" />
+            <span>{t("menuCreator.loading")}</span>
+          </div>
+        )}
 
         {errorMessage !== "" && (
           <div className="mb-4 rounded-lg border border-status-error-border bg-status-error-background px-4 py-3 text-sm text-status-error-text">

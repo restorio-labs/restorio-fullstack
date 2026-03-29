@@ -489,7 +489,7 @@
       },
       "addressStreetName": {
         "label": "Nazwa ulicy",
-        "placeholder": "Marszałkowska",
+        "placeholder": "Wierzbięcice",
         "error": "Nazwa ulicy jest wymagana"
       },
       "addressStreetNumber": {
@@ -499,7 +499,7 @@
       },
       "addressCity": {
         "label": "Miasto",
-        "placeholder": "Warszawa",
+        "placeholder": "Poznań",
         "error": "Miasto jest wymagane"
       },
       "addressPostalCode": {
@@ -593,7 +593,7 @@
   },
   "onboarding": {
     "title": "Utwórz swoją pierwszą restaurację",
-    "description": "Aby rozpocząć, dodaj swoją pierwszą restaurację. Zawsze możesz dodać więcej później.",
+    "description": "Aby rozpocząć, dodaj swoją pierwszą restaurację!",
     "fields": {
       "name": {
         "label": "Nazwa restauracji",
@@ -602,17 +602,17 @@
       },
       "street": {
         "label": "Ulica",
-        "placeholder": "np. Marszałkowska",
+        "placeholder": "Wierzbięcice",
         "error": "Ulica jest wymagana"
       },
       "streetNumber": {
         "label": "Numer",
-        "placeholder": "np. 12",
+        "placeholder": "12",
         "error": "Numer jest wymagany"
       },
       "city": {
         "label": "Miasto",
-        "placeholder": "np. Warszawa",
+        "placeholder": "Poznań",
         "error": "Miasto jest wymagane"
       }
     },

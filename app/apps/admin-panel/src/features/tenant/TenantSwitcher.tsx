@@ -1,5 +1,5 @@
 import type { TenantSummary } from "@restorio/types";
-import { Dropdown, useI18n } from "@restorio/ui";
+import { Dropdown, Loader, useI18n } from "@restorio/ui";
 import { deslug } from "@restorio/utils";
 import type { ReactElement } from "react";
 import { useState } from "react";
@@ -47,7 +47,12 @@ export const TenantSwitcher = (): ReactElement | null => {
   }
 
   if (tenantsState === "loading" || tenantsState === "idle") {
-    return <div className="text-sm text-text-tertiary">{t("tenantSwitcher.loading")}</div>;
+    return (
+      <div className="flex items-center gap-2 text-sm text-text-tertiary">
+        <Loader size="sm" />
+        <span>{t("tenantSwitcher.loading")}</span>
+      </div>
+    );
   }
 
   if (tenants.length === 0) {

@@ -2,6 +2,7 @@ import { forwardRef, useState, type ReactElement } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
 import { cn } from "../../utils";
+
 import { Input, type InputProps } from "./Input";
 
 export type PasswordInputProps = Omit<InputProps, "type" | "endAdornment"> & {
@@ -11,12 +12,7 @@ export type PasswordInputProps = Omit<InputProps, "type" | "endAdornment"> & {
 
 export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
   (
-    {
-      showPasswordAriaLabel = "Show password",
-      hidePasswordAriaLabel = "Hide password",
-      className,
-      ...props
-    },
+    { showPasswordAriaLabel = "Show password", hidePasswordAriaLabel = "Hide password", className, ...props },
     ref,
   ): ReactElement => {
     const [visible, setVisible] = useState(false);

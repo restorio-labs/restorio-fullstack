@@ -1,5 +1,5 @@
 import type { TenantSummary } from "@restorio/types";
-import { PageLayout, Text, useI18n } from "@restorio/ui";
+import { PageLayout, Text, useI18n, Loader } from "@restorio/ui";
 import { deslug } from "@restorio/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { ReactElement } from "react";
@@ -23,9 +23,12 @@ export const KitchenTenantSelectView = (): ReactElement => {
     <PageLayout title={t("tenantSelect.title")} description={t("tenantSelect.description")}>
       <div className="mx-auto flex max-w-4xl flex-col gap-4 p-6">
         {isLoading && (
-          <Text as="p" variant="body-sm" className="text-text-tertiary">
-            {t("tenantSelect.loading")}
-          </Text>
+          <div className="flex items-center gap-2">
+            <Loader size="sm" />
+            <Text as="p" variant="body-sm" className="text-text-tertiary">
+              {t("tenantSelect.loading")}
+            </Text>
+          </div>
         )}
         {isError && (
           <div className="rounded-lg border border-status-error-border bg-status-error-background px-4 py-3 text-sm text-status-error-text">

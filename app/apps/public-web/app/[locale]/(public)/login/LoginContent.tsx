@@ -1,7 +1,7 @@
 "use client";
 
 import { APP_SLUGS, type AppSlug } from "@restorio/types";
-import { Button, Form, FormActions, FormField, Input, PasswordInput, useAuthRoute } from "@restorio/ui";
+import { Button, Form, FormActions, FormField, Input, PasswordInput, useAuthRoute, Loader } from "@restorio/ui";
 import {
   getApiErrorData,
   getApiErrorMessage,
@@ -130,7 +130,12 @@ export const LoginContent = (): ReactElement => {
   };
 
   if (authStatus === "loading") {
-    return <p className="text-center text-text-secondary">{t("common.loading")}</p>;
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 py-8">
+        <Loader />
+        <p className="text-center text-text-secondary">{t("common.loading")}</p>
+      </div>
+    );
   }
 
   if (authStatus === "authenticated" || view === "choosing_app") {

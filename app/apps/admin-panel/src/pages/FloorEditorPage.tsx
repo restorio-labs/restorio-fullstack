@@ -1,5 +1,5 @@
 import type { FloorCanvas as FloorCanvasType, Tenant } from "@restorio/types";
-import { Button, cn, Dropdown, Modal, useI18n, useMediaQuery, useToast } from "@restorio/ui";
+import { Button, cn, Dropdown, Modal, useI18n, useMediaQuery, useToast, Loader } from "@restorio/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState, type ReactElement } from "react";
 import { TbChevronDown } from "react-icons/tb";
@@ -416,7 +416,8 @@ export const FloorEditorPage = (): ReactElement => {
   if (tenantsState === "loading" || tenantsState === "idle" || isSelectedTenantLoading) {
     return (
       <PageLayout title={t("floorEditor.title")} description={t("floorEditor.loadingDescription")}>
-        <div className="flex flex-1 items-center justify-center p-8">
+        <div className="flex flex-1 flex-col gap-4 items-center justify-center p-8">
+          <Loader />
           <div className="text-sm text-text-tertiary">{t("floorEditor.loadingRestaurant")}</div>
         </div>
       </PageLayout>

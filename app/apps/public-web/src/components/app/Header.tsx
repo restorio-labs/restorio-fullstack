@@ -2,7 +2,7 @@
 
 import { AUTH_LOGIN_REDIRECT_URL, LogoutButton } from "@restorio/auth";
 import type { AppSlug } from "@restorio/types";
-import { Button, Icon, ThemeSwitcher, Topbar, cn, useAuthRoute, type AuthRouteStatus } from "@restorio/ui";
+import { Button, Icon, ThemeSwitcher, Topbar, cn, useAuthRoute, type AuthRouteStatus, Loader } from "@restorio/ui";
 import { goToApp } from "@restorio/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -37,7 +37,11 @@ export const Header = (): ReactElement => {
 
   const renderCtaSlot = (): ReactElement => {
     if (authStatus === "loading") {
-      return <div className="h-9 w-20 animate-pulse rounded-full bg-surface-secondary md:w-40" />;
+      return (
+        <div className="flex h-9 w-20 items-center justify-center rounded-full bg-surface-secondary md:w-40">
+          <Loader size="sm" />
+        </div>
+      );
     }
 
     if (authStatus === "authenticated") {

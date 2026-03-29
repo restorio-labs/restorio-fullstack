@@ -1,5 +1,5 @@
 import type { ProfileFormData } from "@restorio/types";
-import { Button, Form, FormActions, useI18n } from "@restorio/ui";
+import { Button, Form, FormActions, useI18n, Loader } from "@restorio/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ChangeEvent, FormEvent, ReactElement } from "react";
 import { useEffect, useState } from "react";
@@ -238,7 +238,12 @@ export const TenantProfilePage = (): ReactElement => {
             void handleSubmit(onSubmit)(event);
           }}
         >
-          {isLoadingProfile && <div className="text-xs text-text-tertiary">{t("tenantProfile.loadingProfile")}</div>}
+          {isLoadingProfile && (
+            <div className="flex items-center gap-2 mb-4 text-xs text-text-tertiary">
+              <Loader size="sm" />
+              <span>{t("tenantProfile.loadingProfile")}</span>
+            </div>
+          )}
           {submitStatus === "error" && (
             <div className="text-xs text-status-error-text">{t("tenantProfile.errors.saveFailed")}</div>
           )}

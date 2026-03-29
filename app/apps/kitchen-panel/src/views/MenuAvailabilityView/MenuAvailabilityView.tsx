@@ -1,5 +1,5 @@
 import type { TenantMenuCategory } from "@restorio/types";
-import { Box, Stack, Switch, Text, useI18n } from "@restorio/ui";
+import { Box, Stack, Switch, Text, useI18n, Loader } from "@restorio/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 import { useParams } from "react-router-dom";
@@ -43,9 +43,12 @@ export const MenuAvailabilityView = (): ReactElement => {
 
       <div className="flex-1 overflow-auto p-6">
         {isLoading && (
-          <Text as="p" variant="body-md" className="text-text-secondary">
-            {t("menu.loading")}
-          </Text>
+          <div className="flex items-center gap-2">
+            <Loader size="sm" />
+            <Text as="p" variant="body-md" className="text-text-secondary">
+              {t("menu.loading")}
+            </Text>
+          </div>
         )}
 
         {!isLoading && categories.length === 0 && (
