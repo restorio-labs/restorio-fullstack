@@ -176,6 +176,15 @@ export const AdminSidebar = (): ReactElement => {
           </NavItem>
           <NavItem
             as={Link}
+            to="/transactions"
+            active={isActive("/transactions")}
+            role="menuitem"
+            onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/transactions")}
+          >
+            {t("sidebar.items.transactions")}
+          </NavItem>
+          <NavItem
+            as={Link}
             to="/staff"
             active={isActive("/staff")}
             role="menuitem"
