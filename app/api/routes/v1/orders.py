@@ -1,6 +1,7 @@
 from fastapi import APIRouter, status
 
 from core.dto.v1.orders import CreateOrderDTO, OrderResponseDTO, UpdateOrderStatusDTO
+from core.exceptions import BadRequestError
 from core.foundation.dependencies import MongoDB, OrderServiceDep, PostgresSession
 from core.foundation.http.responses import (
     CreatedResponse,
@@ -8,7 +9,6 @@ from core.foundation.http.responses import (
     SuccessResponse,
     UpdatedResponse,
 )
-from core.exceptions import BadRequestError
 from services.archive_service import ArchiveService
 from services.refund_service import RefundService
 from services.ws_manager import ws_manager
@@ -156,7 +156,8 @@ async def refund_order(
 ) -> SuccessResponse[dict]:
     order = await service.get_order(db, restaurant_id, order_id)
     if order["status"] != "rejected":
-        raise BadRequestError("Only rejected orders can be refunded")
+        msg = "Only rejected orders can be refunded"
+        raise BadRequestError(msg)
 
     refund_result = await _refund_service.process_refund(
         order_id,

@@ -25,11 +25,10 @@ class TestMenuItemInputDTO:
         )
         assert dto.name == "Burger"
         assert dto.price == self.BURGER_PRICE
-        assert dto.promoted == True
+        assert dto.promoted is True
         assert dto.desc == "Classic burger"
         assert dto.tags == ["beef", "spicy"]
-        assert dto.is_available == True
-
+        assert dto.is_available is True
 
 
 class TestMenuCategoryInputDTO:

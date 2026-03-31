@@ -79,7 +79,9 @@ class AuditLogger:
     def token_reuse_detected(self, *, request: Request, user_id: str | None, family: str) -> None:
         self._emit("token_reuse_detected", request, user_id=user_id, family=family)
 
-    def activation_success(self, *, request: Request, user_id: str, tenant_id: str | None = None) -> None:
+    def activation_success(
+        self, *, request: Request, user_id: str, tenant_id: str | None = None
+    ) -> None:
         self._emit("activation_success", request, user_id=user_id, tenant_id=tenant_id)
 
     def password_set(self, *, request: Request, user_id: str) -> None:

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Form, FormActions, FormField, Input, PasswordInput, useAuthRoute, Loader } from "@restorio/ui";
+import { Button, Form, FormActions, FormField, Input, PasswordInput, useAuthRoute } from "@restorio/ui";
 import { getApiErrorData, getApiErrorMessage } from "@restorio/utils";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -24,7 +24,7 @@ export const RegisterContent = (): ReactElement => {
   const [feedbackStatus, setFeedbackStatus] = useState<"success" | "error" | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const t = useTranslations("register");
-  const tCommon = useTranslations("common");
+  const animatedFieldClassName = "onboarding-fade-up motion-reduce:animate-none";
 
   const checkboxId = useId();
   const errorId = `${checkboxId}-error`;
@@ -124,15 +124,6 @@ export const RegisterContent = (): ReactElement => {
     }
   };
 
-  if (authStatus === "loading") {
-    return (
-      <div className="flex flex-col items-center justify-center gap-4 py-8">
-        <Loader />
-        <p className="text-center text-text-secondary">{tCommon("loading")}</p>
-      </div>
-    );
-  }
-
   if (authStatus === "authenticated") {
     return <AuthenticatedAppPicker />;
   }
@@ -159,7 +150,7 @@ export const RegisterContent = (): ReactElement => {
         noValidate
         spacing="md"
       >
-        <FormField>
+        <FormField className={animatedFieldClassName} style={{ animationDelay: "120ms" }}>
           <Input
             label={t("fields.email")}
             type="email"
@@ -171,7 +162,7 @@ export const RegisterContent = (): ReactElement => {
           />
         </FormField>
 
-        <FormField>
+        <FormField className={animatedFieldClassName} style={{ animationDelay: "220ms" }}>
           <div className="relative">
             <PasswordInput
               label={t("fields.password")}
@@ -188,7 +179,7 @@ export const RegisterContent = (): ReactElement => {
           </div>
         </FormField>
 
-        <FormField>
+        <FormField className={animatedFieldClassName} style={{ animationDelay: "320ms" }}>
           <PasswordInput
             label={t("fields.confirmPassword")}
             autoComplete="new-password"
@@ -200,7 +191,7 @@ export const RegisterContent = (): ReactElement => {
           />
         </FormField>
 
-        <FormField>
+        <FormField className={animatedFieldClassName} style={{ animationDelay: "420ms" }}>
           <div className="w-full">
             <div className="flex items-start gap-2">
               <input
@@ -227,7 +218,7 @@ export const RegisterContent = (): ReactElement => {
           </div>
         </FormField>
 
-        <FormActions align="stretch">
+        <FormActions align="stretch" className={animatedFieldClassName} style={{ animationDelay: "520ms" }}>
           <Button type="submit" size="lg" variant="primary" fullWidth disabled={!isFormValid}>
             {t("button")}
           </Button>

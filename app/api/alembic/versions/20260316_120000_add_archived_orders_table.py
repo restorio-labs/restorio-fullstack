@@ -38,9 +38,13 @@ def upgrade() -> None:
         sa.Column("notes", sa.Text(), nullable=True),
         sa.Column("items_snapshot", JSONB, nullable=False, server_default="[]"),
         sa.Column("order_created_at", sa.DateTime(timezone=True), nullable=False),
-        sa.Column("archived_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column(
+            "archived_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
     )
-    op.create_index("idx_archived_orders_tenant_restaurant", "archived_orders", ["tenant_id", "restaurant_id"])
+    op.create_index(
+        "idx_archived_orders_tenant_restaurant", "archived_orders", ["tenant_id", "restaurant_id"]
+    )
     op.create_index("idx_archived_orders_archived_at", "archived_orders", ["archived_at"])
     op.create_index("idx_archived_orders_status", "archived_orders", ["status"])
 

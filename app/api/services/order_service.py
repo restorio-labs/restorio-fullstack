@@ -42,7 +42,8 @@ class OrderService:
             {"_id": order_id, "restaurantId": restaurant_id}
         )
         if not doc:
-            raise NotFoundResponse("Order", order_id)
+            msg = "Order"
+            raise NotFoundResponse(msg, order_id)
         return _serialize_order(doc)
 
     async def create_order(
@@ -88,17 +89,18 @@ class OrderService:
             {"_id": order_id, "restaurantId": restaurant_id}
         )
         if not doc:
-            raise NotFoundResponse("Order", order_id)
+            msg = "Order"
+            raise NotFoundResponse(msg, order_id)
 
         current = doc["status"]
         allowed = _VALID_TRANSITIONS.get(current, set())
         if new_status not in allowed:
-            raise BadRequestError(
-                f"Cannot transition from '{current}' to '{new_status}'"
-            )
+            msg = f"Cannot transition from '{current}' to '{new_status}'"
+            raise BadRequestError(msg)
 
         if new_status == "rejected" and not rejection_reason:
-            raise BadRequestError("Rejection reason is required")
+            msg = "Rejection reason is required"
+            raise BadRequestError(msg)
 
         update: dict[str, Any] = {
             "status": new_status,
@@ -125,7 +127,8 @@ class OrderService:
             {"_id": order_id, "restaurantId": restaurant_id}
         )
         if not doc:
-            raise NotFoundResponse("Order", order_id)
+            msg = "Order"
+            raise NotFoundResponse(msg, order_id)
 
         await db[_ORDERS_COLLECTION].delete_one({"_id": order_id})
         return _serialize_order(doc)
@@ -140,12 +143,12 @@ class OrderService:
             {"_id": order_id, "restaurantId": restaurant_id}
         )
         if not doc:
-            raise NotFoundResponse("Order", order_id)
+            msg = "Order"
+            raise NotFoundResponse(msg, order_id)
 
         if doc["status"] not in ("ready", "refunded"):
-            raise BadRequestError(
-                "Only orders with status 'ready' or 'refunded' can be archived"
-            )
+            msg = "Only orders with status 'ready' or 'refunded' can be archived"
+            raise BadRequestError(msg)
         return doc
 
 

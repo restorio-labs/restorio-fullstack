@@ -1,23 +1,58 @@
-from pydantic import Field
+from decimal import Decimal
 
-from core.dto.v1.common import BaseDTO
+from pydantic import AliasChoices, Field
+
+from core.dto.v1.common import BaseDTO, CurrencyCode, EntityId, OrderStatus
 
 
 class CreateOrderItemDTO(BaseDTO):
     id: str = Field(default="", description="Item identifier")
-    menu_item_id: str = Field(..., min_length=1, alias="menuItemId", description="Menu item identifier")
-    name: str = Field(..., min_length=1, description="Item display name")
-    quantity: int = Field(..., gt=0, description="Item quantity")
-    base_price: float = Field(..., ge=0, alias="basePrice", description="Base unit price")
-    selected_modifiers: list[dict] = Field(
-        default_factory=list, alias="selectedModifiers", description="Selected modifiers"
+    menu_item_id: str = Field(
+        ...,
+        min_length=1,
+        alias="menuItemId",
+        validation_alias=AliasChoices("menuItemId", "menu_item_id", "product_id"),
+        description="Menu item identifier",
     )
-    total_price: float = Field(..., ge=0, alias="totalPrice", description="Total line price")
+    name: str = Field(default="", description="Item display name")
+    quantity: int = Field(..., gt=0, description="Item quantity")
+    base_price: Decimal = Field(
+        default=Decimal("0"),
+        ge=0,
+        alias="basePrice",
+        validation_alias=AliasChoices("basePrice", "base_price", "unit_price"),
+        description="Base unit price",
+    )
+    selected_modifiers: list[str | dict] = Field(
+        default_factory=list,
+        alias="selectedModifiers",
+        validation_alias=AliasChoices("selectedModifiers", "selected_modifiers", "modifiers"),
+        description="Selected modifiers",
+    )
+    total_price: Decimal = Field(
+        default=Decimal("0"),
+        ge=0,
+        alias="totalPrice",
+        validation_alias=AliasChoices("totalPrice", "total_price"),
+        description="Total line price",
+    )
     notes: str | None = Field(None, description="Item notes")
+
+    @property
+    def product_id(self) -> str:
+        return self.menu_item_id
+
+    @property
+    def modifiers(self) -> list[str | dict]:
+        return self.selected_modifiers
+
+    @property
+    def unit_price(self) -> Decimal:
+        return self.base_price
 
 
 class CreateOrderDTO(BaseDTO):
-    table_id: str | None = Field(None, alias="tableId", description="Table identifier")
+    table_id: EntityId | None = Field(None, alias="tableId", description="Table identifier")
     session_id: str = Field(default="", alias="sessionId", description="Session identifier")
     table: str = Field(default="", description="Table label")
     items: list[CreateOrderItemDTO] = Field(..., min_length=1, description="Order items")
@@ -25,11 +60,21 @@ class CreateOrderDTO(BaseDTO):
     tax: float = Field(default=0, ge=0, description="Tax amount")
     total: float = Field(default=0, ge=0, description="Total amount")
     notes: str | None = Field(None, description="Order notes")
-    payment_status: str = Field(default="completed", alias="paymentStatus", description="Payment status")
+    payment_status: str = Field(
+        default="completed", alias="paymentStatus", description="Payment status"
+    )
 
 
 class UpdateOrderStatusDTO(BaseDTO):
     status: str = Field(..., description="Target order status")
     rejection_reason: str | None = Field(
-        None, alias="rejectionReason", description="Reason for rejection (required when status is 'rejected')"
+        None,
+        alias="rejectionReason",
+        description="Reason for rejection (required when status is 'rejected')",
     )
+
+
+class UpdateOrderDTO(BaseDTO):
+    status: OrderStatus | None = Field(None, description="Updated order status")
+    total_amount: Decimal | None = Field(None, ge=0, description="Updated order total")
+    currency: CurrencyCode | None = Field(None, description="Updated order currency")

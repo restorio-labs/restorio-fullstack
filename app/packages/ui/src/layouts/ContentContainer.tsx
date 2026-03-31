@@ -10,6 +10,7 @@ export interface ContentContainerProps {
   padding?: boolean;
   fullWidth?: boolean;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 const maxWidthStyles: Record<ContentContainerMaxWidth, string> = {
@@ -27,6 +28,7 @@ export const ContentContainer = ({
   padding = true,
   fullWidth = false,
   className,
+  style,
 }: ContentContainerProps): ReactElement => {
   return (
     <div
@@ -36,6 +38,7 @@ export const ContentContainer = ({
         padding && "px-4 sm:px-6 lg:px-8",
         className,
       )}
+      style={style}
     >
       {children}
     </div>

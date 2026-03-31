@@ -1,12 +1,12 @@
 import { AppWrapper } from "@restorio/auth";
-import { lazy, Suspense, type ReactElement } from "react";
-import { Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { lazy, Suspense, type ReactElement, useEffect } from "react";
+import { Navigate, Outlet, Route, Routes, useNavigate, useLocation } from "react-router-dom";
 
 import { api } from "./api/client";
 import { useCurrentTenant } from "./context/TenantContext";
-import { OnboardingModal } from "./features/onboarding/OnboardingModal";
 import { AdminSidebar } from "./features/sidebar/AdminSidebar";
 import { AppLayout } from "./layouts/AppLayout";
+import { OnboardingPage } from "./pages/OnboardingPage";
 
 const FloorEditorPage = lazy(async () =>
   import("./pages/FloorEditorPage").then((module) => ({ default: module.FloorEditorPage })),
@@ -42,11 +42,19 @@ const TransactionListPage = lazy(async () =>
 
 const AdminShell = (): ReactElement => {
   const { tenants, tenantsState } = useCurrentTenant();
-  const showOnboarding = tenantsState === "loaded" && tenants.length === 0;
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const showOnboarding = tenantsState === "loaded" && tenants.length === 0;
+
+    if (showOnboarding && location.pathname !== "/onboarding") {
+      navigate("/onboarding", { replace: true });
+    }
+  }, [tenantsState, tenants.length, location.pathname, navigate]);
 
   return (
     <AppLayout sidebar={<AdminSidebar />}>
-      {showOnboarding && <OnboardingModal />}
       <Outlet />
     </AppLayout>
   );
@@ -57,6 +65,7 @@ export const App = (): ReactElement => {
     <AppWrapper client={api}>
       <Suspense fallback={<div />}>
         <Routes>
+          <Route path="/onboarding" element={<OnboardingPage />} />
           <Route element={<AdminShell />}>
             <Route index element={<FloorEditorPage />} />
             <Route path="restaurant-creator" element={<RestaurantCreatorPage />} />

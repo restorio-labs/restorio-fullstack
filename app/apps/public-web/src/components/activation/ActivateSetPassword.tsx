@@ -43,10 +43,7 @@ export const ActivateSetPasswordView = ({
   const confirmPasswordMeetsLength = confirmPassword.length >= MIN_PASSWORD_LENGTH;
   const passwordsMatchByLength = confirmPasswordMeetsLength && confirmPassword === password;
   const confirmPasswordMismatchHighlight =
-    password.trim().length > 0 &&
-    confirmPasswordMeetsLength &&
-    confirmPassword !== password &&
-    !confirmPasswordError;
+    password.trim().length > 0 && confirmPasswordMeetsLength && confirmPassword !== password && !confirmPasswordError;
 
   const passwordInputStatusClassName =
     !passwordError && passwordsMatchByLength

@@ -44,11 +44,7 @@ async def bulk_create_users(
         raise UnauthenticatedResponse(message="Unauthorized")
 
     requester = getattr(request.state, "user", None)
-    requester_email = (
-        requester.get("email", "").lower()
-        if isinstance(requester, dict)
-        else ""
-    )
+    requester_email = requester.get("email", "").lower() if isinstance(requester, dict) else ""
 
     seen: set[str] = set()
     results: list[dict[str, str | dict | None]] = []
@@ -57,19 +53,23 @@ async def bulk_create_users(
         email_lower = entry.email.lower()
 
         if email_lower == requester_email:
-            results.append({
-                "email": entry.email,
-                "status": "failed",
-                "error": "Cannot add yourself as a staff member",
-            })
+            results.append(
+                {
+                    "email": entry.email,
+                    "status": "failed",
+                    "error": "Cannot add yourself as a staff member",
+                }
+            )
             continue
 
         if email_lower in seen:
-            results.append({
-                "email": entry.email,
-                "status": "failed",
-                "error": "Duplicate email in request",
-            })
+            results.append(
+                {
+                    "email": entry.email,
+                    "status": "failed",
+                    "error": "Duplicate email in request",
+                }
+            )
             continue
 
         seen.add(email_lower)
@@ -105,28 +105,34 @@ async def bulk_create_users(
                     activation_link=activation_link,
                 )
 
-            results.append({
-                "email": entry.email,
-                "status": "created",
-                "data": {
-                    "user_id": str(created_user.id),
-                    "tenant_id": tenant.public_id,
-                    "tenant_name": tenant.name,
-                    "tenant_slug": tenant.slug,
-                },
-            })
+            results.append(
+                {
+                    "email": entry.email,
+                    "status": "created",
+                    "data": {
+                        "user_id": str(created_user.id),
+                        "tenant_id": tenant.public_id,
+                        "tenant_name": tenant.name,
+                        "tenant_slug": tenant.slug,
+                    },
+                }
+            )
         except ConflictError as exc:
-            results.append({
-                "email": entry.email,
-                "status": "failed",
-                "error": str(exc),
-            })
+            results.append(
+                {
+                    "email": entry.email,
+                    "status": "failed",
+                    "error": str(exc),
+                }
+            )
         except Exception as exc:
-            results.append({
-                "email": entry.email,
-                "status": "failed",
-                "error": str(exc) if str(exc) else "Unexpected error",
-            })
+            results.append(
+                {
+                    "email": entry.email,
+                    "status": "failed",
+                    "error": str(exc) if str(exc) else "Unexpected error",
+                }
+            )
 
     created_count = sum(1 for r in results if r["status"] == "created")
     total = len(results)
@@ -162,7 +168,8 @@ async def create_user(
     if isinstance(requester, dict):
         requester_email = requester.get("email", "").lower()
         if data.email.lower() == requester_email:
-            raise ConflictError("Cannot add yourself as a staff member")
+            msg = "Cannot add yourself as a staff member"
+            raise ConflictError(msg)
 
     temp_password = user_service.generate_temporary_password()
     created_user, _, send_activation_email = await user_service.create_user_for_tenant(

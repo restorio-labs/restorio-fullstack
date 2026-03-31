@@ -11,6 +11,7 @@ export const HomeContent = (): ReactElement => {
   const { authStatus }: { authStatus: AuthRouteStatus } = useAuthRoute();
   const t = useTranslations();
   const locale = useLocale();
+  const animatedSectionClassName = "onboarding-fade-up-slow motion-reduce:animate-none";
 
   return (
     <div className="flex flex-col">
@@ -24,7 +25,13 @@ export const HomeContent = (): ReactElement => {
           />
         </div>
 
-        <div className="relative z-10 w-full max-w-5xl space-y-8 px-4 text-center sm:px-6 lg:px-8">
+        <div
+          className={cn(
+            "relative z-10 w-full max-w-5xl space-y-8 px-4 text-center sm:px-6 lg:px-8",
+            animatedSectionClassName,
+          )}
+          style={{ animationDelay: "140ms" }}
+        >
           <Text
             as="h1"
             variant="h1"
@@ -71,7 +78,12 @@ export const HomeContent = (): ReactElement => {
           ) : null}
         </div>
 
-        <ContentContainer maxWidth="xl" padding className="relative z-10 mt-12 sm:mt-16 md:mt-20">
+        <ContentContainer
+          maxWidth="xl"
+          padding
+          className={cn("relative z-10 mt-12 sm:mt-16 md:mt-20", animatedSectionClassName)}
+          style={{ animationDelay: "320ms" }}
+        >
           <div id="landing-preview" className="relative mx-auto w-full max-w-6xl scroll-mt-24">
             <div className="absolute -inset-1 rounded-[3rem] bg-gradient-to-r from-[#89acff]/10 to-[#85f6e5]/10 opacity-30 blur-3xl" />
             <div className="glass-card relative flex aspect-video flex-col overflow-hidden rounded-[2.5rem] border border-[#44484f]/20 shadow-2xl">
@@ -95,7 +107,12 @@ export const HomeContent = (): ReactElement => {
       </section>
 
       <section id="landing-mission" className="scroll-mt-24 px-4 py-20 md:py-28">
-        <ContentContainer maxWidth="lg" padding>
+        <ContentContainer
+          maxWidth="lg"
+          padding
+          className={animatedSectionClassName}
+          style={{ animationDelay: "500ms" }}
+        >
           <div className="mx-auto max-w-3xl text-center">
             <Text variant="h2" weight="bold" className="mb-6 text-3xl font-black md:text-5xl">
               {t("landing.mission.title")}
@@ -132,7 +149,12 @@ export const HomeContent = (): ReactElement => {
       </section>
 
       <section id="landing-ecosystem" className="scroll-mt-24 bg-surface-secondary/50 px-4 py-20 md:py-28">
-        <ContentContainer maxWidth="xl" padding>
+        <ContentContainer
+          maxWidth="xl"
+          padding
+          className={animatedSectionClassName}
+          style={{ animationDelay: "680ms" }}
+        >
           <div className="mb-14 text-center">
             <Text variant="h2" weight="bold" className="text-center mb-4 text-3xl font-black md:text-5xl">
               {t("landing.pillars.title")}
@@ -219,7 +241,12 @@ export const HomeContent = (): ReactElement => {
       </section>
 
       <section id="landing-precision" className="scroll-mt-24 px-4 py-20 md:py-28">
-        <ContentContainer maxWidth="xl" padding>
+        <ContentContainer
+          maxWidth="xl"
+          padding
+          className={animatedSectionClassName}
+          style={{ animationDelay: "860ms" }}
+        >
           <div className="mx-auto max-w-3xl space-y-8 text-center">
             <Text
               variant="h2"
@@ -232,7 +259,7 @@ export const HomeContent = (): ReactElement => {
               {t("landing.precision.body")}
             </Text>
             <div className="grid grid-cols-1 gap-4 pt-4 text-left sm:grid-cols-2">
-              <div className="rounded-2xl border border-border-default/30 bg-surface-secondary/50 p-5">
+              <div className="rounded-2xl border border-border-default/30 bg-surface-secondary/50 px-10 py-5">
                 <Text weight="semibold" className="mb-2 text-interactive-primary">
                   {t("landing.precision.qrTitle")}
                 </Text>
@@ -240,7 +267,7 @@ export const HomeContent = (): ReactElement => {
                   {t("landing.precision.qrBody")}
                 </Text>
               </div>
-              <div className="rounded-2xl border border-border-default/30 bg-surface-secondary/50 p-5">
+              <div className="rounded-2xl border border-border-default/30 bg-surface-secondary/50 px-10 py-5">
                 <Text weight="semibold" className="mb-2 text-interactive-secondary">
                   {t("landing.precision.kdsTitle")}
                 </Text>
@@ -254,7 +281,12 @@ export const HomeContent = (): ReactElement => {
       </section>
 
       <section className="px-4 py-20 md:py-28">
-        <ContentContainer maxWidth="md" padding>
+        <ContentContainer
+          maxWidth="md"
+          padding
+          className={animatedSectionClassName}
+          style={{ animationDelay: "1040ms" }}
+        >
           <div className="text-center">
             <div className="mx-auto mb-8 flex h-14 w-14 items-center justify-center rounded-2xl bg-interactive-primary/15 text-interactive-primary">
               <FaCode className="h-7 w-7" aria-hidden />
@@ -267,7 +299,7 @@ export const HomeContent = (): ReactElement => {
             </Text>
             <div className="flex flex-wrap items-center justify-center gap-8 text-text-secondary">
               <a
-                href="https://github.com"
+                href="https://github.com/restorio-labs/restorio-fullstack"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-lg font-bold transition-colors hover:text-text-primary"
@@ -294,7 +326,12 @@ export const HomeContent = (): ReactElement => {
       </section>
 
       <section id="landing-cta" className="scroll-mt-24 px-4 pb-24">
-        <ContentContainer maxWidth="lg" padding>
+        <ContentContainer
+          maxWidth="lg"
+          padding
+          className={animatedSectionClassName}
+          style={{ animationDelay: "1220ms" }}
+        >
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-interactive-primary/90 via-interactive-primary/70 to-surface-secondary px-8 py-12 text-center shadow-xl md:px-14 md:py-16">
             <div
               className="pointer-events-none absolute inset-0"
@@ -304,7 +341,7 @@ export const HomeContent = (): ReactElement => {
               }}
             />
             <div className="relative">
-              <Text variant="h2" weight="bold" className="mb-4 text-2xl text-background-primary md:text-4xl">
+              <Text variant="h2" weight="bold" className="mb-4 text-2xl text-background-primary md:text-3xl">
                 {authStatus === "authenticated" ? t("landing.finalCta.loggedTitle") : t("landing.finalCta.title")}
               </Text>
               <Text variant="body-lg" className="mb-8 text-background-primary/80">

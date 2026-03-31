@@ -153,10 +153,10 @@
     "precision": {
       "title": "Precyzja w każdym pikselu",
       "body": "To nie tylko tabele i listy — narzędzia wizualne do sali, statusów dań w czasie rzeczywistym i szybkiej reakcji na potrzeby gości.",
-      "qrTitle": "QR Ordering",
+      "qrTitle": "Zamawianie QR",
       "qrBody": "Zamówienia ze stolika do kuchni w ułamku sekundy.",
-      "kdsTitle": "Real-time KDS",
-      "kdsBody": "Widzisz postęp każdego dania na ekranie kuchni."
+      "kdsTitle": "KDS w czasie rzeczywistym",
+      "kdsBody": "Zobacz postęp każdego dania na ekranie kuchni."
     },
     "community": {
       "title": "Napędzane przez społeczność",
@@ -166,7 +166,7 @@
       "contact": "Skontaktuj się"
     },
     "finalCta": {
-      "title": "Gotowy na zmianę w swojej restauracji?",
+      "title": "Gotowy na zmianę w zarządzaniu swoją restauracją?",
       "subtitle": "Uruchom darmowy okres próbny i zobacz ekosystem w akcji.",
       "primary": "Zacznij darmowy okres próbny",
       "secondary": "Dowiedz się więcej",

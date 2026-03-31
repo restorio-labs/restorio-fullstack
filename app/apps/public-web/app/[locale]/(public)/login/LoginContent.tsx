@@ -1,7 +1,7 @@
 "use client";
 
 import { APP_SLUGS, type AppSlug } from "@restorio/types";
-import { Button, Form, FormActions, FormField, Input, PasswordInput, useAuthRoute, Loader } from "@restorio/ui";
+import { Button, Form, FormActions, FormField, Input, PasswordInput, useAuthRoute } from "@restorio/ui";
 import {
   getApiErrorData,
   getApiErrorMessage,
@@ -51,6 +51,7 @@ export const LoginContent = (): ReactElement => {
   const [fieldErrors, setFieldErrors] = useState<LoginFieldErrors>({});
   const [view, setView] = useState<ViewState>("form");
   const t = useTranslations();
+  const animatedFieldClassName = "onboarding-fade-up motion-reduce:animate-none";
 
   const passwordValid = useMemo(() => password.trim().length >= MIN_PASSWORD_LENGTH, [password]);
   const isFormValid = useMemo(() => isEmailValid(email) && passwordValid, [email, passwordValid]);
@@ -129,15 +130,6 @@ export const LoginContent = (): ReactElement => {
     }
   };
 
-  if (authStatus === "loading") {
-    return (
-      <div className="flex flex-col items-center justify-center gap-4 py-8">
-        <Loader />
-        <p className="text-center text-text-secondary">{t("common.loading")}</p>
-      </div>
-    );
-  }
-
   if (authStatus === "authenticated" || view === "choosing_app") {
     return <AuthenticatedAppPicker />;
   }
@@ -159,7 +151,7 @@ export const LoginContent = (): ReactElement => {
         noValidate
         spacing="md"
       >
-        <FormField>
+        <FormField className={animatedFieldClassName} style={{ animationDelay: "120ms" }}>
           <Input
             label={t("login.email")}
             type="email"
@@ -177,7 +169,7 @@ export const LoginContent = (): ReactElement => {
           />
         </FormField>
 
-        <FormField>
+        <FormField className={animatedFieldClassName} style={{ animationDelay: "220ms" }}>
           <PasswordInput
             label={t("login.password")}
             autoComplete="current-password"
@@ -194,7 +186,7 @@ export const LoginContent = (): ReactElement => {
           />
         </FormField>
 
-        <FormActions align="stretch">
+        <FormActions align="stretch" className={animatedFieldClassName} style={{ animationDelay: "320ms" }}>
           <Button type="submit" size="lg" variant="primary" fullWidth disabled={!isFormValid || submitting}>
             {submitting ? t("login.submitting") : t("login.submit")}
           </Button>

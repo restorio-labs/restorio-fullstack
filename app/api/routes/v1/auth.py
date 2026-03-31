@@ -371,9 +371,7 @@ async def refresh_token(
 
     tenant_ids: list[str] = []
     if tenant_role_ids:
-        rows = await session.execute(
-            select(Tenant.public_id).where(Tenant.id.in_(tenant_role_ids))
-        )
+        rows = await session.execute(select(Tenant.public_id).where(Tenant.id.in_(tenant_role_ids)))
         tenant_ids = [row[0] for row in rows.all()]
 
     role = await session.scalar(

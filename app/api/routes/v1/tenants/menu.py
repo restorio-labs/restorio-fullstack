@@ -10,7 +10,6 @@ from core.dto.v1.menus import (
     ToggleItemAvailabilityDTO,
     UpsertTenantMenuDTO,
 )
-
 from core.foundation.dependencies import MongoDB
 from core.foundation.http.responses import (
     SuccessResponse,

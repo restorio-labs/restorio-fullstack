@@ -86,7 +86,10 @@ export const Modal = ({
 
   return (
     <div
-      className="fixed inset-0 z-[1000] flex items-center justify-center bg-surface-overlay p-4"
+      className={cn(
+        "fixed inset-0 z-[1000] flex items-center justify-center bg-surface-overlay p-4",
+        "animate-in fade-in duration-200",
+      )}
       onClick={handleOverlayClick}
       role="dialog"
       aria-modal="true"
@@ -97,6 +100,7 @@ export const Modal = ({
         className={cn(
           "relative z-[1001] w-full rounded-lg bg-surface-primary shadow-lg",
           "focus:outline-none",
+          "animate-in zoom-in-95 duration-200",
           sizeStyles[size],
           variant === "cookie" && "border border-border-default",
           className,

@@ -60,7 +60,9 @@ class CreateUserDTO(BaseDTO):
 
 
 class BulkCreateUsersDTO(BaseDTO):
-    users: list[CreateUserDTO] = Field(..., min_length=1, max_length=50, description="List of users to create")
+    users: list[CreateUserDTO] = Field(
+        ..., min_length=1, max_length=50, description="List of users to create"
+    )
 
 
 class SetPasswordDTO(BaseDTO):

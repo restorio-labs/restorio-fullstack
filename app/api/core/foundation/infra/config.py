@@ -91,14 +91,16 @@ class Settings(BaseSettings):
             safe_user = quote_plus(self.MONGODB_USERNAME)
             safe_pass = quote_plus(self.MONGODB_PASSWORD)
             netloc = f"{safe_user}:{safe_pass}@{parsed.hostname or ''}:{parsed.port or 27017}"
-            self.DATABASE_URL = urlunparse((
-                parsed.scheme,
-                netloc,
-                parsed.path or "/restorio",
-                parsed.params,
-                parsed.query,
-                parsed.fragment,
-            ))
+            self.DATABASE_URL = urlunparse(
+                (
+                    parsed.scheme,
+                    netloc,
+                    parsed.path or "/restorio",
+                    parsed.params,
+                    parsed.query,
+                    parsed.fragment,
+                )
+            )
         return self
 
     @model_validator(mode="after")

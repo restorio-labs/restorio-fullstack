@@ -48,9 +48,7 @@ async def update_rejection_labels(
     payload: UpdateRejectionLabelsDTO,
     db: MongoDB,
 ) -> UpdatedResponse[KitchenConfigResponseDTO]:
-    config = await _service.update_rejection_labels(
-        db, restaurant_id, payload.rejection_labels
-    )
+    config = await _service.update_rejection_labels(db, restaurant_id, payload.rejection_labels)
     return UpdatedResponse(
         message="Rejection labels updated successfully",
         data=KitchenConfigResponseDTO(**config),

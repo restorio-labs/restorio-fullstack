@@ -17,7 +17,7 @@ from core.exceptions import (
 )
 from core.foundation.security import SecurityService
 from core.models.activation_link import ActivationLink
-from core.models.enums import AccountType, TenantStatus
+from core.models.enums import TenantStatus
 from core.models.tenant import Tenant
 from core.models.tenant_role import TenantRole
 from core.models.user import User

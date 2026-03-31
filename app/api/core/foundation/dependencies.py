@@ -14,12 +14,12 @@ from services.auth_service import AuthService
 from services.email_service import EmailService
 from services.external_client_service import ExternalClient
 from services.floor_canvas_service import FloorCanvasService
+from services.order_service import OrderService
 from services.payment_service import P24Service
 from services.tenant_logo_storage_service import (
     TenantLogoStorageService,
     tenant_logo_storage_service,
 )
-from services.order_service import OrderService
 from services.tenant_profile_service import TenantProfileService
 from services.tenant_service import TenantService
 from services.user_service import UserService
