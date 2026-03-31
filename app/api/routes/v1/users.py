@@ -71,6 +71,8 @@ async def create_user(
         password=temp_password,
         tenant_id=tenant_id,
         account_type=data.access_level,
+        name=data.name,
+        surname=data.surname,
         force_password_change=True,
     )
 
@@ -102,16 +104,16 @@ async def create_user(
 @router.get(
     "/{tenant_public_id}",
     status_code=status.HTTP_200_OK,
-    response_model=SuccessResponse[list[dict[str, str | bool]]],
+    response_model=SuccessResponse[list[dict[str, str | bool | None]]],
     summary="List tenant staff users",
     description="List waiter and kitchen users for current tenant",
 )
 async def list_tenant_users(
     tenant_id: AuthorizedTenantId,
     session: PostgresSession,
-) -> SuccessResponse[list[dict[str, str | bool]]]:
+) -> SuccessResponse[list[dict[str, str | bool | None]]]:
     stmt = (
-        select(User.id, User.email, User.is_active, TenantRole.account_type)
+        select(User.id, User.email, User.name, User.surname, User.is_active, TenantRole.account_type)
         .join(TenantRole, TenantRole.account_id == User.id)
         .where(
             TenantRole.tenant_id == tenant_id,
@@ -124,10 +126,12 @@ async def list_tenant_users(
         {
             "id": str(user_id),
             "email": email,
+            "name": name,
+            "surname": surname,
             "is_active": is_active,
             "account_type": account_type.value,
         }
-        for user_id, email, is_active, account_type in rows.all()
+        for user_id, email, name, surname, is_active, account_type in rows.all()
     ]
 
     if len(users) == 0:

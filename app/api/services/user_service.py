@@ -91,6 +91,8 @@ class UserService:
         password: str,
         tenant_id: UUID,
         account_type: AccountType,
+        name: str | None = None,
+        surname: str | None = None,
         force_password_change: bool = False,
     ) -> tuple[User, TenantRole]:
         existing_user = await session.scalar(select(User).where(User.email == email))
@@ -100,6 +102,8 @@ class UserService:
 
         user = User(
             email=email,
+            name=name if account_type == AccountType.WAITER else None,
+            surname=surname if account_type == AccountType.WAITER else None,
             password_hash=self.security.hash_password(password),
             is_active=False,
             tenant_id=tenant_id,

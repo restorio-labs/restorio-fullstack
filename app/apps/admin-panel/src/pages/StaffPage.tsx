@@ -1,4 +1,5 @@
 import { Button, Input, Select, useI18n } from "@restorio/ui";
+import type { CreateStaffUserRequest } from "@restorio/types";
 import { isEmailValid } from "@restorio/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useMemo, useState } from "react";
@@ -12,6 +13,8 @@ type AccessLevel = "kitchen" | "waiter";
 interface StaffUser {
   id: string;
   email: string;
+  name: string | null;
+  surname: string | null;
   accessLevel: AccessLevel;
   isActive: boolean;
 }
@@ -27,7 +30,14 @@ const toAccessLevel = (value: unknown): AccessLevel | null => {
 const staffQueryKey = ["staff-users"] as const;
 
 const parseUsers = (
-  rawUsers: { id: string; email: string; is_active: boolean; account_type: unknown }[],
+  rawUsers: {
+    id: string;
+    email: string;
+    name: string | null;
+    surname: string | null;
+    is_active: boolean;
+    account_type: unknown;
+  }[],
 ): StaffUser[] =>
   rawUsers
     .map((user): StaffUser | null => {
@@ -37,7 +47,14 @@ const parseUsers = (
         return null;
       }
 
-      return { id: user.id, email: user.email, accessLevel: level, isActive: user.is_active };
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        surname: user.surname,
+        accessLevel: level,
+        isActive: user.is_active,
+      };
     })
     .filter((user): user is StaffUser => user !== null);
 
@@ -47,6 +64,8 @@ export const StaffPage = (): ReactElement => {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [surname, setSurname] = useState("");
   const [accessLevel, setAccessLevel] = useState<AccessLevel>("kitchen");
   const [pendingDeleteUserId, setPendingDeleteUserId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
@@ -74,10 +93,12 @@ export const StaffPage = (): ReactElement => {
   );
 
   const createMutation = useMutation({
-    mutationFn: (payload: { email: string; access_level: AccessLevel }) => api.users.create(payload),
+    mutationFn: (payload: CreateStaffUserRequest) => api.users.create(payload),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: staffQueryKey });
       setEmail("");
+      setName("");
+      setSurname("");
       setAccessLevel("kitchen");
       setShowForm(false);
       setFeedback({ type: "success", message: t("staff.feedback.createSuccess") });
@@ -105,7 +126,12 @@ export const StaffPage = (): ReactElement => {
     },
   });
 
-  const isFormValid = isEmailValid(email);
+  const isWaiter = accessLevel === "waiter";
+  const normalizedName = name.trim();
+  const normalizedSurname = surname.trim();
+  const isFormValid = isWaiter
+    ? isEmailValid(email) && normalizedName.length > 0 && normalizedSurname.length > 0
+    : isEmailValid(email);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
@@ -117,7 +143,16 @@ export const StaffPage = (): ReactElement => {
       return;
     }
 
-    createMutation.mutate({ email: email.trim(), access_level: accessLevel });
+    if (isWaiter && (normalizedName.length === 0 || normalizedSurname.length === 0)) {
+      setFeedback({ type: "error", message: t("staff.validation.waiterNameRequired") });
+      return;
+    }
+
+    createMutation.mutate({
+      email: email.trim(),
+      access_level: accessLevel,
+      ...(isWaiter ? { name: normalizedName, surname: normalizedSurname } : {}),
+    });
   };
 
   const handleDeleteUser = (userId: string): void => {
@@ -139,7 +174,9 @@ export const StaffPage = (): ReactElement => {
 
           {showForm && (
             <form
-              className="mt-4 grid gap-3 md:grid-cols-[1fr_200px_auto]"
+              className={`mt-4 grid gap-3 ${
+                isWaiter ? "md:grid-cols-[1fr_1fr_1fr_200px_auto]" : "md:grid-cols-[1fr_200px_auto]"
+              }`}
               onSubmit={(event) => void handleSubmit(event)}
             >
               <Input
@@ -150,6 +187,24 @@ export const StaffPage = (): ReactElement => {
                 onChange={(event) => setEmail(event.target.value)}
                 required
               />
+              {isWaiter && (
+                <>
+                  <Input
+                    label={t("staff.form.nameLabel")}
+                    value={name}
+                    maxLength={50}
+                    onChange={(event) => setName(event.target.value)}
+                    required
+                  />
+                  <Input
+                    label={t("staff.form.surnameLabel")}
+                    value={surname}
+                    maxLength={50}
+                    onChange={(event) => setSurname(event.target.value)}
+                    required
+                  />
+                </>
+              )}
               <Select
                 label={t("staff.form.accessLabel")}
                 value={accessLevel}
@@ -158,6 +213,10 @@ export const StaffPage = (): ReactElement => {
 
                   if (nextValue !== null) {
                     setAccessLevel(nextValue);
+                    if (nextValue === "kitchen") {
+                      setName("");
+                      setSurname("");
+                    }
                   }
                 }}
                 options={accessOptions}
@@ -196,7 +255,15 @@ export const StaffPage = (): ReactElement => {
               <ul className="m-0 list-none divide-y divide-border-default p-0">
                 {users.map((user) => (
                   <li key={user.id} className="flex items-center justify-between py-3">
-                    <span className="text-sm text-text-primary">{user.email}</span>
+                    <div className="flex flex-col">
+                      <span className="text-sm text-text-primary">{user.email}</span>
+                      <span className="text-xs text-text-secondary">
+                        {t("staff.list.personLabel", {
+                          name: user.name ?? t("staff.list.notProvided"),
+                          surname: user.surname ?? t("staff.list.notProvided"),
+                        })}
+                      </span>
+                    </div>
                     <div className="flex items-center gap-3">
                       <span
                         className={`text-xs font-medium ${

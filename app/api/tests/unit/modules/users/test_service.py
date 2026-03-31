@@ -235,6 +235,25 @@ async def test_create_user_for_tenant_can_force_password_change() -> None:
 
 
 @pytest.mark.asyncio
+async def test_create_waiter_for_tenant_stores_name_and_surname() -> None:
+    session = FakeAsyncSession()
+    tenant_id = uuid4()
+
+    user, _ = await user_service.create_user_for_tenant(
+        session=session,
+        email="waiter@example.com",
+        password="StrongPass1!",
+        tenant_id=tenant_id,
+        account_type=AccountType.WAITER,
+        name="Jan",
+        surname="Kowalski",
+    )
+
+    assert user.name == "Jan"
+    assert user.surname == "Kowalski"
+
+
+@pytest.mark.asyncio
 async def test_create_user_for_tenant_duplicate_email() -> None:
     session = FakeAsyncSession()
     session.users.append(

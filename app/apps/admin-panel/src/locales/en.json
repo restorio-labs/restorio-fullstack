@@ -348,6 +348,8 @@
     },
     "form": {
       "emailLabel": "Email",
+      "nameLabel": "Name",
+      "surnameLabel": "Surname",
       "accessLabel": "Access level",
       "submit": "Create user",
       "submitting": "Creating..."
@@ -355,10 +357,13 @@
     "list": {
       "title": "All users",
       "loading": "Loading users...",
-      "empty": "No users yet."
+      "empty": "No users yet.",
+      "personLabel": "Name: {{name}} {{surname}}",
+      "notProvided": "-"
     },
     "validation": {
-      "invalidEmail": "Enter a valid email address."
+      "invalidEmail": "Enter a valid email address.",
+      "waiterNameRequired": "Name and surname are required for waiter."
     },
     "feedback": {
       "createSuccess": "User created. Activation email should be sent shortly.",
