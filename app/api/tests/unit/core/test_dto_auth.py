@@ -76,9 +76,31 @@ class TestCreateUserDTO:
         dto = CreateUserDTO(
             email="waiter@example.com",
             access_level="waiter",
+            name="Jan",
+            surname="Kowalski",
         )
         assert dto.email == "waiter@example.com"
         assert dto.access_level.value == "waiter"
+        assert dto.name == "Jan"
+        assert dto.surname == "Kowalski"
+
+    def test_waiter_without_name_or_surname_raises_validation_error(self) -> None:
+        with pytest.raises(ValidationError) as exc_info:
+            CreateUserDTO(
+                email="waiter@example.com",
+                access_level="waiter",
+            )
+        assert "required for waiter accounts" in exc_info.value.detail
+
+    def test_kitchen_ignores_name_and_surname(self) -> None:
+        dto = CreateUserDTO(
+            email="kitchen@example.com",
+            access_level="kitchen",
+            name="Ignored",
+            surname="Ignored",
+        )
+        assert dto.name is None
+        assert dto.surname is None
 
     def test_invalid_access_level_raises_validation_error(self) -> None:
         with pytest.raises(ValidationError) as exc_info:

@@ -1,7 +1,7 @@
 import re
 from uuid import UUID
 
-from pydantic import EmailStr, Field, field_validator
+from pydantic import EmailStr, Field, field_validator, model_validator
 
 from core.dto.v1.common import AccountType, BaseDTO
 from core.exceptions import ValidationError
@@ -50,6 +50,8 @@ class RegisterDTO(BaseDTO):
 class CreateUserDTO(BaseDTO):
     email: EmailStr = Field(..., description="User email address")
     access_level: AccountType = Field(..., description="Access level (waiter, kitchen)")
+    name: str | None = Field(default=None, max_length=50, description="User first name")
+    surname: str | None = Field(default=None, max_length=50, description="User surname")
 
     @field_validator("access_level")
     @classmethod
@@ -58,6 +60,30 @@ class CreateUserDTO(BaseDTO):
             msg = "Access level must be waiter or kitchen"
             raise ValidationError(message=msg)
         return value
+
+    @field_validator("name", "surname", mode="before")
+    @classmethod
+    def normalize_optional_names(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+
+        normalized = value.strip()
+        if normalized == "":
+            return None
+
+        return normalized
+
+    @model_validator(mode="after")
+    def validate_names_for_access_level(self) -> "CreateUserDTO":
+        if self.access_level == AccountType.WAITER:
+            if self.name is None or self.surname is None:
+                msg = "Name and surname are required for waiter accounts"
+                raise ValidationError(message=msg)
+            return self
+
+        object.__setattr__(self, "name", None)
+        object.__setattr__(self, "surname", None)
+        return self
 
 
 class SetPasswordDTO(BaseDTO):

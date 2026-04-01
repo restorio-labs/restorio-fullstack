@@ -368,6 +368,8 @@
     },
     "form": {
       "emailLabel": "Email",
+      "nameLabel": "Imię",
+      "surnameLabel": "Nazwisko",
       "accessLabel": "Poziom dostępu",
       "submit": "Utwórz użytkownika",
       "submitting": "Tworzenie..."
@@ -375,10 +377,13 @@
     "list": {
       "title": "Wszyscy użytkownicy",
       "loading": "Ładowanie użytkowników...",
-      "empty": "Brak użytkowników."
+      "empty": "Brak użytkowników.",
+      "personLabel": "Imię i nazwisko: {{name}} {{surname}}",
+      "notProvided": "-"
     },
     "validation": {
-      "invalidEmail": "Podaj prawidłowy adres e-mail."
+      "invalidEmail": "Podaj prawidłowy adres e-mail.",
+      "waiterNameRequired": "Imię i nazwisko są wymagane dla konta kelnera."
     },
     "feedback": {
       "createSuccess": "Użytkownik utworzony. Link aktywacyjny zostanie wkrótce wysłany.",

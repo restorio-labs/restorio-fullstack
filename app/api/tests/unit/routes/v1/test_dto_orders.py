@@ -21,16 +21,22 @@ class TestCreateOrderItemDTO:
     def test_valid_creation(self) -> None:
         dto = CreateOrderItemDTO(
             product_id="prod-123",
+            name="Burger",
             quantity=2,
+            unit_price=Decimal("15.99"),
         )
         assert dto.product_id == "prod-123"
+        assert dto.name == "Burger"
         assert dto.quantity == self.QUANTITY
+        assert dto.unit_price == Decimal("15.99")
         assert dto.modifiers == []
 
     def test_with_modifiers(self) -> None:
         dto = CreateOrderItemDTO(
             product_id="prod-123",
+            name="Burger",
             quantity=2,
+            unit_price=Decimal("15.99"),
             modifiers=["mod-1", "mod-2"],
         )
         assert dto.modifiers == ["mod-1", "mod-2"]
@@ -39,7 +45,9 @@ class TestCreateOrderItemDTO:
         with pytest.raises(ValidationError) as exc_info:
             CreateOrderItemDTO(
                 product_id="prod-123",
+                name="Burger",
                 quantity=0,
+                unit_price=Decimal("15.99"),
             )
         errors = exc_info.value.errors()
         assert any("quantity" in str(err) for err in errors)
@@ -48,7 +56,9 @@ class TestCreateOrderItemDTO:
         with pytest.raises(ValidationError):
             CreateOrderItemDTO(
                 product_id="prod-123",
+                name="Burger",
                 quantity=-1,
+                unit_price=Decimal("15.99"),
             )
 
 
@@ -56,26 +66,29 @@ class TestCreateOrderDTO:
     ITEMS_COUNT = 2
 
     def test_valid_creation(self) -> None:
-        table_id = uuid4()
+        table_id = "table-123"
         dto = CreateOrderDTO(
             table_id=table_id,
             items=[
-                CreateOrderItemDTO(product_id="prod-1", quantity=1),
-                CreateOrderItemDTO(product_id="prod-2", quantity=2),
+                CreateOrderItemDTO(
+                    product_id="prod-1", name="Pizza", quantity=1, unit_price=Decimal("25.50")
+                ),
+                CreateOrderItemDTO(
+                    product_id="prod-2", name="Burger", quantity=2, unit_price=Decimal("15.99")
+                ),
             ],
         )
         assert dto.table_id == table_id
         assert len(dto.items) == self.ITEMS_COUNT
 
-    def test_empty_items_list(self) -> None:
-        table_id = uuid4()
-        with pytest.raises(ValidationError) as exc_info:
-            CreateOrderDTO(
-                table_id=table_id,
-                items=[],
-            )
-        errors = exc_info.value.errors()
-        assert any("items" in str(err) for err in errors)
+    def test_empty_items_list_is_allowed(self) -> None:
+        table_id = "table-123"
+        dto = CreateOrderDTO(
+            table_id=table_id,
+            items=[],
+        )
+        assert dto.table_id == table_id
+        assert dto.items == []
 
 
 class TestUpdateOrderDTO:

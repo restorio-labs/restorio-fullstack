@@ -6,6 +6,8 @@ export interface TableDisplayInfo {
   guestCount?: number;
   orderStatus?: OrderStatusDisplay;
   needHelp?: boolean;
+  servedByName?: string;
+  servedBySurname?: string;
 }
 
 export interface CanvasBounds {

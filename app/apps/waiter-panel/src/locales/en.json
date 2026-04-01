@@ -1,0 +1,52 @@
+{
+  "waiterDashboard": {
+    "title": "Waiter dashboard",
+    "description": "Live floor view from the administration panel configuration.",
+    "activeFloorLabel": "Active floor",
+    "activeFloorNone": "No floor selected",
+    "activeFloorNoConfigured": "No configured floor",
+    "refresh": "Refresh",
+    "refreshing": "Refreshing...",
+    "logout": "Logout",
+    "loggingOut": "Logging out...",
+    "loadingRestaurants": "Loading restaurants...",
+    "loadRestaurantsError": "Failed to load restaurants.",
+    "noRestaurants": "No restaurants are available for this account.",
+    "restaurantLabel": "Restaurant",
+    "loadingFloor": "Loading floor runtime...",
+    "loadFloorError": "Failed to load restaurant floor.",
+    "selectedElement": "Selected table/element",
+    "tableGroupLabel": "Tables {{numbers}}",
+    "tableSeats": "Seats: {{seats}}",
+    "closePanel": "Close",
+    "tableAvailable": "Table available",
+    "tableOccupied": "Table occupied",
+    "tableOccupiedByWaiter": "Table occupied - served by {{waiter}}",
+    "beginOrder": "Begin order",
+    "addItemLabel": "Add item from menu",
+    "selectMenuItem": "Select menu item",
+    "addItem": "Add item",
+    "addItemModalTitle": "Add item to order",
+    "addItemModalEmpty": "No available menu items.",
+    "removeItem": "Remove item",
+    "noItemsYet": "No items in this order yet.",
+    "orderNoteLabel": "Order notes",
+    "orderNotePlaceholder": "e.g. remove cucumber from dish",
+    "orderTotal": "Total: {{total}}",
+    "confirmPayment": "Confirm payment",
+    "zoomLabel": "Zoom: {{value}}%",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "zoomReset": "Reset"
+  },
+  "floorRuntime": {
+    "noLayout": "No floor layout for this venue."
+  },
+  "floorEditor": {
+    "tableLabel": "Table {{number}}",
+    "panel": {
+      "name": "Name",
+      "seats": "Seats"
+    }
+  }
+}

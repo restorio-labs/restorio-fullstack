@@ -1,0 +1,52 @@
+{
+  "waiterDashboard": {
+    "title": "Panel de camarero",
+    "description": "Vista de sala en vivo segun la configuracion del panel de administracion.",
+    "activeFloorLabel": "Sala activa",
+    "activeFloorNone": "No hay sala seleccionada",
+    "activeFloorNoConfigured": "No hay sala configurada",
+    "refresh": "Actualizar",
+    "refreshing": "Actualizando...",
+    "logout": "Cerrar sesion",
+    "loggingOut": "Cerrando sesion...",
+    "loadingRestaurants": "Cargando restaurantes...",
+    "loadRestaurantsError": "No se pudieron cargar los restaurantes.",
+    "noRestaurants": "No hay restaurantes disponibles para esta cuenta.",
+    "restaurantLabel": "Restaurante",
+    "loadingFloor": "Cargando vista de sala...",
+    "loadFloorError": "No se pudo cargar la sala del restaurante.",
+    "selectedElement": "Mesa/elemento seleccionado",
+    "tableGroupLabel": "Mesas {{numbers}}",
+    "tableSeats": "Asientos: {{seats}}",
+    "closePanel": "Cerrar",
+    "tableAvailable": "Mesa disponible",
+    "tableOccupied": "Mesa ocupada",
+    "tableOccupiedByWaiter": "Mesa ocupada - atendida por {{waiter}}",
+    "beginOrder": "Iniciar pedido",
+    "addItemLabel": "Agregar producto del menu",
+    "selectMenuItem": "Seleccionar producto",
+    "addItem": "Agregar producto",
+    "addItemModalTitle": "Agregar producto al pedido",
+    "addItemModalEmpty": "No hay productos disponibles del menu.",
+    "removeItem": "Quitar producto",
+    "noItemsYet": "No hay productos en este pedido.",
+    "orderNoteLabel": "Notas del pedido",
+    "orderNotePlaceholder": "p. ej. sin pepino",
+    "orderTotal": "Total: {{total}}",
+    "confirmPayment": "Confirmar pago",
+    "zoomLabel": "Zoom: {{value}}%",
+    "zoomIn": "Acercar",
+    "zoomOut": "Alejar",
+    "zoomReset": "Restablecer"
+  },
+  "floorRuntime": {
+    "noLayout": "No hay plano de sala para este local."
+  },
+  "floorEditor": {
+    "tableLabel": "Mesa {{number}}",
+    "panel": {
+      "name": "Nombre",
+      "seats": "Asientos"
+    }
+  }
+}

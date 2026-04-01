@@ -152,27 +152,19 @@ class TestUpdateP24ConfigDTOValidation:
 
     def test_api_key_longer_than_32_rejected(self) -> None:
         with pytest.raises(ValidationError):
-            UpdateP24ConfigDTO(
-                p24_merchantid=1, p24_api="a" * 33, p24_crc=self.EXAMPLE_CRC_KEY
-            )
+            UpdateP24ConfigDTO(p24_merchantid=1, p24_api="a" * 33, p24_crc=self.EXAMPLE_CRC_KEY)
 
     def test_api_key_shorter_than_32_rejected(self) -> None:
         with pytest.raises(ValidationError):
-            UpdateP24ConfigDTO(
-                p24_merchantid=1, p24_api="a" * 31, p24_crc=self.EXAMPLE_CRC_KEY
-            )
+            UpdateP24ConfigDTO(p24_merchantid=1, p24_api="a" * 31, p24_crc=self.EXAMPLE_CRC_KEY)
 
     def test_crc_key_longer_than_16_rejected(self) -> None:
         with pytest.raises(ValidationError):
-            UpdateP24ConfigDTO(
-                p24_merchantid=1, p24_api=self.EXAMPLE_API_KEY, p24_crc="a" * 17
-            )
+            UpdateP24ConfigDTO(p24_merchantid=1, p24_api=self.EXAMPLE_API_KEY, p24_crc="a" * 17)
 
     def test_crc_key_shorter_than_16_rejected(self) -> None:
         with pytest.raises(ValidationError):
-            UpdateP24ConfigDTO(
-                p24_merchantid=1, p24_api=self.EXAMPLE_API_KEY, p24_crc="a" * 15
-            )
+            UpdateP24ConfigDTO(p24_merchantid=1, p24_api=self.EXAMPLE_API_KEY, p24_crc="a" * 15)
 
     def test_boundary_values_accepted(self) -> None:
         dto = UpdateP24ConfigDTO(

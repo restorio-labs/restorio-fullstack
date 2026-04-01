@@ -25,6 +25,7 @@ if TYPE_CHECKING:
     from core.models.order_item import OrderItem
     from core.models.payment import Payment
     from core.models.tenant import Tenant
+    from core.models.user import User
 
 
 class Order(Base):
@@ -40,12 +41,18 @@ class Order(Base):
         PGUUID(as_uuid=True),
         nullable=True,
     )
+    table_ref: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    waiter_user_id: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
     status: Mapped[OrderStatus] = mapped_column(
         Enum(
             OrderStatus,
             name="order_status",
             create_constraint=True,
-            value_callable=lambda e: [m.value for m in e],
+            values_callable=lambda e: [m.value for m in e],
         ),
         nullable=False,
         default=OrderStatus.PLACED,
@@ -60,6 +67,7 @@ class Order(Base):
     )
 
     tenant: Mapped[Tenant] = relationship("Tenant", back_populates="orders")
+    assigned_waiter: Mapped[User | None] = relationship("User", foreign_keys=[waiter_user_id])
     order_items: Mapped[list[OrderItem]] = relationship(
         "OrderItem", back_populates="order", cascade="all, delete-orphan"
     )
@@ -71,5 +79,7 @@ class Order(Base):
         CheckConstraint("total_amount >= 0", name="check_total_amount_non_negative"),
         Index("idx_orders_tenant_id_created_at", "tenant_id", "created_at"),
         Index("idx_orders_table_id", "table_id"),
+        Index("idx_orders_table_ref", "table_ref"),
+        Index("idx_orders_waiter_user_id", "waiter_user_id"),
         Index("idx_orders_status", "status"),
     )
