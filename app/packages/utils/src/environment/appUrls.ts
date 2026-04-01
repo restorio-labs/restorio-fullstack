@@ -118,5 +118,5 @@ export const resolveApiBaseUrl = (options?: ResolveApiBaseUrlOptions): string =>
     return "/api/v1";
   }
 
-  return "http://localhost:8000/api/v1";
+  return "http://localhost/api/v1";
 };

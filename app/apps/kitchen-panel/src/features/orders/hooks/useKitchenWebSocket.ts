@@ -44,7 +44,7 @@ export const useKitchenWebSocket = (restaurantId: string | null): UseKitchenWebS
     const connect = (): void => {
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
       const host = window.location.hostname;
-      const port = "8000";
+      const port = "80";
       const url = `${protocol}//${host}:${port}/api/v1/ws/kitchen/${restaurantId}`;
 
       const ws = new WebSocket(url);

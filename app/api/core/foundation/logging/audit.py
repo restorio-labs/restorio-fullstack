@@ -15,6 +15,8 @@ from typing import Any
 
 from fastapi import Request
 
+from core.foundation.client_ip import get_client_ip
+
 
 def _setup_audit_logger() -> logging.Logger:
     log = logging.getLogger("restorio.audit")
@@ -38,17 +40,10 @@ def _setup_audit_logger() -> logging.Logger:
 _logger = _setup_audit_logger()
 
 
-def _client_ip(request: Request) -> str:
-    forwarded = request.headers.get("X-Forwarded-For")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return request.client.host if request.client else "unknown"
-
-
 def _base_payload(request: Request) -> dict[str, Any]:
     return {
         "request_id": getattr(request.state, "request_id", None),
-        "ip": _client_ip(request),
+        "ip": get_client_ip(request),
         "user_agent": request.headers.get("User-Agent", ""),
         "path": str(request.url.path),
         "ts": time.time(),

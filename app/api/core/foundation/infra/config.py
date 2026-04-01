@@ -4,6 +4,9 @@ from urllib.parse import quote_plus, urlparse, urlunparse
 
 from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from dotenv import load_dotenv
+
+load_dotenv()
 
 _INSECURE_SECRET_KEYS = frozenset({"change-me-in-production", "secret", ""})
 
@@ -15,16 +18,31 @@ class Settings(BaseSettings):
     DEBUG: bool = False
 
     API_V1_PREFIX: str = "/api/v1"
-
-    CORS_ORIGINS: list[str] = [
+    LOCAL_ORIGINS: list[str] = [
+        # Local development
         "http://localhost:3000",
         "http://localhost:3001",
         "http://localhost:3002",
         "http://localhost:3003",
         "http://localhost:3004",
-        "https://restorio.org",
-        "https://*.restorio.org",
     ]
+    # Production subdomains (explicit for security)
+    PRODUCTION_ORIGINS: list[str] = [
+        "https://restorio.org",
+        "https://www.restorio.org",
+        "https://api.restorio.org",
+        "https://admin.restorio.org",
+        "https://kitchen.restorio.org",
+        "https://waiter.restorio.org",
+        "https://mobile.restorio.org",
+    ]
+    _env = os.getenv("ENV", "development")
+    if _env in ("local", "development"):
+        CORS_ORIGINS: list[str] = LOCAL_ORIGINS
+    elif _env == "production":
+        CORS_ORIGINS: list[str] = PRODUCTION_ORIGINS
+    else:
+        CORS_ORIGINS: list[str] = LOCAL_ORIGINS
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod

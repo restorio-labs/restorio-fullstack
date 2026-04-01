@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from core.exceptions.handlers import setup_exception_handlers
 from core.foundation.infra.config import settings
 from core.middleware import (
+    CSRFMiddleware,
     RateLimitMiddleware,
     TimingMiddleware,
     UnauthorizedMiddleware,
@@ -26,6 +27,7 @@ def create_application() -> FastAPI:
     setup_exception_handlers(app=app, settings=settings)
 
     app.add_middleware(RateLimitMiddleware)
+    app.add_middleware(CSRFMiddleware)
     app.add_middleware(UnauthorizedMiddleware)
     app.add_middleware(TimingMiddleware)
     # Keep CORS as the outermost middleware so short-circuit 401 responses
