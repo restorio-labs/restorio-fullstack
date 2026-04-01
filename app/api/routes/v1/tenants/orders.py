@@ -4,7 +4,12 @@ from uuid import NAMESPACE_URL, UUID, uuid5
 from fastapi import APIRouter, HTTPException, Request, status
 from sqlalchemy import select
 
-from core.dto.v1.orders import CreateOrderDTO, OrderItemResponseDTO, OrderResponseDTO, UpdateOrderDTO
+from core.dto.v1.orders import (
+    CreateOrderDTO,
+    OrderItemResponseDTO,
+    OrderResponseDTO,
+    UpdateOrderDTO,
+)
 from core.foundation.dependencies import AuthorizedTenantId, PostgresSession
 from core.foundation.http.responses import (
     CreatedResponse,
