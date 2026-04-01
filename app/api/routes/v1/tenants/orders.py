@@ -86,7 +86,9 @@ async def list_tenant_orders(
     items_by_order: dict[UUID, list[OrderItem]] = {}
 
     if order_ids:
-        items_result = await session.execute(select(OrderItem).where(OrderItem.order_id.in_(order_ids)))
+        items_result = await session.execute(
+            select(OrderItem).where(OrderItem.order_id.in_(order_ids))
+        )
         for item in items_result.scalars().all():
             items_by_order.setdefault(item.order_id, []).append(item)
     waiter_ids = {order.waiter_user_id for order in orders if order.waiter_user_id is not None}
@@ -195,7 +197,9 @@ async def update_tenant_order(
 
     updated_items: list[OrderItem] = []
     if request.items is not None:
-        existing_items_result = await session.execute(select(OrderItem).where(OrderItem.order_id == order.id))
+        existing_items_result = await session.execute(
+            select(OrderItem).where(OrderItem.order_id == order.id)
+        )
         for existing_item in existing_items_result.scalars().all():
             await session.delete(existing_item)
         await session.flush()
@@ -225,7 +229,9 @@ async def update_tenant_order(
             waiter_map[waiter.id] = waiter
 
     if not updated_items:
-        updated_items_result = await session.execute(select(OrderItem).where(OrderItem.order_id == order.id))
+        updated_items_result = await session.execute(
+            select(OrderItem).where(OrderItem.order_id == order.id)
+        )
         updated_items = list(updated_items_result.scalars().all())
     else:
         for order_item in updated_items:

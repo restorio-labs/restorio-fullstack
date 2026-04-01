@@ -113,7 +113,9 @@ async def list_tenant_users(
     session: PostgresSession,
 ) -> SuccessResponse[list[dict[str, str | bool | None]]]:
     stmt = (
-        select(User.id, User.email, User.name, User.surname, User.is_active, TenantRole.account_type)
+        select(
+            User.id, User.email, User.name, User.surname, User.is_active, TenantRole.account_type
+        )
         .join(TenantRole, TenantRole.account_id == User.id)
         .where(
             TenantRole.tenant_id == tenant_id,
