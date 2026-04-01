@@ -1,5 +1,5 @@
-import { Button, Input, Select, useI18n } from "@restorio/ui";
 import type { CreateStaffUserRequest } from "@restorio/types";
+import { Button, Input, Select, useI18n } from "@restorio/ui";
 import { isEmailValid } from "@restorio/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useMemo, useState } from "react";
@@ -145,6 +145,7 @@ export const StaffPage = (): ReactElement => {
 
     if (isWaiter && (normalizedName.length === 0 || normalizedSurname.length === 0)) {
       setFeedback({ type: "error", message: t("staff.validation.waiterNameRequired") });
+
       return;
     }
 
@@ -213,6 +214,7 @@ export const StaffPage = (): ReactElement => {
 
                   if (nextValue !== null) {
                     setAccessLevel(nextValue);
+
                     if (nextValue === "kitchen") {
                       setName("");
                       setSurname("");
