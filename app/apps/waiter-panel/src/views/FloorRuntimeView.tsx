@@ -202,6 +202,7 @@ export const FloorRuntimeView = ({
         }
 
         const payload: unknown = await response.json();
+
         if (!isRecord(payload) || !Array.isArray(payload.data)) {
           return [];
         }
@@ -214,6 +215,7 @@ export const FloorRuntimeView = ({
           const tableRef = typeof row.table_ref === "string" ? row.table_ref : null;
           const tableId = typeof row.table_id === "string" ? row.table_id : null;
           const resolvedTableRef = tableRef ?? tableId;
+
           if (resolvedTableRef === null) {
             return [];
           }
@@ -290,7 +292,9 @@ export const FloorRuntimeView = ({
     return element;
   }, [runtimeCanvas, selectedElementId]);
 
-  const selectedTableDisplayInfo = selectedTableElement ? effectiveTableDisplayInfo[selectedTableElement.id] : undefined;
+  const selectedTableDisplayInfo = selectedTableElement
+    ? effectiveTableDisplayInfo[selectedTableElement.id]
+    : undefined;
   const selectedTableHasOrder =
     selectedTableDisplayInfo?.orderStatus !== undefined && selectedTableDisplayInfo.orderStatus !== "browsing";
   const isSelectedTableAvailable = Boolean(selectedTableElement) && !selectedTableHasOrder;
@@ -373,9 +377,7 @@ export const FloorRuntimeView = ({
   }, []);
 
   const createRemoteOrder = useCallback(
-    async (
-      tableElementId: string,
-    ): Promise<{ id: string; waiterName?: string; waiterSurname?: string } | null> => {
+    async (tableElementId: string): Promise<{ id: string; waiterName?: string; waiterSurname?: string } | null> => {
       const accessToken = TokenStorage.getAccessToken();
       const response = await fetch(`${API_BASE_URL}/tenants/${venue.id}/orders`, {
         method: "POST",

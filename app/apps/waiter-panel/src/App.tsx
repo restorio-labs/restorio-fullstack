@@ -132,7 +132,10 @@ const FloorDashboardPage = ({ fixedRestaurantId }: FloorDashboardPageProps): Rea
       return t("waiterDashboard.restaurantLabel");
     }
 
-    return restaurants.find((restaurant) => restaurant.id === resolvedRestaurantId)?.name ?? t("waiterDashboard.restaurantLabel");
+    return (
+      restaurants.find((restaurant) => restaurant.id === resolvedRestaurantId)?.name ??
+      t("waiterDashboard.restaurantLabel")
+    );
   }, [resolvedRestaurantId, restaurants, t]);
 
   const floorControl =
