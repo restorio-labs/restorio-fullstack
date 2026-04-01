@@ -3,7 +3,7 @@ import { TokenStorage } from "@restorio/auth";
 import { resolveApiBaseUrl } from "@restorio/utils";
 
 const apiClient = new ApiClient({
-  baseURL: resolveApiBaseUrl(),
+  baseURL: resolveApiBaseUrl({ preferRelativeInBrowser: true }),
   refreshPath: "auth/refresh",
   getAccessToken: (): string | null => TokenStorage.getAccessToken(),
   onUnauthorized: (): void => {

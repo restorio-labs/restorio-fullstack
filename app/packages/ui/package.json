@@ -3,14 +3,14 @@
   "version": "1.0.0",
   "type": "module",
   "private": true,
-  "main": "./src/index.ts",
-  "module": "./src/index.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./src/index.ts",
-      "require": "./src/index.ts"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./styles": "./src/styles/tailwind.css",
     "./styles/tailwind.css": "./src/styles/tailwind.css",
@@ -21,8 +21,8 @@
     },
     "./theme-mode": {
       "types": "./dist/theme/themeMode.d.ts",
-      "import": "./src/theme/themeMode.ts",
-      "require": "./src/theme/themeMode.ts"
+      "import": "./dist/theme/themeMode.js",
+      "require": "./dist/theme/themeMode.cjs"
     }
   },
   "scripts": {
@@ -38,14 +38,18 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
+  "files": [
+    "dist",
+    "src/styles"
+  ],
   "dependencies": {
     "@types/node": "^22",
     "@restorio/types": "workspace:*",
     "@restorio/utils": "workspace:*",
-    "react-icons": "^5.6.0",
-    "@testing-library/user-event": "^14.6.1"
+    "react-icons": "^5.6.0"
   },
   "devDependencies": {
+    "@testing-library/user-event": "^14.6.1",
     "@testing-library/jest-dom": "^6.1.5",
     "@testing-library/react": "^14.1.2",
     "@types/jsdom": "^27.0.0",
