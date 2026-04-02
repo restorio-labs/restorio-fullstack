@@ -16,7 +16,8 @@ export interface FloorTableGroupProps {
   onPointerDown?: (e: React.PointerEvent) => void;
 }
 
-const stateStyles: Record<TableRuntimeState, string> = {
+const stateStyles: Record<TableRuntimeState | "neutral", string> = {
+  neutral: "bg-surface-primary border-border-default",
   free: "bg-status-success-background border-status-success-border",
   occupied: "bg-status-error-background border-status-error-border",
   reserved: "bg-status-warning-background border-status-warning-border",
@@ -27,7 +28,7 @@ export const FloorTableGroup = ({
   bounds,
   tableNumbers,
   seats,
-  state = "free",
+  state,
   displayInfo,
   isSelected = false,
   "aria-label": ariaLabel,
@@ -37,10 +38,13 @@ export const FloorTableGroup = ({
   const tablesLabel = tableNumbers.join(", ");
   const needHelp = displayInfo?.needHelp;
   const hasActiveOrder = displayInfo?.orderStatus !== undefined && displayInfo.orderStatus !== "browsing";
-  const resolvedState: TableRuntimeState = hasActiveOrder ? "occupied" : state === "free" ? "free" : state;
+  const defaultState: TableRuntimeState | "neutral" = state ?? "neutral";
+  const resolvedState: TableRuntimeState | "neutral" = hasActiveOrder ? "occupied" : defaultState;
   const label =
     ariaLabel ??
-    `${t("floorEditor.panel.name")} ${tablesLabel}, ${seats} ${t("floorEditor.panel.seats")}, ${resolvedState}`;
+    (resolvedState === "neutral"
+      ? `${t("floorEditor.panel.name")} ${tablesLabel}, ${seats} ${t("floorEditor.panel.seats")}`
+      : `${t("floorEditor.panel.name")} ${tablesLabel}, ${seats} ${t("floorEditor.panel.seats")}, ${resolvedState}`);
 
   return (
     <CanvasElement bounds={bounds} aria-label={label} role="img" onPointerDown={onPointerDown}>

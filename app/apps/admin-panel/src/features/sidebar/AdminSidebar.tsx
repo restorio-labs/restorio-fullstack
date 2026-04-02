@@ -75,7 +75,7 @@ export const AdminSidebar = (): ReactElement => {
       </div>
 
       <div className="flex flex-col gap-2 p-2">
-        <NavSection aria-label={t("sidebar.sections.floorLayout")}>
+        <NavSection aria-label={t("sidebar.sections")}>
           <NavItem
             as={Link}
             to="/"
@@ -91,9 +91,6 @@ export const AdminSidebar = (): ReactElement => {
           >
             {t("sidebar.items.floorEditor")}
           </NavItem>
-        </NavSection>
-
-        <NavSection aria-label={t("sidebar.sections.menu")}>
           <NavItem
             as={Link}
             to="/menu-creator"
@@ -124,27 +121,6 @@ export const AdminSidebar = (): ReactElement => {
           >
             {t("sidebar.items.pageConfigurator")}
           </NavItem> */}
-        </NavSection>
-
-        <NavSection aria-label={t("sidebar.sections.tools")}>
-          <NavItem
-            as={Link}
-            to="/qr-code-generator"
-            active={isActive("/qr-code-generator")}
-            role="menuitem"
-            className={NAV_ITEM_ROW_CLASS}
-            icon={
-              <NavIcon className={NAV_ITEM_ICON_CLASS}>
-                <TbQrcode className={NAV_ITEM_ICON_CLASS} />
-              </NavIcon>
-            }
-            onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/qr-code-generator")}
-          >
-            {t("sidebar.items.qrCodeGenerator")}
-          </NavItem>
-        </NavSection>
-
-        <NavSection aria-label={t("sidebar.sections.settings")}>
           <NavItem
             as={Link}
             to="/profile"
@@ -177,6 +153,21 @@ export const AdminSidebar = (): ReactElement => {
           </NavItem>
           <NavItem
             as={Link}
+            to="/staff"
+            active={isActive("/staff")}
+            role="menuitem"
+            className={NAV_ITEM_ROW_CLASS}
+            icon={
+              <NavIcon className={NAV_ITEM_ICON_CLASS}>
+                <TbUsersGroup className={NAV_ITEM_ICON_CLASS} />
+              </NavIcon>
+            }
+            onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/staff")}
+          >
+            {t("sidebar.items.staff")}
+          </NavItem>
+          <NavItem
+            as={Link}
             to="/transactions"
             active={isActive("/transactions")}
             role="menuitem"
@@ -192,18 +183,18 @@ export const AdminSidebar = (): ReactElement => {
           </NavItem>
           <NavItem
             as={Link}
-            to="/staff"
-            active={isActive("/staff")}
+            to="/qr-code-generator"
+            active={isActive("/qr-code-generator")}
             role="menuitem"
             className={NAV_ITEM_ROW_CLASS}
             icon={
               <NavIcon className={NAV_ITEM_ICON_CLASS}>
-                <TbUsersGroup className={NAV_ITEM_ICON_CLASS} />
+                <TbQrcode className={NAV_ITEM_ICON_CLASS} />
               </NavIcon>
             }
-            onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/staff")}
+            onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/qr-code-generator")}
           >
-            {t("sidebar.items.staff")}
+            {t("sidebar.items.qrCodeGenerator")}
           </NavItem>
         </NavSection>
       </div>

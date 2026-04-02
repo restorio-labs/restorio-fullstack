@@ -21,6 +21,7 @@ from core.dto.v1.menus import (
     MenuItemDTO,
     MenuItemInputDTO,
     TenantMenuResponseDTO,
+    ToggleItemAvailabilityDTO,
     UpsertTenantMenuDTO,
 )
 from core.dto.v1.tenant_profiles import (

@@ -55,6 +55,7 @@ export const RestaurantsView = ({
                       <FloorCanvas
                         layout={activeCanvas}
                         showGrid={false}
+                        runtimeTableStyling={false}
                         interactive={false}
                         centered
                         transformStyle={getPreviewTransform(activeCanvas)}

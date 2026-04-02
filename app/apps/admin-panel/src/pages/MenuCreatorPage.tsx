@@ -1,5 +1,5 @@
 import type { SaveTenantMenuPayload, TenantMenuCategory } from "@restorio/types";
-import { Button, FormActions, useI18n, Loader } from "@restorio/ui";
+import { Button, FormActions, useI18n, useToast, Loader } from "@restorio/ui";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 import { useEffect, useMemo, useState } from "react";
@@ -74,12 +74,13 @@ const toFormCategories = (categories: TenantMenuCategory[]): MenuCategoryFormSta
     })),
   }));
 
+type BuildMenuPayloadResult = { ok: true; payload: SaveTenantMenuPayload } | { ok: false; message: string };
+
 export const MenuCreatorPage = (): ReactElement => {
   const { t } = useI18n();
+  const { showToast } = useToast();
   const { selectedTenantId } = useCurrentTenant();
   const [categories, setCategories] = useState<MenuCategoryFormState[]>([]);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successVisible, setSuccessVisible] = useState(false);
   const [didUserEdit, setDidUserEdit] = useState(false);
   const [loadedTenantId, setLoadedTenantId] = useState<string | null>(null);
 
@@ -156,14 +157,13 @@ export const MenuCreatorPage = (): ReactElement => {
       return api.menus.save(tenantId, payload);
     },
     onSuccess: () => {
-      setErrorMessage("");
-      setSuccessVisible(true);
+      showToast("success", t("menuCreator.toast.saveSuccessTitle"), t("menuCreator.success"));
     },
     onError: (error: unknown) => {
-      setSuccessVisible(false);
-      setErrorMessage(
-        error instanceof Error && error.message.trim() !== "" ? error.message : t("menuCreator.errors.saveFailed"),
-      );
+      const message =
+        error instanceof Error && error.message.trim() !== "" ? error.message : t("menuCreator.errors.saveFailed");
+
+      showToast("error", t("menuCreator.toast.saveErrorTitle"), message);
     },
   });
 
@@ -289,16 +289,14 @@ export const MenuCreatorPage = (): ReactElement => {
     );
   };
 
-  const buildPayload = (): SaveTenantMenuPayload | null => {
+  const buildPayload = (): BuildMenuPayloadResult => {
     const normalizedCategories: TenantMenuCategory[] = [];
 
     for (const [index, category] of categories.entries()) {
       const categoryName = category.name.trim();
 
       if (categoryName === "") {
-        setErrorMessage(t("menuCreator.errors.invalidCategory"));
-
-        return null;
+        return { ok: false, message: t("menuCreator.errors.invalidCategory") };
       }
 
       const normalizedItems: TenantMenuCategory["items"] = [];
@@ -309,25 +307,19 @@ export const MenuCreatorPage = (): ReactElement => {
         const rawPrice = item.price.trim();
 
         if (itemName === "" || rawPrice === "") {
-          setErrorMessage(t("menuCreator.errors.invalidItem"));
-
-          return null;
+          return { ok: false, message: t("menuCreator.errors.invalidItem") };
         }
 
         const itemPrice = Number(rawPrice);
 
         if (Number.isNaN(itemPrice) || itemPrice < 0) {
-          setErrorMessage(t("menuCreator.errors.invalidItem"));
-
-          return null;
+          return { ok: false, message: t("menuCreator.errors.invalidItem") };
         }
 
         const normalizedName = itemName.toLowerCase();
 
         if (seenItemNames.has(normalizedName)) {
-          setErrorMessage(t("menuCreator.errors.invalidItem"));
-
-          return null;
+          return { ok: false, message: t("menuCreator.errors.invalidItem") };
         }
 
         seenItemNames.add(normalizedName);
@@ -348,20 +340,19 @@ export const MenuCreatorPage = (): ReactElement => {
       });
     }
 
-    return { categories: normalizedCategories };
+    return { ok: true, payload: { categories: normalizedCategories } };
   };
 
   const handleSave = (): void => {
-    setErrorMessage("");
-    setSuccessVisible(false);
+    const result = buildPayload();
 
-    const payload = buildPayload();
+    if (!result.ok) {
+      showToast("error", t("menuCreator.toast.validationErrorTitle"), result.message);
 
-    if (!payload) {
       return;
     }
 
-    saveMutation.mutate(payload);
+    saveMutation.mutate(result.payload);
   };
 
   return (
@@ -393,23 +384,11 @@ export const MenuCreatorPage = (): ReactElement => {
           </div>
         )}
 
-        {errorMessage !== "" && (
-          <div className="mb-4 rounded-lg border border-status-error-border bg-status-error-background px-4 py-3 text-sm text-status-error-text">
-            {errorMessage}
-          </div>
-        )}
-
-        {successVisible && (
-          <div className="mb-4 rounded-lg border border-status-success-border bg-status-success-background px-4 py-3 text-sm text-status-success-text">
-            {t("menuCreator.success")}
-          </div>
-        )}
-
         <div className="space-y-6">
           {categories.map((category, categoryIndex) => (
             <section
               key={category.id}
-              className="rounded-xl border border-border-default bg-surface-secondary/60 p-4 shadow-sm"
+              className="rounded-xl border border-border-default bg-surface-secondary/60 p-5 shadow-sm"
             >
               <div className="grid gap-4 md:grid-cols-12">
                 <div className="md:col-span-5">
@@ -585,7 +564,7 @@ export const MenuCreatorPage = (): ReactElement => {
                       <textarea
                         value={item.desc}
                         onChange={(event) => updateItem(category.id, item.id, { desc: event.target.value })}
-                        className="min-h-20 w-full rounded-md border border-border-default bg-surface-secondary px-3 py-2 text-sm text-text-primary"
+                        className="min-h-20 w-full rounded-md border border-border-default bg-surface-secondary px-4 py-3 text-sm text-text-primary"
                         placeholder={t("menuCreator.placeholders.itemDescription")}
                         maxLength={ITEM_DESCRIPTION_MAX_LENGTH}
                       />

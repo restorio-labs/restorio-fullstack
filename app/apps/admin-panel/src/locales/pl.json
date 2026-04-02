@@ -112,7 +112,7 @@
     "toolbar": {
       "undo": "Cofnij",
       "redo": "Ponów",
-      "save": "Zapisz",
+      "save": "Zapisz układ",
       "add": "Dodaj",
       "showGrid": "Pokaż siatkę"
     },
@@ -195,6 +195,11 @@
       "saveFailed": "Nie udało się zapisać menu. Spróbuj ponownie.",
       "invalidCategory": "Każda kategoria musi mieć poprawną nazwę.",
       "invalidItem": "Każda pozycja musi mieć poprawną nazwę i nieujemną cenę."
+    },
+    "toast": {
+      "saveSuccessTitle": "Menu zapisane",
+      "saveErrorTitle": "Nie udało się zapisać menu",
+      "validationErrorTitle": "Sprawdź menu"
     }
   },
   "menuConfigurator": {

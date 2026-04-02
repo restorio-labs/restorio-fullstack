@@ -17,7 +17,7 @@ export const MenuItemCard = ({ item, quantity, onAdd, onRemove }: MenuItemCardPr
           <Text as="span" variant="body-md" weight="medium" className="truncate">
             {item.name}
           </Text>
-          {item.promoted === 1 && (
+          {item.promoted && (
             <span className="shrink-0 rounded-full bg-status-warning-bg px-2 py-0.5 text-xs font-medium text-status-warning-text">
               Polecane
             </span>

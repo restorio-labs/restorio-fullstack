@@ -42,6 +42,7 @@ export const FloorEditorCanvas = ({
             showGrid={showGrid}
             gridCellSize={GRID_CELL}
             selectedElementId={selectedElement?.id ?? null}
+            runtimeTableStyling={false}
             interactive
             onElementPointerDown={onElementPointerDown}
             onCanvasBackgroundPointerDown={onClearSelection}

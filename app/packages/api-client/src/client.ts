@@ -1,5 +1,36 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, type InternalAxiosRequestConfig } from "axios";
 
+const CSRF_TOKEN_COOKIE_NAME = "csrf_token";
+const CSRF_TOKEN_HEADER_NAME = "X-CSRF-Token";
+const STATE_CHANGING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+
+const getCsrfTokenFromCookie = (): string | null => {
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  const entry = document.cookie
+    .split(";")
+    .map((item) => item.trim())
+    .find((item) => item.startsWith(`${CSRF_TOKEN_COOKIE_NAME}=`));
+
+  if (entry === undefined) {
+    return null;
+  }
+
+  return decodeURIComponent(entry.slice(CSRF_TOKEN_COOKIE_NAME.length + 1));
+};
+
+const readCsrfHeader = (headers: InternalAxiosRequestConfig["headers"]): string | undefined => {
+  if (typeof (headers as { get?: (name: string) => string }).get === "function") {
+    return (headers as { get: (name: string) => string }).get(CSRF_TOKEN_HEADER_NAME);
+  }
+
+  const record = headers as Record<string, string | undefined>;
+
+  return record[CSRF_TOKEN_HEADER_NAME] ?? record["x-csrf-token"];
+};
+
 export interface ApiClientConfig {
   baseURL: string;
   getAccessToken?: () => string | null;
@@ -63,6 +94,16 @@ export class ApiClient {
 
       if (token && requestConfig.headers.Authorization === undefined) {
         requestConfig.headers.Authorization = `Bearer ${token}`;
+      }
+
+      const method = (requestConfig.method ?? "get").toUpperCase();
+
+      if (STATE_CHANGING_METHODS.has(method) && readCsrfHeader(requestConfig.headers) === undefined) {
+        const csrf = getCsrfTokenFromCookie();
+
+        if (csrf !== null) {
+          requestConfig.headers[CSRF_TOKEN_HEADER_NAME] = csrf;
+        }
       }
 
       const { refreshPath } = this.config;

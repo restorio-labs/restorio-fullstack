@@ -158,8 +158,6 @@ export const FloorEditorToolbar = ({
           </Button>
           {onSave && showSave && (
             <Button
-              variant="primary"
-              size="sm"
               className={isRow ? "shrink-0" : "w-full"}
               onClick={() => void onSave(layout)}
             >

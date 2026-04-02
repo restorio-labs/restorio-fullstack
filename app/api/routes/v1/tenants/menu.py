@@ -7,6 +7,8 @@ from core.dto.v1 import (
     TenantMenuResponseDTO,
     ToggleItemAvailabilityDTO,
     UpsertTenantMenuDTO,
+    MenuCategoryDTO,
+    MenuItemDTO,
 )
 from core.foundation.dependencies import MongoDB
 from core.foundation.http.responses import (
@@ -70,7 +72,7 @@ def _normalize_categories(raw_menu: dict[str, dict]) -> list[MenuCategoryDTO]:
         if not isinstance(category_data, dict):
             continue
 
-        meta = category_data.get(_CATEGORY_META_KEY, {})
+        meta = category_data.get(CATEGORY_META_KEY, {})
         category_name = f"Category {order_key}"
         category_order = int(order_key) if order_key.isdigit() else 0
         if isinstance(meta, dict):
@@ -83,7 +85,7 @@ def _normalize_categories(raw_menu: dict[str, dict]) -> list[MenuCategoryDTO]:
 
         items: list[MenuItemDTO] = []
         for item_name, item_payload in category_data.items():
-            if item_name == _CATEGORY_META_KEY or not isinstance(item_payload, dict):
+            if item_name == CATEGORY_META_KEY or not isinstance(item_payload, dict):
                 continue
 
             raw_price = item_payload.get("price", 0)
@@ -131,7 +133,6 @@ def _normalize_categories(raw_menu: dict[str, dict]) -> list[MenuCategoryDTO]:
 async def get_tenant_menu(
     tenant_public_id: str,
     db: MongoDB,
-    mongo_menu_service: MongoMenuService,
 ) -> SuccessResponse[TenantMenuResponseDTO]:
     document = await db[MENU_COLLECTION].find_one({"tenantPublicId": tenant_public_id})
     if document is None:
@@ -201,7 +202,7 @@ async def toggle_item_availability(
     payload: ToggleItemAvailabilityDTO,
     db: MongoDB,
 ) -> UpdatedResponse[TenantMenuResponseDTO]:
-    document = await db[_MENU_COLLECTION].find_one({"tenantPublicId": tenant_public_id})
+    document = await db[MENU_COLLECTION].find_one({"tenantPublicId": tenant_public_id})
     if document is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Menu not found")
 
@@ -213,7 +214,7 @@ async def toggle_item_availability(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Menu item not found")
 
     now = datetime.now(UTC)
-    await db[_MENU_COLLECTION].update_one(
+    await db[MENU_COLLECTION].update_one(
         {"tenantPublicId": tenant_public_id},
         {
             "$set": {
@@ -223,7 +224,7 @@ async def toggle_item_availability(
         },
     )
 
-    updated_doc = await db[_MENU_COLLECTION].find_one({"tenantPublicId": tenant_public_id})
+    updated_doc = await db[MENU_COLLECTION].find_one({"tenantPublicId": tenant_public_id})
     updated_menu = updated_doc.get("menu", {}) if updated_doc else {}
     normalized_menu: dict[str, Any] = updated_menu if isinstance(updated_menu, dict) else {}
 

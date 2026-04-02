@@ -324,11 +324,7 @@ export const FloorLayoutEditorView = ({
       return null;
     }
 
-    return (
-      <Button variant="primary" size="sm" onClick={() => void onSave(state.layout)}>
-        {t("floorEditor.toolbar.save")}
-      </Button>
-    );
+    return <Button onClick={() => void onSave(state.layout)}>{t("floorEditor.toolbar.save")}</Button>;
   }, [isDesktopUp, onSave, state.layout, t]);
 
   useEffect(() => {

@@ -10,10 +10,11 @@ import {
   type ReactNode,
 } from "react";
 
-import { Toast, ToastContainer, type ToastVariant } from "../components/overlays/Toast";
+import { Toast, ToastAnimated, ToastContainer, type ToastVariant } from "../components/overlays/Toast";
 import { createToastId } from "../components/overlays/Toast/createToastId";
 
 const DEFAULT_DURATION_MS = 4500;
+const TOAST_EXIT_MS = 260;
 
 export interface ShowToastInput {
   variant: ToastVariant;
@@ -24,6 +25,7 @@ export interface ShowToastInput {
 
 interface ToastItem extends ShowToastInput {
   id: string;
+  exiting?: boolean;
 }
 
 interface ToastContextValue {
@@ -39,17 +41,46 @@ interface ToastProviderProps {
 export const ToastProvider = ({ children }: ToastProviderProps): ReactElement => {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const timerIdsRef = useRef<Map<string, number>>(new Map());
+  const exitTimersRef = useRef<Map<string, number>>(new Map());
 
-  const removeToast = useCallback((id: string): void => {
-    const timerId = timerIdsRef.current.get(id);
+  const commitRemoveToast = useCallback((id: string): void => {
+    const exitTimerId = exitTimersRef.current.get(id);
 
-    if (timerId !== undefined) {
-      window.clearTimeout(timerId);
-      timerIdsRef.current.delete(id);
+    if (exitTimerId !== undefined) {
+      window.clearTimeout(exitTimerId);
+      exitTimersRef.current.delete(id);
     }
 
     setToasts((current) => current.filter((toast) => toast.id !== id));
   }, []);
+
+  const startDismissToast = useCallback(
+    (id: string): void => {
+      const timerId = timerIdsRef.current.get(id);
+
+      if (timerId !== undefined) {
+        window.clearTimeout(timerId);
+        timerIdsRef.current.delete(id);
+      }
+
+      const existingExit = exitTimersRef.current.get(id);
+
+      if (existingExit !== undefined) {
+        window.clearTimeout(existingExit);
+        exitTimersRef.current.delete(id);
+      }
+
+      setToasts((current) => current.map((toast) => (toast.id === id ? { ...toast, exiting: true } : toast)));
+
+      const exitTimerId = window.setTimeout(() => {
+        exitTimersRef.current.delete(id);
+        commitRemoveToast(id);
+      }, TOAST_EXIT_MS);
+
+      exitTimersRef.current.set(id, exitTimerId);
+    },
+    [commitRemoveToast],
+  );
 
   const showToast = useCallback(
     (variant: ToastVariant, title: string, description?: string, durationMs?: number): void => {
@@ -60,22 +91,27 @@ export const ToastProvider = ({ children }: ToastProviderProps): ReactElement =>
       setToasts((current) => [...current, nextToast]);
 
       const timerId = window.setTimeout(() => {
-        removeToast(id);
+        startDismissToast(id);
       }, timeoutMs);
 
       timerIdsRef.current.set(id, timerId);
     },
-    [removeToast],
+    [startDismissToast],
   );
 
   useEffect(() => {
     const timerIds = timerIdsRef.current;
+    const exitTimers = exitTimersRef.current;
 
     return () => {
-      timerIds.forEach((timerId) => {
-        window.clearTimeout(timerId);
+      timerIds.forEach((tid) => {
+        window.clearTimeout(tid);
       });
       timerIds.clear();
+      exitTimers.forEach((tid) => {
+        window.clearTimeout(tid);
+      });
+      exitTimers.clear();
     };
   }, []);
 
@@ -91,13 +127,14 @@ export const ToastProvider = ({ children }: ToastProviderProps): ReactElement =>
       {children}
       <ToastContainer position="top-right">
         {toasts.map((toast) => (
-          <Toast
-            key={toast.id}
-            variant={toast.variant}
-            title={toast.title}
-            description={toast.description}
-            onClose={(): void => removeToast(toast.id)}
-          />
+          <ToastAnimated key={toast.id} exiting={toast.exiting === true}>
+            <Toast
+              variant={toast.variant}
+              title={toast.title}
+              description={toast.description}
+              onClose={(): void => startDismissToast(toast.id)}
+            />
+          </ToastAnimated>
         ))}
       </ToastContainer>
     </ToastContext.Provider>

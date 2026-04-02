@@ -5,6 +5,15 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 
+vi.mock("@restorio/ui", async () => {
+  const actual = await vi.importActual<typeof import("@restorio/ui")>("@restorio/ui");
+
+  return {
+    ...actual,
+    useToast: () => ({ showToast: vi.fn() }),
+  };
+});
+
 vi.mock("../../../src/api/client", () => ({
   api: {
     menus: {
