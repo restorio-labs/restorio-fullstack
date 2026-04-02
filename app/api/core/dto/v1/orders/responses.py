@@ -55,7 +55,10 @@ class OrderResponseDTO(BaseDTO):
     id: EntityId = Field(..., description="Order identifier")
     tenant_id: EntityId = Field(..., alias="tenantId", description="Tenant identifier")
     table_id: EntityId | None = Field(None, alias="tableId", description="Table identifier")
+    table_ref: str | None = Field(None, description="Client table identifier from floor layout")
     session_id: str = Field(default="", alias="sessionId", description="Session identifier")
+    waiter_name: str | None = Field(None, description="Assigned waiter name")
+    waiter_surname: str | None = Field(None, description="Assigned waiter surname")
     items: list[OrderItemResponseDTO] = Field(default_factory=list, description="Order items")
     status: str = Field(..., description="Order status")
     payment_status: str = Field(

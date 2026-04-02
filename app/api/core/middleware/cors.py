@@ -18,6 +18,8 @@ _DEFAULT_LOCAL_ORIGINS: tuple[str, ...] = (
     "http://127.0.0.1:3004",
 )
 _RESTORIO_HOST_SUFFIX = ".restorio.org"
+_LOCAL_ALLOWED_HOSTS = {"localhost", "127.0.0.1", "::1"}
+_LOCAL_ORIGIN_REGEX = r"^https?://(localhost|127\.0\.0\.1|::1)(:\d+)?$"
 
 
 def _build_allowed_origins(configured_origins: list[str], *, debug: bool = False) -> list[str]:
@@ -46,8 +48,11 @@ def is_origin_allowed(
     if origin in _build_allowed_origins(configured_origins, debug=debug):
         return True
 
+    parsed = urlparse(origin)
+    if parsed.scheme in {"http", "https"} and parsed.hostname in _LOCAL_ALLOWED_HOSTS:
+        return True
+
     if debug:
-        parsed = urlparse(origin)
         host = parsed.hostname
         if host is not None and (host == "restorio.org" or host.endswith(_RESTORIO_HOST_SUFFIX)):
             return parsed.scheme in {"http", "https"}
@@ -60,6 +65,7 @@ def setup_cors(app: FastAPI, settings: Settings) -> None:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=allow_origins,
+        allow_origin_regex=_LOCAL_ORIGIN_REGEX,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

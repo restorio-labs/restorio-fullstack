@@ -32,7 +32,7 @@ export const FloorZone = ({
         )}
         style={color ? { backgroundColor: color } : undefined}
       >
-        <span className="text-sm font-medium" aria-hidden="true">
+        <span className="text-xs md:text-sm lg:text-base font-medium" aria-hidden="true">
           {name}
         </span>
       </div>

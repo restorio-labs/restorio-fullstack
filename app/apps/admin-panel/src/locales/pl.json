@@ -377,6 +377,8 @@
     },
     "form": {
       "emailLabel": "Email",
+      "nameLabel": "Imię",
+      "surnameLabel": "Nazwisko",
       "accessLabel": "Poziom dostępu",
       "addRow": "Dodaj kolejnego",
       "removeRow": "Usuń",
@@ -390,7 +392,9 @@
     "list": {
       "title": "Wszyscy użytkownicy",
       "loading": "Ładowanie użytkowników...",
-      "empty": "Brak użytkowników."
+      "empty": "Brak użytkowników.",
+      "personLabel": "Imię i nazwisko: {{name}} {{surname}}",
+      "notProvided": "-"
     },
     "validation": {
       "invalidEmail": "Co najmniej jeden adres e-mail jest nieprawidłowy.",
@@ -411,7 +415,9 @@
       "deleteSuccessTitle": "Użytkownik usunięty",
       "deleteSuccessDescription": "Użytkownik został usunięty.",
       "deleteErrorTitle": "Nie udało się usunąć",
-      "deleteErrorDescription": "Nie udało się usunąć użytkownika."
+      "deleteErrorDescription": "Nie udało się usunąć użytkownika.",
+      "invalidEmail": "Podaj prawidłowy adres e-mail.",
+      "waiterNameRequired": "Imię i nazwisko są wymagane dla konta kelnera."
     },
     "feedback": {
       "bulkSuccess": "Wszyscy użytkownicy zostali utworzeni. Linki aktywacyjne zostaną wkrótce wysłane.",

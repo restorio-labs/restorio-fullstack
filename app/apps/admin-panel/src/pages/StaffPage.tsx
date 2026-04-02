@@ -18,6 +18,8 @@ type AccessLevel = "kitchen" | "waiter";
 interface StaffUser {
   id: string;
   email: string;
+  name: string | null;
+  surname: string | null;
   accessLevel: AccessLevel;
   isActive: boolean;
 }
@@ -25,6 +27,8 @@ interface StaffUser {
 interface FormRow {
   key: number;
   email: string;
+  name?: string;
+  surname?: string;
   accessLevel: AccessLevel;
 }
 
@@ -88,11 +92,20 @@ let nextRowKey = 0;
 const createEmptyRow = (): FormRow => ({
   key: nextRowKey++,
   email: "",
+  name: "",
+  surname: "",
   accessLevel: "kitchen",
 });
 
 const parseUsers = (
-  rawUsers: { id: string; email: string; is_active: boolean; account_type: unknown }[],
+  rawUsers: {
+    id: string;
+    email: string;
+    name: string | null;
+    surname: string | null;
+    is_active: boolean;
+    account_type: unknown;
+  }[],
 ): StaffUser[] =>
   rawUsers
     .map((user): StaffUser | null => {
@@ -102,7 +115,14 @@ const parseUsers = (
         return null;
       }
 
-      return { id: user.id, email: user.email, accessLevel: level, isActive: user.is_active };
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        surname: user.surname,
+        accessLevel: level,
+        isActive: user.is_active,
+      };
     })
     .filter((user): user is StaffUser => user !== null);
 
@@ -243,8 +263,18 @@ export const StaffPage = (): ReactElement => {
   const handleSaveSingle = (row: FormRow): void => {
     setFormError(null);
 
+    const isWaiter = row.accessLevel === "waiter";
+    const normalizedName = row.name?.trim() ?? "";
+    const normalizedSurname = row.surname?.trim() ?? "";
+
     if (!isEmailValid(row.email)) {
       setFormError(t("staff.validation.invalidEmail"));
+
+      return;
+    }
+
+    if (isWaiter && (normalizedName.length === 0 || normalizedSurname.length === 0)) {
+      setFormError(t("staff.validation.waiterNameRequired"));
 
       return;
     }
@@ -258,7 +288,11 @@ export const StaffPage = (): ReactElement => {
     }
 
     setSavingRowKey(row.key);
-    singleCreateMutation.mutate({ email: trimmed, access_level: row.accessLevel });
+    singleCreateMutation.mutate({
+      email: trimmed,
+      access_level: row.accessLevel,
+      ...(isWaiter ? { name: normalizedName, surname: normalizedSurname } : {}),
+    });
   };
 
   const deleteMutation = useMutation({
@@ -282,7 +316,7 @@ export const StaffPage = (): ReactElement => {
     },
   });
 
-  const updateRow = (key: number, field: "email" | "accessLevel", value: string): void => {
+  const updateRow = (key: number, field: keyof Omit<FormRow, "key">, value: string): void => {
     setRows((current) =>
       current.map((row) => {
         if (row.key !== key) {
@@ -292,7 +326,18 @@ export const StaffPage = (): ReactElement => {
         if (field === "accessLevel") {
           const level = toAccessLevel(value);
 
-          return level !== null ? { ...row, accessLevel: level } : row;
+          if (level !== null) {
+            const updates: Partial<FormRow> = { accessLevel: level };
+
+            if (level === "kitchen") {
+              updates.name = "";
+              updates.surname = "";
+            }
+
+            return { ...row, ...updates };
+          }
+
+          return row;
         }
 
         return { ...row, [field]: value };
@@ -322,7 +367,21 @@ export const StaffPage = (): ReactElement => {
     setRows((current) => [...current, createEmptyRow()]);
   };
 
-  const isFormValid = rows.length > 0 && rows.every((row) => isEmailValid(row.email));
+  const isFormValid =
+    rows.length > 0 &&
+    rows.every((row) => {
+      const isWaiter = row.accessLevel === "waiter";
+      const hasValidEmail = isEmailValid(row.email);
+
+      if (!isWaiter) {
+        return hasValidEmail;
+      }
+
+      const normalizedName = row.name?.trim() ?? "";
+      const normalizedSurname = row.surname?.trim() ?? "";
+
+      return hasValidEmail && normalizedName.length > 0 && normalizedSurname.length > 0;
+    });
 
   const blockedEmails = useMemo((): Set<string> => {
     const set = new Set<string>();
@@ -380,10 +439,20 @@ export const StaffPage = (): ReactElement => {
       return;
     }
 
-    const payload = rows.map((row) => ({
-      email: row.email.trim(),
-      access_level: row.accessLevel,
-    }));
+    const payload = rows.map((row) => {
+      const isWaiter = row.accessLevel === "waiter";
+
+      return {
+        email: row.email.trim(),
+        access_level: row.accessLevel,
+        ...(isWaiter
+          ? {
+              name: row.name?.trim() ?? "",
+              surname: row.surname?.trim() ?? "",
+            }
+          : {}),
+      };
+    });
 
     bulkMutation.mutate({ users: payload });
   };
@@ -473,46 +542,6 @@ export const StaffPage = (): ReactElement => {
     return undefined;
   })();
 
-  const deleteConfirmPortal =
-    typeof document !== "undefined" &&
-    pendingDeleteUserId !== null &&
-    deleteConfirmPos !== null &&
-    createPortal(
-      <>
-        <div className="fixed inset-0 z-[90]" aria-hidden onClick={() => setPendingDeleteUserId(null)} />
-        <div
-          className="fixed z-[100] w-64 rounded-md border border-border-default bg-surface-primary p-3 shadow-lg"
-          style={{ top: deleteConfirmPos.top, left: deleteConfirmPos.left }}
-          role="dialog"
-          aria-modal="true"
-        >
-          <p className="text-xs text-text-secondary">{t("staff.delete.confirmTitle")}</p>
-          <div className="mt-3 flex justify-end gap-2">
-            <Button
-              type="button"
-              size="sm"
-              variant="secondary"
-              onClick={() => {
-                setPendingDeleteUserId(null);
-              }}
-            >
-              {t("staff.delete.cancel")}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="danger"
-              disabled={deleteMutation.isPending && deleteMutation.variables === pendingDeleteUserId}
-              onClick={() => handleDeleteUser(pendingDeleteUserId)}
-            >
-              {t("staff.delete.confirm")}
-            </Button>
-          </div>
-        </div>
-      </>,
-      document.body,
-    );
-
   return (
     <PageLayout title={t("staff.title")} description={t("staff.description")} headerActions={headerActions}>
       <div className="relative min-w-0 w-full space-y-4 p-6">
@@ -537,8 +566,8 @@ export const StaffPage = (): ReactElement => {
 
             <div className="mt-4 space-y-3">
               {rows.map((row) => (
-                <div key={row.key} className="flex items-end gap-3">
-                  <div className="flex-1">
+                <div key={row.key} className="flex flex-col md:flex-row items-end gap-3">
+                  <div className="flex-1 w-full md:w-auto">
                     <Input
                       label={t("staff.form.emailLabel")}
                       type="email"
@@ -548,7 +577,31 @@ export const StaffPage = (): ReactElement => {
                       required
                     />
                   </div>
-                  <div className="w-48">
+
+                  {row.accessLevel === "waiter" && (
+                    <>
+                      <div className="flex-1 w-full md:w-auto">
+                        <Input
+                          label={t("staff.form.nameLabel")}
+                          value={row.name ?? ""}
+                          maxLength={50}
+                          onChange={(event) => updateRow(row.key, "name", event.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="flex-1 w-full md:w-auto">
+                        <Input
+                          label={t("staff.form.surnameLabel")}
+                          value={row.surname ?? ""}
+                          maxLength={50}
+                          onChange={(event) => updateRow(row.key, "surname", event.target.value)}
+                          required
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  <div className="w-full md:w-48 shrink-0">
                     <div className="flex flex-col gap-1.5">
                       <label className="text-sm font-medium text-text-primary">{t("staff.form.accessLabel")}</label>
                       <Dropdown
@@ -558,7 +611,7 @@ export const StaffPage = (): ReactElement => {
                           </Button>
                         }
                         placement="bottom-start"
-                        className="w-48"
+                        className="w-full md:w-48"
                         closeOnSelect
                       >
                         <div className="flex flex-col p-1">
@@ -566,7 +619,7 @@ export const StaffPage = (): ReactElement => {
                             <button
                               key={option.value}
                               type="button"
-                              className="w-12 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-surface-secondary"
+                              className="w-full md:w-12 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-surface-secondary"
                               onClick={() => updateRow(row.key, "accessLevel", option.value)}
                             >
                               {option.label}
@@ -576,27 +629,35 @@ export const StaffPage = (): ReactElement => {
                       </Dropdown>
                     </div>
                   </div>
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="primary"
-                    disabled={!isEmailValid(row.email) || singleCreateMutation.isPending || bulkMutation.isPending}
-                    onClick={() => handleSaveSingle(row)}
-                    aria-label={t("staff.form.saveSingle")}
-                    className="h-11 w-11 min-h-11 min-w-11 shrink-0"
-                  >
-                    <BiSolidSave className="size-6" aria-hidden />
-                  </Button>
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="danger"
-                    onClick={() => handleTrashClick(row.key)}
-                    aria-label={t("staff.form.removeRow")}
-                    className="h-11 w-11 min-h-11 min-w-11 shrink-0"
-                  >
-                    <TbTrash className="size-6" aria-hidden />
-                  </Button>
+
+                  <div className="flex shrink-0 gap-3 w-full md:w-auto justify-end">
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="primary"
+                      disabled={
+                        !isEmailValid(row.email) ||
+                        (row.accessLevel === "waiter" && (!row.name?.trim() || !row.surname?.trim())) ||
+                        singleCreateMutation.isPending ||
+                        bulkMutation.isPending
+                      }
+                      onClick={() => handleSaveSingle(row)}
+                      aria-label={t("staff.form.saveSingle")}
+                      className="h-11 w-11 min-h-11 min-w-11"
+                    >
+                      <BiSolidSave className="size-6" aria-hidden />
+                    </Button>
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="danger"
+                      onClick={() => handleTrashClick(row.key)}
+                      aria-label={t("staff.form.removeRow")}
+                      className="h-11 w-11 min-h-11 min-w-11"
+                    >
+                      <TbTrash className="size-6" aria-hidden />
+                    </Button>
+                  </div>
                 </div>
               ))}
 
@@ -629,7 +690,15 @@ export const StaffPage = (): ReactElement => {
               <ul className="m-0 list-none divide-y divide-border-default p-0">
                 {users.map((user) => (
                   <li key={user.id} className="flex min-w-0 items-center justify-between gap-3 py-4">
-                    <span className="min-w-0 flex-1 truncate text-sm text-text-primary">{user.email}</span>
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="truncate text-sm text-text-primary">{user.email}</span>
+                      <span className="text-xs text-text-secondary truncate">
+                        {t("staff.list.personLabel", {
+                          name: user.name ?? t("staff.list.notProvided"),
+                          surname: user.surname ?? t("staff.list.notProvided"),
+                        })}
+                      </span>
+                    </div>
                     <div className="flex shrink-0 items-center gap-3">
                       <span
                         className={`text-xs font-medium ${
@@ -664,7 +733,44 @@ export const StaffPage = (): ReactElement => {
           </div>
         )}
 
-        {deleteConfirmPortal}
+        {pendingDeleteUserId !== null &&
+          deleteConfirmPos !== null &&
+          typeof document !== "undefined" &&
+          createPortal(
+            <>
+              <div className="fixed inset-0 z-[90]" aria-hidden onClick={() => setPendingDeleteUserId(null)} />
+              <div
+                className="fixed z-[100] w-64 rounded-md border border-border-default bg-surface-primary p-3 shadow-lg"
+                style={{ top: deleteConfirmPos.top, left: deleteConfirmPos.left }}
+                role="dialog"
+                aria-modal="true"
+              >
+                <p className="text-xs text-text-secondary">{t("staff.delete.confirmTitle")}</p>
+                <div className="mt-3 flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => {
+                      setPendingDeleteUserId(null);
+                    }}
+                  >
+                    {t("staff.delete.cancel")}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="danger"
+                    disabled={deleteMutation.isPending && deleteMutation.variables === pendingDeleteUserId}
+                    onClick={() => handleDeleteUser(pendingDeleteUserId)}
+                  >
+                    {t("staff.delete.confirm")}
+                  </Button>
+                </div>
+              </div>
+            </>,
+            document.body,
+          )}
 
         <Modal
           isOpen={isAlreadyMemberModalOpen}

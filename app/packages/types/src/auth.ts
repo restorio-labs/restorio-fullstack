@@ -31,6 +31,8 @@ export interface SetActivationPasswordRequest {
 export interface CreateStaffUserRequest {
   email: string;
   access_level: "kitchen" | "waiter";
+  name?: string;
+  surname?: string;
 }
 
 export interface BulkCreateStaffUserRequest {
@@ -57,6 +59,8 @@ export interface BulkCreateStaffUserResponse {
 export interface StaffUserData {
   id: string;
   email: string;
+  name: string | null;
+  surname: string | null;
   is_active: boolean;
   account_type: "kitchen" | "waiter";
 }

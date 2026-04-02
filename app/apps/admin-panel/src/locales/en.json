@@ -381,6 +381,8 @@
     },
     "form": {
       "emailLabel": "Email",
+      "nameLabel": "Name",
+      "surnameLabel": "Surname",
       "accessLabel": "Access level",
       "addRow": "Add another",
       "removeRow": "Remove",
@@ -394,7 +396,9 @@
     "list": {
       "title": "All users",
       "loading": "Loading users...",
-      "empty": "No users yet."
+      "empty": "No users yet.",
+      "personLabel": "Name: {{name}} {{surname}}",
+      "notProvided": "-"
     },
     "validation": {
       "invalidEmail": "One or more email addresses are invalid.",
@@ -415,7 +419,9 @@
       "deleteSuccessTitle": "User removed",
       "deleteSuccessDescription": "User deleted successfully.",
       "deleteErrorTitle": "Could not remove user",
-      "deleteErrorDescription": "Unable to delete user."
+      "deleteErrorDescription": "Unable to delete user.",
+      "invalidEmail": "Enter a valid email address.",
+      "waiterNameRequired": "Name and surname are required for waiter."
     },
     "feedback": {
       "bulkSuccess": "All users created successfully. Activation emails will be sent shortly.",

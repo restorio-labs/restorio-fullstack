@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from pydantic import AliasChoices, Field
 
-from core.dto.v1.common import BaseDTO, CurrencyCode, EntityId, OrderStatus
+from core.dto.v1.common import BaseDTO, CurrencyCode, OrderStatus
 
 
 class CreateOrderItemDTO(BaseDTO):
@@ -52,10 +52,10 @@ class CreateOrderItemDTO(BaseDTO):
 
 
 class CreateOrderDTO(BaseDTO):
-    table_id: EntityId | None = Field(None, alias="tableId", description="Table identifier")
+    table_id: str | None = Field(None, alias="tableId", description="Restaurant table identifier")
     session_id: str = Field(default="", alias="sessionId", description="Session identifier")
     table: str = Field(default="", description="Table label")
-    items: list[CreateOrderItemDTO] = Field(..., min_length=1, description="Order items")
+    items: list[CreateOrderItemDTO] = Field(default_factory=list, description="Order items")
     subtotal: float = Field(default=0, ge=0, description="Subtotal")
     tax: float = Field(default=0, ge=0, description="Tax amount")
     total: float = Field(default=0, ge=0, description="Total amount")
@@ -78,3 +78,4 @@ class UpdateOrderDTO(BaseDTO):
     status: OrderStatus | None = Field(None, description="Updated order status")
     total_amount: Decimal | None = Field(None, ge=0, description="Updated order total")
     currency: CurrencyCode | None = Field(None, description="Updated order currency")
+    items: list[CreateOrderItemDTO] | None = Field(None, description="Order items")

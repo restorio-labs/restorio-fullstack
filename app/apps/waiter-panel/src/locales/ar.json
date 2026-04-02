@@ -1,0 +1,52 @@
+{
+  "waiterDashboard": {
+    "title": "لوحة النادل",
+    "description": "عرض مباشر لقاعة المطعم وفق إعدادات لوحة الإدارة.",
+    "activeFloorLabel": "القاعة النشطة",
+    "activeFloorNone": "لا توجد قاعة محددة",
+    "activeFloorNoConfigured": "لا توجد قاعة مهيأة",
+    "refresh": "تحديث",
+    "refreshing": "جارٍ التحديث...",
+    "logout": "تسجيل الخروج",
+    "loggingOut": "جارٍ تسجيل الخروج...",
+    "loadingRestaurants": "جارٍ تحميل المطاعم...",
+    "loadRestaurantsError": "تعذر تحميل المطاعم.",
+    "noRestaurants": "لا توجد مطاعم متاحة لهذا الحساب.",
+    "restaurantLabel": "المطعم",
+    "loadingFloor": "جارٍ تحميل عرض القاعة...",
+    "loadFloorError": "تعذر تحميل قاعة المطعم.",
+    "selectedElement": "الطاولة/العنصر المحدد",
+    "tableGroupLabel": "الطاولات {{numbers}}",
+    "tableSeats": "المقاعد: {{seats}}",
+    "closePanel": "إغلاق",
+    "tableAvailable": "الطاولة متاحة",
+    "tableOccupied": "الطاولة مشغولة",
+    "tableOccupiedByWaiter": "الطاولة مشغولة - يخدمها {{waiter}}",
+    "beginOrder": "بدء الطلب",
+    "addItemLabel": "إضافة عنصر من القائمة",
+    "selectMenuItem": "اختر عنصراً من القائمة",
+    "addItem": "إضافة عنصر",
+    "addItemModalTitle": "إضافة عنصر إلى الطلب",
+    "addItemModalEmpty": "لا توجد عناصر متاحة في القائمة.",
+    "removeItem": "إزالة عنصر",
+    "noItemsYet": "لا توجد عناصر في هذا الطلب بعد.",
+    "orderNoteLabel": "ملاحظات الطلب",
+    "orderNotePlaceholder": "مثال: بدون خيار",
+    "orderTotal": "الإجمالي: {{total}}",
+    "confirmPayment": "تأكيد الدفع",
+    "zoomLabel": "التكبير: {{value}}%",
+    "zoomIn": "تكبير",
+    "zoomOut": "تصغير",
+    "zoomReset": "إعادة ضبط"
+  },
+  "floorRuntime": {
+    "noLayout": "لا يوجد مخطط قاعة لهذا المكان."
+  },
+  "floorEditor": {
+    "tableLabel": "طاولة {{number}}",
+    "panel": {
+      "name": "الاسم",
+      "seats": "المقاعد"
+    }
+  }
+}
