@@ -12,6 +12,8 @@ from routes.v1.tenants import (
     tenants_router,
     orders_router,
 )
+
+from routes.v1.public import router as public_router
 from routes.v1.users import router as users_router
 
 api_router = APIRouter()
@@ -28,4 +30,7 @@ api_router.include_router(orders_router, prefix="/tenants", tags=["orders"])
 api_router.include_router(users_router, prefix="/users", tags=["users"])
 api_router.include_router(orders_restaurant_router, prefix="/restaurants", tags=["orders"])
 api_router.include_router(kitchen_config_router, prefix="/restaurants", tags=["kitchen-config"])
-api_router.include_router(payments_router, prefix="/payments")
+api_router.include_router(orders_router, prefix="/orders", tags=["orders"])
+api_router.include_router(payments_router, prefix="/payments", tags=["payments"])
+
+api_router.include_router(public_router, prefix="/public", tags=["public"])

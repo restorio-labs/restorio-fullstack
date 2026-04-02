@@ -3,9 +3,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
 
-from core.dto.v1.menus import (
-    MenuCategoryDTO,
-    MenuItemDTO,
+from core.dto.v1 import (
     TenantMenuResponseDTO,
     ToggleItemAvailabilityDTO,
     UpsertTenantMenuDTO,
@@ -15,11 +13,13 @@ from core.foundation.http.responses import (
     SuccessResponse,
     UpdatedResponse,
 )
+from services.mongo_menu_service import (
+    CATEGORY_META_KEY,
+    MENU_COLLECTION,
+    normalize_mongo_menu_categories,
+)
 
 router = APIRouter()
-
-_CATEGORY_META_KEY = "__category"
-_MENU_COLLECTION = "menus"
 
 
 def _validate_payload(data: UpsertTenantMenuDTO) -> None:
@@ -43,7 +43,7 @@ def _build_raw_menu(data: UpsertTenantMenuDTO) -> dict[str, dict]:
     raw_menu: dict[str, dict] = {}
     for category in sorted(data.categories, key=lambda cat: cat.order):
         bucket: dict[str, dict | str | int] = {
-            _CATEGORY_META_KEY: {
+            CATEGORY_META_KEY: {
                 "name": category.name,
                 "order": category.order,
             }
@@ -123,7 +123,6 @@ def _normalize_categories(raw_menu: dict[str, dict]) -> list[MenuCategoryDTO]:
 
     return sorted(categories, key=lambda category: category.order)
 
-
 @router.get(
     "/{tenant_public_id}/menu",
     status_code=status.HTTP_200_OK,
@@ -132,8 +131,9 @@ def _normalize_categories(raw_menu: dict[str, dict]) -> list[MenuCategoryDTO]:
 async def get_tenant_menu(
     tenant_public_id: str,
     db: MongoDB,
+    mongo_menu_service: MongoMenuService,
 ) -> SuccessResponse[TenantMenuResponseDTO]:
-    document = await db[_MENU_COLLECTION].find_one({"tenantPublicId": tenant_public_id})
+    document = await db[MENU_COLLECTION].find_one({"tenantPublicId": tenant_public_id})
     if document is None:
         return SuccessResponse(
             message="Tenant menu not yet created",
@@ -146,7 +146,7 @@ async def get_tenant_menu(
 
     raw_menu = document.get("menu", {})
     normalized_menu: dict[str, Any] = raw_menu if isinstance(raw_menu, dict) else {}
-    categories = _normalize_categories(normalized_menu)
+    categories = normalize_mongo_menu_categories(normalized_menu)
 
     return SuccessResponse(
         message="Tenant menu retrieved successfully",
@@ -173,7 +173,7 @@ async def upsert_tenant_menu(
     raw_menu = _build_raw_menu(payload)
     now = datetime.now(UTC)
 
-    await db[_MENU_COLLECTION].update_one(
+    await db[MENU_COLLECTION].update_one(
         {"tenantPublicId": tenant_public_id},
         {"$set": {"tenantPublicId": tenant_public_id, "menu": raw_menu, "updatedAt": now}},
         upsert=True,
@@ -183,7 +183,7 @@ async def upsert_tenant_menu(
         message="Tenant menu saved successfully",
         data=TenantMenuResponseDTO(
             menu=raw_menu,
-            categories=_normalize_categories(raw_menu),
+            categories=normalize_mongo_menu_categories(raw_menu),
             updatedAt=now,
         ),
     )
