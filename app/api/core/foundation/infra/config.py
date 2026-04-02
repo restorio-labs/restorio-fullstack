@@ -44,6 +44,7 @@ class Settings(BaseSettings):
     RESEND_API_KEY: str = ""
     RESEND_FROM_EMAIL: str = ""
     FRONTEND_URL: str = "http://localhost:3000"
+    MOBILE_APP_URL: str = "http://localhost:3003"
 
     MINIO_ENDPOINT: str = "localhost:9000"
     MINIO_PUBLIC_ENDPOINT: str = "localhost:9000"

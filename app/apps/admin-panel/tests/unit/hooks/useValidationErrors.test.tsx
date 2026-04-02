@@ -84,16 +84,16 @@ describe("useValidationErrors", () => {
     });
 
     expect(result.current.fieldErrors).toEqual([
-      { field: "p24Api", message: "API key is required (max 32 characters)" },
-      { field: "p24Crc", message: "CRC key is required (max 16 characters)" },
+      { field: "p24Api", message: "API key is required and must contain exactly 32 characters" },
+      { field: "p24Crc", message: "CRC key is required and must contain exactly 16 characters" },
     ]);
     expect(result.current.fieldErrorMap).toEqual({
-      p24Api: "API key is required (max 32 characters)",
-      p24Crc: "CRC key is required (max 16 characters)",
+      p24Api: "API key is required and must contain exactly 32 characters",
+      p24Crc: "CRC key is required and must contain exactly 16 characters",
     });
     expect(result.current.hasFieldError("p24Api")).toBe(true);
     expect(result.current.hasFieldError("p24Merchantid")).toBe(false);
-    expect(result.current.getFieldError("p24Crc")).toBe("CRC key is required (max 16 characters)");
+    expect(result.current.getFieldError("p24Crc")).toBe("CRC key is required and must contain exactly 16 characters");
     expect(result.current.getFieldError("unknown")).toBeUndefined();
 
     act(() => {

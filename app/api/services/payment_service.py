@@ -80,6 +80,7 @@ class P24Service:
         amount: int,
         email: str,
         description: str = "",
+        url_return: str | None = None,
     ) -> P24RegistrationResult:
         session_id = str(uuid4())
 
@@ -101,7 +102,7 @@ class P24Service:
             email=email,
             country="PL",
             language="pl",
-            url_return=f"{settings.FRONTEND_URL}/payment/return",
+            url_return=url_return or f"{settings.FRONTEND_URL}/payment/return",
             url_status=f"{settings.FRONTEND_URL}/api/v1/payments/status",
             wait_for_result=True,
             regulation_accept=True,

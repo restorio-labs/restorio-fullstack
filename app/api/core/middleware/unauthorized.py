@@ -26,6 +26,7 @@ _PUBLIC_PATH_PREFIXES: frozenset[str] = frozenset(
         f"{settings.API_V1_PREFIX}/auth/resend-activation",
         f"{settings.API_V1_PREFIX}/auth/refresh",
         f"{settings.API_V1_PREFIX}/auth/logout",
+        f"{settings.API_V1_PREFIX}/public",
     }
 )
 
