@@ -10,7 +10,11 @@ from core.models.floor_canvas import FloorCanvas
 from core.models.order import Order
 from core.models.order_item import OrderItem
 from core.models.payment import Payment
-from core.models.payment_request import CreatePaymentRequest, Przelewy24RegisterRequest
+from core.models.payment_request import (
+    CreatePaymentRequest,
+    Przelewy24RegisterRequest,
+    Przelewy24VerifyRequest,
+)
 from core.models.tenant import Tenant
 from core.models.tenant_profile import TenantProfile
 from core.models.tenant_role import TenantRole
@@ -29,6 +33,7 @@ __all__ = [
     "PaymentProvider",
     "PaymentStatus",
     "Przelewy24RegisterRequest",
+    "Przelewy24VerifyRequest",
     "Tenant",
     "TenantProfile",
     "TenantRole",

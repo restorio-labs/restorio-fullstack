@@ -4,6 +4,7 @@ from core.dto.v1.public.requests import (
 )
 from core.dto.v1.public.responses import (
     PublicCreateOrderPaymentResponseDTO,
+    PublicP24TransactionSyncResponseDTO,
     PublicTenantInfoResponseDTO,
 )
 
@@ -11,5 +12,6 @@ __all__ = [
     "PublicCreateOrderPaymentDTO",
     "PublicCreateOrderPaymentResponseDTO",
     "PublicOrderItemDTO",
+    "PublicP24TransactionSyncResponseDTO",
     "PublicTenantInfoResponseDTO",
 ]
