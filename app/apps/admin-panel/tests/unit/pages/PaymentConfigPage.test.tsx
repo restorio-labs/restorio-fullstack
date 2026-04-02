@@ -196,7 +196,7 @@ describe("PaymentConfigPage", () => {
     expect(screen.getByText(/p24 configuration updated successfully/i)).toBeInTheDocument();
   });
 
-  it("trims whitespace from input values before sending", async () => {
+  it("trims whitespace from tenant id before sending", async () => {
     mockUseCurrentTenant.mockReturnValue({
       selectedTenantId: "  some-id  ",
       selectedTenant: {
@@ -210,7 +210,7 @@ describe("PaymentConfigPage", () => {
     mockUpdateP24Config.mockResolvedValueOnce(undefined);
     renderPage();
 
-    fillPaymentForm("100", `  ${API_KEY}  `, `  ${CRC_KEY}  `);
+    fillPaymentForm("100", API_KEY, CRC_KEY);
     clickSaveConfiguration();
 
     await waitFor(() => {

@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { api } from "../api/client";
 import { useCurrentTenant } from "../context/TenantContext";
+import { moveItemById } from "../features/menu/moveItemById";
 import { PageLayout } from "../layouts/PageLayout";
 
 interface MenuItemFormState {
@@ -191,24 +192,9 @@ export const MenuCreatorPage = (): ReactElement => {
   const moveCategory = (categoryId: string, direction: "up" | "down"): void => {
     setDidUserEdit(true);
     setCategories((prev) => {
-      const index = prev.findIndex((category) => category.id === categoryId);
+      const next = moveItemById(prev, categoryId, direction);
 
-      if (index === -1) {
-        return prev;
-      }
-
-      const targetIndex = direction === "up" ? index - 1 : index + 1;
-
-      if (targetIndex < 0 || targetIndex >= prev.length) {
-        return prev;
-      }
-
-      const next = [...prev];
-      const [moved] = next.splice(index, 1);
-
-      next.splice(targetIndex, 0, moved);
-
-      return next;
+      return next ?? prev;
     });
   };
 

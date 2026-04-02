@@ -95,9 +95,7 @@ async def create_public_order_payment(
     tenant = await tenant_service.get_tenant_by_slug(session, request.tenant_slug)
     p24_service.validate_tenant_p24_credentials(tenant)
 
-    total_amount = sum(
-        round(item.unit_price * item.quantity * 100) for item in request.items
-    )
+    total_amount = sum(round(item.unit_price * item.quantity * 100) for item in request.items)
     if total_amount <= 0:
         raise BadRequestError(message="Order total must be greater than zero")
 

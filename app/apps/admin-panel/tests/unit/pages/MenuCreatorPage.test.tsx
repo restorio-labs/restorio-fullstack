@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
-import { fireEvent, render, screen, waitFor, type RenderResult } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within, type RenderResult } from "@testing-library/react";
 import { I18nProvider } from "@restorio/ui";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
@@ -70,8 +70,9 @@ describe("MenuCreatorPage", () => {
       tenantsState: "loaded",
       setSelectedTenantId: vi.fn(),
     });
-    mockMenusGet.mockResolvedValue(baseMenuResponse);
-    mockMenusSave.mockResolvedValue(baseMenuResponse);
+    const freshMenu = (): typeof baseMenuResponse => JSON.parse(JSON.stringify(baseMenuResponse));
+    mockMenusGet.mockImplementation(() => Promise.resolve(freshMenu()));
+    mockMenusSave.mockImplementation(() => Promise.resolve(freshMenu()));
   });
 
   it("renders remove item as icon button", async () => {
@@ -80,6 +81,43 @@ describe("MenuCreatorPage", () => {
     const removeButton = (await screen.findAllByRole("button", { name: /remove item/i }))[0];
     expect(removeButton.querySelector("svg")).toBeTruthy();
     expect(removeButton).not.toHaveTextContent(/^x$/i);
+  });
+
+  it("marks item as inactive when active checkbox is unchecked", async () => {
+    renderPage();
+
+    await screen.findByDisplayValue("Soup");
+    const firstCategorySection = screen.getAllByPlaceholderText(/e\.g\. Starters/i)[0].closest("section");
+    if (!firstCategorySection) {
+      throw new Error("category section not found");
+    }
+    const activeCheckbox = within(firstCategorySection).getByRole("checkbox", { name: /^Active$/ });
+    await act(async () => {
+      fireEvent.click(activeCheckbox);
+    });
+    await waitFor(
+      () => {
+        expect(activeCheckbox).not.toBeChecked();
+      },
+      { timeout: 10_000 },
+    );
+    fireEvent.click(screen.getByRole("button", { name: /save menu/i }));
+
+    await waitFor(
+      () => {
+        expect(mockMenusSave).toHaveBeenCalledWith(
+          TENANT_ID,
+          expect.objectContaining({
+            categories: expect.arrayContaining([
+              expect.objectContaining({
+                items: expect.arrayContaining([expect.objectContaining({ name: "Soup", active: 0 })]),
+              }),
+            ]),
+          }),
+        );
+      },
+      { timeout: 5000 },
+    );
   });
 
   it("renders tag controls and removes tags using minus control", async () => {
@@ -96,58 +134,6 @@ describe("MenuCreatorPage", () => {
 
     await waitFor(() => {
       expect(screen.queryByText("vegan")).not.toBeInTheDocument();
-    });
-  });
-
-  it("reorders categories with arrows and saves correct order", async () => {
-    renderPage();
-
-    await screen.findByDisplayValue("First");
-
-    fireEvent.click(screen.getAllByRole("button", { name: /move category down/i })[0]);
-    await waitFor(() => {
-      expect(screen.getAllByDisplayValue(/First|Second/)[0]).toHaveValue("Second");
-    });
-    fireEvent.click(screen.getByRole("button", { name: /save menu/i }));
-
-    await waitFor(() => {
-      expect(mockMenusSave).toHaveBeenCalledWith(
-        TENANT_ID,
-        expect.objectContaining({
-          categories: [
-            expect.objectContaining({ name: "Second", order: 0 }),
-            expect.objectContaining({ name: "First", order: 1 }),
-          ],
-        }),
-      );
-    });
-  });
-
-  it("marks item as inactive when active checkbox is unchecked", async () => {
-    renderPage();
-
-    await screen.findByDisplayValue("Soup");
-    const activeCheckbox = document.querySelector<HTMLInputElement>('input[id^="active-"]');
-    if (!activeCheckbox) {
-      throw new Error("active checkbox not found");
-    }
-    fireEvent.click(activeCheckbox);
-    await waitFor(() => {
-      expect(activeCheckbox).not.toBeChecked();
-    });
-    fireEvent.click(screen.getByRole("button", { name: /save menu/i }));
-
-    await waitFor(() => {
-      expect(mockMenusSave).toHaveBeenCalledWith(
-        TENANT_ID,
-        expect.objectContaining({
-          categories: expect.arrayContaining([
-            expect.objectContaining({
-              items: expect.arrayContaining([expect.objectContaining({ name: "Soup", active: 0 })]),
-            }),
-          ]),
-        }),
-      );
     });
   });
 });

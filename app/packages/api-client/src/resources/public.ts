@@ -27,7 +27,7 @@ export class PublicResource extends BaseResource {
     signal?: AbortSignal,
   ): Promise<PublicCreateOrderPaymentData> {
     const body = await this.client.post<CreatedResponse<PublicCreateOrderPaymentData>, PublicCreateOrderPaymentRequest>(
-      `/public/payments/create`,
+      "/public/payments/create",
       data,
       { signal },
     );

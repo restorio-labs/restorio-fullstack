@@ -8,4 +8,4 @@ const apiClient = new ApiClient({
 
 export const api = new RestorioApi(apiClient);
 
-export const publicApi = api.publicApi;
+export const { publicApi } = api;
