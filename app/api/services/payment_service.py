@@ -55,13 +55,14 @@ class P24RegistrationResult:
 
 class P24Service:
     _PRZELEWY24_SERVICE_NAME = "Przelewy24"
+    _P24_STATUS_REFUNDED = 3
 
     @staticmethod
     def map_p24_status_to_db(p24_status: int) -> int:
         if p24_status in (0, 1, 2):
             return p24_status
-        if p24_status == 3:
-            return 3
+        if p24_status == P24Service._P24_STATUS_REFUNDED:
+            return P24Service._P24_STATUS_REFUNDED
         raise BadRequestError(message=f"Unsupported Przelewy24 transaction status: {p24_status}")
 
     @staticmethod

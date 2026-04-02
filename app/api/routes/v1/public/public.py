@@ -34,15 +34,22 @@ MONGO_ORDER_STATUS_PAID = "paid"
 MONGO_ORDER_STATUS_ACCEPTED = "accepted"
 MONGO_ORDER_STATUS_REFUNDED = "refunded"
 
+_TX_STATUS_UNPAID = 0
+_TX_STATUS_PAID = 1
+_TX_STATUS_ACCEPTED = 2
+_TX_STATUS_REFUNDED = 3
+
+_RESOURCE_TRANSACTION = "Transaction"
+
 
 def _mongo_order_status_from_transaction(transaction_status: int) -> str:
-    if transaction_status == 0:
+    if transaction_status == _TX_STATUS_UNPAID:
         return MONGO_ORDER_STATUS_UNPAID
-    if transaction_status == 1:
+    if transaction_status == _TX_STATUS_PAID:
         return MONGO_ORDER_STATUS_PAID
-    if transaction_status == 2:
+    if transaction_status == _TX_STATUS_ACCEPTED:
         return MONGO_ORDER_STATUS_ACCEPTED
-    if transaction_status == 3:
+    if transaction_status == _TX_STATUS_REFUNDED:
         return MONGO_ORDER_STATUS_REFUNDED
     return MONGO_ORDER_STATUS_UNPAID
 
@@ -218,7 +225,7 @@ async def sync_public_transaction_from_p24(
     result = await session.execute(select(Transaction).where(Transaction.session_id == session_id))
     transaction = result.scalar_one_or_none()
     if transaction is None:
-        raise NotFoundResponse("Transaction", str(session_id))
+        raise NotFoundResponse(_RESOURCE_TRANSACTION, str(session_id))
 
     tenant = await tenant_service.get_tenant(session, transaction.tenant_id)
     data, p24_response_code = await p24_service.apply_p24_lookup_to_transaction(

@@ -18,6 +18,8 @@ from core.models.transaction import Transaction
 
 router = APIRouter()
 
+_RESOURCE_TRANSACTION = "Transaction"
+
 
 @router.post(
     "/tenants/{tenant_public_id}/p24/verify-transaction",
@@ -41,7 +43,7 @@ async def verify_p24_transaction(
     )
     transaction = result.scalar_one_or_none()
     if transaction is None:
-        raise NotFoundResponse("Transaction", str(request.session_id))
+        raise NotFoundResponse(_RESOURCE_TRANSACTION, str(request.session_id))
 
     tenant = await tenant_service.get_tenant(session, tenant_id)
     p24_response = await p24_service.verify_transaction_at_przelewy24(

@@ -78,8 +78,6 @@ class ExternalClient:
             try:
                 response = await client.get(url, headers=headers or {}, timeout=timeout)
                 response.raise_for_status()
-
-                return response.text
             except httpx.HTTPStatusError as e:
                 error_message = self._extract_error_message(e)
                 raise ExternalAPIError(message=f"{service_name} error: {error_message}") from e
@@ -87,6 +85,8 @@ class ExternalClient:
                 raise ServiceUnavailableError(
                     message=f"Failed to connect to {service_name}: {e!s}",
                 ) from e
+            else:
+                return response.text
 
     async def external_get_json(
         self,
@@ -101,10 +101,6 @@ class ExternalClient:
             try:
                 response = await client.get(url, headers=headers or {}, timeout=timeout)
                 response.raise_for_status()
-                payload = response.json()
-                if not isinstance(payload, dict):
-                    raise ExternalAPIError(message=f"{service_name} error: invalid response")
-                return payload
             except httpx.HTTPStatusError as e:
                 error_message = self._extract_error_message(e)
                 raise ExternalAPIError(message=f"{service_name} error: {error_message}") from e
@@ -112,6 +108,11 @@ class ExternalClient:
                 raise ServiceUnavailableError(
                     message=f"Failed to connect to {service_name}: {e!s}",
                 ) from e
+            else:
+                payload = response.json()
+                if not isinstance(payload, dict):
+                    raise ExternalAPIError(message=f"{service_name} error: invalid response")
+                return payload
 
     async def post_json(
         self,
@@ -149,12 +150,6 @@ class ExternalClient:
                     timeout=timeout,
                 )
                 response.raise_for_status()
-                if method == "PUT" and not response.text.strip():
-                    return {}
-                payload = response.json()
-                if not isinstance(payload, dict):
-                    raise ExternalAPIError(message=f"{service_name} error: invalid response")
-                return payload
             except httpx.HTTPStatusError as e:
                 error_message = self._extract_error_message(e)
                 raise ExternalAPIError(message=f"{service_name} error: {error_message}") from e
@@ -162,6 +157,13 @@ class ExternalClient:
                 raise ServiceUnavailableError(
                     message=f"Failed to connect to {service_name}: {e!s}",
                 ) from e
+            else:
+                if method == "PUT" and not response.text.strip():
+                    return {}
+                payload = response.json()
+                if not isinstance(payload, dict):
+                    raise ExternalAPIError(message=f"{service_name} error: invalid response")
+                return payload
 
     async def external_post_json(
         self,
