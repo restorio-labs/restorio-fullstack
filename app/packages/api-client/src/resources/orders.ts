@@ -23,6 +23,10 @@ export class OrdersResource extends BaseResource {
     return this.client.post(`/restaurants/${restaurantId}/orders`, data, { signal });
   }
 
+  update(restaurantId: string, orderId: string, data: Partial<Order>, signal?: AbortSignal): Promise<Order> {
+    return this.client.put(`/restaurants/${restaurantId}/orders/${orderId}`, data, { signal });
+  }
+
   updateStatus(
     restaurantId: string,
     orderId: string,

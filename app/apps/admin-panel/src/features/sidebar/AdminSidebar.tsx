@@ -211,13 +211,9 @@ export const AdminSidebar = (): ReactElement => {
             <span>{t("sidebar.items.label")}</span>
             <ChooseApp
               variant="dropdown"
+              subvariant="large"
               value="admin-panel"
               onSelectApp={goToApp}
-              labels={{
-                adminPanel: t("sidebar.items.adminPanel"),
-                kitchenPanel: t("sidebar.items.kitchenPanel"),
-                waiterPanel: t("sidebar.items.waiterPanel"),
-              }}
               ariaLabel={t("sidebar.items.label")}
               className="w-auto"
             />

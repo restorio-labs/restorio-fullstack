@@ -9,22 +9,9 @@ import type { ReactElement } from "react";
 export const AuthenticatedAppPicker = (): ReactElement => {
   const t = useTranslations();
 
-  const chooseAppLabels = {
-    adminPanel: t("chooseApp.labels.adminPanel"),
-    kitchenPanel: t("chooseApp.labels.kitchenPanel"),
-    waiterPanel: t("chooseApp.labels.waiterPanel"),
-  };
-
   const handleSelect = (slug: AppSlug): void => {
     goToApp(slug);
   };
 
-  return (
-    <ChooseApp
-      onSelectApp={handleSelect}
-      labels={chooseAppLabels}
-      title={t("chooseApp.title")}
-      subtitle={t("chooseApp.subtitle")}
-    />
-  );
+  return <ChooseApp onSelectApp={handleSelect} title={t("chooseApp.title")} subtitle={t("chooseApp.subtitle")} />;
 };

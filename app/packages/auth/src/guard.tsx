@@ -197,7 +197,7 @@ export const AuthGuard = ({
 
       if (isCrossOrigin) {
         if (typeof window !== "undefined") {
-          window.location.href = redirectTarget;
+          window.location.replace(redirectTarget);
         }
 
         return fallback ? <>{fallback}</> : null;

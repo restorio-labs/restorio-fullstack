@@ -3,7 +3,9 @@
     "skipToContent": "Przejdź do głównej treści",
     "loading": "Ładowanie...",
     "error": "Błąd",
-    "learnMore": "Dowiedz się więcej"
+    "learnMore": "Dowiedz się więcej",
+    "backendUnavailable": "Usługa jest tymczasowo niedostępna. Spróbuj ponownie później.",
+    "tryingToConnect": "Łączenie z usługami…"
   },
   "metadata": {
     "title": "Platforma Restorio",

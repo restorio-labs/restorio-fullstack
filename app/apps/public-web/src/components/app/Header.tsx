@@ -112,64 +112,66 @@ export const Header = (): ReactElement => {
   };
 
   return (
-    <Topbar
-      aria-label="Main navigation"
-      sticky
-      contentMaxWidth="2xl"
-      mobileMenuOpen={mobileMenuOpen}
-      onMobileMenuOpenChange={setMobileMenuOpen}
-      className="border-b border-border-default/70 bg-surface-primary/85 shadow-[0_10px_40px_-24px_rgba(16,24,40,0.7)] supports-[backdrop-filter]:backdrop-blur-xl"
-      brandSlot={
-        <Link href={`/${locale}`} className="flex h-16 items-center gap-2 transition-opacity hover:opacity-90">
-          <Icon isLogo size="full" logoBackground="transparent" wink />
-        </Link>
-      }
-      ctaSlot={
-        <div className="flex items-center gap-2 sm:gap-3">
-          {renderCtaSlot()}
-          <ThemeSwitcher className="h-9 w-9 rounded-full" />
-        </div>
-      }
-    >
-      {authStatus === "authenticated"
-        ? appSlugs.map(({ slug, label }) => (
-            <Button
-              key={slug}
-              type="button"
-              variant={slug === "admin-panel" ? "primary" : "secondary"}
-              size="lg"
-              fullWidth
-              className="min-h-14 rounded-full text-lg font-semibold shadow-sm md:hidden"
-              onClick={() => goToApp(slug)}
+    <>
+      <Topbar
+        aria-label="Main navigation"
+        sticky
+        contentMaxWidth="2xl"
+        mobileMenuOpen={mobileMenuOpen}
+        onMobileMenuOpenChange={setMobileMenuOpen}
+        className="border-b border-border-default/70 bg-surface-primary/85 shadow-[0_10px_40px_-24px_rgba(16,24,40,0.7)] supports-[backdrop-filter]:backdrop-blur-xl"
+        brandSlot={
+          <Link href={`/${locale}`} className="flex h-16 items-center gap-2 transition-opacity hover:opacity-90">
+            <Icon isLogo size="full" logoBackground="transparent" wink />
+          </Link>
+        }
+        ctaSlot={
+          <div className="flex items-center gap-2 sm:gap-3">
+            {renderCtaSlot()}
+            <ThemeSwitcher className="h-9 w-9 rounded-full" />
+          </div>
+        }
+      >
+        {authStatus === "authenticated"
+          ? appSlugs.map(({ slug, label }) => (
+              <Button
+                key={slug}
+                type="button"
+                variant={slug === "admin-panel" ? "primary" : "secondary"}
+                size="lg"
+                fullWidth
+                className="min-h-14 rounded-full text-lg font-semibold shadow-sm md:hidden"
+                onClick={() => goToApp(slug)}
+              >
+                {label}
+              </Button>
+            ))
+          : null}
+        {authStatus === "anonymous" || authStatus === "unavailable" || authStatus === "reconnecting" ? (
+          <>
+            <Link
+              href="/login"
+              className={cn(
+                "inline-flex min-h-14 w-full items-center justify-center rounded-full border border-border-default/70 bg-interactive-secondary px-6 py-3 text-lg font-semibold text-text-primary shadow-sm transition-colors duration-200 hover:bg-interactive-secondaryHover active:bg-interactive-secondaryActive focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus",
+                pathname === "/login" && "ring-2 ring-border-focus ring-offset-2 ring-offset-surface-primary",
+                "md:hidden",
+              )}
             >
-              {label}
-            </Button>
-          ))
-        : null}
-      {authStatus === "anonymous" ? (
-        <>
-          <Link
-            href="/login"
-            className={cn(
-              "inline-flex min-h-14 w-full items-center justify-center rounded-full border border-border-default/70 bg-interactive-secondary px-6 py-3 text-lg font-semibold text-text-primary shadow-sm transition-colors duration-200 hover:bg-interactive-secondaryHover active:bg-interactive-secondaryActive focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus",
-              pathname === "/login" && "ring-2 ring-border-focus ring-offset-2 ring-offset-surface-primary",
-              "md:hidden",
-            )}
-          >
-            {t("navigation.login")}
-          </Link>
-          <Link
-            href="/register"
-            className={cn(
-              "inline-flex min-h-14 w-full items-center justify-center rounded-full bg-interactive-primary px-6 py-3 text-lg font-semibold text-text-inverse shadow-md shadow-primary/25 transition-colors duration-200 hover:bg-interactive-primaryHover active:bg-interactive-primaryActive focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus",
-              pathname === "/register" && "ring-2 ring-border-focus ring-offset-2 ring-offset-surface-primary",
-              "md:hidden",
-            )}
-          >
-            {t("navigation.register")}
-          </Link>
-        </>
-      ) : null}
-    </Topbar>
+              {t("navigation.login")}
+            </Link>
+            <Link
+              href="/register"
+              className={cn(
+                "inline-flex min-h-14 w-full items-center justify-center rounded-full bg-interactive-primary px-6 py-3 text-lg font-semibold text-text-inverse shadow-md shadow-primary/25 transition-colors duration-200 hover:bg-interactive-primaryHover active:bg-interactive-primaryActive focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus",
+                pathname === "/register" && "ring-2 ring-border-focus ring-offset-2 ring-offset-surface-primary",
+                "md:hidden",
+              )}
+            >
+              {t("navigation.register")}
+            </Link>
+          </>
+        ) : null}
+      </Topbar>
+    </>
   );
 };

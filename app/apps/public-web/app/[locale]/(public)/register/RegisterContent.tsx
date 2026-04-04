@@ -76,6 +76,9 @@ export const RegisterContent = (): ReactElement => {
   const termsError = submitted && !acceptTerms ? t("errors.termsRequired") : undefined;
 
   const isFormValid = isEmailValid(email) && isPasswordFormValid && acceptTerms;
+  const backendUnavailable = authStatus === "unavailable";
+  const reconnecting = authStatus === "reconnecting";
+  const blockAuthActions = backendUnavailable || reconnecting;
 
   const confirmPasswordMeetsLength = confirmPassword.length >= MIN_PASSWORD_LENGTH;
   const passwordsMatchByLength = confirmPasswordMeetsLength && confirmPassword === password;
@@ -100,7 +103,7 @@ export const RegisterContent = (): ReactElement => {
     setFeedbackStatus(null);
     setFeedbackMessage("");
 
-    if (!isFormValid) {
+    if (!isFormValid || blockAuthActions) {
       return;
     }
 
@@ -219,7 +222,7 @@ export const RegisterContent = (): ReactElement => {
         </FormField>
 
         <FormActions align="stretch" className={animatedFieldClassName} style={{ animationDelay: "520ms" }}>
-          <Button type="submit" size="lg" variant="primary" fullWidth disabled={!isFormValid}>
+          <Button type="submit" size="lg" variant="primary" fullWidth disabled={!isFormValid || blockAuthActions}>
             {t("button")}
           </Button>
         </FormActions>

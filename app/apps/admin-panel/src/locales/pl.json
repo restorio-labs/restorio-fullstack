@@ -49,6 +49,15 @@
     },
     "logoutLoading": "Wylogowywanie..."
   },
+  "chooseApp": {
+    "title": "Jesteś zalogowany",
+    "subtitle": "Wybierz, dokąd chcesz przejść dalej.",
+    "labels": {
+      "adminPanel": "Panel administracyjny",
+      "kitchenPanel": "Panel kuchni",
+      "waiterPanel": "Panel kelnerski"
+    }
+  },
   "languageSwitcher": {
     "label": "Język",
     "options": {

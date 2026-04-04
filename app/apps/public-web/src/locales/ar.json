@@ -3,7 +3,9 @@
     "skipToContent": "انتقل إلى المحتوى الرئيسي",
     "loading": "جار التحميل...",
     "error": "خطأ",
-    "learnMore": "اعرف المزيد"
+    "learnMore": "اعرف المزيد",
+    "backendUnavailable": "الخدمة غير متاحة مؤقتًا. يُرجى المحاولة لاحقًا.",
+    "tryingToConnect": "جارٍ الاتصال بالخدمات…"
   },
   "metadata": {
     "title": "منصة Restorio",

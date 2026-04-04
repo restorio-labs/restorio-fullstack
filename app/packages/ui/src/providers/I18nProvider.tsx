@@ -7,7 +7,7 @@ export type Messages = Record<string, unknown>;
 interface I18nContextValue {
   locale: string;
   messages: Messages;
-  t: (key: string, values?: TranslationValues) => string;
+  t: (key: string, defaultMessageOrValues?: string | TranslationValues, values?: TranslationValues) => string;
   setLocale: (locale: string) => void;
 }
 
@@ -38,19 +38,29 @@ const formatMessage = (message: string, values?: TranslationValues): string => {
 };
 
 export const createTranslator = (messages: Messages, fallbackMessages?: Messages) => {
-  return (key: string, values?: TranslationValues): string => {
+  return (key: string, defaultMessageOrValues?: string | TranslationValues, values?: TranslationValues): string => {
+    let defaultMessage: string | undefined;
+    let actualValues: TranslationValues | undefined;
+
+    if (typeof defaultMessageOrValues === "string") {
+      defaultMessage = defaultMessageOrValues;
+      actualValues = values;
+    } else {
+      actualValues = defaultMessageOrValues;
+    }
+
     const message = resolveMessage(messages, key);
     const fallbackMessage = fallbackMessages ? resolveMessage(fallbackMessages, key) : undefined;
 
     if (typeof message === "string") {
-      return formatMessage(message, values);
+      return formatMessage(message, actualValues);
     }
 
     if (typeof fallbackMessage === "string") {
-      return formatMessage(fallbackMessage, values);
+      return formatMessage(fallbackMessage, actualValues);
     }
 
-    return key;
+    return defaultMessage ?? key;
   };
 };
 

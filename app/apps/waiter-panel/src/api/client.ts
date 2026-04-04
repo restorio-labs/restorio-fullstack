@@ -1,5 +1,5 @@
-import { ApiClient, RestorioApi } from "@restorio/api-client";
-import { TokenStorage } from "@restorio/auth";
+import { ApiClient, RestorioApi, type OrdersResource, type TenantOrdersResource } from "@restorio/api-client";
+import { AUTH_LOGIN_REDIRECT_URL, TokenStorage } from "@restorio/auth";
 import { resolveApiBaseUrl } from "@restorio/utils";
 
 const apiClient = new ApiClient({
@@ -7,8 +7,12 @@ const apiClient = new ApiClient({
   refreshPath: "auth/refresh",
   getAccessToken: (): string | null => TokenStorage.getAccessToken(),
   onUnauthorized: (): void => {
-    window.location.href = "/";
+    window.location.replace(AUTH_LOGIN_REDIRECT_URL);
   },
 });
 
-export const api = new RestorioApi(apiClient);
+export const api: RestorioApi = new RestorioApi(apiClient);
+
+export const tenantOrdersApi: TenantOrdersResource = api.tenantOrders;
+
+export const ordersApi: OrdersResource = api.orders;

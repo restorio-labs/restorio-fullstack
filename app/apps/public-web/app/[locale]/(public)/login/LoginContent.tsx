@@ -16,7 +16,7 @@ import { useMemo, useState } from "react";
 import { api } from "@/api/client";
 import { AuthenticatedAppPicker } from "@/components/auth/AuthenticatedAppPicker";
 import { translateLoginApiMessage } from "@/services/authApiMessages";
-import { isEmailValid, MIN_PASSWORD_LENGTH } from "@/services/validation";
+import { isEmailValid } from "@/services/validation";
 
 type ViewState = "form" | "choosing_app";
 type LoginField = "email" | "password";
@@ -40,6 +40,7 @@ const extractFieldErrors = (data: unknown, t: ReturnType<typeof useTranslations>
 
   return errors;
 };
+const MIN_PASSWORD_LENGTH_FACADE = 1;
 
 export const LoginContent = (): ReactElement => {
   const { authStatus } = useAuthRoute();
@@ -53,8 +54,11 @@ export const LoginContent = (): ReactElement => {
   const t = useTranslations();
   const animatedFieldClassName = "onboarding-fade-up motion-reduce:animate-none";
 
-  const passwordValid = useMemo(() => password.trim().length >= MIN_PASSWORD_LENGTH, [password]);
+  const passwordValid = useMemo(() => password.trim().length >= MIN_PASSWORD_LENGTH_FACADE, [password]);
   const isFormValid = useMemo(() => isEmailValid(email) && passwordValid, [email, passwordValid]);
+  const backendUnavailable = authStatus === "unavailable";
+  const reconnecting = authStatus === "reconnecting";
+  const blockAuthActions = backendUnavailable || reconnecting;
 
   const emailError = fieldErrors.email
     ? fieldErrors.email
@@ -71,7 +75,7 @@ export const LoginContent = (): ReactElement => {
       ? password.trim().length === 0
         ? t("login.errors.passwordRequired")
         : !passwordValid
-          ? t("login.errors.passwordMinLength", { min: MIN_PASSWORD_LENGTH })
+          ? t("login.errors.passwordMinLength", { min: MIN_PASSWORD_LENGTH_FACADE })
           : undefined
       : undefined;
 
@@ -81,7 +85,7 @@ export const LoginContent = (): ReactElement => {
     setErrorMessage("");
     setFieldErrors({});
 
-    if (!isFormValid || submitting) {
+    if (!isFormValid || submitting || blockAuthActions) {
       return;
     }
 
@@ -153,6 +157,7 @@ export const LoginContent = (): ReactElement => {
       >
         <FormField className={animatedFieldClassName} style={{ animationDelay: "120ms" }}>
           <Input
+            id="login-email"
             label={t("login.email")}
             type="email"
             autoComplete="email"
@@ -171,6 +176,7 @@ export const LoginContent = (): ReactElement => {
 
         <FormField className={animatedFieldClassName} style={{ animationDelay: "220ms" }}>
           <PasswordInput
+            id="login-password"
             label={t("login.password")}
             autoComplete="current-password"
             value={password}
@@ -187,7 +193,13 @@ export const LoginContent = (): ReactElement => {
         </FormField>
 
         <FormActions align="stretch" className={animatedFieldClassName} style={{ animationDelay: "320ms" }}>
-          <Button type="submit" size="lg" variant="primary" fullWidth disabled={!isFormValid || submitting}>
+          <Button
+            type="submit"
+            size="lg"
+            variant="primary"
+            fullWidth
+            disabled={!isFormValid || submitting || blockAuthActions}
+          >
             {submitting ? t("login.submitting") : t("login.submit")}
           </Button>
         </FormActions>

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status
 
-from core.dto.v1.orders import CreateOrderDTO, OrderResponseDTO, UpdateOrderStatusDTO
+from core.dto.v1.orders import CreateOrderDTO, OrderResponseDTO, UpdateOrderDTO, UpdateOrderStatusDTO
 from core.exceptions import BadRequestError
 from core.foundation.dependencies import MongoDB, OrderServiceDep, PostgresSession
 from core.foundation.http.responses import (
@@ -71,6 +71,27 @@ async def create_order(
     await ws_manager.broadcast(restaurant_id, {"type": "order_created", "order": order})
     return CreatedResponse(
         message="Order created successfully",
+        data=OrderResponseDTO(**order),
+    )
+
+
+@router.put(
+    "/{restaurant_id}/orders/{order_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=UpdatedResponse[OrderResponseDTO],
+)
+async def update_order(
+    restaurant_id: str,
+    order_id: str,
+    payload: UpdateOrderDTO,
+    db: MongoDB,
+    service: OrderServiceDep,
+) -> UpdatedResponse[OrderResponseDTO]:
+    data = payload.model_dump(by_alias=True, exclude_none=True)
+    order = await service.update_order(db, restaurant_id, order_id, data)
+    await ws_manager.broadcast(restaurant_id, {"type": "order_updated", "order": order})
+    return UpdatedResponse(
+        message="Order updated successfully",
         data=OrderResponseDTO(**order),
     )
 

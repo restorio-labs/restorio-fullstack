@@ -2,11 +2,15 @@ import { render, renderHook, screen, waitFor } from "@testing-library/react";
 import { act } from "react";
 import { describe, expect, it, vi } from "vitest";
 
-import { AuthRouteProvider, useAuthRoute } from "../../../src/providers/AuthRouteProvider";
+import {
+  AuthRouteProvider,
+  useAuthRoute,
+  type AuthCheckContext,
+} from "../../../src/providers/AuthRouteProvider";
 
 describe("AuthRouteProvider", () => {
   it("renders children", () => {
-    const checkAuth = vi.fn().mockResolvedValue(false);
+    const checkAuth = vi.fn().mockResolvedValue("anonymous");
 
     render(
       <AuthRouteProvider checkAuth={checkAuth}>
@@ -20,8 +24,8 @@ describe("AuthRouteProvider", () => {
     expect(screen.getByText("content")).toBeInTheDocument();
   });
 
-  it("starts with loading then sets anonymous when checkAuth returns false", async () => {
-    const checkAuth = vi.fn().mockResolvedValue(false);
+  it("starts with loading then sets anonymous when checkAuth returns anonymous", async () => {
+    const checkAuth = vi.fn().mockResolvedValue("anonymous");
 
     const { result } = renderHook(() => useAuthRoute(), {
       wrapper: ({ children }) => <AuthRouteProvider checkAuth={checkAuth}>{children}</AuthRouteProvider>,
@@ -35,8 +39,8 @@ describe("AuthRouteProvider", () => {
     expect(checkAuth).toHaveBeenCalledOnce();
   });
 
-  it("sets authenticated when checkAuth returns true", async () => {
-    const checkAuth = vi.fn().mockResolvedValue(true);
+  it("sets authenticated when checkAuth returns authenticated", async () => {
+    const checkAuth = vi.fn().mockResolvedValue("authenticated");
 
     const { result } = renderHook(() => useAuthRoute(), {
       wrapper: ({ children }) => <AuthRouteProvider checkAuth={checkAuth}>{children}</AuthRouteProvider>,
@@ -48,15 +52,49 @@ describe("AuthRouteProvider", () => {
     expect(checkAuth).toHaveBeenCalledOnce();
   });
 
+  it("sets unavailable when checkAuth returns unavailable", async () => {
+    const checkAuth = vi.fn().mockResolvedValue("unavailable");
+
+    const { result } = renderHook(() => useAuthRoute(), {
+      wrapper: ({ children }) => <AuthRouteProvider checkAuth={checkAuth}>{children}</AuthRouteProvider>,
+    });
+
+    await waitFor(() => {
+      expect(result.current.authStatus).toBe("unavailable");
+    });
+    expect(checkAuth).toHaveBeenCalledOnce();
+    expect(checkAuth).toHaveBeenCalledWith({ onReconnecting: expect.any(Function) });
+  });
+
+  it("sets reconnecting then anonymous when checkAuth invokes onReconnecting", async () => {
+    const checkAuth = vi.fn(async ({ onReconnecting }: AuthCheckContext) => {
+      onReconnecting();
+      await Promise.resolve();
+
+      return "anonymous";
+    });
+
+    const { result } = renderHook(() => useAuthRoute(), {
+      wrapper: ({ children }) => <AuthRouteProvider checkAuth={checkAuth}>{children}</AuthRouteProvider>,
+    });
+
+    await waitFor(() => {
+      expect(result.current.authStatus).toBe("reconnecting");
+    });
+    await waitFor(() => {
+      expect(result.current.authStatus).toBe("anonymous");
+    });
+  });
+
   it("useAuthRoute throws when used outside provider", () => {
     expect(() => renderHook(() => useAuthRoute())).toThrow("useAuthRoute must be used within AuthRouteProvider");
   });
 
   it("does not update auth status after unmount", async () => {
-    let resolveAuth: ((value: boolean) => void) | null = null;
+    let resolveAuth: ((value: "authenticated" | "anonymous" | "unavailable") => void) | null = null;
     const checkAuth = vi.fn(
-      () =>
-        new Promise<boolean>((resolve) => {
+      (_ctx: AuthCheckContext) =>
+        new Promise<"authenticated" | "anonymous" | "unavailable">((resolve) => {
           resolveAuth = resolve;
         }),
     );
@@ -70,7 +108,7 @@ describe("AuthRouteProvider", () => {
     unmount();
 
     await act(async () => {
-      resolveAuth?.(true);
+      resolveAuth?.("authenticated");
       await Promise.resolve();
     });
 

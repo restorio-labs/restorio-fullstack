@@ -1,13 +1,13 @@
 import type { TenantSummary } from "@restorio/types";
-import { PageLayout, Text, useI18n, Loader, ChooseApp } from "@restorio/ui";
-import { deslug, goToApp } from "@restorio/utils";
+import { Loader, PageLayout, Text, useI18n } from "@restorio/ui";
+import { deslug } from "@restorio/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { ReactElement } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 
 import { api } from "../api/client";
 
-export const KitchenTenantSelectView = (): ReactElement => {
+export const WaiterTenantSelectView = (): ReactElement => {
   const { t } = useI18n();
   const {
     data: tenants = [],
@@ -15,24 +15,16 @@ export const KitchenTenantSelectView = (): ReactElement => {
     isError,
     error,
   } = useQuery({
-    queryKey: ["kitchen-panel", "tenants"],
+    queryKey: ["waiter-panel", "tenants"],
     queryFn: () => api.tenants.list(),
   });
 
+  if (!isLoading && !isError && tenants.length === 1) {
+    return <Navigate to={`/${tenants[0].id}`} replace />;
+  }
+
   return (
-    <PageLayout
-      title={t("tenantSelect.title")}
-      description={t("tenantSelect.description")}
-      headerActions={
-        <ChooseApp
-          variant="dropdown"
-          subvariant="large"
-          onSelectApp={goToApp}
-          value="kitchen-panel"
-          ariaLabel={t("chooseApp.ariaLabel")}
-        />
-      }
-    >
+    <PageLayout title={t("tenantSelect.title")} description={t("tenantSelect.description")}>
       <div className="mx-auto flex max-w-4xl flex-col gap-4 p-6">
         {isLoading && (
           <div className="flex items-center gap-2">

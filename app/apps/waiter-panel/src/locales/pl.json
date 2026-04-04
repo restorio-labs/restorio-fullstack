@@ -1,8 +1,14 @@
 {
+  "tenantSelect": {
+    "title": "Restauracje",
+    "description": "Wybierz restauracje, aby otworzyc panel kelnera.",
+    "loading": "Ladowanie listy restauracji…",
+    "loadError": "Nie udalo sie wczytac restauracji.",
+    "none": "Brak przypisanych restauracji dla tego konta."
+  },
   "waiterDashboard": {
     "title": "Panel kelnera",
     "description": "Podglad sali na zywo na podstawie konfiguracji z panelu administracyjnego.",
-    "activeFloorLabel": "Aktywna sala",
     "activeFloorNone": "Nie wybrano sali",
     "activeFloorNoConfigured": "Brak skonfigurowanej sali",
     "refresh": "Odswiez",
@@ -18,6 +24,7 @@
     "selectedElement": "Wybrany stolik/element",
     "tableGroupLabel": "Stoliki {{numbers}}",
     "tableSeats": "Miejsca: {{seats}}",
+    "occupiedFor": "{{time}}",
     "closePanel": "Zamknij",
     "tableAvailable": "Stolik dostepny",
     "tableOccupied": "Stolik zajety",
@@ -34,6 +41,12 @@
     "orderNotePlaceholder": "np. prosze bez ogorka",
     "orderTotal": "Suma: {{total}}",
     "confirmPayment": "Potwierdz platnosc",
+    "confirmPaymentModalTitle": "Odblokuj stolik",
+    "confirmPaymentModalDescription": "Czy na pewno chcesz odblokować ten stolik? To wyczyści obecne zamówienie.",
+    "confirmPaymentModalConfirm": "Odblokuj",
+    "confirmPaymentModalCancel": "Anuluj",
+    "todaysOrders": "Dzisiejsze zamówienia",
+    "noOrdersToday": "Brak zamówień z dzisiaj.",
     "zoomLabel": "Powiekszenie: {{value}}%",
     "zoomIn": "Przybliz",
     "zoomOut": "Oddal",

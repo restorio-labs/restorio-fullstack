@@ -39,11 +39,7 @@ export const FloorTable = ({
   const { t } = useI18n();
   const needHelp = displayInfo?.needHelp;
   const hasActiveOrder = displayInfo?.orderStatus !== undefined && displayInfo.orderStatus !== "browsing";
-  const resolvedState: TableRuntimeState | "neutral" = hasActiveOrder
-    ? "occupied"
-    : state === undefined
-      ? "neutral"
-      : state;
+  const resolvedState: TableRuntimeState | "neutral" = hasActiveOrder ? "occupied" : (state ?? "neutral");
   const resolvedTableLabel = tableLabel?.trim() ?? t("floorEditor.tableLabel", { number: tableNumber });
   const label =
     ariaLabel ??

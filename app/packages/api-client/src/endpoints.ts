@@ -4,10 +4,12 @@ import {
   TenantProfilesResource,
   TablesResource,
   TenantsResource,
+  TenantOrdersResource,
   FloorCanvasesResource,
   MenusResource,
   OrdersResource,
   AuthResource,
+  HealthResource,
   PaymentsResource,
   PublicResource,
   UserResource,
@@ -19,6 +21,7 @@ import {
  */
 export class RestorioApi {
   public readonly auth: AuthResource;
+  public readonly health: HealthResource;
   public readonly payments: PaymentsResource;
   public readonly publicApi: PublicResource;
   public readonly tenantProfiles: TenantProfilesResource;
@@ -27,11 +30,13 @@ export class RestorioApi {
   public readonly orders: OrdersResource;
   public readonly tables: TablesResource;
   public readonly tenants: TenantsResource;
+  public readonly tenantOrders: TenantOrdersResource;
   public readonly floorCanvases: FloorCanvasesResource;
   public readonly users: UserResource;
 
   constructor(private client: ApiClient) {
     this.auth = new AuthResource(this.client);
+    this.health = new HealthResource(this.client);
     this.payments = new PaymentsResource(this.client);
     this.publicApi = new PublicResource(this.client);
     this.tenantProfiles = new TenantProfilesResource(this.client);
@@ -41,6 +46,7 @@ export class RestorioApi {
     this.orders = new OrdersResource(this.client);
     this.tables = new TablesResource(this.client);
     this.tenants = new TenantsResource(this.client);
+    this.tenantOrders = new TenantOrdersResource(this.client);
     this.users = new UserResource(this.client);
   }
 }

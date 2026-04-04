@@ -77,6 +77,41 @@ class OrderService:
         await db[_ORDERS_COLLECTION].insert_one(doc)
         return _serialize_order(doc)
 
+    async def update_order(
+        self,
+        db: AsyncIOMotorDatabase,
+        restaurant_id: str,
+        order_id: str,
+        data: dict[str, Any],
+    ) -> dict[str, Any]:
+        doc = await db[_ORDERS_COLLECTION].find_one(
+            {"_id": order_id, "restaurantId": restaurant_id}
+        )
+        if not doc:
+            msg = "Order"
+            raise NotFoundResponse(msg, order_id)
+
+        update: dict[str, Any] = {"updatedAt": datetime.now(UTC)}
+
+        if "items" in data:
+            update["items"] = data["items"]
+        if "notes" in data:
+            update["notes"] = data["notes"]
+        if "total" in data:
+            update["total"] = data["total"]
+        if "subtotal" in data:
+            update["subtotal"] = data["subtotal"]
+        if "table" in data:
+            update["table"] = data["table"]
+
+        await db[_ORDERS_COLLECTION].update_one(
+            {"_id": order_id},
+            {"$set": update},
+        )
+
+        updated = await db[_ORDERS_COLLECTION].find_one({"_id": order_id})
+        return _serialize_order(updated)
+
     async def update_status(
         self,
         db: AsyncIOMotorDatabase,

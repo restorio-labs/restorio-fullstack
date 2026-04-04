@@ -79,3 +79,4 @@ class UpdateOrderDTO(BaseDTO):
     total_amount: Decimal | None = Field(None, ge=0, description="Updated order total")
     currency: CurrencyCode | None = Field(None, description="Updated order currency")
     items: list[CreateOrderItemDTO] | None = Field(None, description="Order items")
+    notes: str | None = Field(None, description="Order notes")

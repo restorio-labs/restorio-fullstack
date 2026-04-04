@@ -54,8 +54,7 @@ const renderElement = (
   onElementPointerDown: FloorCanvasProps["onElementPointerDown"],
 ): ReactNode => {
   const bounds = { x: el.x, y: el.y, w: el.w, h: el.h, rotation: el.rotation };
-  const rawTableState =
-    (el.type === "table" || el.type === "tableGroup") && el.id ? tableStates[el.id] : undefined;
+  const rawTableState = (el.type === "table" || el.type === "tableGroup") && el.id ? tableStates[el.id] : undefined;
   const state = runtimeTableStyling ? (rawTableState ?? "free") : rawTableState;
   const displayInfo = el.id ? tableDisplayInfo[el.id] : undefined;
   const isSelected = selectedId === el.id;

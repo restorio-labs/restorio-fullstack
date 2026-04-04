@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, cn, ContentContainer, Text, useAuthRoute, type AuthRouteStatus } from "@restorio/ui";
+import { Button, cn, ContentContainer, Loader, Text, useAuthRoute, type AuthRouteStatus } from "@restorio/ui";
 import { goToApp } from "@restorio/utils";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
@@ -71,6 +71,15 @@ export const HomeContent = (): ReactElement => {
                 </Button>
               </Link>
             </div>
+          ) : authStatus === "reconnecting" ? (
+            <div className="flex flex-col items-center justify-center gap-4 pt-4">
+              <Loader size="lg" aria-hidden />
+              <p className="max-w-lg text-center text-base font-medium text-text-secondary">{t("common.tryingToConnect")}</p>
+            </div>
+          ) : authStatus === "unavailable" ? (
+            <p className="mx-auto max-w-lg pt-4 text-center text-base font-medium text-status-warning-text">
+              {t("common.backendUnavailable")}
+            </p>
           ) : authStatus === "loading" ? (
             <div className="mx-auto flex justify-center pt-4">
               <div className="h-14 w-64 animate-pulse rounded-xl bg-surface-secondary" />
@@ -366,6 +375,11 @@ export const HomeContent = (): ReactElement => {
                       {t("landing.finalCta.secondary")}
                     </Button>
                   </Link>
+                </div>
+              ) : authStatus === "reconnecting" ? (
+                <div className="flex flex-col items-center justify-center gap-3">
+                  <Loader size="md" aria-hidden />
+                  <span className="text-sm font-medium text-background-primary/90">{t("common.tryingToConnect")}</span>
                 </div>
               ) : authStatus === "authenticated" ? (
                 <Button

@@ -1,7 +1,13 @@
 "use client";
 
-import { checkAuthSession } from "@restorio/auth";
-import { AuthRouteProvider, I18nProvider, ThemeProvider } from "@restorio/ui";
+import { checkPublicWebAuth } from "@restorio/auth";
+import {
+  AuthRouteProvider,
+  I18nProvider,
+  ThemeProvider,
+  type AuthCheckContext,
+  type AuthRouteResolvedStatus,
+} from "@restorio/ui";
 import { SESSION_HINT_COOKIE, THEME_STORAGE_KEY } from "@restorio/utils";
 import { useMessages } from "next-intl";
 import type { ReactNode } from "react";
@@ -16,9 +22,16 @@ interface AppProvidersProps {
 export const AppProviders = ({ children }: AppProvidersProps): ReactNode => {
   const locale = "pl";
   const messages = useMessages();
-  const checkAuth = useCallback(async (): Promise<boolean> => {
-    return checkAuthSession(() => api.auth.me(), { requireSessionHintCookie: SESSION_HINT_COOKIE });
-  }, []);
+  const checkAuth = useCallback(
+    async ({ onReconnecting }: AuthCheckContext): Promise<AuthRouteResolvedStatus> => {
+      return checkPublicWebAuth(() => api.auth.me(), {
+        requireSessionHintCookie: SESSION_HINT_COOKIE,
+        isBackendReachable: () => api.health.isReachable(),
+        onReconnecting,
+      });
+    },
+    [],
+  );
 
   return (
     <I18nProvider locale={locale} messages={messages}>

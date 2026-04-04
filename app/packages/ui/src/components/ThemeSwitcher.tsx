@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactElement } from "react";
 
+import { useI18n } from "../providers/I18nProvider";
 import { useTheme } from "../theme/ThemeProvider";
 import { cn } from "../utils";
 
@@ -9,18 +10,11 @@ import { Icon } from "./primitives/Icon";
 export interface ThemeSwitcherProps {
   className?: string;
   showLabel?: boolean;
-  lightLabel?: string;
-  darkLabel?: string;
-  ariaLabelTemplate?: (currentTheme: string) => string;
 }
 
-export const ThemeSwitcher = ({
-  className,
-  showLabel = false,
-  lightLabel = "Light",
-  darkLabel = "Dark",
-  ariaLabelTemplate,
-}: ThemeSwitcherProps): ReactElement => {
+export const ThemeSwitcher = ({ className, showLabel = false }: ThemeSwitcherProps): ReactElement => {
+  const { t } = useI18n();
+
   const { mode, resolvedMode, setMode } = useTheme();
   const [mounted, setMounted] = useState(false);
   const activeMode = mode === "system" ? resolvedMode : mode;
@@ -49,12 +43,15 @@ export const ThemeSwitcher = ({
   };
 
   const labels: Record<"light" | "dark", string> = {
-    light: lightLabel,
-    dark: darkLabel,
+    light: String(t("themeSwitcher.light", "Light")),
+    dark: String(t("themeSwitcher.dark", "Dark")),
   };
 
-  const defaultAriaLabel = `Current theme: ${labels[visibleMode]}. Click to cycle theme.`;
-  const ariaLabel = ariaLabelTemplate ? ariaLabelTemplate(labels[visibleMode]) : defaultAriaLabel;
+  const ariaLabel = String(
+    t("themeSwitcher.ariaLabel", "Current theme: {{theme}}. Click to cycle theme.", {
+      theme: labels[visibleMode],
+    }),
+  );
 
   return (
     <Button

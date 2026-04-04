@@ -157,10 +157,7 @@ export const FloorEditorToolbar = ({
             {t("floorEditor.toolbar.redo")}
           </Button>
           {onSave && showSave && (
-            <Button
-              className={isRow ? "shrink-0" : "w-full"}
-              onClick={() => void onSave(layout)}
-            >
+            <Button className={isRow ? "shrink-0" : "w-full"} onClick={() => void onSave(layout)}>
               {t("floorEditor.toolbar.save")}
             </Button>
           )}

@@ -31,6 +31,15 @@
       "sliding": "Przesuwany"
     }
   },
+  "chooseApp": {
+    "title": "Jesteś zalogowany",
+    "subtitle": "Wybierz, dokąd chcesz przejść dalej.",
+    "labels": {
+      "adminPanel": "Panel administracyjny",
+      "kitchenPanel": "Panel kuchni",
+      "waiterPanel": "Panel kelnerski"
+    }
+  },
   "orders": {
     "status": {
       "new": "Nowe",

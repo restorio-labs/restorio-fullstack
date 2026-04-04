@@ -15,7 +15,7 @@ describe("ChooseApp", () => {
     const onSelectApp = vi.fn();
     const user = userEvent.setup();
 
-    render(<ChooseApp labels={labels} onSelectApp={onSelectApp} ariaLabel="choose app" />);
+    render(<ChooseApp onSelectApp={onSelectApp} ariaLabel="choose app" />);
 
     expect(screen.getByText("You’re logged in")).toBeDefined();
     expect(screen.getByText("Choose where you want to go next.")).toBeDefined();
@@ -37,7 +37,6 @@ describe("ChooseApp", () => {
       <ChooseApp
         variant="dropdown"
         value="admin-panel"
-        labels={labels}
         onSelectApp={onSelectApp}
         ariaLabel="switch app"
         className="custom-wrapper"
@@ -48,6 +47,39 @@ describe("ChooseApp", () => {
 
     expect(trigger.textContent).toContain("Admin");
     expect(document.querySelector(".custom-wrapper")).not.toBeNull();
+
+    await user.click(trigger);
+
+    const menu = screen.getByRole("menu");
+    expect(menu.textContent).not.toContain("Admin");
+    await user.click(screen.getByText("Kitchen"));
+
+    expect(onSelectApp).toHaveBeenCalledWith("kitchen-panel");
+  });
+
+  it("renders dropdown variant with large subvariant", async () => {
+    const onSelectApp = vi.fn();
+    const user = userEvent.setup();
+
+    render(
+      <ChooseApp
+        variant="dropdown"
+        subvariant="large"
+        value="admin-panel"
+        onSelectApp={onSelectApp}
+        ariaLabel="switch app"
+        className="custom_wrapper"
+      />,
+    );
+
+    const trigger = screen.getByRole("button", { name: "switch app" });
+
+    expect(trigger.textContent).toContain("Admin");
+    expect(document.querySelector(".custom_wrapper")).not.toBeNull();
+    expect(trigger.className).toContain("text-sm");
+    expect(trigger.className).toContain("px-3");
+    expect(trigger.className).toContain("py-2");
+    expect(trigger.className).toContain("max-w-[400px]");
 
     await user.click(trigger);
 

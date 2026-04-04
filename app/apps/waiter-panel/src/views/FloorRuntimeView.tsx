@@ -1,13 +1,29 @@
-import { TokenStorage } from "@restorio/auth";
-import type { FloorCanvas as FloorCanvasType, TableDisplayInfo, TableRuntimeState, Tenant } from "@restorio/types";
-import { Button, FloorCanvas, Modal, useI18n, useMediaQuery } from "@restorio/ui";
-import { useQuery } from "@tanstack/react-query";
+import type { TenantOrderRow } from "@restorio/api-client";
+import type {
+  FloorCanvas as FloorCanvasType,
+  TableDisplayInfo,
+  TableRuntimeState,
+  Tenant,
+  TenantMenu,
+} from "@restorio/types";
+import { Button, FloorCanvas, Modal, useI18n, useMediaQuery, cn } from "@restorio/ui";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ReactElement } from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { IoIosCloseCircleOutline } from "react-icons/io";
 
-const ENV = import.meta.env as unknown as Record<string, unknown>;
-const apiBaseUrlEnv = typeof ENV.VITE_API_BASE_URL === "string" ? ENV.VITE_API_BASE_URL : undefined;
-const API_BASE_URL = apiBaseUrlEnv ?? "http://localhost:8000/api/v1";
+import { api, ordersApi, tenantOrdersApi } from "@/api/client";
+import { WaiterMenuDock } from "@/components/WaiterMenuDock";
+
+interface KitchenOrderItem {
+  id: string;
+  menuItemId: string;
+  name: string;
+  quantity: number;
+  basePrice: number;
+  selectedModifiers: never[];
+  totalPrice: number;
+}
 
 interface FloorRuntimeViewProps {
   venue: Tenant;
@@ -28,29 +44,66 @@ interface OrderedRuntimeItem extends RuntimeMenuItem {
   quantity: number;
 }
 
-interface RemoteOrderItemPayload {
-  product_id: string;
-  name: string;
-  quantity: number;
-  unit_price: number;
-  modifiers: string[];
-}
+const tenantMenuToRuntimeItems = (menu: TenantMenu | null): RuntimeMenuItem[] => {
+  if (!menu) {
+    return [];
+  }
 
-interface RemoteOrderPayload {
-  id: string;
-  table_id: string | null;
-  table_ref: string | null;
-  status: string;
-  waiter_name: string | null;
-  waiter_surname: string | null;
-}
+  const parsed: RuntimeMenuItem[] = [];
 
-const isRecord = (value: unknown): value is Record<string, unknown> => {
-  return typeof value === "object" && value !== null;
+  for (const category of menu.categories) {
+    const categoryOrder = category.order;
+
+    for (const item of category.items) {
+      if (item.name.trim() === "" || !Number.isFinite(item.price) || !item.isAvailable) {
+        continue;
+      }
+
+      parsed.push({
+        id: `${categoryOrder}-${item.name}`,
+        name: item.name,
+        description: item.desc,
+        tags: item.tags,
+        price: item.price,
+      });
+    }
+  }
+
+  return parsed;
 };
 
 const isOccupiedOrderStatus = (status: string): boolean => {
   return status !== "paid" && status !== "cancelled";
+};
+
+const mapRemoteStatusToDisplayStatus = (status: string): "browsing" | "ordering" | "ordered" => {
+  switch (status) {
+    case "new":
+    case "pending":
+      return "ordering";
+    case "confirmed":
+    case "preparing":
+    case "ready":
+    case "placed":
+      return "ordered";
+    default:
+      return "browsing";
+  }
+};
+
+const formatOccupationTime = (createdAt: string): string => {
+  const created = new Date(createdAt);
+  const now = new Date();
+  const diffMs = now.getTime() - created.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const hours = Math.floor(diffMins / 60);
+  const mins = diffMins % 60;
+
+  if (hours > 0) {
+    return `${hours}h ${mins}m`;
+  }
+
+  return `${mins}m`;
 };
 
 export const FloorRuntimeView = ({
@@ -60,6 +113,7 @@ export const FloorRuntimeView = ({
   tableDisplayInfo: initialTableDisplayInfo = {},
 }: FloorRuntimeViewProps): ReactElement => {
   const { t } = useI18n();
+  const queryClient = useQueryClient();
   const isTabletUp = useMediaQuery("(min-width: 768px)");
   const isDesktopUp = useMediaQuery("(min-width: 1280px)");
   const [tableStates] = useState<Record<string, TableRuntimeState>>(initialTableStates);
@@ -67,7 +121,22 @@ export const FloorRuntimeView = ({
     ...initialTableDisplayInfo,
   }));
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
-  const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
+  const [clickCoords, setClickCoords] = useState<{ x: number; y: number } | null>(null);
+  const [panelReady, setPanelReady] = useState(false);
+  const [isMenuDockOpen, setIsMenuDockOpen] = useState(false);
+  const [isUnlockModalOpen, setIsUnlockModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (selectedElementId) {
+      setPanelReady(false);
+      const timer = setTimeout(() => setPanelReady(true), 150);
+
+      return () => {
+        clearTimeout(timer);
+      };
+    }
+  }, [selectedElementId]);
+
   const [tableOrderItems, setTableOrderItems] = useState<Record<string, OrderedRuntimeItem[]>>({});
   const [tableOrderNotes, setTableOrderNotes] = useState<Record<string, string>>({});
   const [tableOrderIds, setTableOrderIds] = useState<Record<string, string>>({});
@@ -113,73 +182,9 @@ export const FloorRuntimeView = ({
     queryKey: ["waiter-panel", "menu-items", venue.id],
     queryFn: async (): Promise<RuntimeMenuItem[]> => {
       try {
-        const accessToken = TokenStorage.getAccessToken();
-        const response = await fetch(`${API_BASE_URL}/tenants/${venue.id}/menu`, {
-          method: "GET",
-          credentials: "include",
-          headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
-        });
+        const menu = await api.menus.get(venue.id);
 
-        if (!response.ok) {
-          return [];
-        }
-
-        const payload: unknown = await response.json();
-
-        if (!isRecord(payload)) {
-          return [];
-        }
-
-        const { data } = payload;
-
-        if (!isRecord(data)) {
-          return [];
-        }
-
-        const { categories } = data;
-
-        if (!Array.isArray(categories)) {
-          return [];
-        }
-
-        const parsedItems: RuntimeMenuItem[] = [];
-
-        for (const category of categories) {
-          if (!isRecord(category)) {
-            continue;
-          }
-
-          const { order: categoryOrderRaw, items } = category;
-          const categoryOrder = typeof categoryOrderRaw === "number" ? categoryOrderRaw : 0;
-
-          if (!Array.isArray(items)) {
-            continue;
-          }
-
-          for (const item of items) {
-            if (!isRecord(item)) {
-              continue;
-            }
-
-            const { name: nameRaw, price: priceRaw, active } = item;
-            const name = typeof nameRaw === "string" ? nameRaw : "";
-            const price = typeof priceRaw === "number" ? priceRaw : NaN;
-
-            if (name.trim() === "" || !Number.isFinite(price) || active !== 1) {
-              continue;
-            }
-
-            parsedItems.push({
-              id: `${categoryOrder}-${name}`,
-              name,
-              description: typeof item.desc === "string" ? item.desc : "",
-              tags: Array.isArray(item.tags) ? item.tags.filter((tag): tag is string => typeof tag === "string") : [],
-              price,
-            });
-          }
-        }
-
-        return parsedItems;
+        return tenantMenuToRuntimeItems(menu);
       } catch {
         return [];
       }
@@ -188,30 +193,11 @@ export const FloorRuntimeView = ({
 
   const { data: remoteOrders = [] } = useQuery({
     queryKey: ["waiter-panel", "orders", venue.id],
-    queryFn: async (): Promise<RemoteOrderPayload[]> => {
+    queryFn: async (): Promise<TenantOrderRow[]> => {
       try {
-        const accessToken = TokenStorage.getAccessToken();
-        const response = await fetch(`${API_BASE_URL}/tenants/${venue.id}/orders`, {
-          method: "GET",
-          credentials: "include",
-          headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
-        });
+        const rows = await tenantOrdersApi.list(venue.id);
 
-        if (!response.ok) {
-          return [];
-        }
-
-        const payload: unknown = await response.json();
-
-        if (!isRecord(payload) || !Array.isArray(payload.data)) {
-          return [];
-        }
-
-        return payload.data.flatMap((row): RemoteOrderPayload[] => {
-          if (!isRecord(row) || typeof row.id !== "string" || typeof row.status !== "string") {
-            return [];
-          }
-
+        return rows.flatMap((row): TenantOrderRow[] => {
           const tableRef = typeof row.table_ref === "string" ? row.table_ref : null;
           const tableId = typeof row.table_id === "string" ? row.table_id : null;
           const resolvedTableRef = tableRef ?? tableId;
@@ -222,12 +208,8 @@ export const FloorRuntimeView = ({
 
           return [
             {
-              id: row.id,
-              table_id: tableId,
+              ...row,
               table_ref: resolvedTableRef,
-              status: row.status,
-              waiter_name: typeof row.waiter_name === "string" ? row.waiter_name : null,
-              waiter_surname: typeof row.waiter_surname === "string" ? row.waiter_surname : null,
             },
           ];
         });
@@ -257,10 +239,34 @@ export const FloorRuntimeView = ({
       }
 
       acc[order.table_ref] = {
-        orderStatus: "ordered",
+        orderStatus: mapRemoteStatusToDisplayStatus(order.status),
         servedByName: order.waiter_name ?? undefined,
         servedBySurname: order.waiter_surname ?? undefined,
       };
+
+      return acc;
+    }, {});
+  }, [remoteOrders]);
+
+  const remoteOrderCreatedAtByTable = useMemo<Record<string, string>>(() => {
+    return remoteOrders.reduce<Record<string, string>>((acc, order) => {
+      if (!isOccupiedOrderStatus(order.status) || !order.table_ref) {
+        return acc;
+      }
+
+      acc[order.table_ref] = String(order.created_at);
+
+      return acc;
+    }, {});
+  }, [remoteOrders]);
+
+  const remoteOrderNotesByTable = useMemo<Record<string, string>>(() => {
+    return remoteOrders.reduce<Record<string, string>>((acc, order) => {
+      if (!isOccupiedOrderStatus(order.status) || !order.table_ref) {
+        return acc;
+      }
+
+      acc[order.table_ref] = String(order.notes ?? "");
 
       return acc;
     }, {});
@@ -302,10 +308,31 @@ export const FloorRuntimeView = ({
     () => (selectedTableElement ? (tableOrderItems[selectedTableElement.id] ?? []) : []),
     [selectedTableElement, tableOrderItems],
   );
-  const selectedTableOrderNote = useMemo(
-    () => (selectedTableElement ? (tableOrderNotes[selectedTableElement.id] ?? "") : ""),
-    [selectedTableElement, tableOrderNotes],
-  );
+  const selectedTableOrderNote = useMemo(() => {
+    if (!selectedTableElement) {
+      return "";
+    }
+
+    if (Object.prototype.hasOwnProperty.call(tableOrderNotes, selectedTableElement.id)) {
+      return tableOrderNotes[selectedTableElement.id];
+    }
+
+    return remoteOrderNotesByTable[selectedTableElement.id] ?? "";
+  }, [selectedTableElement, tableOrderNotes, remoteOrderNotesByTable]);
+
+  const selectedTableOccupationTime = useMemo(() => {
+    if (!selectedTableElement) {
+      return null;
+    }
+
+    const createdAt = remoteOrderCreatedAtByTable[selectedTableElement.id];
+
+    if (!createdAt) {
+      return null;
+    }
+
+    return formatOccupationTime(createdAt);
+  }, [selectedTableElement, remoteOrderCreatedAtByTable]);
   const selectedTableOrderId = useMemo(
     () =>
       selectedTableElement
@@ -329,7 +356,7 @@ export const FloorRuntimeView = ({
   const selectedTableSeats = selectedTableElement?.seats;
 
   const handleElementPointerDown = useCallback(
-    (id: string): void => {
+    (id: string, e: React.PointerEvent): void => {
       if (!runtimeCanvas) {
         setSelectedElementId(null);
 
@@ -344,99 +371,96 @@ export const FloorRuntimeView = ({
         return;
       }
 
-      setSelectedElementId((prev) => (prev === id ? null : id));
+      setSelectedElementId((prev) => {
+        if (prev === id) {
+          return null;
+        }
+
+        setClickCoords({ x: e.clientX, y: e.clientY });
+
+        return id;
+      });
     },
     [runtimeCanvas],
   );
 
   const handleClosePanel = useCallback((): void => {
     setSelectedElementId(null);
-    setIsAddItemModalOpen(false);
+    setIsMenuDockOpen(false);
   }, []);
 
-  const handleOpenAddItemModal = useCallback((): void => {
-    if (!selectedTableElement || isSelectedTableAvailable) {
-      return;
-    }
-
-    setIsAddItemModalOpen(true);
-  }, [isSelectedTableAvailable, selectedTableElement]);
-
-  const handleCloseAddItemModal = useCallback((): void => {
-    setIsAddItemModalOpen(false);
-  }, []);
-
-  const toRemoteOrderItems = useCallback((items: OrderedRuntimeItem[]): RemoteOrderItemPayload[] => {
+  const toKitchenOrderItems = useCallback((items: OrderedRuntimeItem[]): KitchenOrderItem[] => {
     return items.map((item) => ({
-      product_id: item.id,
+      id: item.id,
+      menuItemId: item.id,
       name: item.name,
       quantity: item.quantity,
-      unit_price: item.price,
-      modifiers: [],
+      basePrice: item.price,
+      selectedModifiers: [],
+      totalPrice: item.price * item.quantity,
     }));
   }, []);
 
   const createRemoteOrder = useCallback(
-    async (tableElementId: string): Promise<{ id: string; waiterName?: string; waiterSurname?: string } | null> => {
-      const accessToken = TokenStorage.getAccessToken();
-      const response = await fetch(`${API_BASE_URL}/tenants/${venue.id}/orders`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-        },
-        body: JSON.stringify({
-          table_id: tableElementId,
+    async (tableElementId: string, tableLabel: string): Promise<{ id: string } | null> => {
+      try {
+        const response = await ordersApi.create(venue.id, {
+          tableId: tableElementId,
+          table: tableLabel,
           items: [],
-        }),
-      });
+          sessionId: "",
+          subtotal: 0,
+          tax: 0,
+          total: 0,
+        });
 
-      if (!response.ok) {
+        const orderData = "data" in response && response.data !== null ? response.data : response;
+        const orderId = typeof orderData === "object" && "id" in orderData ? String(orderData.id) : "";
+
+        if (!orderId) {
+          return null;
+        }
+
+        return { id: orderId };
+      } catch {
         return null;
       }
-
-      const payload: unknown = await response.json();
-
-      if (!isRecord(payload) || !isRecord(payload.data) || typeof payload.data.id !== "string") {
-        return null;
-      }
-
-      return {
-        id: payload.data.id,
-        waiterName: typeof payload.data.waiter_name === "string" ? payload.data.waiter_name : undefined,
-        waiterSurname: typeof payload.data.waiter_surname === "string" ? payload.data.waiter_surname : undefined,
-      };
     },
     [venue.id],
   );
 
   const syncRemoteOrder = useCallback(
-    async (orderId: string, items?: OrderedRuntimeItem[], status?: "pending" | "paid"): Promise<boolean> => {
-      const accessToken = TokenStorage.getAccessToken();
-      const body: Record<string, unknown> = {};
+    async (
+      orderId: string,
+      items?: OrderedRuntimeItem[],
+      _status?: "pending" | "paid" | "new",
+      notes?: string,
+    ): Promise<boolean> => {
+      try {
+        const body: { items?: KitchenOrderItem[]; notes?: string; total?: number; subtotal?: number } = {};
 
-      if (items) {
-        body.items = toRemoteOrderItems(items);
+        if (items) {
+          body.items = toKitchenOrderItems(items) as never;
+
+          const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+          body.total = total;
+          body.subtotal = total;
+        }
+
+        if (notes !== undefined) {
+          body.notes = notes;
+        }
+
+        await ordersApi.update(venue.id, orderId, body);
+        void queryClient.invalidateQueries({ queryKey: ["waiter-panel", "orders", venue.id] });
+
+        return true;
+      } catch {
+        return false;
       }
-
-      if (status) {
-        body.status = status;
-      }
-
-      const response = await fetch(`${API_BASE_URL}/tenants/${venue.id}/orders/${orderId}`, {
-        method: "PUT",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-        },
-        body: JSON.stringify(body),
-      });
-
-      return response.ok;
     },
-    [toRemoteOrderItems, venue.id],
+    [queryClient, toKitchenOrderItems, venue.id],
   );
 
   const handleBeginOrder = useCallback(async (): Promise<void> => {
@@ -444,7 +468,11 @@ export const FloorRuntimeView = ({
       return;
     }
 
-    const createdOrder = await createRemoteOrder(selectedTableElement.id);
+    const tableLabel =
+      selectedTableElement.type === "table" && selectedTableElement.label
+        ? selectedTableElement.label
+        : `Table ${selectedTableElement.type === "table" ? selectedTableElement.tableNumber : selectedTableElement.id}`;
+    const createdOrder = await createRemoteOrder(selectedTableElement.id, tableLabel);
 
     if (!createdOrder) {
       return;
@@ -459,8 +487,6 @@ export const FloorRuntimeView = ({
       [selectedTableElement.id]: {
         ...prev[selectedTableElement.id],
         orderStatus: "ordering",
-        servedByName: createdOrder.waiterName,
-        servedBySurname: createdOrder.waiterSurname,
         guestCount: Object.prototype.hasOwnProperty.call(prev, selectedTableElement.id)
           ? (prev[selectedTableElement.id].guestCount ?? selectedTableElement.seats)
           : selectedTableElement.seats,
@@ -470,6 +496,7 @@ export const FloorRuntimeView = ({
       ...prev,
       [selectedTableElement.id]: prev[selectedTableElement.id] ?? [],
     }));
+    setIsMenuDockOpen(true);
   }, [createRemoteOrder, isSelectedTableAvailable, selectedTableElement]);
 
   const handleAddItemToOrder = useCallback(
@@ -492,7 +519,7 @@ export const FloorRuntimeView = ({
             item.id === selectedMenuItem.id ? { ...item, quantity: item.quantity + 1 } : item,
           );
 
-      const updated = await syncRemoteOrder(selectedTableOrderId, nextItems, "pending");
+      const updated = await syncRemoteOrder(selectedTableOrderId, nextItems, "new");
 
       if (!updated) {
         return;
@@ -509,7 +536,6 @@ export const FloorRuntimeView = ({
           orderStatus: "ordered",
         },
       }));
-      setIsAddItemModalOpen(false);
     },
     [
       isSelectedTableAvailable,
@@ -557,7 +583,7 @@ export const FloorRuntimeView = ({
 
       return next;
     });
-    setIsAddItemModalOpen(false);
+    setIsMenuDockOpen(false);
   }, [isSelectedTableAvailable, selectedTableElement, selectedTableOrderId, syncRemoteOrder]);
 
   const handleRemoveItemFromOrder = useCallback(
@@ -584,7 +610,7 @@ export const FloorRuntimeView = ({
         return [{ ...item, quantity: item.quantity - 1 }];
       });
 
-      const updated = await syncRemoteOrder(selectedTableOrderId, nextItems, "pending");
+      const updated = await syncRemoteOrder(selectedTableOrderId, nextItems, "new");
 
       if (!updated) {
         return;
@@ -599,14 +625,44 @@ export const FloorRuntimeView = ({
   );
 
   const handlePersistOrderNote = useCallback(async (): Promise<void> => {
-    if (!selectedTableOrderId || isSelectedTableAvailable) {
+    if (!selectedTableOrderId || isSelectedTableAvailable || !selectedTableElement) {
       return;
     }
 
-    await syncRemoteOrder(selectedTableOrderId, selectedTableOrderItems, "pending");
-  }, [isSelectedTableAvailable, selectedTableOrderId, selectedTableOrderItems, syncRemoteOrder]);
+    const noteValue = tableOrderNotes[selectedTableElement.id] ?? "";
+
+    await syncRemoteOrder(selectedTableOrderId, undefined, undefined, noteValue);
+  }, [isSelectedTableAvailable, selectedTableElement, selectedTableOrderId, syncRemoteOrder, tableOrderNotes]);
 
   const selectedTableOrderTotal = selectedTableOrderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  const dynamicPanelPlacement = useMemo<"left" | "right" | "top" | "bottom">(() => {
+    if (!clickCoords) {
+      return isDesktopUp ? "right" : "bottom";
+    }
+
+    const spaceLeft = clickCoords.x;
+    const spaceRight = window.innerWidth - clickCoords.x;
+    const spaceTop = clickCoords.y;
+    const spaceBottom = window.innerHeight - clickCoords.y;
+
+    const maxSpace = Math.max(spaceLeft, spaceRight, spaceTop, spaceBottom);
+
+    if (maxSpace === spaceLeft) {
+      return "left";
+    }
+
+    if (maxSpace === spaceRight) {
+      return "right";
+    }
+
+    if (maxSpace === spaceTop) {
+      return "top";
+    }
+
+    return "bottom";
+  }, [clickCoords, isDesktopUp]);
+
   const occupiedTableMessage = useMemo(() => {
     if (isSelectedTableAvailable) {
       return t("waiterDashboard.tableAvailable");
@@ -632,16 +688,13 @@ export const FloorRuntimeView = ({
     );
   }
 
+  const orderNoteFieldId = "waiter-order-note";
+
   return (
-    <div className="flex h-full flex-col gap-2 p-4">
-      {selectedElementId && (
-        <span className="text-sm text-text-secondary" aria-live="polite">
-          {t("waiterDashboard.selectedElement")}
-        </span>
-      )}
-      <div className="flex flex-1 min-h-0 gap-3">
-        <div className="flex flex-1 min-h-0 rounded-lg border border-border-default bg-background-secondary overflow-x-auto overflow-y-auto touch-pan-x touch-pan-y">
-          <div className="mx-auto min-h-max min-w-max p-2">
+    <div className="relative flex h-full min-h-0 flex-col p-4">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <div className="flex min-h-0 flex-1 touch-pan-x touch-pan-y overflow-x-auto overflow-y-auto">
+          <div className="mx-auto flex min-h-full min-w-max flex-col justify-center p-2">
             <FloorCanvas
               layout={runtimeCanvas ?? activeCanvas}
               showGrid={false}
@@ -653,25 +706,68 @@ export const FloorRuntimeView = ({
               interactive
               onElementPointerDown={(id, e, _mode, _bounds) => {
                 e.preventDefault();
-                handleElementPointerDown(id);
+                handleElementPointerDown(id, e);
               }}
             />
           </div>
         </div>
-        {selectedTableElement && isTabletUp && (
-          <aside className="w-[320px] shrink-0 rounded-lg border border-border-default bg-surface-primary p-4">
-            <div className="flex items-start justify-between gap-2">
-              <div>
+      </div>
+      {selectedTableElement && (
+        <div
+          className={cn(
+            "pointer-events-none absolute z-20 flex",
+            dynamicPanelPlacement === "right" && "inset-y-4 right-4 items-start justify-end",
+            dynamicPanelPlacement === "left" && "inset-y-4 left-4 items-start justify-start",
+            dynamicPanelPlacement === "top" && "inset-x-4 top-4 items-start justify-center",
+            dynamicPanelPlacement === "bottom" && "inset-x-4 bottom-4 items-end justify-center",
+          )}
+        >
+          <div
+            className={cn(
+              "max-h-[calc(100vh-8rem)] w-full max-w-sm overflow-y-auto rounded-lg border border-border-default bg-surface-primary p-4 shadow-lg transition-opacity duration-200",
+              panelReady ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
+            )}
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div className="min-w-0">
                 <h3 className="text-base font-semibold text-text-primary">{selectedTableName}</h3>
                 <p className="text-sm text-text-secondary">
                   {t("waiterDashboard.tableSeats", { seats: selectedTableSeats ?? "-" })}
+                  {selectedTableOccupationTime && (
+                    <span className="ml-2 text-text-tertiary">
+                      ({t("waiterDashboard.occupiedFor", { time: selectedTableOccupationTime })})
+                    </span>
+                  )}
                 </p>
               </div>
-              <Button type="button" variant="secondary" size="sm" onClick={handleClosePanel}>
-                {t("waiterDashboard.closePanel")}
-              </Button>
+              <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                {!isSelectedTableAvailable && (
+                  <Button
+                    type="button"
+                    variant={isMenuDockOpen ? "primary" : "secondary"}
+                    size="sm"
+                    onClick={() => {
+                      setIsMenuDockOpen((open) => !open);
+                    }}
+                  >
+                    {t("waiterDashboard.addItem")}
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="relative h-8 w-8 shrink-0 text-status-error-text before:absolute before:-inset-4 md:before:inset-0"
+                  onClick={handleClosePanel}
+                  aria-label={t("waiterDashboard.closePanel")}
+                >
+                  <IoIosCloseCircleOutline className="h-7 w-7" />
+                </Button>
+              </div>
             </div>
-            <div className="mt-4 flex flex-col gap-3">
+            <div className="mt-3 flex flex-col gap-3">
               <div
                 className={`rounded-md px-3 py-2 text-sm font-medium ${
                   isSelectedTableAvailable
@@ -693,16 +789,13 @@ export const FloorRuntimeView = ({
                 </Button>
               ) : (
                 <>
-                  <Button type="button" variant="secondary" onClick={handleOpenAddItemModal}>
-                    {t("waiterDashboard.addItem")}
-                  </Button>
                   <div className="rounded-md border border-border-default bg-background-secondary px-3 py-2 text-sm text-text-secondary">
                     {selectedTableOrderItems.length === 0 ? (
                       <span>{t("waiterDashboard.noItemsYet")}</span>
                     ) : (
-                      <div className="space-y-4 md:space-y-1">
+                      <div className="space-y-3 sm:space-y-1">
                         {selectedTableOrderItems.map((item) => (
-                          <div key={item.id} className="flex items-center justify-between gap-4 md:gap-2">
+                          <div key={item.id} className="flex items-center justify-between gap-4 sm:gap-2">
                             <span>
                               {item.name} x{item.quantity}
                             </span>
@@ -729,12 +822,12 @@ export const FloorRuntimeView = ({
                     )}
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label htmlFor="order-note-desktop" className="text-sm text-text-secondary">
+                    <label htmlFor={orderNoteFieldId} className="text-sm text-text-secondary">
                       {t("waiterDashboard.orderNoteLabel")}
                     </label>
                     <textarea
-                      id="order-note-desktop"
-                      rows={3}
+                      id={orderNoteFieldId}
+                      rows={2}
                       value={selectedTableOrderNote}
                       onChange={(event) => {
                         const nextValue = event.target.value;
@@ -747,14 +840,14 @@ export const FloorRuntimeView = ({
                       onBlur={() => {
                         void handlePersistOrderNote();
                       }}
-                      className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
+                      className="w-full rounded-md border border-border-default bg-surface-primary px-4 py-3 text-sm text-text-primary"
                     />
                   </div>
                   <Button
                     type="button"
                     variant="primary"
                     onClick={() => {
-                      void handleConfirmPayment();
+                      setIsUnlockModalOpen(true);
                     }}
                   >
                     {t("waiterDashboard.confirmPayment")}
@@ -762,177 +855,55 @@ export const FloorRuntimeView = ({
                 </>
               )}
             </div>
-          </aside>
-        )}
-      </div>
-      {selectedTableElement && !isTabletUp && (
-        <div className="fixed inset-x-0 bottom-0 z-40 rounded-t-xl border border-border-default bg-surface-primary p-4 shadow-overlay">
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <h3 className="text-base font-semibold text-text-primary">{selectedTableName}</h3>
-              <p className="text-sm text-text-secondary">
-                {t("waiterDashboard.tableSeats", { seats: selectedTableSeats ?? "-" })}
-              </p>
-            </div>
-            <Button type="button" variant="secondary" size="sm" onClick={handleClosePanel}>
-              {t("waiterDashboard.closePanel")}
-            </Button>
-          </div>
-          <div className="mt-4 flex flex-col gap-3">
-            <div
-              className={`rounded-md px-3 py-2 text-sm font-medium ${
-                isSelectedTableAvailable
-                  ? "bg-status-success-background text-status-success-text"
-                  : "bg-status-error-background text-status-error-text"
-              }`}
-            >
-              {occupiedTableMessage}
-            </div>
-            {isSelectedTableAvailable ? (
-              <Button
-                type="button"
-                variant="primary"
-                onClick={() => {
-                  void handleBeginOrder();
-                }}
-              >
-                {t("waiterDashboard.beginOrder")}
-              </Button>
-            ) : (
-              <>
-                <Button type="button" variant="secondary" onClick={handleOpenAddItemModal}>
-                  {t("waiterDashboard.addItem")}
-                </Button>
-                <div className="rounded-md border border-border-default bg-background-secondary px-3 py-2 text-sm text-text-secondary">
-                  {selectedTableOrderItems.length === 0 ? (
-                    <span>{t("waiterDashboard.noItemsYet")}</span>
-                  ) : (
-                    <div className="space-y-4 md:space-y-1">
-                      {selectedTableOrderItems.map((item) => (
-                        <div key={item.id} className="flex items-center justify-between gap-4 md:gap-2">
-                          <span>
-                            {item.name} x{item.quantity}
-                          </span>
-                          <div className="flex items-center gap-2">
-                            <span>{(item.price * item.quantity).toFixed(2)}</span>
-                            <Button
-                              type="button"
-                              variant="secondary"
-                              size="sm"
-                              onClick={() => {
-                                void handleRemoveItemFromOrder(item.id);
-                              }}
-                              aria-label={t("waiterDashboard.removeItem")}
-                            >
-                              -
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                      <div className="mt-2 border-t border-border-default pt-2 font-semibold text-text-primary">
-                        {t("waiterDashboard.orderTotal", { total: selectedTableOrderTotal.toFixed(2) })}
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label htmlFor="order-note-mobile" className="text-sm text-text-secondary">
-                    {t("waiterDashboard.orderNoteLabel")}
-                  </label>
-                  <textarea
-                    id="order-note-mobile"
-                    rows={3}
-                    value={selectedTableOrderNote}
-                    onChange={(event) => {
-                      const nextValue = event.target.value;
-
-                      setTableOrderNotes((prev) => ({
-                        ...prev,
-                        [selectedTableElement.id]: nextValue,
-                      }));
-                    }}
-                    onBlur={() => {
-                      void handlePersistOrderNote();
-                    }}
-                    className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
-                  />
-                </div>
-                <Button
-                  type="button"
-                  variant="primary"
-                  onClick={() => {
-                    void handleConfirmPayment();
-                  }}
-                >
-                  {t("waiterDashboard.confirmPayment")}
-                </Button>
-              </>
-            )}
           </div>
         </div>
       )}
-      {selectedTableElement && !isTabletUp && <div className="h-[180px] shrink-0" />}
+      {selectedTableElement && !isSelectedTableAvailable && (
+        <WaiterMenuDock
+          isOpen={isMenuDockOpen}
+          placement={isDesktopUp ? "right" : "bottom"}
+          title={t("waiterDashboard.addItemModalTitle")}
+          emptyLabel={t("waiterDashboard.addItemModalEmpty")}
+          closeLabel={t("waiterDashboard.closePanel")}
+          items={menuItems}
+          onAddItem={(itemId) => {
+            void handleAddItemToOrder(itemId);
+          }}
+          onClose={() => {
+            setIsMenuDockOpen(false);
+          }}
+        />
+      )}
+
       <Modal
-        isOpen={isAddItemModalOpen}
-        onClose={handleCloseAddItemModal}
-        title={t("waiterDashboard.addItemModalTitle")}
+        isOpen={isUnlockModalOpen}
+        onClose={() => {
+          setIsUnlockModalOpen(false);
+        }}
+        title={t("waiterDashboard.confirmPaymentModalTitle")}
+        size="sm"
       >
-        <div className="flex flex-col gap-3">
-          {menuItems.length === 0 ? (
-            <div className="rounded-md border border-border-default bg-background-secondary px-3 py-2 text-sm text-text-secondary">
-              {t("waiterDashboard.addItemModalEmpty")}
-            </div>
-          ) : (
-            <div className="max-h-[60vh] overflow-y-auto pr-1">
-              <div className="flex flex-col gap-2">
-                {menuItems.map((item) => (
-                  <div
-                    key={item.id}
-                    className="rounded-md border border-border-default bg-background-secondary px-3 py-2 text-sm"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="font-medium text-text-primary">{item.name}</div>
-                        {item.description.trim() !== "" && (
-                          <div className="mt-0.5 text-xs text-text-secondary">{item.description}</div>
-                        )}
-                        {item.tags.length > 0 && (
-                          <div className="mt-1 flex flex-wrap gap-1">
-                            {item.tags.map((tag) => (
-                              <span
-                                key={`${item.id}-${tag}`}
-                                className="rounded-full border border-border-default bg-surface-primary px-2 py-0.5 text-[10px] text-text-secondary"
-                              >
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="whitespace-nowrap text-sm font-semibold text-text-primary">
-                          {item.price.toFixed(2)}
-                        </span>
-                        <Button
-                          type="button"
-                          variant="primary"
-                          size="sm"
-                          onClick={() => {
-                            void handleAddItemToOrder(item.id);
-                          }}
-                        >
-                          +
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          <div className="flex justify-end">
-            <Button type="button" variant="secondary" onClick={handleCloseAddItemModal}>
-              {t("waiterDashboard.closePanel")}
+        <div className="flex flex-col gap-6">
+          <p className="text-sm text-text-secondary">{t("waiterDashboard.confirmPaymentModalDescription")}</p>
+          <div className="flex justify-end gap-3">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                setIsUnlockModalOpen(false);
+              }}
+            >
+              {t("waiterDashboard.confirmPaymentModalCancel")}
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              onClick={() => {
+                void handleConfirmPayment();
+                setIsUnlockModalOpen(false);
+              }}
+            >
+              {t("waiterDashboard.confirmPaymentModalConfirm")}
             </Button>
           </div>
         </div>

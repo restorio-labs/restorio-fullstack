@@ -29,6 +29,7 @@ CSRF_EXEMPT_PATHS: set[str] = {
     f"{settings.API_V1_PREFIX}/auth/activate",
     f"{settings.API_V1_PREFIX}/auth/refresh",
     f"{settings.API_V1_PREFIX}/payments/callback",
+    f"{settings.API_V1_PREFIX}/health",
     "/health",
     "/health/ready",
     "/health/live",

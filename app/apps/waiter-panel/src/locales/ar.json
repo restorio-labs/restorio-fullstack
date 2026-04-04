@@ -1,4 +1,12 @@
 {
+  "tenantSelect": {
+    "title": "المطاعم",
+    "description": "اختر مطعماً لفتح لوحة النادل وعرض القاعة.",
+    "loading": "جارٍ تحميل المطاعم...",
+    "loadError": "تعذر تحميل المطاعم.",
+    "none": "لا توجد مطاعم مرتبطة بهذا الحساب.",
+    "switchRestaurant": "تبديل المطعم"
+  },
   "waiterDashboard": {
     "title": "لوحة النادل",
     "description": "عرض مباشر لقاعة المطعم وفق إعدادات لوحة الإدارة.",
@@ -18,6 +26,7 @@
     "selectedElement": "الطاولة/العنصر المحدد",
     "tableGroupLabel": "الطاولات {{numbers}}",
     "tableSeats": "المقاعد: {{seats}}",
+    "occupiedFor": "{{time}}",
     "closePanel": "إغلاق",
     "tableAvailable": "الطاولة متاحة",
     "tableOccupied": "الطاولة مشغولة",

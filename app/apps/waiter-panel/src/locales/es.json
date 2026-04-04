@@ -1,4 +1,12 @@
 {
+  "tenantSelect": {
+    "title": "Restaurantes",
+    "description": "Elige un restaurante para abrir la vista de sala del camarero.",
+    "loading": "Cargando restaurantes...",
+    "loadError": "No se pudieron cargar los restaurantes.",
+    "none": "No hay restaurantes asignados a esta cuenta.",
+    "switchRestaurant": "Cambiar de restaurante"
+  },
   "waiterDashboard": {
     "title": "Panel de camarero",
     "description": "Vista de sala en vivo segun la configuracion del panel de administracion.",
@@ -18,6 +26,7 @@
     "selectedElement": "Mesa/elemento seleccionado",
     "tableGroupLabel": "Mesas {{numbers}}",
     "tableSeats": "Asientos: {{seats}}",
+    "occupiedFor": "{{time}}",
     "closePanel": "Cerrar",
     "tableAvailable": "Mesa disponible",
     "tableOccupied": "Mesa ocupada",

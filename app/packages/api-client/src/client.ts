@@ -179,6 +179,15 @@ export class ApiClient {
     return this.refreshPromise;
   }
 
+  async getHttpStatus(url: string, config?: AxiosRequestConfig): Promise<number> {
+    const response = await this.client.get(url, {
+      ...config,
+      validateStatus: () => true,
+    });
+
+    return response.status;
+  }
+
   async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.client.get<T>(url, config);
 

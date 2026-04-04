@@ -49,6 +49,7 @@ def _build_order_response(
         status=order.status,
         total_amount=order.total_amount,
         currency=order.currency,
+        notes=order.notes,
         created_at=order.created_at,
         updated_at=order.updated_at,
         items=[
@@ -137,9 +138,10 @@ async def create_tenant_order(
         table_id=_table_ref_to_uuid(tenant_public_id, request.table_id),
         table_ref=request.table_id,
         waiter_user_id=waiter_user_id,
-        status=OrderStatus.PENDING.value,
+        status=OrderStatus.NEW.value,
         total_amount=total_amount,
         currency="PLN",
+        notes=request.notes,
     )
     session.add(order)
     await session.flush()
@@ -194,6 +196,10 @@ async def update_tenant_order(
         order.status = request.status.value
     if request.currency is not None:
         order.currency = request.currency
+    if request.notes is not None:
+        order.notes = request.notes
+    elif "notes" in request.model_fields_set:
+        order.notes = None
 
     updated_items: list[OrderItem] = []
     if request.items is not None:

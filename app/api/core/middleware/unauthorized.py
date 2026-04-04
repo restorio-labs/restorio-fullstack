@@ -19,6 +19,7 @@ _PUBLIC_PATH_PREFIXES: frozenset[str] = frozenset(
         "/docs",
         "/openapi",
         "/health",
+        f"{settings.API_V1_PREFIX}/health",
         f"{settings.API_V1_PREFIX}/auth/login",
         f"{settings.API_V1_PREFIX}/auth/register",
         f"{settings.API_V1_PREFIX}/auth/activate",

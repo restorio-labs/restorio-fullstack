@@ -1,4 +1,12 @@
 {
+  "tenantSelect": {
+    "title": "Restaurants",
+    "description": "Choose a restaurant to open the waiter floor view.",
+    "loading": "Loading restaurants...",
+    "loadError": "Failed to load restaurants.",
+    "none": "No restaurants are assigned to this account.",
+    "switchRestaurant": "Switch restaurant"
+  },
   "waiterDashboard": {
     "title": "Waiter dashboard",
     "description": "Live floor view from the administration panel configuration.",
@@ -18,6 +26,7 @@
     "selectedElement": "Selected table/element",
     "tableGroupLabel": "Tables {{numbers}}",
     "tableSeats": "Seats: {{seats}}",
+    "occupiedFor": "{{time}}",
     "closePanel": "Close",
     "tableAvailable": "Table available",
     "tableOccupied": "Table occupied",
@@ -34,6 +43,12 @@
     "orderNotePlaceholder": "e.g. remove cucumber from dish",
     "orderTotal": "Total: {{total}}",
     "confirmPayment": "Confirm payment",
+    "confirmPaymentModalTitle": "Unlock table",
+    "confirmPaymentModalDescription": "Are you sure you want to unlock this table? This will clear the current order.",
+    "confirmPaymentModalConfirm": "Unlock",
+    "confirmPaymentModalCancel": "Cancel",
+    "todaysOrders": "Today's orders",
+    "noOrdersToday": "No orders created today.",
     "zoomLabel": "Zoom: {{value}}%",
     "zoomIn": "Zoom in",
     "zoomOut": "Zoom out",

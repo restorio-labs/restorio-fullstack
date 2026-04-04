@@ -9,9 +9,5 @@ export interface ToastAnimatedProps {
 }
 
 export const ToastAnimated = ({ exiting, children, className }: ToastAnimatedProps): ReactElement => {
-  return (
-    <div className={cn(exiting ? "toast-motion-out" : "toast-motion-in", className)}>
-      {children}
-    </div>
-  );
+  return <div className={cn(exiting ? "toast-motion-out" : "toast-motion-in", className)}>{children}</div>;
 };

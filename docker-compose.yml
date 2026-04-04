@@ -4,8 +4,8 @@ services:
       context: ./app/api
       dockerfile: Dockerfile
     container_name: restorio-api
-    # ports:
-    #   - "8000:8000"
+    ports:
+      - "8000:8000"
     environment:
       - PROJECT_NAME=${PROJECT_NAME:-Restorio API}
       - PROJECT_DESCRIPTION=${PROJECT_DESCRIPTION:-Multi-tenant Restaurant Management Platform API}

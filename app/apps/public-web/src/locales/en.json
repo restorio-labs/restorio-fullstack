@@ -3,7 +3,9 @@
     "skipToContent": "Skip to main content",
     "loading": "Loading...",
     "error": "Error",
-    "learnMore": "Learn More"
+    "learnMore": "Learn More",
+    "backendUnavailable": "The service is temporarily unavailable. Please try again later.",
+    "tryingToConnect": "Trying to reach our services…"
   },
   "metadata": {
     "title": "Restorio Platform",
