@@ -4,7 +4,7 @@ import { Inter } from "next/font/google";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
-import type { ReactElement, ReactNode } from "react";
+import type { ReactNode, ReactElement } from "react";
 
 import { getRootMetadata } from "../../src/i18n/metadata";
 import { routing } from "../../src/i18n/routing";
@@ -24,7 +24,7 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-interface MetadataParams {
+export interface MetadataParams {
   params: Promise<{ locale: string }>;
 }
 
