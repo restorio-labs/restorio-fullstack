@@ -13,7 +13,7 @@ from core.foundation.dependencies import (
     TenantServiceDep,
 )
 from core.foundation.http.responses import SuccessResponse
-from core.foundation.role_guard import RequireOwner
+from core.foundation.role_guard import RequireAnyStaff
 from core.models.transaction import Transaction
 
 router = APIRouter()
@@ -27,7 +27,7 @@ _RESOURCE_TRANSACTION = "Transaction"
     response_model=SuccessResponse[dict[str, Any]],
 )
 async def verify_p24_transaction(
-    _role: RequireOwner,
+    _staff: RequireAnyStaff,
     request: VerifyP24TransactionDTO,
     tenant_id: AuthorizedTenantId,
     session: PostgresSession,
