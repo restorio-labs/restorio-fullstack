@@ -14,6 +14,9 @@ class MenuItemDTO(BaseDTO):
     )
     desc: str = Field(..., description="Menu item description")
     tags: list[str] = Field(default_factory=list, description="Menu item tags")
+    image_url: str | None = Field(
+        default=None, alias="imageUrl", description="Public image URL when set"
+    )
 
 
 class MenuCategoryDTO(BaseDTO):

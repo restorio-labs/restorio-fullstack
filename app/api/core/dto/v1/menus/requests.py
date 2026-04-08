@@ -9,6 +9,9 @@ class MenuItemInputDTO(BaseDTO):
     promoted: bool = Field(default=False, description="Promotion flag")
     desc: str = Field(default="", max_length=2000, description="Menu item description")
     tags: list[str] = Field(default_factory=list, description="Menu item tags")
+    image_url: str | None = Field(
+        default=None, max_length=2048, alias="imageUrl", description="Public image URL"
+    )
     is_available: bool = Field(
         default=True, alias="isAvailable", description="Whether item is currently available"
     )

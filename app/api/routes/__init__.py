@@ -8,6 +8,7 @@ from routes.v1.payments import router as payments_router
 from routes.v1.tenants import (
     canvases_router,
     menu_router,
+    mobile_config_router,
     profile_router,
     tenants_router,
     orders_router,
@@ -25,6 +26,7 @@ api_router.include_router(tenants_router, prefix="/tenants", tags=["tenants"])
 api_router.include_router(canvases_router, prefix="/tenants", tags=["canvases"])
 api_router.include_router(profile_router, prefix="/tenants", tags=["profile"])
 api_router.include_router(menu_router, prefix="/tenants", tags=["menu"])
+api_router.include_router(mobile_config_router, prefix="/tenants", tags=["mobile-config"])
 api_router.include_router(orders_router, prefix="/tenants", tags=["orders"])
 
 api_router.include_router(users_router, prefix="/users", tags=["users"])

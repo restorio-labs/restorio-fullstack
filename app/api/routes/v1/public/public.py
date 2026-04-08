@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from typing import Any
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Response, status
 
 from core.dto.v1.menus import TenantMenuResponseDTO
 from core.dto.v1.public import (
@@ -9,18 +9,20 @@ from core.dto.v1.public import (
     PublicCreateOrderPaymentResponseDTO,
     PublicTenantInfoResponseDTO,
 )
-from core.exceptions import BadRequestError
+from core.exceptions import BadRequestError, NotFoundResponse
 from core.foundation.dependencies import (
     ExternalClientDep,
     MongoDB,
     P24ServiceDep,
     PostgresSession,
+    TenantMobileFaviconStorageServiceDep,
     TenantServiceDep,
 )
 from core.foundation.http.responses import CreatedResponse, SuccessResponse
 from core.foundation.infra.config import settings
 from core.models.transaction import Transaction
 from services.mongo_menu_service import MENU_COLLECTION, normalize_mongo_menu_categories
+from services.tenant_mobile_config_service import tenant_mobile_config_service
 
 router = APIRouter()
 
@@ -38,10 +40,51 @@ async def get_public_tenant_info(
     tenant_service: TenantServiceDep,
 ) -> SuccessResponse[PublicTenantInfoResponseDTO]:
     tenant = await tenant_service.get_tenant_by_slug(session, tenant_slug)
+    mc = await tenant_mobile_config_service.get_by_tenant_id(session, tenant.id)
+    favicon_path = (
+        f"/public/{tenant.slug}/favicon.ico" if mc and mc.favicon_object_key else None
+    )
 
     return SuccessResponse(
         message="Restaurant info retrieved",
-        data=PublicTenantInfoResponseDTO(name=tenant.name, slug=tenant.slug),
+        data=PublicTenantInfoResponseDTO(
+            name=tenant.name,
+            slug=tenant.slug,
+            pageTitle=mc.page_title if mc else None,
+            faviconPath=favicon_path,
+            themeOverride=mc.theme_override if mc else None,
+        ),
+    )
+
+
+@router.get(
+    "/{tenant_slug}/favicon.ico",
+    status_code=status.HTTP_200_OK,
+    response_class=Response,
+)
+async def get_public_tenant_favicon(
+    tenant_slug: str,
+    session: PostgresSession,
+    tenant_service: TenantServiceDep,
+    storage: TenantMobileFaviconStorageServiceDep,
+) -> Response:
+    tenant = await tenant_service.get_tenant_by_slug(session, tenant_slug)
+    mc = await tenant_mobile_config_service.get_by_tenant_id(session, tenant.id)
+
+    if not mc or not mc.favicon_object_key:
+        raise NotFoundResponse("Favicon", tenant_slug)
+
+    stream = storage.get_object_stream(mc.favicon_object_key)
+    try:
+        data = stream.read()
+    finally:
+        stream.close()
+        stream.release_conn()
+
+    return Response(
+        content=data,
+        media_type="image/x-icon",
+        headers={"Cache-Control": "public, max-age=86400"},
     )
 
 

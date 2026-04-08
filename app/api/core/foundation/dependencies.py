@@ -20,6 +20,18 @@ from services.tenant_logo_storage_service import (
     TenantLogoStorageService,
     tenant_logo_storage_service,
 )
+from services.tenant_menu_image_storage_service import (
+    TenantMenuImageStorageService,
+    tenant_menu_image_storage_service,
+)
+from services.tenant_mobile_config_service import (
+    TenantMobileConfigService,
+    tenant_mobile_config_service,
+)
+from services.tenant_mobile_favicon_storage_service import (
+    TenantMobileFaviconStorageService,
+    tenant_mobile_favicon_storage_service,
+)
 from services.tenant_profile_service import TenantProfileService
 from services.tenant_service import TenantService
 from services.user_service import UserService
@@ -71,6 +83,18 @@ def get_tenant_logo_storage_service() -> TenantLogoStorageService:
     return tenant_logo_storage_service
 
 
+def get_tenant_mobile_config_service() -> TenantMobileConfigService:
+    return tenant_mobile_config_service
+
+
+def get_tenant_mobile_favicon_storage_service() -> TenantMobileFaviconStorageService:
+    return tenant_mobile_favicon_storage_service
+
+
+def get_tenant_menu_image_storage_service() -> TenantMenuImageStorageService:
+    return tenant_menu_image_storage_service
+
+
 def get_order_service() -> OrderService:
     return OrderService()
 
@@ -87,6 +111,15 @@ FloorCanvasServiceDep = Annotated[FloorCanvasService, Depends(get_floor_canvas_s
 P24ServiceDep = Annotated[P24Service, Depends(get_p24_service)]
 TenantLogoStorageServiceDep = Annotated[
     TenantLogoStorageService, Depends(get_tenant_logo_storage_service)
+]
+TenantMobileConfigServiceDep = Annotated[
+    TenantMobileConfigService, Depends(get_tenant_mobile_config_service)
+]
+TenantMobileFaviconStorageServiceDep = Annotated[
+    TenantMobileFaviconStorageService, Depends(get_tenant_mobile_favicon_storage_service)
+]
+TenantMenuImageStorageServiceDep = Annotated[
+    TenantMenuImageStorageService, Depends(get_tenant_menu_image_storage_service)
 ]
 TenantProfileServiceDep = Annotated[TenantProfileService, Depends(get_tenant_profile_service)]
 OrderServiceDep = Annotated[OrderService, Depends(get_order_service)]

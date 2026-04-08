@@ -26,10 +26,10 @@ def _extract_tenant_public_ids(request: Request) -> list[str]:
     return []
 
 
-async def resolve_and_authorize_tenant(
-    tenant_public_id: str,
+async def get_authorized_tenant_uuid(
+    session: AsyncSession,
     request: Request,
-    session: AsyncSession = Depends(get_db_session),
+    tenant_public_id: str,
 ) -> UUID:
     allowed_ids = _extract_tenant_public_ids(request)
     if tenant_public_id in allowed_ids:
@@ -73,3 +73,11 @@ async def resolve_and_authorize_tenant(
         raise ForbiddenError(message="Access denied to this tenant")
 
     return tenant_id
+
+
+async def resolve_and_authorize_tenant(
+    tenant_public_id: str,
+    request: Request,
+    session: AsyncSession = Depends(get_db_session),
+) -> UUID:
+    return await get_authorized_tenant_uuid(session, request, tenant_public_id)
