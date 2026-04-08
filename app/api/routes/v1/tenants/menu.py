@@ -51,13 +51,16 @@ def _build_raw_menu(data: UpsertTenantMenuDTO) -> dict[str, dict]:
             }
         }
         for item in category.items:
-            bucket[item.name] = {
+            payload: dict[str, object] = {
                 "price": item.price,
                 "promoted": item.promoted,
                 "desc": item.desc,
                 "tags": item.tags,
                 "isAvailable": item.is_available,
             }
+            if item.image_url:
+                payload["imageUrl"] = item.image_url
+            bucket[item.name] = payload
         raw_menu[str(category.order)] = bucket
     return raw_menu
 
@@ -93,6 +96,7 @@ def _normalize_categories(raw_menu: dict[str, dict]) -> list[MenuCategoryDTO]:
             raw_desc = item_payload.get("desc", "")
             raw_tags = item_payload.get("tags", [])
             raw_available = item_payload.get("isAvailable", True)
+            raw_image = item_payload.get("imageUrl")
 
             price = float(raw_price) if isinstance(raw_price, int | float) else 0.0
             promoted = bool(raw_promoted) if raw_promoted is not None else False
@@ -103,6 +107,7 @@ def _normalize_categories(raw_menu: dict[str, dict]) -> list[MenuCategoryDTO]:
                 else []
             )
             is_available = bool(raw_available) if raw_available is not None else True
+            image_url = raw_image if isinstance(raw_image, str) and raw_image.strip() else None
 
             items.append(
                 MenuItemDTO(
@@ -112,6 +117,7 @@ def _normalize_categories(raw_menu: dict[str, dict]) -> list[MenuCategoryDTO]:
                     desc=desc,
                     tags=tags,
                     is_available=is_available,
+                    image_url=image_url,
                 )
             )
 

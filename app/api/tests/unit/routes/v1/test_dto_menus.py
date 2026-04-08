@@ -30,6 +30,15 @@ class TestMenuItemInputDTO:
         assert dto.tags == ["beef", "spicy"]
         assert dto.is_available is True
 
+    def test_optional_image_url(self) -> None:
+        dto = MenuItemInputDTO(
+            name="Soup",
+            price=10,
+            image_url="https://example.com/a.png",
+            is_available=True,
+        )
+        assert dto.image_url == "https://example.com/a.png"
+
 
 class TestMenuCategoryInputDTO:
     def test_category_requires_non_negative_order(self) -> None:
