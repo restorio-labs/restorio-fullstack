@@ -9,10 +9,11 @@ from core.models.enums import (
 )
 from core.models.floor_canvas import FloorCanvas
 from core.models.order import Order
-from core.models.order_item import OrderItem
+from core.models.order_details import OrderDetails
 from core.models.payment import Payment
 from core.models.payment_request import CreatePaymentRequest, Przelewy24RegisterRequest
 from core.models.tenant import Tenant
+from core.models.tenant_mobile_config import TenantMobileConfig
 from core.models.tenant_profile import TenantProfile
 from core.models.tenant_role import TenantRole
 from core.models.transaction import Transaction
@@ -25,13 +26,14 @@ __all__ = [
     "CreatePaymentRequest",
     "FloorCanvas",
     "Order",
-    "OrderItem",
+    "OrderDetails",
     "OrderStatus",
     "Payment",
     "PaymentProvider",
     "PaymentStatus",
     "Przelewy24RegisterRequest",
     "Tenant",
+    "TenantMobileConfig",
     "TenantProfile",
     "TenantRole",
     "TenantStatus",
