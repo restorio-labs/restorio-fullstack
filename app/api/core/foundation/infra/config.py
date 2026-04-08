@@ -76,6 +76,7 @@ class Settings(BaseSettings):
     MINIO_SECURE: bool = False
     MINIO_PRESIGN_EXPIRY_SECONDS: int = 900
     TENANT_LOGO_MAX_BYTES: int = 5 * 1024 * 1024
+    TENANT_MENU_IMAGE_MAX_BYTES: int = 5 * 1024 * 1024
 
     SECRET_KEY: str = "change-me-in-production"
     ALGORITHM: str = "HS256"

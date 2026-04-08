@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+import json
 from contextlib import suppress
 from dataclasses import dataclass
 from datetime import timedelta
 from io import BytesIO
-import json
 from time import time
 from typing import ClassVar
 from urllib.parse import quote
@@ -13,35 +13,29 @@ from uuid import UUID, uuid4
 from minio import Minio
 from PIL import Image, UnidentifiedImageError
 
-from core.exceptions import (
-    BadRequestError,
-    NotFoundResponse,
-    ServiceUnavailableError,
-    TooManyRequestsError,
-)
+from core.exceptions import BadRequestError, ServiceUnavailableError, TooManyRequestsError
 from core.foundation.infra.config import settings
 
 
 @dataclass(frozen=True)
-class FinalizedTenantLogo:
-    url: str
-    width: int
-    height: int
-    aspect_ratio: float
+class FinalizedMenuItemImage:
+    object_key: str
+    public_url: str
 
 
-class TenantLogoStorageService:
+class TenantMenuImageStorageService:
     _ALLOWED_CONTENT_TYPES: ClassVar[set[str]] = {
         "image/jpeg",
         "image/png",
         "image/webp",
     }
     _ALLOWED_FORMATS: ClassVar[set[str]] = {"JPEG", "PNG", "WEBP"}
+    _MIN_SQUARE_RATIO: ClassVar[float] = 0.95
     _MAX_PIXELS: ClassVar[int] = 16_000_000
-    _TEMP_PREFIX: ClassVar[str] = "tmp/tenant-logos"
-    _FINAL_PREFIX: ClassVar[str] = "tenant-logos"
+    _TEMP_PREFIX: ClassVar[str] = "tmp/menu-items"
+    _FINAL_PREFIX: ClassVar[str] = "menu-items"
     _PRESIGN_WINDOW_SECONDS: ClassVar[int] = 60
-    _PRESIGN_MAX_REQUESTS: ClassVar[int] = 10
+    _PRESIGN_MAX_REQUESTS: ClassVar[int] = 20
     _presign_usage: ClassVar[dict[str, list[float]]] = {}
 
     def __init__(self) -> None:
@@ -61,14 +55,13 @@ class TenantLogoStorageService:
         )
 
     def create_presigned_upload(self, tenant_id: UUID, content_type: str) -> tuple[str, str]:
-        invalid_type_message = "Logo must be a PNG, JPEG, or WEBP image"
+        invalid_type_message = "Menu image must be PNG, JPEG, or WEBP"
         storage_unavailable_message = "Object storage is unavailable"
 
         if content_type not in self._ALLOWED_CONTENT_TYPES:
             raise BadRequestError(invalid_type_message)
 
         self._enforce_presign_rate_limit(tenant_id)
-
         self._ensure_bucket()
 
         object_key = f"{self._TEMP_PREFIX}/{tenant_id}/{uuid4().hex}"
@@ -85,7 +78,7 @@ class TenantLogoStorageService:
         return upload_url, object_key
 
     def _enforce_presign_rate_limit(self, tenant_id: UUID) -> None:
-        too_many_requests_message = "Too many logo upload requests. Please try again later."
+        too_many_requests_message = "Too many menu image upload requests. Please try again later."
         now = time()
         window_start = now - self._PRESIGN_WINDOW_SECONDS
 
@@ -99,8 +92,8 @@ class TenantLogoStorageService:
         filtered.append(now)
         self._presign_usage[key] = filtered
 
-    def finalize_upload(self, tenant_id: UUID, object_key: str) -> FinalizedTenantLogo:
-        invalid_object_message = "Logo upload key is invalid"
+    def finalize_upload(self, tenant_id: UUID, object_key: str) -> FinalizedMenuItemImage:
+        invalid_object_message = "Menu image upload key is invalid"
         storage_unavailable_message = "Object storage is unavailable"
 
         expected_prefix = f"{self._TEMP_PREFIX}/{tenant_id}/"
@@ -115,12 +108,12 @@ class TenantLogoStorageService:
             raise BadRequestError(invalid_object_message) from exc
 
         try:
-            output, width, height = self._normalize_image(content)
+            output, ext, content_type = self._normalize_image(content)
         finally:
             with suppress(Exception):
                 self._internal_client.remove_object(settings.MINIO_BUCKET, object_key)
 
-        final_key = f"{self._FINAL_PREFIX}/{tenant_id}.png"
+        final_key = f"{self._FINAL_PREFIX}/{tenant_id}/{uuid4().hex}.{ext}"
         output_bytes = output.getvalue()
 
         try:
@@ -129,69 +122,38 @@ class TenantLogoStorageService:
                 final_key,
                 BytesIO(output_bytes),
                 len(output_bytes),
-                content_type="image/png",
+                content_type=content_type,
             )
-
-            for existing_object in self._internal_client.list_objects(
-                settings.MINIO_BUCKET,
-                prefix=f"{self._FINAL_PREFIX}/{tenant_id}/",
-                recursive=True,
-            ):
-                self._internal_client.remove_object(
-                    settings.MINIO_BUCKET, existing_object.object_name
-                )
         except Exception as exc:
             raise ServiceUnavailableError(storage_unavailable_message) from exc
 
-        return FinalizedTenantLogo(
-            url=self._build_public_url(final_key),
-            width=width,
-            height=height,
-            aspect_ratio=width / height,
+        return FinalizedMenuItemImage(
+            object_key=final_key,
+            public_url=self._build_public_url(final_key),
         )
 
-    def create_presigned_view(self, tenant_id: UUID) -> str:
-        storage_unavailable_message = "Object storage is unavailable"
-
-        self._ensure_bucket()
-
-        object_key = f"{self._FINAL_PREFIX}/{tenant_id}.png"
-
-        try:
-            self._internal_client.stat_object(settings.MINIO_BUCKET, object_key)
-        except Exception as exc:
-            msg = "Tenant logo"
-            raise NotFoundResponse(msg, str(tenant_id)) from exc
-
-        try:
-            return self._public_client.presigned_get_object(
-                settings.MINIO_BUCKET,
-                object_key,
-                expires=timedelta(seconds=settings.MINIO_PRESIGN_EXPIRY_SECONDS),
-            )
-        except Exception as exc:
-            raise ServiceUnavailableError(storage_unavailable_message) from exc
-
     def _read_uploaded_object(self, object_key: str) -> bytes:
-        file_too_large_message = "Logo file is too large"
+        file_too_large_message = "Menu image file is too large"
         response = None
 
         try:
             stat = self._internal_client.stat_object(settings.MINIO_BUCKET, object_key)
-            if stat.size > settings.TENANT_LOGO_MAX_BYTES:
+            if stat.size > settings.TENANT_MENU_IMAGE_MAX_BYTES:
                 raise BadRequestError(file_too_large_message)
 
             response = self._internal_client.get_object(settings.MINIO_BUCKET, object_key)
+
             return response.read()
         finally:
             if response is not None:
                 response.close()
                 response.release_conn()
 
-    def _normalize_image(self, content: bytes) -> tuple[BytesIO, int, int]:
-        invalid_type_message = "Logo must be a PNG, JPEG, or WEBP image"
+    def _normalize_image(self, content: bytes) -> tuple[BytesIO, str, str]:
+        invalid_type_message = "Menu image must be PNG, JPEG, or WEBP"
         invalid_image_message = "Uploaded file is not a valid image"
-        too_large_dimensions_message = "Logo dimensions are too large"
+        too_large_dimensions_message = "Menu image dimensions are too large"
+        aspect_message = "Menu image must be square or nearly square (min side at least 95% of max side)"
 
         try:
             with Image.open(BytesIO(content)) as image:
@@ -201,16 +163,37 @@ class TenantLogoStorageService:
                 if image.format not in self._ALLOWED_FORMATS:
                     raise BadRequestError(invalid_type_message)
 
-                if image.width * image.height > self._MAX_PIXELS:
+                w, h = image.width, image.height
+                if w * h > self._MAX_PIXELS:
                     raise BadRequestError(too_large_dimensions_message)
 
-                width = image.width
-                height = image.height
-                normalized = image.convert("RGBA")
-                output = BytesIO()
-                normalized.save(output, format="PNG", optimize=True)
-                output.seek(0)
-                return output, width, height
+                ratio = min(w, h) / max(w, h)
+                if ratio < self._MIN_SQUARE_RATIO:
+                    raise BadRequestError(aspect_message)
+
+                fmt = image.format or "PNG"
+                if fmt == "JPEG":
+                    ext = "jpg"
+                    ct = "image/jpeg"
+                    normalized = image.convert("RGB")
+                    out = BytesIO()
+                    normalized.save(out, format="JPEG", quality=90, optimize=True)
+                elif fmt == "WEBP":
+                    ext = "webp"
+                    ct = "image/webp"
+                    normalized = image.convert("RGBA")
+                    out = BytesIO()
+                    normalized.save(out, format="WEBP", quality=90)
+                else:
+                    ext = "png"
+                    ct = "image/png"
+                    normalized = image.convert("RGBA")
+                    out = BytesIO()
+                    normalized.save(out, format="PNG", optimize=True)
+
+                out.seek(0)
+
+                return out, ext, ct
         except UnidentifiedImageError as exc:
             raise BadRequestError(invalid_image_message) from exc
         except OSError as exc:
@@ -237,7 +220,7 @@ class TenantLogoStorageService:
                         "Principal": {"AWS": "*"},
                         "Action": "s3:GetObject",
                         "Resource": [
-                            f"arn:aws:s3:::{settings.MINIO_BUCKET}/{self._FINAL_PREFIX}/*",
+                            f"arn:aws:s3:::{settings.MINIO_BUCKET}/tenant-logos/*",
                             f"arn:aws:s3:::{settings.MINIO_BUCKET}/tenant-mobile-favicons/*",
                             f"arn:aws:s3:::{settings.MINIO_BUCKET}/menu-items/*",
                         ],
@@ -250,7 +233,8 @@ class TenantLogoStorageService:
 
     def _build_public_url(self, object_key: str) -> str:
         scheme = "https" if settings.MINIO_SECURE else "http"
+
         return f"{scheme}://{settings.MINIO_PUBLIC_ENDPOINT}/{settings.MINIO_BUCKET}/{quote(object_key, safe='/')}"
 
 
-tenant_logo_storage_service = TenantLogoStorageService()
+tenant_menu_image_storage_service = TenantMenuImageStorageService()
