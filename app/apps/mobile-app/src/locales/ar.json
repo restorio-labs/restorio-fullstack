@@ -1,15 +1,60 @@
 {
   "common": {
-    "skipToContent": "انتقل إلى المحتوى الرئيسي",
-    "loading": "جار التحميل...",
-    "error": "خطأ"
+    "skipToContent": "تخطي إلى المحتوى الرئيسي",
+    "loading": "جارٍ التحميل...",
+    "error": "خطأ",
+    "currency": "PLN"
   },
   "app": {
-    "title": "تطبيق Restorio للأجهزة اللوحية",
-    "comingSoon": "واجهة الجهاز اللوحي/الكشك قريبًا...",
-    "description": "طلب الخدمة الذاتية للعملاء"
+    "title": "طلب"
   },
   "errors": {
-    "rootElementNotFound": "لم يتم العثور على العنصر الجذري"
+    "rootElementNotFound": "عنصر الجذر غير موجود"
+  },
+  "deviceGate": {
+    "title": "استخدم الهاتف أو الجهاز اللوحي",
+    "description": "هذه الصفحة متاحة فقط على الهواتف والأجهزة اللوحية."
+  },
+  "order": {
+    "invalidLinkTitle": "رابط غير صالح",
+    "invalidLinkDescription": "امسح رمز الاستجابة السريعة مرة أخرى.",
+    "loadingMenu": "جارٍ تحميل القائمة...",
+    "loadErrorTitle": "تعذّر التحميل",
+    "loadErrorDescription": "تحقق من الاتصال بالإنترنت وحاول مرة أخرى.",
+    "reload": "إعادة تحميل الصفحة",
+    "emptyMenuTitle": "القائمة فارغة",
+    "emptyMenuDescription": "لا توجد عناصر في قائمة هذا المطعم بعد.",
+    "tableLabel": "طاولة {{number}}",
+    "cartButton": "السلة ({{count}}) · {{amount}} {{currency}}",
+    "summaryTitle": "الملخص",
+    "promotedBadge": "مميز"
+  },
+  "checkout": {
+    "emailLabel": "البريد الإلكتروني",
+    "emailPlaceholder": "you@example.com",
+    "emailRequired": "البريد الإلكتروني مطلوب",
+    "emailInvalid": "أدخل بريداً إلكترونياً صالحاً",
+    "noteLabel": "ملاحظات الطلب (اختياري)",
+    "notePlaceholder": "مثلاً: بدون بصل، صلصة إضافية…",
+    "payProcessing": "جارٍ المعالجة...",
+    "payButton": "ادفع {{amount}} {{currency}}",
+    "paymentFailed": "تعذّرت معالجة الدفع. حاول مرة أخرى."
+  },
+  "cart": {
+    "empty": "سلتك فارغة. أضف عناصر من القائمة.",
+    "title": "طلبك",
+    "lessAria": "تقليل: {{name}}",
+    "moreAria": "زيادة: {{name}}",
+    "linePrice": "{{price}} {{currency}} × {{quantity}}",
+    "total": "الإجمالي"
+  },
+  "menuItem": {
+    "addAria": "إضافة {{name}}",
+    "removeAria": "إزالة {{name}}"
+  },
+  "paymentReturn": {
+    "title": "شكراً لك!",
+    "description": "تم استلام طلبك. جارٍ معالجة الدفع عبر Przelewy24.",
+    "closeHint": "يمكنك إغلاق هذه الصفحة."
   }
 }

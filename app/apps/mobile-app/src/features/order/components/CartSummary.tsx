@@ -1,4 +1,4 @@
-import { Button, Text } from "@restorio/ui";
+import { Button, Text, useI18n } from "@restorio/ui";
 import type { ReactElement } from "react";
 
 import type { CartItem } from "../hooks/useCart";
@@ -10,12 +10,20 @@ interface CartSummaryProps {
   onUpdateQuantity: (name: string, quantity: number) => void;
 }
 
-export const CartSummary = ({ items, totalAmount, onRemove, onUpdateQuantity }: CartSummaryProps): ReactElement => {
+export const CartSummary = ({
+  items,
+  totalAmount,
+  onRemove,
+  onUpdateQuantity,
+}: CartSummaryProps): ReactElement => {
+  const { t } = useI18n();
+  const currency = t("common.currency");
+
   if (items.length === 0) {
     return (
       <div className="rounded-lg border border-border-default bg-surface-secondary p-4 text-center">
         <Text as="p" variant="body-sm" className="text-text-secondary">
-          Koszyk jest pusty. Dodaj pozycje z menu.
+          {t("cart.empty")}
         </Text>
       </div>
     );
@@ -25,25 +33,29 @@ export const CartSummary = ({ items, totalAmount, onRemove, onUpdateQuantity }: 
     <div className="rounded-lg border border-border-default bg-surface-primary">
       <div className="p-3">
         <Text as="h3" variant="body-md" weight="semibold" className="mb-2">
-          Twoje zamówienie
+          {t("cart.title")}
         </Text>
         <div className="flex flex-col gap-2">
           {items.map((item) => (
             <div key={item.name} className="flex items-center justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <Text as="span" variant="body-sm" className="truncate block">
+              <div className="min-w-0 flex-1">
+                <Text as="span" variant="body-sm" className="block truncate">
                   {item.name}
                 </Text>
                 <Text as="span" variant="caption">
-                  {item.unitPrice.toFixed(2)} zł × {item.quantity}
+                  {t("cart.linePrice", {
+                    price: item.unitPrice.toFixed(2),
+                    currency,
+                    quantity: String(item.quantity),
+                  })}
                 </Text>
               </div>
-              <div className="flex items-center gap-1.5 shrink-0">
+              <div className="flex shrink-0 items-center gap-1.5">
                 <Button
                   variant="secondary"
                   size="sm"
                   onClick={() => onRemove(item.name)}
-                  aria-label={`Mniej: ${item.name}`}
+                  aria-label={t("cart.lessAria", { name: item.name })}
                   className="h-7 w-7 !p-0 text-xs"
                 >
                   −
@@ -53,25 +65,25 @@ export const CartSummary = ({ items, totalAmount, onRemove, onUpdateQuantity }: 
                   variant="secondary"
                   size="sm"
                   onClick={() => onUpdateQuantity(item.name, item.quantity + 1)}
-                  aria-label={`Więcej: ${item.name}`}
+                  aria-label={t("cart.moreAria", { name: item.name })}
                   className="h-7 w-7 !p-0 text-xs"
                 >
                   +
                 </Button>
                 <Text as="span" variant="body-sm" weight="semibold" className="w-16 text-right">
-                  {(item.unitPrice * item.quantity).toFixed(2)} zł
+                  {(item.unitPrice * item.quantity).toFixed(2)} {currency}
                 </Text>
               </div>
             </div>
           ))}
         </div>
       </div>
-      <div className="border-t border-border-default px-3 py-2 flex items-center justify-between">
+      <div className="flex items-center justify-between border-t border-border-default px-3 py-2">
         <Text as="span" variant="body-md" weight="semibold">
-          Razem
+          {t("cart.total")}
         </Text>
         <Text as="span" variant="body-lg" weight="bold">
-          {totalAmount.toFixed(2)} zł
+          {totalAmount.toFixed(2)} {currency}
         </Text>
       </div>
     </div>

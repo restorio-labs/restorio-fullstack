@@ -1,15 +1,60 @@
 {
   "common": {
-    "skipToContent": "Przejdź do głównej treści",
+    "skipToContent": "Przejdź do treści",
     "loading": "Ładowanie...",
-    "error": "Błąd"
+    "error": "Błąd",
+    "currency": "zł"
   },
   "app": {
-    "title": "Aplikacja Tabletowa Restorio",
-    "comingSoon": "Interfejs tabletu/kiosku wkrótce...",
-    "description": "Samoobsługowe zamawianie dla klientów"
+    "title": "Zamówienie"
   },
   "errors": {
     "rootElementNotFound": "Nie znaleziono elementu głównego"
+  },
+  "deviceGate": {
+    "title": "Użyj telefonu lub tabletu",
+    "description": "Ta strona jest dostępna tylko na telefonach i tabletach."
+  },
+  "order": {
+    "invalidLinkTitle": "Nieprawidłowy link",
+    "invalidLinkDescription": "Zeskanuj kod QR ponownie.",
+    "loadingMenu": "Ładowanie menu...",
+    "loadErrorTitle": "Nie udało się załadować",
+    "loadErrorDescription": "Sprawdź połączenie z internetem i spróbuj ponownie.",
+    "reload": "Odśwież stronę",
+    "emptyMenuTitle": "Menu jest puste",
+    "emptyMenuDescription": "Restauracja nie ma jeszcze pozycji w menu.",
+    "tableLabel": "Stolik {{number}}",
+    "cartButton": "Koszyk ({{count}}) · {{amount}} {{currency}}",
+    "summaryTitle": "Podsumowanie",
+    "promotedBadge": "Polecane"
+  },
+  "checkout": {
+    "emailLabel": "Adres e-mail",
+    "emailPlaceholder": "twoj@email.pl",
+    "emailRequired": "Adres e-mail jest wymagany",
+    "emailInvalid": "Podaj poprawny adres e-mail",
+    "noteLabel": "Uwagi do zamówienia (opcjonalnie)",
+    "notePlaceholder": "np. bez cebuli, dodatkowy sos...",
+    "payProcessing": "Przetwarzanie...",
+    "payButton": "Zapłać {{amount}} {{currency}}",
+    "paymentFailed": "Nie udało się przetworzyć płatności. Spróbuj ponownie."
+  },
+  "cart": {
+    "empty": "Koszyk jest pusty. Dodaj pozycje z menu.",
+    "title": "Twoje zamówienie",
+    "lessAria": "Mniej: {{name}}",
+    "moreAria": "Więcej: {{name}}",
+    "linePrice": "{{price}} {{currency}} × {{quantity}}",
+    "total": "Razem"
+  },
+  "menuItem": {
+    "addAria": "Dodaj {{name}}",
+    "removeAria": "Usuń {{name}}"
+  },
+  "paymentReturn": {
+    "title": "Dziękujemy!",
+    "description": "Twoje zamówienie zostało przyjęte. Płatność jest przetwarzana przez Przelewy24.",
+    "closeHint": "Możesz zamknąć tę stronę."
   }
 }

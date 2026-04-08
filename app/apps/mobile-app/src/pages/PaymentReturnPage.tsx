@@ -1,7 +1,9 @@
-import { Text } from "@restorio/ui";
+import { Text, useI18n } from "@restorio/ui";
 import type { ReactElement } from "react";
 
 export const PaymentReturnPage = (): ReactElement => {
+  const { t } = useI18n();
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background-primary p-6">
       <div className="max-w-sm text-center">
@@ -17,13 +19,13 @@ export const PaymentReturnPage = (): ReactElement => {
           </svg>
         </div>
         <Text as="h1" variant="h3" weight="bold" className="mb-2">
-          Dziękujemy!
+          {t("paymentReturn.title")}
         </Text>
-        <Text as="p" variant="body-md" className="text-text-secondary mb-6">
-          Twoje zamówienie zostało przyjęte. Płatność jest przetwarzana przez Przelewy24.
+        <Text as="p" variant="body-md" className="mb-6 text-text-secondary">
+          {t("paymentReturn.description")}
         </Text>
         <Text as="p" variant="body-sm" className="text-text-tertiary">
-          Możesz zamknąć tę stronę.
+          {t("paymentReturn.closeHint")}
         </Text>
       </div>
     </div>

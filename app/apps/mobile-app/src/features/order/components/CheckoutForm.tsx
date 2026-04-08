@@ -1,4 +1,4 @@
-import { Button, Input } from "@restorio/ui";
+import { Button, Input, useI18n } from "@restorio/ui";
 import { type FormEvent, type ReactElement, useState } from "react";
 
 interface CheckoutFormProps {
@@ -8,20 +8,26 @@ interface CheckoutFormProps {
   onSubmit: (email: string, note: string) => void;
 }
 
-export const CheckoutForm = ({ totalAmount, disabled, isSubmitting, onSubmit }: CheckoutFormProps): ReactElement => {
+export const CheckoutForm = ({
+  totalAmount,
+  disabled,
+  isSubmitting,
+  onSubmit,
+}: CheckoutFormProps): ReactElement => {
+  const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [note, setNote] = useState("");
   const [emailError, setEmailError] = useState("");
 
   const validateEmail = (value: string): boolean => {
     if (!value.trim()) {
-      setEmailError("Adres e-mail jest wymagany");
+      setEmailError(t("checkout.emailRequired"));
 
       return false;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-      setEmailError("Podaj poprawny adres e-mail");
+      setEmailError(t("checkout.emailInvalid"));
 
       return false;
     }
@@ -42,9 +48,9 @@ export const CheckoutForm = ({ totalAmount, disabled, isSubmitting, onSubmit }: 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <Input
-        label="Adres e-mail"
+        label={t("checkout.emailLabel")}
         type="email"
-        placeholder="twoj@email.pl"
+        placeholder={t("checkout.emailPlaceholder")}
         value={email}
         onChange={(e) => {
           setEmail(e.target.value);
@@ -57,13 +63,15 @@ export const CheckoutForm = ({ totalAmount, disabled, isSubmitting, onSubmit }: 
         required
       />
       <Input
-        label="Uwagi do zamówienia (opcjonalnie)"
-        placeholder="np. bez cebuli, dodatkowy sos..."
+        label={t("checkout.noteLabel")}
+        placeholder={t("checkout.notePlaceholder")}
         value={note}
         onChange={(e) => setNote(e.target.value)}
       />
       <Button type="submit" variant="primary" size="lg" fullWidth disabled={disabled || isSubmitting} className="mt-2">
-        {isSubmitting ? "Przetwarzanie..." : `Zapłać ${totalAmount.toFixed(2)} zł`}
+        {isSubmitting
+          ? t("checkout.payProcessing")
+          : t("checkout.payButton", { amount: totalAmount.toFixed(2), currency: t("common.currency") })}
       </Button>
     </form>
   );

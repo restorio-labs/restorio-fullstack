@@ -1,16 +1,22 @@
 import type { PublicTenantInfo, TenantMenu } from "@restorio/types";
-import { Button, EmptyState, Loader, Text } from "@restorio/ui";
+import { Button, EmptyState, Loader, Text, useI18n, useTheme } from "@restorio/ui";
+import type { ThemeOverride } from "@restorio/ui";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { type ReactElement, useCallback, useRef, useState } from "react";
+import { type ReactElement, useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { publicApi } from "../api/client";
+import { API_BASE_URL } from "../config";
 import { CartSummary } from "../features/order/components/CartSummary";
 import { CheckoutForm } from "../features/order/components/CheckoutForm";
 import { MenuCategorySection } from "../features/order/components/MenuCategorySection";
 import { useCart } from "../features/order/hooks/useCart";
 
+const FAVICON_LINK_ID = "tenant-favicon";
+
 export const OrderPage = (): ReactElement => {
+  const { t } = useI18n();
+  const { setOverride } = useTheme();
   const { tenantSlug, tableNumber } = useParams<{ tenantSlug: string; tableNumber: string }>();
   const tableNum = Number(tableNumber);
   const [submitError, setSubmitError] = useState("");
@@ -29,6 +35,49 @@ export const OrderPage = (): ReactElement => {
     enabled: !!tenantSlug,
   });
 
+  useEffect(() => {
+    const data = tenantQuery.data;
+
+    if (!data) {
+      return;
+    }
+
+    const title = data.pageTitle?.trim() ? data.pageTitle : data.name;
+    document.title = title;
+
+    const path = data.faviconPath;
+
+    if (path) {
+      const href = `${API_BASE_URL.replace(/\/$/, "")}${path.startsWith("/") ? path : `/${path}`}`;
+      let link = document.querySelector(`link#${FAVICON_LINK_ID}`) as HTMLLinkElement | null;
+
+      if (!link) {
+        link = document.createElement("link");
+        link.id = FAVICON_LINK_ID;
+        link.rel = "icon";
+        document.head.appendChild(link);
+      }
+
+      link.href = href;
+    } else {
+      document.querySelector(`link#${FAVICON_LINK_ID}`)?.remove();
+    }
+  }, [tenantQuery.data]);
+
+  useEffect(() => {
+    const raw = tenantQuery.data?.themeOverride;
+
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+      setOverride(null);
+    } else {
+      setOverride(raw as ThemeOverride);
+    }
+
+    return (): void => {
+      setOverride(null);
+    };
+  }, [tenantQuery.data?.themeOverride, setOverride]);
+
   const paymentMutation = useMutation({
     mutationFn: (data: { email: string; note: string }) =>
       publicApi.createOrderPayment({
@@ -46,7 +95,7 @@ export const OrderPage = (): ReactElement => {
       window.location.href = data.redirectUrl;
     },
     onError: () => {
-      setSubmitError("Nie udało się przetworzyć płatności. Spróbuj ponownie.");
+      setSubmitError(t("checkout.paymentFailed"));
     },
   });
 
@@ -65,7 +114,7 @@ export const OrderPage = (): ReactElement => {
   if (!tenantSlug || isNaN(tableNum)) {
     return (
       <div className="flex min-h-screen items-center justify-center p-4">
-        <EmptyState title="Nieprawidłowy link" description="Zeskanuj kod QR ponownie." />
+        <EmptyState title={t("order.invalidLinkTitle")} description={t("order.invalidLinkDescription")} />
       </div>
     );
   }
@@ -79,7 +128,7 @@ export const OrderPage = (): ReactElement => {
         <div className="flex flex-col items-center gap-3">
           <Loader size="lg" />
           <Text as="p" variant="body-sm" className="text-text-secondary">
-            Ładowanie menu...
+            {t("order.loadingMenu")}
           </Text>
         </div>
       </div>
@@ -90,11 +139,11 @@ export const OrderPage = (): ReactElement => {
     return (
       <div className="flex min-h-screen items-center justify-center p-4">
         <EmptyState
-          title="Nie udało się załadować"
-          description="Sprawdź połączenie z internetem i spróbuj ponownie."
+          title={t("order.loadErrorTitle")}
+          description={t("order.loadErrorDescription")}
           action={
             <Button variant="primary" onClick={() => window.location.reload()}>
-              Odśwież stronę
+              {t("order.reload")}
             </Button>
           }
         />
@@ -103,21 +152,25 @@ export const OrderPage = (): ReactElement => {
   }
 
   const categories = menuQuery.data?.categories ?? [];
+  const displayName = tenantQuery.data?.pageTitle?.trim()
+    ? tenantQuery.data.pageTitle ?? ""
+    : tenantQuery.data?.name ?? "";
+  const currency = t("common.currency");
 
   return (
     <div className="flex min-h-screen flex-col bg-background-primary">
-      <header className="sticky top-0 z-10 border-b border-border-default bg-surface-primary px-4 py-3">
+      <header className="sticky top-0 z-10 border-b border-border-default bg-surface-primary px-4 py-3 text-center">
         <Text as="h1" variant="h4" weight="bold" className="truncate">
-          {tenantQuery.data?.name}
+          {displayName}
         </Text>
         <Text as="p" variant="body-sm" className="text-text-secondary">
-          Stolik {tableNum}
+          {t("order.tableLabel", { number: String(tableNum) })}
         </Text>
       </header>
 
       <main className="flex-1 px-4 py-4">
         {categories.length === 0 ? (
-          <EmptyState title="Menu jest puste" description="Restauracja nie ma jeszcze pozycji w menu." />
+          <EmptyState title={t("order.emptyMenuTitle")} description={t("order.emptyMenuDescription")} />
         ) : (
           categories.map((category) => (
             <MenuCategorySection
@@ -134,15 +187,19 @@ export const OrderPage = (): ReactElement => {
       {cart.totalItems > 0 && (
         <div className="sticky bottom-0 z-10 border-t border-border-default bg-surface-primary px-4 py-3">
           <Button variant="primary" size="lg" fullWidth onClick={scrollToCheckout}>
-            Koszyk ({cart.totalItems}) · {cart.totalAmount.toFixed(2)} zł
+            {t("order.cartButton", {
+              count: String(cart.totalItems),
+              amount: cart.totalAmount.toFixed(2),
+              currency,
+            })}
           </Button>
         </div>
       )}
 
       {cart.items.length > 0 && (
         <div ref={checkoutRef} className="border-t border-border-default bg-surface-secondary px-4 py-6">
-          <Text as="h2" variant="h4" weight="semibold" className="mb-4">
-            Podsumowanie
+          <Text as="h2" variant="h4" weight="semibold" className="mb-4 text-center">
+            {t("order.summaryTitle")}
           </Text>
 
           <CartSummary
