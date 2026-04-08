@@ -41,6 +41,9 @@
     "orderNotePlaceholder": "np. prosze bez ogorka",
     "orderTotal": "Suma: {{total}}",
     "confirmPayment": "Potwierdz platnosc",
+    "sendToKitchen": "Wyslij do kuchni",
+    "updateOrder": "Aktualizuj zamowienie",
+    "forcePreparing": "Wymus przygotowanie",
     "confirmPaymentModalTitle": "Odblokuj stolik",
     "confirmPaymentModalDescription": "Czy na pewno chcesz odblokować ten stolik? To wyczyści obecne zamówienie.",
     "confirmPaymentModalConfirm": "Odblokuj",
@@ -50,7 +53,16 @@
     "zoomLabel": "Powiekszenie: {{value}}%",
     "zoomIn": "Przybliz",
     "zoomOut": "Oddal",
-    "zoomReset": "Reset"
+    "zoomReset": "Reset",
+    "orderStatus": {
+      "browsing": "Przeglądanie",
+      "ordering": "Składanie zamówienia",
+      "ordered": "Zamówione",
+      "preparing": "W przygotowaniu",
+      "ready_to_serve": "Do wydania",
+      "served": "Podane",
+      "bill_requested": "Prośba o rachunek"
+    }
   },
   "floorRuntime": {
     "noLayout": "Brak ukladu sali dla tego lokalu."
@@ -60,6 +72,26 @@
     "panel": {
       "name": "Nazwa",
       "seats": "Miejsca"
+    }
+  },
+  "orders": {
+    "status": {
+      "new": "Nowe",
+      "preparing": "W przygotowaniu",
+      "ready": "Gotowe",
+      "readyToServe": "Do wydania",
+      "rejected": "Odrzucone",
+      "refunded": "Zwrócone",
+      "paid": "Opłacone",
+      "pending": "Oczekujące",
+      "confirmed": "Potwierdzone",
+      "delivered": "Dostarczone",
+      "cancelled": "Anulowane",
+      "unknown": "Nieznany"
+    },
+    "errors": {
+      "invalidTransition": "Nie można zmienić statusu z {{from}} na {{to}}.",
+      "statusUpdateFailed": "Nie udało się zaktualizować statusu zamówienia."
     }
   }
 }

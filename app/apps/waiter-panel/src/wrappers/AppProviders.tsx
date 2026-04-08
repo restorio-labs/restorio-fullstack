@@ -1,4 +1,4 @@
-import { I18nProvider, ThemeProvider } from "@restorio/ui";
+import { I18nProvider, ThemeProvider, ToastProvider } from "@restorio/ui";
 import {
   LANGUAGE_LOCALE_STORAGE_KEY,
   LAST_VISITED_APP_STORAGE_KEY,
@@ -46,7 +46,7 @@ export const AppProviders = ({ children }: AppProvidersProps): ReactNode => {
       <I18nProvider locale={locale} messages={messages} fallbackMessages={fallbackMessages}>
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <ThemeProvider defaultMode="system" storageKey={THEME_STORAGE_KEY}>
-            {children}
+            <ToastProvider position="top-left">{children}</ToastProvider>
           </ThemeProvider>
         </BrowserRouter>
       </I18nProvider>

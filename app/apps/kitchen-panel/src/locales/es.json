@@ -20,13 +20,44 @@
     "viewMode": {
       "all": "Vista Completa",
       "sliding": "Deslizante"
+    },
+    "history": {
+      "open": "Historial",
+      "title": "Pedidos completados",
+      "description": "Los pedidos archivados de cocina solo se cargan mientras este panel está abierto.",
+      "windowLabel": "Rango del historial",
+      "empty": "No se encontraron pedidos archivados para el rango seleccionado.",
+      "unknownTable": "Mesa desconocida",
+      "archivedAt": "Archivado: {{value}}",
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "paginationSummary": "{{total}} pedidos · página {{page}} de {{pages}}",
+      "windows": {
+        "last24h": "Últimas 24 h",
+        "last72h": "Últimas 72 h",
+        "last7d": "Últimos 7 días",
+        "all": "Todo el tiempo"
+      }
     }
   },
   "orders": {
     "status": {
       "new": "Nuevo",
       "preparing": "Preparando",
-      "ready": "Listo"
+      "ready": "Listo",
+      "readyToServe": "Listo para servir",
+      "rejected": "Rechazado",
+      "refunded": "Reembolsado",
+      "paid": "Pagado",
+      "pending": "Pendiente",
+      "confirmed": "Confirmado",
+      "delivered": "Entregado",
+      "cancelled": "Cancelado",
+      "unknown": "Desconocido"
+    },
+    "errors": {
+      "invalidTransition": "No se puede cambiar el estado de {{from}} a {{to}}.",
+      "statusUpdateFailed": "No se pudo actualizar el estado del pedido."
     }
   },
   "aria": {

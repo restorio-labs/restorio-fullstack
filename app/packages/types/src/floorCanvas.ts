@@ -1,10 +1,19 @@
 export type TableRuntimeState = "free" | "occupied" | "reserved" | "dirty";
 
-export type OrderStatusDisplay = "browsing" | "ordering" | "ordered" | "preparing" | "served" | "bill_requested";
+export type OrderStatusDisplay =
+  | "browsing"
+  | "ordering"
+  | "ordered"
+  | "preparing"
+  | "ready_to_serve"
+  | "served"
+  | "bill_requested";
 
 export interface TableDisplayInfo {
   guestCount?: number;
   orderStatus?: OrderStatusDisplay;
+  orderStatusLabel?: string;
+  occupationTimeLabel?: string;
   needHelp?: boolean;
   servedByName?: string;
   servedBySurname?: string;

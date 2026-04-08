@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from pydantic import AliasChoices, Field
 
-from core.dto.v1.common import BaseDTO, CurrencyCode, OrderStatus
+from core.dto.v1.common import BaseDTO
 
 
 class CreateOrderItemDTO(BaseDTO):
@@ -61,7 +61,7 @@ class CreateOrderDTO(BaseDTO):
     total: float = Field(default=0, ge=0, description="Total amount")
     notes: str | None = Field(None, description="Order notes")
     payment_status: str = Field(
-        default="completed", alias="paymentStatus", description="Payment status"
+        default="pending", alias="paymentStatus", description="Payment status"
     )
 
 
@@ -75,8 +75,19 @@ class UpdateOrderStatusDTO(BaseDTO):
 
 
 class UpdateOrderDTO(BaseDTO):
-    status: OrderStatus | None = Field(None, description="Updated order status")
-    total_amount: Decimal | None = Field(None, ge=0, description="Updated order total")
-    currency: CurrencyCode | None = Field(None, description="Updated order currency")
+    status: str | None = Field(None, description="Updated order status")
+    total: Decimal | None = Field(
+        None,
+        ge=0,
+        alias="totalAmount",
+        validation_alias=AliasChoices("totalAmount", "total_amount", "total"),
+        description="Updated order total",
+    )
+    subtotal: Decimal | None = Field(None, ge=0, description="Updated order subtotal")
+    currency: str | None = Field(None, min_length=3, max_length=3, description="Updated currency")
     items: list[CreateOrderItemDTO] | None = Field(None, description="Order items")
     notes: str | None = Field(None, description="Order notes")
+
+    @property
+    def total_amount(self) -> Decimal | None:
+        return self.total

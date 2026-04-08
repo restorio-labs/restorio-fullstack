@@ -244,6 +244,44 @@ describe("Api Client", () => {
     expect((result as AxiosRequestConfig).headers?.Authorization).toBeUndefined();
   });
 
+  it("adds X-Timezone when browser timezone is available", async () => {
+    vi.stubGlobal("Intl", {
+      DateTimeFormat: () => ({
+        resolvedOptions: () => ({ timeZone: "Europe/Warsaw" }),
+      }),
+    });
+
+    new ApiClient({ baseURL: "x" });
+
+    const config = { headers: {} } as AxiosRequestConfig;
+
+    const result = (await ctx.requestInterceptor?.(config)) ?? config;
+
+    expect((result as AxiosRequestConfig).headers?.["X-Timezone"]).toBe("Europe/Warsaw");
+
+    vi.unstubAllGlobals();
+  });
+
+  it("does not override an existing X-Timezone header", async () => {
+    vi.stubGlobal("Intl", {
+      DateTimeFormat: () => ({
+        resolvedOptions: () => ({ timeZone: "Europe/Warsaw" }),
+      }),
+    });
+
+    new ApiClient({ baseURL: "x" });
+
+    const config = {
+      headers: { "X-Timezone": "America/New_York" },
+    } as AxiosRequestConfig;
+
+    const result = (await ctx.requestInterceptor?.(config)) ?? config;
+
+    expect((result as AxiosRequestConfig).headers?.["X-Timezone"]).toBe("America/New_York");
+
+    vi.unstubAllGlobals();
+  });
+
   it("adds X-CSRF-Token on POST when csrf_token cookie is present", async () => {
     vi.stubGlobal("document", { cookie: "csrf_token=signed-token-value" });
 

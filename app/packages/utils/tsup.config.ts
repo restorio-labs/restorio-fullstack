@@ -1,10 +1,27 @@
 import { defineConfig } from "tsup";
 
-export default defineConfig({
+const sharedConfig = {
   entry: ["src/index.ts"],
-  format: ["esm", "cjs"],
   dts: true,
   sourcemap: false,
-  clean: true,
   tsconfig: "./tsconfig.dts.json",
-});
+} as const;
+
+export default defineConfig([
+  {
+    ...sharedConfig,
+    format: ["esm"],
+    clean: true,
+  },
+  {
+    ...sharedConfig,
+    format: ["cjs"],
+    esbuildOptions(options) {
+      options.define = {
+        ...(options.define ?? {}),
+        "import.meta": "undefined",
+        "import.meta.env": "process.env",
+      };
+    },
+  },
+]);

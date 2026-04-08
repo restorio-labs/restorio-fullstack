@@ -3,6 +3,7 @@ import {
   Box,
   Button,
   Icon,
+  Modal,
   OrderCard,
   OrdersBoard,
   Select,
@@ -15,7 +16,7 @@ import {
 } from "@restorio/ui";
 import { logger } from "@restorio/utils";
 import { useQuery } from "@tanstack/react-query";
-import { useCallback, useMemo, useState, type ReactElement } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactElement } from "react";
 import { useParams } from "react-router-dom";
 
 import { api } from "../../api/client";
@@ -59,6 +60,32 @@ const DEFAULT_REJECTION_LABELS = [
   "Inne",
 ];
 
+const HISTORY_PAGE_SIZE = 20;
+const HISTORY_WINDOW_OPTIONS = [
+  { value: "24", labelKey: "kitchen.history.windows.last24h" },
+  { value: "72", labelKey: "kitchen.history.windows.last72h" },
+  { value: "168", labelKey: "kitchen.history.windows.last7d" },
+  { value: "all", labelKey: "kitchen.history.windows.all" },
+] as const;
+
+const formatElapsedTime = (createdAt: Date | string, currentTime: number): string | null => {
+  const createdAtValue = createdAt instanceof Date ? createdAt.getTime() : new Date(createdAt).getTime();
+
+  if (Number.isNaN(createdAtValue)) {
+    return null;
+  }
+
+  const diffMins = Math.max(0, Math.floor((currentTime - createdAtValue) / 60000));
+  const hours = Math.floor(diffMins / 60);
+  const mins = diffMins % 60;
+
+  if (hours > 0) {
+    return `${hours}h ${mins}m`;
+  }
+
+  return `${mins}m`;
+};
+
 export const KitchenView = (): ReactElement => {
   const params = useParams();
   const tenantId = params.tenantId ?? "";
@@ -72,13 +99,17 @@ export const KitchenView = (): ReactElement => {
   );
 
   const ordersState: UseOrdersStateReturn = useOrdersState(selectedRestaurantId);
-  const { orders, moveOrder, approveOrder, rejectOrder, markReady, refundOrder, isLoading } = ordersState;
+  const { orders, moveOrder, approveOrder, rejectOrder, markReadyToServe, refundOrder, isLoading } = ordersState;
   const { viewMode, toggleViewMode } = useViewMode(tenantId);
 
   const { status: wsStatus } = useKitchenWebSocket(selectedRestaurantId);
 
   const [rejectionModalOpen, setRejectionModalOpen] = useState(false);
   const [rejectingOrderId, setRejectingOrderId] = useState<string | null>(null);
+  const [currentTime, setCurrentTime] = useState(() => Date.now());
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [historyPage, setHistoryPage] = useState(1);
+  const [historyWindow, setHistoryWindow] = useState<(typeof HISTORY_WINDOW_OPTIONS)[number]["value"]>("24");
 
   const { data: kitchenConfigData } = useQuery({
     queryKey: ["kitchen-config", selectedRestaurantId],
@@ -93,7 +124,38 @@ export const KitchenView = (): ReactElement => {
     enabled: Boolean(selectedRestaurantId),
   });
 
+  const historySinceHours = historyWindow === "all" ? null : Number(historyWindow);
+  const {
+    data: archivedOrdersPage,
+    isLoading: isHistoryLoading,
+    isFetching: isHistoryFetching,
+  } = useQuery({
+    queryKey: ["archived-orders", selectedRestaurantId, historyPage, historyWindow],
+    queryFn: async () => {
+      if (!selectedRestaurantId) {
+        return null;
+      }
+
+      return api.orders.listArchivedPage(selectedRestaurantId, {
+        page: historyPage,
+        pageSize: HISTORY_PAGE_SIZE,
+        sinceHours: historySinceHours,
+      });
+    },
+    enabled: isHistoryOpen && Boolean(selectedRestaurantId),
+  });
+
   const rejectionLabels = kitchenConfigData?.rejectionLabels ?? DEFAULT_REJECTION_LABELS;
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 60_000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, []);
 
   const isTablet = useMediaQuery("(min-width: 768px)");
   const isLandscape = useMediaQuery("(orientation: landscape)");
@@ -127,6 +189,16 @@ export const KitchenView = (): ReactElement => {
     [rejectOrder],
   );
 
+  const handleOpenHistory = useCallback((): void => {
+    setHistoryPage(1);
+    setIsHistoryOpen(true);
+  }, []);
+
+  const handleHistoryWindowChange = useCallback((value: string): void => {
+    setHistoryWindow(value as (typeof HISTORY_WINDOW_OPTIONS)[number]["value"]);
+    setHistoryPage(1);
+  }, []);
+
   const selectedRestaurant = useMemo(
     () => restaurants.find((restaurant) => restaurant.id === selectedRestaurantId) ?? null,
     [restaurants, selectedRestaurantId],
@@ -159,6 +231,10 @@ export const KitchenView = (): ReactElement => {
       : wsStatus === "reconnecting"
         ? "bg-status-warning-background"
         : "bg-status-error-background";
+  const draggedOrderElapsedTime = draggedOrder ? formatElapsedTime(draggedOrder.createdAt, currentTime) : null;
+  const archivedOrders = archivedOrdersPage?.items ?? [];
+  const totalHistoryPages = archivedOrdersPage?.total_pages ?? 0;
+  const historyTotal = archivedOrdersPage?.total ?? 0;
 
   logger.debug(`wsStatus: ${wsStatus}\nwsIndicator: ${wsIndicator}`); // const wsIcon = wsStatus === "connected" ? "check" : wsStatus === "reconnecting" ? "clock" : "x";
 
@@ -178,6 +254,14 @@ export const KitchenView = (): ReactElement => {
           </div>
           <nav aria-label={t("aria.kitchenControls")}>
             <Stack direction="row" spacing="md" align="center">
+              <Button variant="secondary" size="md" onClick={handleOpenHistory} className="flex items-center gap-2">
+                <Icon size="md" viewBox="0 0 24 24">
+                  <path d="M12 8v5l3 2M12 3a9 9 0 1 0 9 9" />
+                </Icon>
+                <Text as="span" variant="body-sm" weight="medium">
+                  {t("kitchen.history.open")}
+                </Text>
+              </Button>
               <Button
                 variant="secondary"
                 size="md"
@@ -265,12 +349,38 @@ export const KitchenView = (): ReactElement => {
                     estimateSize={120}
                     renderItem={(index) => {
                       const order = ordersForStatus[index];
+                      const elapsedTime = formatElapsedTime(order.createdAt, currentTime) ?? order.time;
                       const isDragging = dragState.isDragging && dragState.draggedItemId === order.id;
                       const canMoveUp = index > 0;
                       const canMoveDown = index < ordersForStatus.length - 1;
                       const isNewOrder = order.status === OrderStatus.NEW;
                       const isPreparingOrder = order.status === OrderStatus.PREPARING;
                       const isRejected = order.status === OrderStatus.REJECTED;
+                      const isSlidingView = viewMode === "sliding";
+                      const actionButtons = (
+                        <>
+                          {isNewOrder && (
+                            <>
+                              <Button size="sm" variant="primary" onClick={() => approveOrder(order.id)}>
+                                {t("orders.actions.approve")}
+                              </Button>
+                              <Button size="sm" variant="danger" onClick={() => handleOpenRejection(order.id)}>
+                                {t("orders.actions.reject")}
+                              </Button>
+                            </>
+                          )}
+                          {isPreparingOrder && (
+                            <Button size="sm" variant="primary" onClick={() => markReadyToServe(order.id)}>
+                              {t("orders.actions.markReadyToServe")}
+                            </Button>
+                          )}
+                          {isRejected && (
+                            <Button size="sm" variant="secondary" onClick={() => refundOrder(order.id)}>
+                              {t("orders.actions.refund")}
+                            </Button>
+                          )}
+                        </>
+                      );
 
                       return (
                         <OrderCard
@@ -292,19 +402,26 @@ export const KitchenView = (): ReactElement => {
                           }}
                           moveUpLabel={t("aria.moveOrderUp", { id: order.id })}
                           moveDownLabel={t("aria.moveOrderDown", { id: order.id })}
-                          summary={
-                            <Stack direction="row" align="center" justify="between" spacing="sm" className="w-full">
-                              <Stack spacing="xs" className="min-w-0 flex-1">
-                                <Text as="p" variant="body-lg" weight="semibold" className="truncate">
-                                  {order.id}
-                                </Text>
-                                <Text as="p" variant="body-sm" className="text-text-secondary">
-                                  {order.table} · {order.items.length} {t("common.items")}
-                                </Text>
-                              </Stack>
-                              <Text as="span" variant="body-sm" weight="medium" className="text-text-secondary">
-                                {order.time}
+                          headerTrailing={
+                            isSlidingView ? (
+                              <Text as="span" variant="body-md" weight="semibold" className="text-text-secondary">
+                                {elapsedTime}
                               </Text>
+                            ) : undefined
+                          }
+                          summary={
+                            <Stack spacing="xs" className="w-full min-w-0 items-start text-left">
+                              <Text as="p" variant="body-lg" weight="semibold" className="max-w-full self-stretch truncate">
+                                {order.id}
+                              </Text>
+                              <Text as="p" variant="body-sm" className="max-w-full self-stretch truncate text-text-secondary">
+                                {order.table} · {order.items.length} {t("common.items")}
+                              </Text>
+                              {!isSlidingView && (
+                                <Text as="span" variant="body-md" weight="semibold" className="text-text-secondary">
+                                  {elapsedTime}
+                                </Text>
+                              )}
                             </Stack>
                           }
                           details={
@@ -329,15 +446,28 @@ export const KitchenView = (): ReactElement => {
                                   </Text>
                                 ))}
                               </Box>
-                              {order.notes && (
-                                <Box className="flex flex-col items-start gap-2">
-                                  <Text as="p" variant="body-sm" weight="medium">
-                                    {t("kitchen.notes")}
-                                  </Text>
-                                  <Text as="p" variant="body-sm" className="text-text-secondary ml-2">
-                                    {order.notes}
-                                  </Text>
-                                </Box>
+                              {(order.notes || isSlidingView) && (
+                                <Stack
+                                  direction={isSlidingView ? "row" : "column"}
+                                  align={isSlidingView ? "end" : "start"}
+                                  justify={isSlidingView ? "between" : "start"}
+                                  spacing="sm"
+                                  className="w-full"
+                                >
+                                  {order.notes ? (
+                                    <Box className="flex min-w-0 flex-1 flex-col items-start gap-2">
+                                      <Text as="p" variant="body-sm" weight="medium">
+                                        {t("kitchen.notes")}
+                                      </Text>
+                                      <Text as="p" variant="body-sm" className="ml-2 text-text-secondary">
+                                        {order.notes}
+                                      </Text>
+                                    </Box>
+                                  ) : (
+                                    <div className="min-w-0 flex-1" />
+                                  )}
+                                  {isSlidingView && <Stack direction="row" spacing="sm">{actionButtons}</Stack>}
+                                </Stack>
                               )}
                               {isRejected && order.rejectionReason && (
                                 <Box className="rounded-md border border-status-error-border bg-status-error-background px-3 py-2">
@@ -346,28 +476,7 @@ export const KitchenView = (): ReactElement => {
                                   </Text>
                                 </Box>
                               )}
-                              <Stack direction="row" spacing="sm" className="pt-2">
-                                {isNewOrder && (
-                                  <>
-                                    <Button size="sm" variant="primary" onClick={() => approveOrder(order.id)}>
-                                      {t("orders.actions.approve")}
-                                    </Button>
-                                    <Button size="sm" variant="danger" onClick={() => handleOpenRejection(order.id)}>
-                                      {t("orders.actions.reject")}
-                                    </Button>
-                                  </>
-                                )}
-                                {isPreparingOrder && (
-                                  <Button size="sm" variant="primary" onClick={() => markReady(order.id)}>
-                                    {t("orders.actions.markReady")}
-                                  </Button>
-                                )}
-                                {isRejected && (
-                                  <Button size="sm" variant="secondary" onClick={() => refundOrder(order.id)}>
-                                    {t("orders.actions.refund")}
-                                  </Button>
-                                )}
-                              </Stack>
+                              {!isSlidingView && <Stack direction="row" spacing="sm" className="pt-2">{actionButtons}</Stack>}
                             </Stack>
                           }
                         />
@@ -379,7 +488,7 @@ export const KitchenView = (): ReactElement => {
                           orderId={draggedOrder.id}
                           table={draggedOrder.table}
                           itemCount={draggedOrder.items.length}
-                          time={draggedOrder.time}
+                          time={draggedOrderElapsedTime ?? draggedOrder.time}
                         />
                       ) : undefined
                     }
@@ -391,7 +500,7 @@ export const KitchenView = (): ReactElement => {
 
           <DragOverlay isVisible={dragState.isDragging} position={dragState.currentPosition}>
             {draggedOrder && (
-              <Box className="w-96 rounded-card border-2 border-border-focus bg-surface-primary shadow-2xl">
+              <Box className="w-96 rounded-md border-2 border-border-focus bg-surface-primary shadow-2xl">
                 <Stack direction="row" align="center" spacing="sm" className="px-5 py-4">
                   <Stack spacing="xs" className="min-w-0 flex-1">
                     <Text as="p" variant="body-lg" weight="semibold" className="truncate">
@@ -402,7 +511,7 @@ export const KitchenView = (): ReactElement => {
                     </Text>
                   </Stack>
                   <Text as="span" variant="body-sm" weight="medium" className="text-text-secondary">
-                    {draggedOrder.time}
+                    {draggedOrderElapsedTime ?? draggedOrder.time}
                   </Text>
                 </Stack>
               </Box>
@@ -425,6 +534,107 @@ export const KitchenView = (): ReactElement => {
         onConfirm={handleConfirmRejection}
         onClose={() => setRejectionModalOpen(false)}
       />
+      <Modal
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        title={t("kitchen.history.title")}
+        size="lg"
+      >
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <Text as="p" variant="body-sm" className="text-text-secondary">
+              {t("kitchen.history.description")}
+            </Text>
+            <div className="min-w-48">
+              <Select
+                label={t("kitchen.history.windowLabel")}
+                value={historyWindow}
+                onChange={(event) => handleHistoryWindowChange(event.target.value)}
+                options={HISTORY_WINDOW_OPTIONS.map((option) => ({
+                  value: option.value,
+                  label: t(option.labelKey),
+                }))}
+              />
+            </div>
+          </div>
+
+          {(isHistoryLoading || isHistoryFetching) && archivedOrders.length === 0 ? (
+            <div className="flex items-center justify-center py-10">
+              <Loader />
+            </div>
+          ) : archivedOrders.length === 0 ? (
+            <Text as="p" variant="body-sm" className="text-text-secondary">
+              {t("kitchen.history.empty")}
+            </Text>
+          ) : (
+            <div className="max-h-[60vh] space-y-3 overflow-y-auto pr-1">
+              {archivedOrders.map((order) => (
+                <div key={order.id} className="rounded-xl border border-border-default bg-surface-secondary p-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <Text as="h3" variant="body-md" weight="semibold" className="truncate">
+                        {order.tableLabel || t("kitchen.history.unknownTable")}
+                      </Text>
+                      <Text as="p" variant="body-sm" className="text-text-secondary">
+                        {t("kitchen.history.archivedAt", {
+                          value: new Intl.DateTimeFormat("pl-PL", {
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          }).format(new Date(order.archivedAt)),
+                        })}
+                      </Text>
+                    </div>
+                    <div className="text-right">
+                      <Text as="p" variant="body-sm" weight="semibold">
+                        {String(order.total)} {order.currency}
+                      </Text>
+                      <Text as="p" variant="caption" className="text-text-secondary">
+                        {t(`orders.status.${order.status}` as const, { defaultValue: order.status })}
+                      </Text>
+                    </div>
+                  </div>
+                  {order.notes && (
+                    <Text as="p" variant="body-sm" className="mt-2 text-text-secondary">
+                      {order.notes}
+                    </Text>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="flex items-center justify-between gap-3 border-t border-border-default pt-3">
+            <Text as="p" variant="body-sm" className="text-text-secondary">
+              {t("kitchen.history.paginationSummary", {
+                total: historyTotal,
+                page: archivedOrdersPage?.page ?? historyPage,
+                pages: totalHistoryPages || 1,
+              })}
+            </Text>
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setHistoryPage((page) => Math.max(1, page - 1))}
+                disabled={historyPage <= 1 || isHistoryFetching}
+              >
+                {t("kitchen.history.previous")}
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setHistoryPage((page) => page + 1)}
+                disabled={isHistoryFetching || totalHistoryPages === 0 || historyPage >= totalHistoryPages}
+              >
+                {t("kitchen.history.next")}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

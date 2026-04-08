@@ -29,6 +29,24 @@
     "viewMode": {
       "all": "Widok Wszystkich",
       "sliding": "Przesuwany"
+    },
+    "history": {
+      "open": "Historia",
+      "title": "Zakończone zamówienia",
+      "description": "Archiwalne zamówienia kuchni są pobierane tylko wtedy, gdy ten panel jest otwarty.",
+      "windowLabel": "Zakres historii",
+      "empty": "Brak zarchiwizowanych zamówień dla wybranego zakresu czasu.",
+      "unknownTable": "Nieznany stolik",
+      "archivedAt": "Zarchiwizowano: {{value}}",
+      "previous": "Poprzednia",
+      "next": "Następna",
+      "paginationSummary": "{{total}} zamówień · strona {{page}} z {{pages}}",
+      "windows": {
+        "last24h": "Ostatnie 24h",
+        "last72h": "Ostatnie 72h",
+        "last7d": "Ostatnie 7 dni",
+        "all": "Cały okres"
+      }
     }
   },
   "chooseApp": {
@@ -45,13 +63,24 @@
       "new": "Nowe",
       "preparing": "W przygotowaniu",
       "ready": "Gotowe",
+      "readyToServe": "Do wydania",
       "rejected": "Odrzucone",
-      "refunded": "Zwrócone"
+      "refunded": "Zwrócone",
+      "paid": "Opłacone",
+      "pending": "Oczekujące",
+      "confirmed": "Potwierdzone",
+      "delivered": "Dostarczone",
+      "cancelled": "Anulowane",
+      "unknown": "Nieznany"
+    },
+    "errors": {
+      "invalidTransition": "Nie można zmienić statusu z {{from}} na {{to}}.",
+      "statusUpdateFailed": "Nie udało się zaktualizować statusu zamówienia."
     },
     "actions": {
       "approve": "Zatwierdź",
       "reject": "Odrzuć",
-      "markReady": "Gotowe",
+      "markReadyToServe": "Do wydania",
       "refund": "Zwrot"
     },
     "rejection": {
@@ -86,6 +115,7 @@
     "newOrders": "Nowe zamówienia",
     "preparingOrders": "Zamówienia w przygotowaniu",
     "readyOrders": "Gotowe do odbioru",
+    "readyToServeOrders": "Zamówienia do wydania",
     "rejectedOrders": "Odrzucone zamówienia",
     "refundedOrders": "Zwrócone zamówienia",
     "kitchenNavigation": "Nawigacja kuchni",

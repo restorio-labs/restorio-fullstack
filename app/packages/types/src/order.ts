@@ -4,6 +4,7 @@ export enum OrderStatus {
   CONFIRMED = "confirmed",
   PREPARING = "preparing",
   READY = "ready",
+  READY_TO_SERVE = "ready_to_serve",
   DELIVERED = "delivered",
   CANCELLED = "cancelled",
   PAID = "paid",

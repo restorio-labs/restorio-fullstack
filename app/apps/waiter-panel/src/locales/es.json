@@ -46,7 +46,16 @@
     "zoomLabel": "Zoom: {{value}}%",
     "zoomIn": "Acercar",
     "zoomOut": "Alejar",
-    "zoomReset": "Restablecer"
+    "zoomReset": "Restablecer",
+    "orderStatus": {
+      "browsing": "Navegando",
+      "ordering": "Pidiendo",
+      "ordered": "Pedido",
+      "preparing": "En preparación",
+      "ready_to_serve": "Listo para servir",
+      "served": "Servido",
+      "bill_requested": "Cuenta solicitada"
+    }
   },
   "floorRuntime": {
     "noLayout": "No hay plano de sala para este local."
@@ -56,6 +65,26 @@
     "panel": {
       "name": "Nombre",
       "seats": "Asientos"
+    }
+  },
+  "orders": {
+    "status": {
+      "new": "Nuevo",
+      "preparing": "Preparando",
+      "ready": "Listo",
+      "readyToServe": "Listo para servir",
+      "rejected": "Rechazado",
+      "refunded": "Reembolsado",
+      "paid": "Pagado",
+      "pending": "Pendiente",
+      "confirmed": "Confirmado",
+      "delivered": "Entregado",
+      "cancelled": "Cancelado",
+      "unknown": "Desconocido"
+    },
+    "errors": {
+      "invalidTransition": "No se puede cambiar el estado de {{from}} a {{to}}.",
+      "statusUpdateFailed": "No se pudo actualizar el estado del pedido."
     }
   }
 }

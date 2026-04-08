@@ -15,9 +15,9 @@ export const statusConfig = {
     iconClassName: "text-status-warning-text",
     iconKey: "clock",
   },
-  [OrderStatus.READY]: {
-    labelKey: "orders.status.ready",
-    ariaLabelKey: "aria.readyOrders",
+  [OrderStatus.READY_TO_SERVE]: {
+    labelKey: "orders.status.readyToServe",
+    ariaLabelKey: "aria.readyToServeOrders",
     indicatorClassName: "bg-status-success-background border-status-success-border text-status-success-text",
     iconClassName: "text-status-success-text",
     iconKey: "check",

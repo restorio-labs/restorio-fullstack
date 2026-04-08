@@ -1,18 +1,19 @@
-import type { TenantOrderRow } from "@restorio/api-client";
+import { getOrderStatusUpdateErrorToastTitle, type OrderStatusErrorTranslateFn } from "@restorio/api-client";
 import type {
   FloorCanvas as FloorCanvasType,
+  OrderStatusDisplay,
   TableDisplayInfo,
   TableRuntimeState,
   Tenant,
   TenantMenu,
 } from "@restorio/types";
-import { Button, FloorCanvas, Modal, useI18n, useMediaQuery, cn } from "@restorio/ui";
+import { Button, FloorCanvas, Modal, useI18n, useMediaQuery, useToast, cn } from "@restorio/ui";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 
-import { api, ordersApi, tenantOrdersApi } from "@/api/client";
+import { api, ordersApi } from "@/api/client";
 import { WaiterMenuDock } from "@/components/WaiterMenuDock";
 
 interface KitchenOrderItem {
@@ -23,6 +24,18 @@ interface KitchenOrderItem {
   basePrice: number;
   selectedModifiers: never[];
   totalPrice: number;
+}
+
+interface KitchenOrder {
+  id: string;
+  restaurantId: string;
+  tableId?: string;
+  table: string;
+  status: string;
+  items: KitchenOrderItem[];
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface FloorRuntimeViewProps {
@@ -38,6 +51,7 @@ interface RuntimeMenuItem {
   description: string;
   tags: string[];
   price: number;
+  category?: string;
 }
 
 interface OrderedRuntimeItem extends RuntimeMenuItem {
@@ -65,6 +79,7 @@ const tenantMenuToRuntimeItems = (menu: TenantMenu | null): RuntimeMenuItem[] =>
         description: item.desc,
         tags: item.tags,
         price: item.price,
+        category: category.name,
       });
     }
   }
@@ -76,16 +91,20 @@ const isOccupiedOrderStatus = (status: string): boolean => {
   return status !== "paid" && status !== "cancelled";
 };
 
-const mapRemoteStatusToDisplayStatus = (status: string): "browsing" | "ordering" | "ordered" => {
+const mapRemoteStatusToDisplayStatus = (status: string): OrderStatusDisplay => {
   switch (status) {
     case "new":
     case "pending":
       return "ordering";
     case "confirmed":
-    case "preparing":
-    case "ready":
     case "placed":
       return "ordered";
+    case "preparing":
+      return "preparing";
+    case "ready_to_serve":
+      return "ready_to_serve";
+    case "ready":
+      return "served";
     default:
       return "browsing";
   }
@@ -113,6 +132,19 @@ export const FloorRuntimeView = ({
   tableDisplayInfo: initialTableDisplayInfo = {},
 }: FloorRuntimeViewProps): ReactElement => {
   const { t } = useI18n();
+  const translate: OrderStatusErrorTranslateFn = useCallback(
+    (key, defaultMessageOrValues, values) => {
+      return t(key, defaultMessageOrValues, values);
+    },
+    [t],
+  );
+  const { showToast } = useToast();
+  const showErrorToast: (title: string) => void = useCallback(
+    (title: string): void => {
+      showToast("error", title);
+    },
+    [showToast],
+  );
   const queryClient = useQueryClient();
   const isTabletUp = useMediaQuery("(min-width: 768px)");
   const isDesktopUp = useMediaQuery("(min-width: 1280px)");
@@ -125,6 +157,17 @@ export const FloorRuntimeView = ({
   const [panelReady, setPanelReady] = useState(false);
   const [isMenuDockOpen, setIsMenuDockOpen] = useState(false);
   const [isUnlockModalOpen, setIsUnlockModalOpen] = useState(false);
+  const [occupationTick, setOccupationTick] = useState(0);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setOccupationTick((n) => n + 1);
+    }, 60_000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, []);
 
   useEffect(() => {
     if (selectedElementId) {
@@ -192,27 +235,33 @@ export const FloorRuntimeView = ({
   });
 
   const { data: remoteOrders = [] } = useQuery({
-    queryKey: ["waiter-panel", "orders", venue.id],
-    queryFn: async (): Promise<TenantOrderRow[]> => {
+    queryKey: ["waiter-panel", "kitchen-orders", venue.id],
+    queryFn: async (): Promise<KitchenOrder[]> => {
       try {
-        const rows = await tenantOrdersApi.list(venue.id);
+        const response = await ordersApi.list(venue.id);
+        const orders = "data" in response ? response.data : [];
 
-        return rows.flatMap((row): TenantOrderRow[] => {
-          const tableRef = typeof row.table_ref === "string" ? row.table_ref : null;
-          const tableId = typeof row.table_id === "string" ? row.table_id : null;
-          const resolvedTableRef = tableRef ?? tableId;
-
-          if (resolvedTableRef === null) {
-            return [];
-          }
-
-          return [
-            {
-              ...row,
-              table_ref: resolvedTableRef,
-            },
-          ];
-        });
+        return orders.map(
+          (order): KitchenOrder => ({
+            id: order.id,
+            restaurantId: order.restaurantId,
+            tableId: order.tableId,
+            table: order.table,
+            status: order.status,
+            items: order.items.map((item) => ({
+              id: item.id,
+              menuItemId: item.menuItemId,
+              name: item.name,
+              quantity: item.quantity,
+              basePrice: item.basePrice,
+              selectedModifiers: [],
+              totalPrice: item.totalPrice,
+            })),
+            notes: order.notes,
+            createdAt: String(order.createdAt),
+            updatedAt: String(order.updatedAt),
+          }),
+        );
       } catch {
         return [];
       }
@@ -222,39 +271,43 @@ export const FloorRuntimeView = ({
 
   const remoteOrderIdsByTable = useMemo<Record<string, string>>(() => {
     return remoteOrders.reduce<Record<string, string>>((acc, order) => {
-      if (!isOccupiedOrderStatus(order.status) || !order.table_ref) {
+      if (!isOccupiedOrderStatus(order.status) || !order.tableId) {
         return acc;
       }
 
-      acc[order.table_ref] = order.id;
+      acc[order.tableId] = order.id;
 
       return acc;
     }, {});
   }, [remoteOrders]);
 
   const remoteTableDisplayInfo = useMemo<Record<string, TableDisplayInfo>>(() => {
+    void occupationTick;
+
     return remoteOrders.reduce<Record<string, TableDisplayInfo>>((acc, order) => {
-      if (!isOccupiedOrderStatus(order.status) || !order.table_ref) {
+      if (!isOccupiedOrderStatus(order.status) || !order.tableId) {
         return acc;
       }
 
-      acc[order.table_ref] = {
-        orderStatus: mapRemoteStatusToDisplayStatus(order.status),
-        servedByName: order.waiter_name ?? undefined,
-        servedBySurname: order.waiter_surname ?? undefined,
+      const orderStatus = mapRemoteStatusToDisplayStatus(order.status);
+
+      acc[order.tableId] = {
+        orderStatus,
+        orderStatusLabel: t(`waiterDashboard.orderStatus.${orderStatus}`),
+        occupationTimeLabel: formatOccupationTime(order.createdAt),
       };
 
       return acc;
     }, {});
-  }, [remoteOrders]);
+  }, [remoteOrders, t, occupationTick]);
 
   const remoteOrderCreatedAtByTable = useMemo<Record<string, string>>(() => {
     return remoteOrders.reduce<Record<string, string>>((acc, order) => {
-      if (!isOccupiedOrderStatus(order.status) || !order.table_ref) {
+      if (!isOccupiedOrderStatus(order.status) || !order.tableId) {
         return acc;
       }
 
-      acc[order.table_ref] = String(order.created_at);
+      acc[order.tableId] = order.createdAt;
 
       return acc;
     }, {});
@@ -262,11 +315,11 @@ export const FloorRuntimeView = ({
 
   const remoteOrderNotesByTable = useMemo<Record<string, string>>(() => {
     return remoteOrders.reduce<Record<string, string>>((acc, order) => {
-      if (!isOccupiedOrderStatus(order.status) || !order.table_ref) {
+      if (!isOccupiedOrderStatus(order.status) || !order.tableId) {
         return acc;
       }
 
-      acc[order.table_ref] = String(order.notes ?? "");
+      acc[order.tableId] = order.notes ?? "";
 
       return acc;
     }, {});
@@ -321,6 +374,8 @@ export const FloorRuntimeView = ({
   }, [selectedTableElement, tableOrderNotes, remoteOrderNotesByTable]);
 
   const selectedTableOccupationTime = useMemo(() => {
+    void occupationTick;
+
     if (!selectedTableElement) {
       return null;
     }
@@ -332,7 +387,7 @@ export const FloorRuntimeView = ({
     }
 
     return formatOccupationTime(createdAt);
-  }, [selectedTableElement, remoteOrderCreatedAtByTable]);
+  }, [selectedTableElement, remoteOrderCreatedAtByTable, occupationTick]);
   const selectedTableOrderId = useMemo(
     () =>
       selectedTableElement
@@ -340,6 +395,16 @@ export const FloorRuntimeView = ({
         : undefined,
     [remoteOrderIdsByTable, selectedTableElement, tableOrderIds],
   );
+
+  const selectedTableOrderStatus = useMemo(() => {
+    if (!selectedTableElement) {
+      return undefined;
+    }
+
+    const order = remoteOrders.find((o) => o.tableId === selectedTableElement.id);
+
+    return order?.status;
+  }, [remoteOrders, selectedTableElement]);
 
   const selectedTableName = useMemo(() => {
     if (!selectedTableElement) {
@@ -433,11 +498,11 @@ export const FloorRuntimeView = ({
     async (
       orderId: string,
       items?: OrderedRuntimeItem[],
-      _status?: "pending" | "paid" | "new",
+      status?: "pending" | "paid" | "new",
       notes?: string,
     ): Promise<boolean> => {
       try {
-        const body: { items?: KitchenOrderItem[]; notes?: string; total?: number; subtotal?: number } = {};
+        const body: Record<string, unknown> = {};
 
         if (items) {
           body.items = toKitchenOrderItems(items) as never;
@@ -452,8 +517,12 @@ export const FloorRuntimeView = ({
           body.notes = notes;
         }
 
+        if (status !== undefined) {
+          body.status = status;
+        }
+
         await ordersApi.update(venue.id, orderId, body);
-        void queryClient.invalidateQueries({ queryKey: ["waiter-panel", "orders", venue.id] });
+        void queryClient.invalidateQueries({ queryKey: ["waiter-panel", "kitchen-orders", venue.id] });
 
         return true;
       } catch {
@@ -487,6 +556,8 @@ export const FloorRuntimeView = ({
       [selectedTableElement.id]: {
         ...prev[selectedTableElement.id],
         orderStatus: "ordering",
+        orderStatusLabel: t("waiterDashboard.orderStatus.ordering"),
+        occupationTimeLabel: undefined,
         guestCount: Object.prototype.hasOwnProperty.call(prev, selectedTableElement.id)
           ? (prev[selectedTableElement.id].guestCount ?? selectedTableElement.seats)
           : selectedTableElement.seats,
@@ -497,11 +568,11 @@ export const FloorRuntimeView = ({
       [selectedTableElement.id]: prev[selectedTableElement.id] ?? [],
     }));
     setIsMenuDockOpen(true);
-  }, [createRemoteOrder, isSelectedTableAvailable, selectedTableElement]);
+  }, [createRemoteOrder, isSelectedTableAvailable, selectedTableElement, t]);
 
   const handleAddItemToOrder = useCallback(
-    async (menuItemId: string): Promise<void> => {
-      if (!selectedTableElement || isSelectedTableAvailable || menuItemId.trim() === "" || !selectedTableOrderId) {
+    (menuItemId: string): void => {
+      if (!selectedTableElement || isSelectedTableAvailable || menuItemId.trim() === "") {
         return;
       }
 
@@ -519,12 +590,6 @@ export const FloorRuntimeView = ({
             item.id === selectedMenuItem.id ? { ...item, quantity: item.quantity + 1 } : item,
           );
 
-      const updated = await syncRemoteOrder(selectedTableOrderId, nextItems, "new");
-
-      if (!updated) {
-        return;
-      }
-
       setTableOrderItems((prev) => ({
         ...prev,
         [selectedTableElement.id]: nextItems,
@@ -533,26 +598,26 @@ export const FloorRuntimeView = ({
         ...prev,
         [selectedTableElement.id]: {
           ...prev[selectedTableElement.id],
-          orderStatus: "ordered",
+          orderStatus: "ordering",
+          orderStatusLabel: t("waiterDashboard.orderStatus.ordering"),
         },
       }));
     },
-    [
-      isSelectedTableAvailable,
-      menuItems,
-      selectedTableElement,
-      selectedTableOrderId,
-      selectedTableOrderItems,
-      syncRemoteOrder,
-    ],
+    [isSelectedTableAvailable, menuItems, selectedTableElement, selectedTableOrderItems, t],
   );
 
-  const handleConfirmPayment = useCallback(async (): Promise<void> => {
+  const handleSendToKitchen = useCallback(async (): Promise<void> => {
     if (!selectedTableElement || isSelectedTableAvailable || !selectedTableOrderId) {
       return;
     }
 
-    const updated = await syncRemoteOrder(selectedTableOrderId, undefined, "paid");
+    const items = selectedTableOrderItems;
+
+    if (items.length === 0) {
+      return;
+    }
+
+    const updated = await syncRemoteOrder(selectedTableOrderId, items, "new");
 
     if (!updated) {
       return;
@@ -562,29 +627,109 @@ export const FloorRuntimeView = ({
       ...prev,
       [selectedTableElement.id]: {
         ...prev[selectedTableElement.id],
-        guestCount: undefined,
-        orderStatus: "browsing",
-        servedByName: undefined,
-        servedBySurname: undefined,
+        orderStatus: "ordered",
+        orderStatusLabel: t("waiterDashboard.orderStatus.ordered"),
       },
     }));
-    setTableOrderItems((prev) => ({
-      ...prev,
-      [selectedTableElement.id]: [],
-    }));
-    setTableOrderNotes((prev) => ({
-      ...prev,
-      [selectedTableElement.id]: "",
-    }));
-    setTableOrderIds((prev) => {
-      const next = { ...prev };
+  }, [
+    isSelectedTableAvailable,
+    selectedTableElement,
+    selectedTableOrderId,
+    selectedTableOrderItems,
+    syncRemoteOrder,
+    t,
+  ]);
 
-      delete next[selectedTableElement.id];
+  const handleUpdateOrder = useCallback(async (): Promise<void> => {
+    if (!selectedTableElement || isSelectedTableAvailable || !selectedTableOrderId) {
+      return;
+    }
 
-      return next;
-    });
-    setIsMenuDockOpen(false);
-  }, [isSelectedTableAvailable, selectedTableElement, selectedTableOrderId, syncRemoteOrder]);
+    const items = selectedTableOrderItems;
+
+    if (items.length === 0) {
+      return;
+    }
+
+    const updated = await syncRemoteOrder(selectedTableOrderId, items);
+
+    if (!updated) {
+      return;
+    }
+  }, [isSelectedTableAvailable, selectedTableElement, selectedTableOrderId, selectedTableOrderItems, syncRemoteOrder]);
+
+  const handleConfirmPayment = useCallback(async (): Promise<void> => {
+    if (!selectedTableElement || isSelectedTableAvailable || !selectedTableOrderId) {
+      return;
+    }
+
+    try {
+      await ordersApi.updateStatus(venue.id, selectedTableOrderId, "paid" as never);
+      await ordersApi.archive(venue.id, selectedTableOrderId);
+      void queryClient.invalidateQueries({ queryKey: ["waiter-panel", "kitchen-orders", venue.id] });
+      void queryClient.invalidateQueries({ queryKey: ["waiter-panel", "archived-orders", venue.id] });
+
+      setTableDisplayInfo((prev) => ({
+        ...prev,
+        [selectedTableElement.id]: {
+          ...prev[selectedTableElement.id],
+          guestCount: undefined,
+          orderStatus: "browsing",
+          orderStatusLabel: undefined,
+          occupationTimeLabel: undefined,
+          servedByName: undefined,
+          servedBySurname: undefined,
+        },
+      }));
+      setTableOrderItems((prev) => ({
+        ...prev,
+        [selectedTableElement.id]: [],
+      }));
+      setTableOrderNotes((prev) => ({
+        ...prev,
+        [selectedTableElement.id]: "",
+      }));
+      setTableOrderIds((prev) => {
+        const next = { ...prev };
+
+        delete next[selectedTableElement.id];
+
+        return next;
+      });
+      setIsMenuDockOpen(false);
+    } catch (err: unknown) {
+      showErrorToast(getOrderStatusUpdateErrorToastTitle(err, translate));
+    }
+  }, [
+    isSelectedTableAvailable,
+    queryClient,
+    selectedTableElement,
+    selectedTableOrderId,
+    showErrorToast,
+    translate,
+    venue.id,
+  ]);
+
+  const handleForcePreparing = useCallback(async (): Promise<void> => {
+    if (!selectedTableOrderId || isSelectedTableAvailable || selectedTableOrderStatus !== "new") {
+      return;
+    }
+
+    try {
+      await ordersApi.updateStatus(venue.id, selectedTableOrderId, "preparing" as never);
+      void queryClient.invalidateQueries({ queryKey: ["waiter-panel", "kitchen-orders", venue.id] });
+    } catch (err: unknown) {
+      showErrorToast(getOrderStatusUpdateErrorToastTitle(err, translate));
+    }
+  }, [
+    isSelectedTableAvailable,
+    queryClient,
+    selectedTableOrderId,
+    selectedTableOrderStatus,
+    showErrorToast,
+    translate,
+    venue.id,
+  ]);
 
   const handleRemoveItemFromOrder = useCallback(
     async (itemId: string): Promise<void> => {
@@ -843,15 +988,56 @@ export const FloorRuntimeView = ({
                       className="w-full rounded-md border border-border-default bg-surface-primary px-4 py-3 text-sm text-text-primary"
                     />
                   </div>
-                  <Button
-                    type="button"
-                    variant="primary"
-                    onClick={() => {
-                      setIsUnlockModalOpen(true);
-                    }}
-                  >
-                    {t("waiterDashboard.confirmPayment")}
-                  </Button>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex gap-2">
+                      {selectedTableOrderItems.length > 0 && !selectedTableOrderStatus && (
+                        <Button
+                          type="button"
+                          variant="primary"
+                          className="flex-1"
+                          onClick={() => {
+                            void handleSendToKitchen();
+                          }}
+                        >
+                          {t("waiterDashboard.sendToKitchen")}
+                        </Button>
+                      )}
+                      {selectedTableOrderItems.length > 0 && selectedTableOrderStatus && (
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="flex-1"
+                          onClick={() => {
+                            void handleUpdateOrder();
+                          }}
+                        >
+                          {t("waiterDashboard.updateOrder")}
+                        </Button>
+                      )}
+                      {selectedTableOrderStatus === "new" && (
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="flex-1"
+                          onClick={() => {
+                            void handleForcePreparing();
+                          }}
+                        >
+                          {t("waiterDashboard.forcePreparing")}
+                        </Button>
+                      )}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="primary"
+                      className="flex-1"
+                      onClick={() => {
+                        setIsUnlockModalOpen(true);
+                      }}
+                    >
+                      {t("waiterDashboard.confirmPayment")}
+                    </Button>
+                  </div>
                 </>
               )}
             </div>

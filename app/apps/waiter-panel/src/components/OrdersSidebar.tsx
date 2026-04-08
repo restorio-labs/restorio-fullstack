@@ -1,10 +1,10 @@
-import type { TenantOrderRow } from "@restorio/api-client";
+import type { ArchivedOrderRow } from "@restorio/api-client";
 import { Button, useI18n, cn } from "@restorio/ui";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, type ReactElement } from "react";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 
-import { tenantOrdersApi } from "@/api/client";
+import { ordersApi } from "@/api/client";
 
 interface OrdersSidebarProps {
   isOpen: boolean;
@@ -16,27 +16,10 @@ export const OrdersSidebar = ({ isOpen, onClose, venueId }: OrdersSidebarProps):
   const { t } = useI18n();
 
   const { data: orders = [] } = useQuery({
-    queryKey: ["waiter-panel", "orders", venueId],
-    queryFn: async (): Promise<TenantOrderRow[]> => {
+    queryKey: ["waiter-panel", "archived-orders", venueId],
+    queryFn: async (): Promise<ArchivedOrderRow[]> => {
       try {
-        const rows = await tenantOrdersApi.list(venueId);
-
-        return rows.flatMap((row): TenantOrderRow[] => {
-          const tableRef = typeof row.table_ref === "string" ? row.table_ref : null;
-          const tableId = typeof row.table_id === "string" ? row.table_id : null;
-          const resolvedTableRef = tableRef ?? tableId;
-
-          if (resolvedTableRef === null) {
-            return [];
-          }
-
-          return [
-            {
-              ...row,
-              table_ref: resolvedTableRef,
-            },
-          ];
-        });
+        return await ordersApi.listArchived(venueId, { pageSize: 100, sinceHours: null });
       } catch {
         return [];
       }
@@ -52,11 +35,11 @@ export const OrdersSidebar = ({ isOpen, onClose, venueId }: OrdersSidebarProps):
 
     return orders
       .filter((order) => {
-        const orderDate = new Date(order.created_at as string);
+        const orderDate = new Date(order.createdAt);
 
         return orderDate >= today;
       })
-      .sort((a, b) => new Date(b.created_at as string).getTime() - new Date(a.created_at as string).getTime());
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [orders]);
 
   return (
@@ -94,19 +77,19 @@ export const OrdersSidebar = ({ isOpen, onClose, venueId }: OrdersSidebarProps):
                     <div className="flex items-center justify-between">
                       <span className="font-semibold text-text-primary">
                         {t("floorEditor.tableLabel", {
-                          number: order.table_ref?.split("-").pop() ?? order.table_ref ?? "-",
+                          number: order.tableLabel.split("-").pop() ?? order.tableLabel ?? "-",
                         })}
                       </span>
                       <span className="text-sm text-text-secondary">
                         {new Intl.DateTimeFormat("pl-PL", {
                           hour: "2-digit",
                           minute: "2-digit",
-                        }).format(new Date(order.created_at as string))}
+                        }).format(new Date(order.createdAt))}
                       </span>
                     </div>
                     <div className="mt-2 flex items-center justify-between">
                       <span className="text-sm font-medium text-text-primary">
-                        {String(order.total_amount ?? "0.00")} {order.currency ?? "PLN"}
+                        {String(order.total ?? "0.00")} {order.currency ?? "PLN"}
                       </span>
                       <span
                         className={cn(

@@ -122,6 +122,13 @@ class TestBadRequestError:
         assert exception.status_code == status.HTTP_400_BAD_REQUEST
         assert exception.detail == "Invalid input"
 
+    def test_bad_request_error_with_details(self) -> None:
+        exception = BadRequestError("Invalid input", details={"code": "X"})
+
+        assert exception.status_code == status.HTTP_400_BAD_REQUEST
+        assert exception.detail == "Invalid input"
+        assert exception.details == {"code": "X"}
+
 
 class TestGoneError:
     def test_gone_error_default_message(self) -> None:

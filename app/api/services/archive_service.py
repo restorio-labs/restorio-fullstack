@@ -5,6 +5,7 @@ from typing import Any
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.foundation.logging.logger import logger
 from core.models.archived_order import ArchivedOrder
 
 
@@ -43,9 +44,23 @@ class ArchiveService:
         )
 
         session.add(archived)
+        logger.info(
+            "Archiving order %s for restaurant %s into archived_orders",
+            order_doc["_id"],
+            restaurant_id,
+        )
         await session.commit()
         await session.refresh(archived)
+        logger.info(
+            "Archived order %s as row %s; deleting Mongo document next",
+            order_doc["_id"],
+            archived.id,
+        )
 
         await db["kitchen_orders"].delete_one({"_id": order_doc["_id"]})
+        logger.info(
+            "Deleted Mongo kitchen_order %s after archive commit",
+            order_doc["_id"],
+        )
 
         return archived

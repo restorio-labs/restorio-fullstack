@@ -1,34 +1,6 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@layer base {
-  :root {
-    color-scheme: light dark;
-  }
-
-  [data-theme="light"] {
-    color-scheme: light;
-  }
-
-  [data-theme="dark"] {
-    color-scheme: dark;
-  }
-
-  * {
-    @apply border-border-default;
-  }
-
-  body {
-    @apply bg-background-primary font-sans text-text-primary;
-  }
-}
+@import "@restorio/ui/styles";
 
 @layer utilities {
-  .focus-visible-ring {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2;
-  }
-
   .onboarding-fade-in {
     animation: onboarding-fade-in 320ms ease-out both;
   }
@@ -61,48 +33,9 @@
   }
 }
 
-@keyframes toast-motion-in {
-  from {
-    opacity: 0;
-    transform: translateY(-100%);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes toast-motion-out {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  to {
-    opacity: 0;
-    transform: translateY(-100%);
-  }
-}
-
-@layer utilities {
-  .toast-motion-in {
-    animation: toast-motion-in 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-
-  .toast-motion-out {
-    animation: toast-motion-out 0.26s cubic-bezier(0.4, 0, 1, 1) forwards;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .onboarding-fade-in,
   .onboarding-fade-up {
     animation: none;
-  }
-
-  .toast-motion-in,
-  .toast-motion-out {
-    animation-duration: 0.01ms !important;
   }
 }

@@ -1,4 +1,4 @@
-import type { CanvasBounds, TableDisplayInfo, TableRuntimeState } from "@restorio/types";
+import type { CanvasBounds, OrderStatusDisplay, TableDisplayInfo, TableRuntimeState } from "@restorio/types";
 import type { ReactElement } from "react";
 
 import { useI18n } from "../../providers/I18nProvider";
@@ -18,10 +18,20 @@ export interface FloorTableGroupProps {
 
 const stateStyles: Record<TableRuntimeState | "neutral", string> = {
   neutral: "bg-surface-primary border-border-default",
-  free: "bg-status-success-background border-status-success-border",
+  free: "bg-surface-primary border-border-default",
   occupied: "bg-status-error-background border-status-error-border",
   reserved: "bg-status-warning-background border-status-warning-border",
   dirty: "bg-status-error-background/30 border-status-error-border",
+};
+
+const orderStatusStyles: Record<OrderStatusDisplay, string> = {
+  browsing: "bg-surface-primary border-border-default",
+  ordering: "bg-status-info-background border-status-info-border",
+  ordered: "bg-status-warning-background border-status-warning-border",
+  preparing: "bg-orange-500/20 border-orange-500/50",
+  ready_to_serve: "bg-cyan-500/20 border-cyan-600/50",
+  served: "bg-status-success-background border-status-success-border",
+  bill_requested: "bg-purple-500/20 border-purple-500/50",
 };
 
 export const FloorTableGroup = ({
@@ -37,9 +47,13 @@ export const FloorTableGroup = ({
   const { t } = useI18n();
   const tablesLabel = tableNumbers.join(", ");
   const needHelp = displayInfo?.needHelp;
-  const hasActiveOrder = displayInfo?.orderStatus !== undefined && displayInfo.orderStatus !== "browsing";
+  const orderStatus = displayInfo?.orderStatus;
+  const hasActiveOrder = orderStatus !== undefined && orderStatus !== "browsing";
+  const statusLine =
+    hasActiveOrder && displayInfo !== undefined ? (displayInfo.orderStatusLabel ?? displayInfo.orderStatus) : undefined;
   const defaultState: TableRuntimeState | "neutral" = state ?? "neutral";
   const resolvedState: TableRuntimeState | "neutral" = hasActiveOrder ? "occupied" : defaultState;
+  const tableStyle = hasActiveOrder ? orderStatusStyles[orderStatus] : stateStyles[resolvedState];
   const label =
     ariaLabel ??
     (resolvedState === "neutral"
@@ -53,8 +67,8 @@ export const FloorTableGroup = ({
           "relative flex h-full w-full flex-col items-center justify-center rounded-lg border-2 text-text-primary",
           !isSelected &&
             "focus-within:outline focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-border-focus",
-          stateStyles[resolvedState],
-          isSelected && "!border-interactive-primary !bg-interactive-primary text-text-inverse",
+          tableStyle,
+          isSelected && "ring-2 ring-interactive-primary ring-offset-1",
         )}
       >
         {needHelp && (
@@ -70,20 +84,19 @@ export const FloorTableGroup = ({
           {tablesLabel}
         </span>
         <span
-          className={cn(
-            "font-semibold tabular-nums text-[10px] md:text-xs lg:text-sm",
-            isSelected ? "text-text-inverse" : "text-text-secondary",
-          )}
+          className="font-semibold tabular-nums text-[10px] md:text-xs lg:text-sm text-text-secondary"
           aria-hidden="true"
         >
           {seats}
         </span>
-        {displayInfo?.orderStatus && (
-          <span
-            className={cn("text-xs", isSelected ? "text-text-inverse/85" : "text-text-tertiary")}
-            aria-hidden="true"
-          >
-            {displayInfo.orderStatus}
+        {statusLine !== undefined && (
+          <span className="text-xs font-medium text-text-primary text-center" aria-hidden="true">
+            {statusLine}
+          </span>
+        )}
+        {displayInfo?.occupationTimeLabel !== undefined && displayInfo.occupationTimeLabel !== "" && (
+          <span className="text-[10px] font-medium tabular-nums text-text-tertiary md:text-xs" aria-hidden="true">
+            {displayInfo.occupationTimeLabel}
           </span>
         )}
       </div>

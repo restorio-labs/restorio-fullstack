@@ -10,7 +10,13 @@ import {
   type ReactNode,
 } from "react";
 
-import { Toast, ToastAnimated, ToastContainer, type ToastVariant } from "../components/overlays/Toast";
+import {
+  Toast,
+  ToastAnimated,
+  ToastContainer,
+  type ToastPosition,
+  type ToastVariant,
+} from "../components/overlays/Toast";
 import { createToastId } from "../components/overlays/Toast/createToastId";
 
 const DEFAULT_DURATION_MS = 4500;
@@ -36,9 +42,10 @@ const ToastContext = createContext<ToastContextValue | null>(null);
 
 interface ToastProviderProps {
   children: ReactNode;
+  position?: ToastPosition;
 }
 
-export const ToastProvider = ({ children }: ToastProviderProps): ReactElement => {
+export const ToastProvider = ({ children, position = "top-right" }: ToastProviderProps): ReactElement => {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const timerIdsRef = useRef<Map<string, number>>(new Map());
   const exitTimersRef = useRef<Map<string, number>>(new Map());
@@ -125,7 +132,7 @@ export const ToastProvider = ({ children }: ToastProviderProps): ReactElement =>
   return (
     <ToastContext.Provider value={contextValue}>
       {children}
-      <ToastContainer position="top-right">
+      <ToastContainer position={position}>
         {toasts.map((toast) => (
           <ToastAnimated key={toast.id} exiting={toast.exiting === true}>
             <Toast

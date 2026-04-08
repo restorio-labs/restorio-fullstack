@@ -2,6 +2,7 @@ import axios, { type AxiosInstance, type AxiosRequestConfig, type InternalAxiosR
 
 const CSRF_TOKEN_COOKIE_NAME = "csrf_token";
 const CSRF_TOKEN_HEADER_NAME = "X-CSRF-Token";
+const TIMEZONE_HEADER_NAME = "X-Timezone";
 const STATE_CHANGING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
 const getCsrfTokenFromCookie = (): string | null => {
@@ -29,6 +30,26 @@ const readCsrfHeader = (headers: InternalAxiosRequestConfig["headers"]): string 
   const record = headers as Record<string, string | undefined>;
 
   return record[CSRF_TOKEN_HEADER_NAME] ?? record["x-csrf-token"];
+};
+
+const readTimezoneHeader = (headers: InternalAxiosRequestConfig["headers"]): string | undefined => {
+  if (typeof (headers as { get?: (name: string) => string }).get === "function") {
+    return (headers as { get: (name: string) => string }).get(TIMEZONE_HEADER_NAME);
+  }
+
+  const record = headers as Record<string, string | undefined>;
+
+  return record[TIMEZONE_HEADER_NAME] ?? record["x-timezone"];
+};
+
+const getBrowserTimezone = (): string | null => {
+  if (typeof Intl === "undefined" || typeof Intl.DateTimeFormat !== "function") {
+    return null;
+  }
+
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  return typeof timezone === "string" && timezone.trim() !== "" ? timezone : null;
 };
 
 export interface ApiClientConfig {
@@ -103,6 +124,14 @@ export class ApiClient {
 
         if (csrf !== null) {
           requestConfig.headers[CSRF_TOKEN_HEADER_NAME] = csrf;
+        }
+      }
+
+      if (readTimezoneHeader(requestConfig.headers) === undefined) {
+        const timezone = getBrowserTimezone();
+
+        if (timezone !== null) {
+          requestConfig.headers[TIMEZONE_HEADER_NAME] = timezone;
         }
       }
 

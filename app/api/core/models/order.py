@@ -22,7 +22,7 @@ from core.foundation.database.database import Base
 from core.models.enums import OrderStatus
 
 if TYPE_CHECKING:
-    from core.models.order_item import OrderItem
+    from core.models.order_details import OrderDetails
     from core.models.payment import Payment
     from core.models.tenant import Tenant
     from core.models.user import User
@@ -59,7 +59,6 @@ class Order(Base):
     )
     total_amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     currency: Mapped[str] = mapped_column(String(3), nullable=False, default="PLN")
-    notes: Mapped[str | None] = mapped_column(String(1000), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
@@ -69,8 +68,8 @@ class Order(Base):
 
     tenant: Mapped[Tenant] = relationship("Tenant", back_populates="orders")
     assigned_waiter: Mapped[User | None] = relationship("User", foreign_keys=[waiter_user_id])
-    order_items: Mapped[list[OrderItem]] = relationship(
-        "OrderItem", back_populates="order", cascade="all, delete-orphan"
+    details: Mapped[OrderDetails | None] = relationship(
+        "OrderDetails", back_populates="order", cascade="all, delete-orphan", uselist=False
     )
     payments: Mapped[list[Payment]] = relationship(
         "Payment", back_populates="order", cascade="all, delete-orphan"

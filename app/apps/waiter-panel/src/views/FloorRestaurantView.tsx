@@ -182,7 +182,7 @@ export const FloorRestaurantView = (): ReactElement => {
           </div>
         )}
         {!isVenueLoading && !isVenueError && venue && (
-          <div className="min-h-0 flex-1 rounded-lg border border-border-default bg-background-secondary">
+          <div className="min-h-0 flex-1">
             <FloorRuntimeView venue={venue} selectedFloorId={selectedFloorId} />
           </div>
         )}

@@ -1,6 +1,6 @@
 import { Button, cn } from "@restorio/ui";
 import type { ReactElement } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { IoIosCloseCircleOutline, IoIosAdd } from "react-icons/io";
 
 export interface WaiterMenuDockItem {
@@ -9,6 +9,7 @@ export interface WaiterMenuDockItem {
   description: string;
   tags: string[];
   price: number;
+  category?: string;
 }
 
 interface WaiterMenuDockProps {
@@ -22,6 +23,8 @@ interface WaiterMenuDockProps {
   onClose: () => void;
 }
 
+const UNCATEGORIZED = "Inne";
+
 export const WaiterMenuDock = ({
   isOpen,
   placement,
@@ -33,6 +36,24 @@ export const WaiterMenuDock = ({
   onClose,
 }: WaiterMenuDockProps): ReactElement => {
   const [motionReady, setMotionReady] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const groupedItems = useMemo(() => {
+    const groups: Record<string, WaiterMenuDockItem[]> = {};
+
+    for (const item of items) {
+      const category = item.category?.trim() ?? UNCATEGORIZED;
+
+      groups[category] = groups[category] ?? [];
+      groups[category].push(item);
+    }
+
+    return groups;
+  }, [items]);
+
+  const categories = useMemo(() => Object.keys(groupedItems), [groupedItems]);
 
   useEffect(() => {
     const id = requestAnimationFrame(() => {
@@ -43,6 +64,54 @@ export const WaiterMenuDock = ({
       cancelAnimationFrame(id);
     };
   }, []);
+
+  useEffect(() => {
+    if (categories.length > 0 && activeCategory === null) {
+      setActiveCategory(categories[0]);
+    }
+  }, [categories, activeCategory]);
+
+  const scrollToCategory = (category: string): void => {
+    const element = categoryRefs.current[category];
+
+    if (element && scrollContainerRef.current) {
+      const containerTop = scrollContainerRef.current.getBoundingClientRect().top;
+      const elementTop = element.getBoundingClientRect().top;
+      const offset = elementTop - containerTop + scrollContainerRef.current.scrollTop - 8;
+
+      scrollContainerRef.current.scrollTo({ top: offset, behavior: "smooth" });
+      setActiveCategory(category);
+    }
+  };
+
+  const handleScroll = (): void => {
+    if (!scrollContainerRef.current) {
+      return;
+    }
+
+    const containerTop = scrollContainerRef.current.getBoundingClientRect().top;
+
+    let closestCategory: string | null = null;
+    let closestDistance = Infinity;
+
+    for (const category of categories) {
+      const element = categoryRefs.current[category];
+
+      if (element) {
+        const elementTop = element.getBoundingClientRect().top;
+        const distance = Math.abs(elementTop - containerTop);
+
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestCategory = category;
+        }
+      }
+    }
+
+    if (closestCategory && closestCategory !== activeCategory) {
+      setActiveCategory(closestCategory);
+    }
+  };
 
   const effectiveOpen = motionReady && isOpen;
   const isRight = placement === "right";
@@ -64,7 +133,7 @@ export const WaiterMenuDock = ({
         aria-modal="true"
         aria-label={title}
         className={cn(
-          "fixed z-50 flex min-h-0 flex-col overflow-hidden bg-surface-primary shadow-overlay transition-transform duration-300 ease-out",
+          "fixed z-50 flex min-h-0 flex-col py-1 overflow-hidden bg-surface-primary shadow-overlay transition-transform duration-300 ease-out",
           isRight
             ? "bottom-0 right-0 top-0 w-[min(100vw,20rem)] border-l border-border-default"
             : "bottom-0 left-0 right-0 max-h-[min(55vh,28rem)] rounded-t-lg border-t border-border-default",
@@ -91,53 +160,86 @@ export const WaiterMenuDock = ({
             <IoIosCloseCircleOutline className="h-7 w-7" />
           </Button>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2">
+        {categories.length > 1 && (
+          <div className="sticky top-0 z-10 flex shrink-0 gap-1 overflow-x-auto border-b border-border-default bg-surface-primary px-3 py-2">
+            {categories.map((category) => (
+              <button
+                key={category}
+                type="button"
+                onClick={() => {
+                  scrollToCategory(category);
+                }}
+                className={cn(
+                  "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                  activeCategory === category
+                    ? "bg-brand-primary text-white"
+                    : "bg-background-secondary text-text-secondary hover:bg-background-tertiary",
+                )}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        )}
+        <div ref={scrollContainerRef} onScroll={handleScroll} className="min-h-0 flex-1 overflow-y-auto px-3 py-2">
           {items.length === 0 ? (
             <div className="rounded-md border border-border-default bg-background-secondary px-3 py-2 text-sm text-text-secondary">
               {emptyLabel}
             </div>
           ) : (
-            <div className="flex flex-col gap-2 pb-4">
-              {items.map((item) => (
+            <div className="flex flex-col gap-4 pb-4">
+              {categories.map((category) => (
                 <div
-                  key={item.id}
-                  className="rounded-md border border-border-default bg-background-secondary px-3 py-2 text-sm"
+                  key={category}
+                  ref={(el) => {
+                    categoryRefs.current[category] = el;
+                  }}
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="font-medium text-text-primary">{item.name}</div>
-                      {item.description.trim() !== "" && (
-                        <div className="mt-0.5 text-xs text-text-secondary">{item.description}</div>
-                      )}
-                      {item.tags.length > 0 && (
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          {item.tags.map((tag) => (
-                            <span
-                              key={`${item.id}-${tag}`}
-                              className="rounded-full border border-border-default bg-surface-primary px-2 py-0.5 text-[10px] text-text-secondary"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex shrink-0 items-center gap-2">
-                      <span className="whitespace-nowrap text-sm font-semibold text-text-primary">
-                        {item.price.toFixed(2)}
-                      </span>
-                      <Button
-                        type="button"
-                        variant="primary"
-                        size="icon"
-                        className="h-8 w-8 rounded-full"
-                        onClick={() => {
-                          onAddItem(item.id);
-                        }}
+                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-secondary">{category}</h3>
+                  <div className="flex flex-col gap-2 rounded-lg border border-border-default bg-background-secondary p-2">
+                    {groupedItems[category].map((item) => (
+                      <div
+                        key={item.id}
+                        className="rounded-md border border-border-default bg-surface-primary px-4 py-3 text-sm"
                       >
-                        <IoIosAdd className="h-6 w-6" />
-                      </Button>
-                    </div>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="font-medium text-text-primary">{item.name}</div>
+                            {item.description.trim() !== "" && (
+                              <div className="mt-0.5 text-xs text-text-secondary">{item.description}</div>
+                            )}
+                            {item.tags.length > 0 && (
+                              <div className="mt-1 flex flex-wrap gap-1">
+                                {item.tags.map((tag) => (
+                                  <span
+                                    key={`${item.id}-${tag}`}
+                                    className="rounded-full border border-border-default bg-background-secondary px-2 py-0.5 text-[10px] text-text-secondary"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex shrink-0 items-center gap-2">
+                            <span className="whitespace-nowrap text-sm font-semibold text-text-primary">
+                              {item.price.toFixed(2)}
+                            </span>
+                            <Button
+                              type="button"
+                              variant="primary"
+                              size="icon"
+                              className="h-8 w-8 rounded-full"
+                              onClick={() => {
+                                onAddItem(item.id);
+                              }}
+                            >
+                              <IoIosAdd className="h-6 w-6" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ))}

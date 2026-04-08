@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -8,12 +9,16 @@ from core.exceptions import BadRequestError, NotFoundResponse
 
 _ORDERS_COLLECTION = "kitchen_orders"
 
+INVALID_ORDER_STATUS_TRANSITION_CODE = "INVALID_ORDER_STATUS_TRANSITION"
+
 _VALID_TRANSITIONS: dict[str, set[str]] = {
     "new": {"preparing", "rejected"},
-    "preparing": {"ready"},
+    "preparing": {"ready_to_serve"},
+    "ready_to_serve": {"paid"},
     "ready": set(),
     "rejected": {"refunded"},
     "refunded": set(),
+    "paid": set(),
 }
 
 
@@ -23,6 +28,7 @@ class OrderService:
         db: AsyncIOMotorDatabase,
         restaurant_id: str,
         status: str | None = None,
+        timezone_name: str | None = None,
     ) -> list[dict[str, Any]]:
         query: dict[str, Any] = {"restaurantId": restaurant_id}
         if status:
@@ -30,13 +36,14 @@ class OrderService:
 
         cursor = db[_ORDERS_COLLECTION].find(query).sort("createdAt", -1)
         orders = await cursor.to_list(length=500)
-        return [_serialize_order(o) for o in orders]
+        return [_serialize_order(o, timezone_name=timezone_name) for o in orders]
 
     async def get_order(
         self,
         db: AsyncIOMotorDatabase,
         restaurant_id: str,
         order_id: str,
+        timezone_name: str | None = None,
     ) -> dict[str, Any]:
         doc = await db[_ORDERS_COLLECTION].find_one(
             {"_id": order_id, "restaurantId": restaurant_id}
@@ -44,16 +51,18 @@ class OrderService:
         if not doc:
             msg = "Order"
             raise NotFoundResponse(msg, order_id)
-        return _serialize_order(doc)
+        return _serialize_order(doc, timezone_name=timezone_name)
 
     async def create_order(
         self,
         db: AsyncIOMotorDatabase,
         restaurant_id: str,
         data: dict[str, Any],
+        timezone_name: str | None = None,
     ) -> dict[str, Any]:
         now = datetime.now(UTC)
         order_id = data.get("id") or f"K-{uuid4().hex[:6].upper()}"
+        timezone = _resolve_timezone(timezone_name)
 
         doc: dict[str, Any] = {
             "_id": order_id,
@@ -62,12 +71,12 @@ class OrderService:
             "sessionId": data.get("sessionId", ""),
             "items": data.get("items", []),
             "status": "new",
-            "paymentStatus": data.get("paymentStatus", "completed"),
+            "paymentStatus": data.get("paymentStatus", "pending"),
             "subtotal": data.get("subtotal", 0),
             "tax": data.get("tax", 0),
             "total": data.get("total", 0),
             "table": data.get("table", ""),
-            "time": data.get("time", now.strftime("%H:%M")),
+            "time": data.get("time", now.astimezone(timezone).strftime("%H:%M")),
             "notes": data.get("notes"),
             "rejectionReason": None,
             "createdAt": now,
@@ -75,7 +84,7 @@ class OrderService:
         }
 
         await db[_ORDERS_COLLECTION].insert_one(doc)
-        return _serialize_order(doc)
+        return _serialize_order(doc, timezone_name=timezone_name)
 
     async def update_order(
         self,
@@ -83,6 +92,7 @@ class OrderService:
         restaurant_id: str,
         order_id: str,
         data: dict[str, Any],
+        timezone_name: str | None = None,
     ) -> dict[str, Any]:
         doc = await db[_ORDERS_COLLECTION].find_one(
             {"_id": order_id, "restaurantId": restaurant_id}
@@ -94,15 +104,30 @@ class OrderService:
         update: dict[str, Any] = {"updatedAt": datetime.now(UTC)}
 
         if "items" in data:
-            update["items"] = data["items"]
+            items = data["items"]
+            if isinstance(items, list):
+                update["items"] = [
+                    {
+                        "id": item.get("id", ""),
+                        "menuItemId": item.get("menuItemId", item.get("menu_item_id", "")),
+                        "name": item.get("name", ""),
+                        "quantity": item.get("quantity", 1),
+                        "basePrice": float(item.get("basePrice", item.get("base_price", 0))),
+                        "selectedModifiers": item.get("selectedModifiers", item.get("selected_modifiers", [])),
+                        "totalPrice": float(item.get("totalPrice", item.get("total_price", 0))),
+                    }
+                    for item in items
+                ]
         if "notes" in data:
             update["notes"] = data["notes"]
         if "total" in data:
-            update["total"] = data["total"]
+            update["total"] = float(data["total"])
         if "subtotal" in data:
-            update["subtotal"] = data["subtotal"]
+            update["subtotal"] = float(data["subtotal"])
         if "table" in data:
             update["table"] = data["table"]
+        if data.get("status"):
+            update["status"] = data["status"]
 
         await db[_ORDERS_COLLECTION].update_one(
             {"_id": order_id},
@@ -110,7 +135,7 @@ class OrderService:
         )
 
         updated = await db[_ORDERS_COLLECTION].find_one({"_id": order_id})
-        return _serialize_order(updated)
+        return _serialize_order(updated, timezone_name=timezone_name)
 
     async def update_status(
         self,
@@ -119,6 +144,7 @@ class OrderService:
         order_id: str,
         new_status: str,
         rejection_reason: str | None = None,
+        timezone_name: str | None = None,
     ) -> dict[str, Any]:
         doc = await db[_ORDERS_COLLECTION].find_one(
             {"_id": order_id, "restaurantId": restaurant_id}
@@ -131,7 +157,14 @@ class OrderService:
         allowed = _VALID_TRANSITIONS.get(current, set())
         if new_status not in allowed:
             msg = f"Cannot transition from '{current}' to '{new_status}'"
-            raise BadRequestError(msg)
+            raise BadRequestError(
+                msg,
+                details={
+                    "code": INVALID_ORDER_STATUS_TRANSITION_CODE,
+                    "current": current,
+                    "new_status": new_status,
+                },
+            )
 
         if new_status == "rejected" and not rejection_reason:
             msg = "Rejection reason is required"
@@ -150,13 +183,14 @@ class OrderService:
         )
 
         updated = await db[_ORDERS_COLLECTION].find_one({"_id": order_id})
-        return _serialize_order(updated)
+        return _serialize_order(updated, timezone_name=timezone_name)
 
     async def delete_order(
         self,
         db: AsyncIOMotorDatabase,
         restaurant_id: str,
         order_id: str,
+        timezone_name: str | None = None,
     ) -> dict[str, Any]:
         doc = await db[_ORDERS_COLLECTION].find_one(
             {"_id": order_id, "restaurantId": restaurant_id}
@@ -166,7 +200,7 @@ class OrderService:
             raise NotFoundResponse(msg, order_id)
 
         await db[_ORDERS_COLLECTION].delete_one({"_id": order_id})
-        return _serialize_order(doc)
+        return _serialize_order(doc, timezone_name=timezone_name)
 
     async def get_order_for_archive(
         self,
@@ -181,13 +215,23 @@ class OrderService:
             msg = "Order"
             raise NotFoundResponse(msg, order_id)
 
-        if doc["status"] not in ("ready", "refunded"):
-            msg = "Only orders with status 'ready' or 'refunded' can be archived"
+        if doc["status"] not in ("ready", "ready_to_serve", "paid", "refunded"):
+            msg = "Only orders with status 'ready', 'ready_to_serve', 'paid' or 'refunded' can be archived"
             raise BadRequestError(msg)
         return doc
 
 
-def _serialize_order(doc: dict[str, Any]) -> dict[str, Any]:
+def _resolve_timezone(timezone_name: str | None) -> ZoneInfo:
+    if timezone_name is None or timezone_name.strip() == "":
+        return ZoneInfo("UTC")
+
+    try:
+        return ZoneInfo(timezone_name)
+    except ZoneInfoNotFoundError:
+        return ZoneInfo("UTC")
+
+
+def _serialize_order(doc: dict[str, Any], *, timezone_name: str | None = None) -> dict[str, Any]:
     return {
         "id": doc["_id"],
         "restaurantId": doc.get("restaurantId", ""),
@@ -203,14 +247,17 @@ def _serialize_order(doc: dict[str, Any]) -> dict[str, Any]:
         "time": doc.get("time", ""),
         "notes": doc.get("notes"),
         "rejectionReason": doc.get("rejectionReason"),
-        "createdAt": _to_iso(doc.get("createdAt")),
-        "updatedAt": _to_iso(doc.get("updatedAt")),
+        "createdAt": _to_iso(doc.get("createdAt"), timezone_name=timezone_name),
+        "updatedAt": _to_iso(doc.get("updatedAt"), timezone_name=timezone_name),
     }
 
 
-def _to_iso(value: Any) -> str:
+def _to_iso(value: Any, *, timezone_name: str | None = None) -> str:
+    timezone = _resolve_timezone(timezone_name)
+
     if isinstance(value, datetime):
-        return value.isoformat()
+        aware_value = value if value.tzinfo is not None else value.replace(tzinfo=UTC)
+        return aware_value.astimezone(timezone).isoformat()
     if value is None:
-        return datetime.now(UTC).isoformat()
+        return datetime.now(UTC).astimezone(timezone).isoformat()
     return str(value)

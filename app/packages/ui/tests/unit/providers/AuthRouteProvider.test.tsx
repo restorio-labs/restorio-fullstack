@@ -2,11 +2,7 @@ import { render, renderHook, screen, waitFor } from "@testing-library/react";
 import { act } from "react";
 import { describe, expect, it, vi } from "vitest";
 
-import {
-  AuthRouteProvider,
-  useAuthRoute,
-  type AuthCheckContext,
-} from "../../../src/providers/AuthRouteProvider";
+import { AuthRouteProvider, useAuthRoute, type AuthCheckContext } from "../../../src/providers/AuthRouteProvider";
 
 describe("AuthRouteProvider", () => {
   it("renders children", () => {

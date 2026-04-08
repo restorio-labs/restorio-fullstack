@@ -1,4 +1,6 @@
+import { getOrderStatusUpdateErrorToastTitle, type OrderStatusErrorTranslateFn } from "@restorio/api-client";
 import type { Order, OrderStatus } from "@restorio/types";
+import { useI18n, useToast } from "@restorio/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
@@ -18,7 +20,7 @@ export interface UseOrdersStateReturn {
   moveOrderDown: (orderId: string) => void;
   approveOrder: (orderId: string) => void;
   rejectOrder: (orderId: string, reason: string) => void;
-  markReady: (orderId: string) => void;
+  markReadyToServe: (orderId: string) => void;
   refundOrder: (orderId: string) => void;
 }
 
@@ -26,6 +28,18 @@ const ordersQueryKey = (restaurantId: string): readonly string[] => ["orders", r
 
 export const useOrdersState = (restaurantId: string | null): UseOrdersStateReturn => {
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
+  const { t } = useI18n();
+  const translate: OrderStatusErrorTranslateFn = useCallback(
+    (key, defaultMessageOrValues, values) => t(key, defaultMessageOrValues, values),
+    [t],
+  );
+  const showErrorToast = useCallback(
+    (title: string): void => {
+      showToast("error", title);
+    },
+    [showToast],
+  );
 
   const { data, isLoading, error } = useQuery({
     queryKey: ordersQueryKey(restaurantId ?? ""),
@@ -56,6 +70,9 @@ export const useOrdersState = (restaurantId: string | null): UseOrdersStateRetur
         void queryClient.invalidateQueries({ queryKey: ordersQueryKey(restaurantId) });
       }
     },
+    onError: (err: unknown) => {
+      showErrorToast(getOrderStatusUpdateErrorToastTitle(err, translate));
+    },
   });
 
   const moveOrder = useCallback(
@@ -79,9 +96,9 @@ export const useOrdersState = (restaurantId: string | null): UseOrdersStateRetur
     [statusMutation],
   );
 
-  const markReady = useCallback(
+  const markReadyToServe = useCallback(
     (orderId: string): void => {
-      statusMutation.mutate({ orderId, status: "ready" as OrderStatus });
+      statusMutation.mutate({ orderId, status: "ready_to_serve" as OrderStatus });
     },
     [statusMutation],
   );
@@ -125,7 +142,7 @@ export const useOrdersState = (restaurantId: string | null): UseOrdersStateRetur
     moveOrderDown,
     approveOrder,
     rejectOrder,
-    markReady,
+    markReadyToServe,
     refundOrder,
   };
 };

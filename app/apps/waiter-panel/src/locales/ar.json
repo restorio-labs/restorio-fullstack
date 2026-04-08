@@ -46,7 +46,16 @@
     "zoomLabel": "التكبير: {{value}}%",
     "zoomIn": "تكبير",
     "zoomOut": "تصغير",
-    "zoomReset": "إعادة ضبط"
+    "zoomReset": "إعادة ضبط",
+    "orderStatus": {
+      "browsing": "تصفح",
+      "ordering": "طلب",
+      "ordered": "تم الطلب",
+      "preparing": "قيد التحضير",
+      "ready_to_serve": "جاهز للتقديم",
+      "served": "مُقدَّم",
+      "bill_requested": "طلب الحساب"
+    }
   },
   "floorRuntime": {
     "noLayout": "لا يوجد مخطط قاعة لهذا المكان."
@@ -56,6 +65,26 @@
     "panel": {
       "name": "الاسم",
       "seats": "المقاعد"
+    }
+  },
+  "orders": {
+    "status": {
+      "new": "جديد",
+      "preparing": "قيد التحضير",
+      "ready": "جاهز",
+      "readyToServe": "جاهز للتقديم",
+      "rejected": "مرفوض",
+      "refunded": "مسترد",
+      "paid": "مدفوع",
+      "pending": "قيد الانتظار",
+      "confirmed": "مؤكد",
+      "delivered": "تم التسليم",
+      "cancelled": "ملغى",
+      "unknown": "غير معروف"
+    },
+    "errors": {
+      "invalidTransition": "لا يمكن تغيير الحالة من {{from}} إلى {{to}}.",
+      "statusUpdateFailed": "تعذر تحديث حالة الطلب."
     }
   }
 }

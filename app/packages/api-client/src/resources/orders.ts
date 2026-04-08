@@ -1,10 +1,32 @@
-import type { Order, OrderFilters, OrderStatus, RestaurantKitchenConfig, SuccessResponse } from "@restorio/types";
+import type { Order, OrderFilters, OrderStatus, PaginatedResponse, RestaurantKitchenConfig, SuccessResponse } from "@restorio/types";
 
 import { BaseResource } from "./base";
 
 interface UpdateStatusPayload {
   status: OrderStatus;
   rejectionReason?: string;
+}
+
+export interface ArchivedOrderRow {
+  id: string;
+  originalOrderId: string;
+  restaurantId: string;
+  tenantId: string;
+  tableId: string | null;
+  tableLabel: string;
+  status: string;
+  paymentStatus: string;
+  total: string | number;
+  currency: string;
+  notes: string | null;
+  createdAt: string;
+  archivedAt: string;
+}
+
+export interface ListArchivedOrdersParams {
+  page?: number;
+  pageSize?: number;
+  sinceHours?: number | null;
 }
 
 export class OrdersResource extends BaseResource {
@@ -17,6 +39,39 @@ export class OrdersResource extends BaseResource {
 
   get(restaurantId: string, orderId: string, signal?: AbortSignal): Promise<SuccessResponse<Order>> {
     return this.client.get(`/restaurants/${restaurantId}/orders/${orderId}`, { signal });
+  }
+
+  async listArchivedPage(
+    restaurantId: string,
+    params?: ListArchivedOrdersParams,
+    signal?: AbortSignal,
+  ): Promise<PaginatedResponse<ArchivedOrderRow>> {
+    return this.client.get<PaginatedResponse<ArchivedOrderRow>>(`/restaurants/${restaurantId}/orders/archived`, {
+      params: {
+        page: params?.page,
+        page_size: params?.pageSize,
+        sinceHours: params?.sinceHours ?? undefined,
+      },
+      signal,
+    });
+  }
+
+  async listArchived(
+    restaurantId: string,
+    params?: Omit<ListArchivedOrdersParams, "page">,
+    signal?: AbortSignal,
+  ): Promise<ArchivedOrderRow[]> {
+    const page = await this.listArchivedPage(
+      restaurantId,
+      {
+        page: 1,
+        pageSize: params?.pageSize,
+        sinceHours: params?.sinceHours,
+      },
+      signal,
+    );
+
+    return page.items;
   }
 
   create(restaurantId: string, data: Partial<Order>, signal?: AbortSignal): Promise<Order> {

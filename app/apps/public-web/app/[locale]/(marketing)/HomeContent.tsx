@@ -74,7 +74,9 @@ export const HomeContent = (): ReactElement => {
           ) : authStatus === "reconnecting" ? (
             <div className="flex flex-col items-center justify-center gap-4 pt-4">
               <Loader size="lg" aria-hidden />
-              <p className="max-w-lg text-center text-base font-medium text-text-secondary">{t("common.tryingToConnect")}</p>
+              <p className="max-w-lg text-center text-base font-medium text-text-secondary">
+                {t("common.tryingToConnect")}
+              </p>
             </div>
           ) : authStatus === "unavailable" ? (
             <p className="mx-auto max-w-lg pt-4 text-center text-base font-medium text-status-warning-text">

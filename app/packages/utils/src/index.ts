@@ -1,4 +1,5 @@
 export * from "./environment";
+export * from "./orderStatusLabelKey";
 export * from "./http";
 export * from "./logger";
 export * from "./i18n";

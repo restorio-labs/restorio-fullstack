@@ -36,6 +36,34 @@ describe("OrdersResource", () => {
     expect(client.get).toHaveBeenCalledWith("/restaurants/r1/orders/o1", { signal: undefined });
   });
 
+  it("listArchived calls GET /restaurants/:id/orders/archived", async () => {
+    client.get = vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, page_size: 20, total_pages: 0 });
+
+    await resource.listArchived("r1");
+    expect(client.get).toHaveBeenCalledWith("/restaurants/r1/orders/archived", {
+      params: {
+        page: 1,
+        page_size: undefined,
+        sinceHours: undefined,
+      },
+      signal: undefined,
+    });
+  });
+
+  it("listArchivedPage sends pagination params", async () => {
+    client.get = vi.fn().mockResolvedValue({ items: [], total: 0, page: 2, page_size: 10, total_pages: 0 });
+
+    await resource.listArchivedPage("r1", { page: 2, pageSize: 10, sinceHours: 72 });
+    expect(client.get).toHaveBeenCalledWith("/restaurants/r1/orders/archived", {
+      params: {
+        page: 2,
+        page_size: 10,
+        sinceHours: 72,
+      },
+      signal: undefined,
+    });
+  });
+
   it("create calls POST /restaurants/:id/orders", async () => {
     const payload = { total: 100 };
 

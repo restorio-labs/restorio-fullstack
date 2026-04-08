@@ -22,16 +22,13 @@ interface AppProvidersProps {
 export const AppProviders = ({ children }: AppProvidersProps): ReactNode => {
   const locale = "pl";
   const messages = useMessages();
-  const checkAuth = useCallback(
-    async ({ onReconnecting }: AuthCheckContext): Promise<AuthRouteResolvedStatus> => {
-      return checkPublicWebAuth(() => api.auth.me(), {
-        requireSessionHintCookie: SESSION_HINT_COOKIE,
-        isBackendReachable: () => api.health.isReachable(),
-        onReconnecting,
-      });
-    },
-    [],
-  );
+  const checkAuth = useCallback(async ({ onReconnecting }: AuthCheckContext): Promise<AuthRouteResolvedStatus> => {
+    return checkPublicWebAuth(() => api.auth.me(), {
+      requireSessionHintCookie: SESSION_HINT_COOKIE,
+      isBackendReachable: () => api.health.isReachable(),
+      onReconnecting,
+    });
+  }, []);
 
   return (
     <I18nProvider locale={locale} messages={messages}>
