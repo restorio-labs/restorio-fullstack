@@ -5,6 +5,7 @@ export interface TenantMenuItem {
   desc: string;
   tags: string[];
   isAvailable: boolean;
+  imageUrl?: string | null;
 }
 
 export interface TenantMenuCategory {

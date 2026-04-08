@@ -56,4 +56,7 @@ export interface PublicCreateOrderPaymentData {
 export interface PublicTenantInfo {
   name: string;
   slug: string;
+  pageTitle?: string | null;
+  faviconPath?: string | null;
+  themeOverride?: Record<string, unknown> | null;
 }

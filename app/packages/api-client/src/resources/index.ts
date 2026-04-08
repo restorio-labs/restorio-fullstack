@@ -9,5 +9,6 @@ export * from "./tenants";
 export * from "./tenant-orders";
 export * from "./floor-canvases";
 export * from "./menus";
+export * from "./tenant-mobile-config";
 export * from "./orders";
 export * from "./public";

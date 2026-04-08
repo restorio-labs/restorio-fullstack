@@ -7,6 +7,7 @@ import {
   TenantOrdersResource,
   FloorCanvasesResource,
   MenusResource,
+  TenantMobileConfigResource,
   OrdersResource,
   AuthResource,
   HealthResource,
@@ -27,6 +28,7 @@ export class RestorioApi {
   public readonly tenantProfiles: TenantProfilesResource;
   public readonly restaurants: RestaurantsResource;
   public readonly menus: MenusResource;
+  public readonly tenantMobileConfig: TenantMobileConfigResource;
   public readonly orders: OrdersResource;
   public readonly tables: TablesResource;
   public readonly tenants: TenantsResource;
@@ -43,6 +45,7 @@ export class RestorioApi {
     this.restaurants = new RestaurantsResource(this.client);
     this.floorCanvases = new FloorCanvasesResource(this.client);
     this.menus = new MenusResource(this.client);
+    this.tenantMobileConfig = new TenantMobileConfigResource(this.client);
     this.orders = new OrdersResource(this.client);
     this.tables = new TablesResource(this.client);
     this.tenants = new TenantsResource(this.client);
