@@ -126,7 +126,11 @@ export const MobileConfigurationPage = (): ReactElement => {
       return afterSave;
     },
     onSuccess: () => {
-      showToast("success", t("mobileConfiguration.toast.saveSuccessTitle"), t("mobileConfiguration.toast.saveSuccessBody"));
+      showToast(
+        "success",
+        t("mobileConfiguration.toast.saveSuccessTitle"),
+        t("mobileConfiguration.toast.saveSuccessBody"),
+      );
       if (tenantId) {
         void queryClient.invalidateQueries({ queryKey: mobileConfigQueryKey(tenantId) });
       }
@@ -159,7 +163,11 @@ export const MobileConfigurationPage = (): ReactElement => {
           : "",
       );
       setThemeError("");
-      showToast("success", t("mobileConfiguration.toast.copySuccessTitle"), t("mobileConfiguration.toast.copySuccessBody"));
+      showToast(
+        "success",
+        t("mobileConfiguration.toast.copySuccessTitle"),
+        t("mobileConfiguration.toast.copySuccessBody"),
+      );
       if (tenantId) {
         void queryClient.invalidateQueries({ queryKey: mobileConfigQueryKey(tenantId) });
       }
@@ -300,7 +308,9 @@ export const MobileConfigurationPage = (): ReactElement => {
                 disabled={!copySourceId || copyMutation.isPending}
                 onClick={handleCopyTheme}
               >
-                {copyMutation.isPending ? t("mobileConfiguration.copySection.copying") : t("mobileConfiguration.copySection.copy")}
+                {copyMutation.isPending
+                  ? t("mobileConfiguration.copySection.copying")
+                  : t("mobileConfiguration.copySection.copy")}
               </Button>
             </div>
           </div>

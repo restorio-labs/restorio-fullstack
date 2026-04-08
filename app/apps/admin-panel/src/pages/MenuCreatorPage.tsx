@@ -627,15 +627,13 @@ export const MenuCreatorPage = (): ReactElement => {
                       />
                     </div>
                     <div className="mt-3 rounded-lg border border-border-default bg-surface-secondary/80 p-3">
-                      <p className="mb-2 text-xs font-medium text-text-secondary">{t("menuCreator.fields.itemImage")}</p>
+                      <p className="mb-2 text-xs font-medium text-text-secondary">
+                        {t("menuCreator.fields.itemImage")}
+                      </p>
                       <p className="mb-2 text-xs text-text-tertiary">{t("menuCreator.fields.itemImageHint")}</p>
                       <div className="flex flex-wrap items-center gap-3">
                         {item.imageUrl ? (
-                          <img
-                            src={item.imageUrl}
-                            alt=""
-                            className="h-20 w-20 shrink-0 rounded-md object-cover"
-                          />
+                          <img src={item.imageUrl} alt="" className="h-20 w-20 shrink-0 rounded-md object-cover" />
                         ) : null}
                         <div className="flex flex-col gap-2">
                           <label className="inline-flex cursor-pointer items-center justify-center rounded-md border border-border-default bg-surface-primary px-3 py-2 text-xs font-medium text-text-primary">

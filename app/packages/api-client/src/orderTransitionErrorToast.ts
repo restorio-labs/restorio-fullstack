@@ -1,9 +1,6 @@
 import { getOrderStatusLabelKey } from "@restorio/utils";
 
-import {
-  parseOrderStatusTransitionDetails,
-  parseRestorioApiError,
-} from "./restorioApiError";
+import { parseOrderStatusTransitionDetails, parseRestorioApiError } from "./restorioApiError";
 
 export type OrderStatusErrorTranslateFn = (
   key: string,
@@ -11,10 +8,7 @@ export type OrderStatusErrorTranslateFn = (
   values?: Record<string, string | number | undefined>,
 ) => string;
 
-export const getOrderStatusUpdateErrorToastTitle = (
-  error: unknown,
-  t: OrderStatusErrorTranslateFn,
-): string => {
+export const getOrderStatusUpdateErrorToastTitle = (error: unknown, t: OrderStatusErrorTranslateFn): string => {
   const parsed = parseRestorioApiError(error);
 
   if (!parsed) {

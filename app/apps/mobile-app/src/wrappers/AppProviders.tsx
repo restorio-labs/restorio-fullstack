@@ -19,12 +19,7 @@ export const AppProviders = ({ children }: AppProvidersProps): ReactNode => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <I18nProvider
-        locale={locale}
-        messages={messages}
-        fallbackMessages={messagesByLocale.en}
-        setLocale={setLocale}
-      >
+      <I18nProvider locale={locale} messages={messages} fallbackMessages={messagesByLocale.en} setLocale={setLocale}>
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <ThemeProvider defaultMode="system" storageKey={THEME_STORAGE_KEY}>
             {children}

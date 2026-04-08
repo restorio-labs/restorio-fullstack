@@ -14,13 +14,7 @@ export const MenuItemCard = ({ item, quantity, onAdd, onRemove }: MenuItemCardPr
 
   return (
     <div className="flex items-center justify-between gap-3 rounded-lg border border-border-default bg-surface-primary py-3 px-5">
-      {item.imageUrl ? (
-        <img
-          src={item.imageUrl}
-          alt=""
-          className="h-20 w-20 shrink-0 rounded-lg object-cover"
-        />
-      ) : null}
+      {item.imageUrl ? <img src={item.imageUrl} alt="" className="h-20 w-20 shrink-0 rounded-lg object-cover" /> : null}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <Text as="span" variant="body-md" weight="medium" className="truncate">

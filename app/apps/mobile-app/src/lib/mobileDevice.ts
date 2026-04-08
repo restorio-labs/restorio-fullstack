@@ -30,10 +30,7 @@ export const isMobileOrTabletClient = (): boolean => {
     return true;
   }
 
-  if (
-    window.matchMedia("(max-width: 1024px)").matches &&
-    (navigator.maxTouchPoints > 0 || "ontouchstart" in window)
-  ) {
+  if (window.matchMedia("(max-width: 1024px)").matches && (navigator.maxTouchPoints > 0 || "ontouchstart" in window)) {
     return true;
   }
 

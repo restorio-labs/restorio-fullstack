@@ -153,8 +153,8 @@ export const OrderPage = (): ReactElement => {
 
   const categories = menuQuery.data?.categories ?? [];
   const displayName = tenantQuery.data?.pageTitle?.trim()
-    ? tenantQuery.data.pageTitle ?? ""
-    : tenantQuery.data?.name ?? "";
+    ? (tenantQuery.data.pageTitle ?? "")
+    : (tenantQuery.data?.name ?? "");
   const currency = t("common.currency");
 
   return (

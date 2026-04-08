@@ -10,12 +10,7 @@ interface CartSummaryProps {
   onUpdateQuantity: (name: string, quantity: number) => void;
 }
 
-export const CartSummary = ({
-  items,
-  totalAmount,
-  onRemove,
-  onUpdateQuantity,
-}: CartSummaryProps): ReactElement => {
+export const CartSummary = ({ items, totalAmount, onRemove, onUpdateQuantity }: CartSummaryProps): ReactElement => {
   const { t } = useI18n();
   const currency = t("common.currency");
 

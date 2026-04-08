@@ -411,10 +411,19 @@ export const KitchenView = (): ReactElement => {
                           }
                           summary={
                             <Stack spacing="xs" className="w-full min-w-0 items-start text-left">
-                              <Text as="p" variant="body-lg" weight="semibold" className="max-w-full self-stretch truncate">
+                              <Text
+                                as="p"
+                                variant="body-lg"
+                                weight="semibold"
+                                className="max-w-full self-stretch truncate"
+                              >
                                 {order.id}
                               </Text>
-                              <Text as="p" variant="body-sm" className="max-w-full self-stretch truncate text-text-secondary">
+                              <Text
+                                as="p"
+                                variant="body-sm"
+                                className="max-w-full self-stretch truncate text-text-secondary"
+                              >
                                 {order.table} · {order.items.length} {t("common.items")}
                               </Text>
                               {!isSlidingView && (
@@ -466,7 +475,11 @@ export const KitchenView = (): ReactElement => {
                                   ) : (
                                     <div className="min-w-0 flex-1" />
                                   )}
-                                  {isSlidingView && <Stack direction="row" spacing="sm">{actionButtons}</Stack>}
+                                  {isSlidingView && (
+                                    <Stack direction="row" spacing="sm">
+                                      {actionButtons}
+                                    </Stack>
+                                  )}
                                 </Stack>
                               )}
                               {isRejected && order.rejectionReason && (
@@ -476,7 +489,11 @@ export const KitchenView = (): ReactElement => {
                                   </Text>
                                 </Box>
                               )}
-                              {!isSlidingView && <Stack direction="row" spacing="sm" className="pt-2">{actionButtons}</Stack>}
+                              {!isSlidingView && (
+                                <Stack direction="row" spacing="sm" className="pt-2">
+                                  {actionButtons}
+                                </Stack>
+                              )}
                             </Stack>
                           }
                         />

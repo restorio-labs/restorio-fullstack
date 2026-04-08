@@ -8,12 +8,7 @@ interface CheckoutFormProps {
   onSubmit: (email: string, note: string) => void;
 }
 
-export const CheckoutForm = ({
-  totalAmount,
-  disabled,
-  isSubmitting,
-  onSubmit,
-}: CheckoutFormProps): ReactElement => {
+export const CheckoutForm = ({ totalAmount, disabled, isSubmitting, onSubmit }: CheckoutFormProps): ReactElement => {
   const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [note, setNote] = useState("");

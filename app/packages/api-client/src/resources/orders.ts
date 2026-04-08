@@ -1,4 +1,11 @@
-import type { Order, OrderFilters, OrderStatus, PaginatedResponse, RestaurantKitchenConfig, SuccessResponse } from "@restorio/types";
+import type {
+  Order,
+  OrderFilters,
+  OrderStatus,
+  PaginatedResponse,
+  RestaurantKitchenConfig,
+  SuccessResponse,
+} from "@restorio/types";
 
 import { BaseResource } from "./base";
 
