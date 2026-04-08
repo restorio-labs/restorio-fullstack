@@ -5,9 +5,9 @@ import type { ReactElement } from "react";
 import { useCallback } from "react";
 import { IoFastFoodSharp } from "react-icons/io5";
 import {
-  // TbBook2,
   TbBuildingStore,
   TbCreditCard,
+  TbDeviceMobile,
   TbLayoutDashboardFilled,
   TbQrcode,
   TbUsersGroup,
@@ -105,6 +105,21 @@ export const AdminSidebar = (): ReactElement => {
             onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/menu-creator")}
           >
             {t("sidebar.items.menuCreator")}
+          </NavItem>
+          <NavItem
+            as={Link}
+            to="/mobile-configuration"
+            active={isActive("/mobile-configuration")}
+            role="menuitem"
+            className={NAV_ITEM_ROW_CLASS}
+            icon={
+              <NavIcon className={NAV_ITEM_ICON_CLASS}>
+                <TbDeviceMobile className={NAV_ITEM_ICON_CLASS} />
+              </NavIcon>
+            }
+            onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/mobile-configuration")}
+          >
+            {t("sidebar.items.mobileConfiguration")}
           </NavItem>
           {/* <NavItem
             as={Link}

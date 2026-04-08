@@ -17,6 +17,9 @@ const RestaurantCreatorPage = lazy(async () =>
 const MenuCreatorPage = lazy(async () =>
   import("./pages/MenuCreatorPage").then((module) => ({ default: module.MenuCreatorPage })),
 );
+const MobileConfigurationPage = lazy(async () =>
+  import("./pages/MobileConfigurationPage").then((module) => ({ default: module.MobileConfigurationPage })),
+);
 const QRCodeGeneratorPage = lazy(async () =>
   import("./pages/QRCodeGeneratorPage").then((module) => ({ default: module.QRCodeGeneratorPage })),
 );
@@ -70,6 +73,7 @@ export const App = (): ReactElement => {
             <Route index element={<FloorEditorPage />} />
             <Route path="restaurant-creator" element={<RestaurantCreatorPage />} />
             <Route path="menu-creator" element={<MenuCreatorPage />} />
+            <Route path="mobile-configuration" element={<MobileConfigurationPage />} />
             {/* <Route path="main-page-configurator" element={<MenuPageConfiguratorPage />} /> */}
             <Route path="qr-code-generator" element={<QRCodeGeneratorPage />} />
             <Route path="payment-config" element={<PaymentConfigPage />} />

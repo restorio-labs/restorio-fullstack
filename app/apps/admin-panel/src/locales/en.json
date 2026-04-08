@@ -36,6 +36,7 @@
       "waiterPanel": "Waiter Panel",
       "floorEditor": "Floor Editor",
       "menuCreator": "Menu Creator",
+      "mobileConfiguration": "Mobile configuration",
       "pageConfigurator": "Page Configurator",
       "qrCodeGenerator": "QR Code Generator",
       "tenantProfile": "Profile",
@@ -182,7 +183,9 @@
       "itemActive": "Active",
       "itemPromoted": "Promoted",
       "itemDescription": "Description",
-      "itemTags": "Tags"
+      "itemTags": "Tags",
+      "itemImage": "Photo",
+      "itemImageHint": "Square or nearly square image (PNG, JPEG, or WebP)."
     },
     "placeholders": {
       "categoryName": "e.g. Starters",
@@ -200,6 +203,62 @@
       "saveSuccessTitle": "Menu saved",
       "saveErrorTitle": "Could not save menu",
       "validationErrorTitle": "Check your menu"
+    },
+    "imageUpload": {
+      "upload": "Upload image",
+      "uploading": "Uploading…",
+      "remove": "Remove image",
+      "invalidType": "Use PNG, JPEG, or WebP.",
+      "tooLarge": "Image is too large.",
+      "failed": "Upload failed. Try again."
+    }
+  },
+  "mobileConfiguration": {
+    "title": "Mobile configuration",
+    "description": "Title, favicon, and theme for the customer mobile ordering app",
+    "loading": "Loading…",
+    "actions": {
+      "save": "Save",
+      "saving": "Saving…"
+    },
+    "fields": {
+      "pageTitle": "Browser title",
+      "favicon": "Favicon (.ico)",
+      "themeOverride": "Theme override (JSON)"
+    },
+    "placeholders": {
+      "pageTitle": "Leave empty to use restaurant name"
+    },
+    "hints": {
+      "pageTitle": "Shown in the mobile browser tab and header when set.",
+      "favicon": "ICO only. Image must be exactly 16×16, 32×32, 64×64, or 128×128 pixels.",
+      "faviconCurrent": "A favicon is already configured. Upload a new file to replace it.",
+      "faviconSelected": "Selected: {{name}}",
+      "themeOverride": "Optional JSON matching the theme override structure (colors, spacing, etc.)."
+    },
+    "copySection": {
+      "title": "Copy theme from another restaurant",
+      "source": "Source restaurant",
+      "placeholder": "Select…",
+      "copy": "Copy theme",
+      "copying": "Copying…"
+    },
+    "errors": {
+      "selectRestaurant": "Select a restaurant from the tenant switcher first.",
+      "invalidThemeJson": "Theme override must be valid JSON object.",
+      "invalidFaviconType": "Favicon must be an ICO file (image/x-icon).",
+      "invalidFaviconExtension": "File extension must be .ico.",
+      "faviconUploadFailed": "Could not upload favicon to storage."
+    },
+    "toast": {
+      "saveSuccessTitle": "Saved",
+      "saveSuccessBody": "Mobile configuration was updated.",
+      "saveErrorTitle": "Save failed",
+      "saveErrorBody": "Could not save mobile configuration.",
+      "copySuccessTitle": "Theme copied",
+      "copySuccessBody": "Theme override was copied from the selected restaurant.",
+      "copyErrorTitle": "Copy failed",
+      "copyErrorBody": "Could not copy theme."
     }
   },
   "menuConfigurator": {

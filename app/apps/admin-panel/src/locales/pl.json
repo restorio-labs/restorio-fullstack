@@ -36,6 +36,7 @@
       "waiterPanel": "Panel kelnera",
       "floorEditor": "Edytor układu sali",
       "menuCreator": "Kreator menu",
+      "mobileConfiguration": "Konfiguracja mobilna",
       "pageConfigurator": "Konfigurator strony",
       "qrCodeGenerator": "Generator kodów QR",
       "tenantProfile": "Profil lokalu",
@@ -191,7 +192,9 @@
       "itemActive": "Aktywna",
       "itemPromoted": "Promowana",
       "itemDescription": "Opis",
-      "itemTags": "Tagi"
+      "itemTags": "Tagi",
+      "itemImage": "Zdjęcie",
+      "itemImageHint": "Kwadratowe lub prawie kwadratowe (PNG, JPEG lub WebP)."
     },
     "placeholders": {
       "categoryName": "np. Przystawki",
@@ -209,6 +212,62 @@
       "saveSuccessTitle": "Menu zapisane",
       "saveErrorTitle": "Nie udało się zapisać menu",
       "validationErrorTitle": "Sprawdź menu"
+    },
+    "imageUpload": {
+      "upload": "Prześlij zdjęcie",
+      "uploading": "Przesyłanie…",
+      "remove": "Usuń zdjęcie",
+      "invalidType": "Użyj PNG, JPEG lub WebP.",
+      "tooLarge": "Plik jest za duży.",
+      "failed": "Przesyłanie nie powiodło się."
+    }
+  },
+  "mobileConfiguration": {
+    "title": "Konfiguracja mobilna",
+    "description": "Tytuł, favicon i motyw aplikacji mobilnej dla gości",
+    "loading": "Wczytywanie…",
+    "actions": {
+      "save": "Zapisz",
+      "saving": "Zapisywanie…"
+    },
+    "fields": {
+      "pageTitle": "Tytuł w przeglądarce",
+      "favicon": "Favicon (.ico)",
+      "themeOverride": "Nadpisanie motywu (JSON)"
+    },
+    "placeholders": {
+      "pageTitle": "Puste = nazwa restauracji"
+    },
+    "hints": {
+      "pageTitle": "Widoczna w karcie przeglądarki i nagłówku.",
+      "favicon": "Tylko ICO. Dokładnie 16×16, 32×32, 64×64 lub 128×128 px.",
+      "faviconCurrent": "Favicon jest już ustawiony. Wyślij nowy plik, aby go zmienić.",
+      "faviconSelected": "Wybrano: {{name}}",
+      "themeOverride": "Opcjonalny JSON zgodny ze strukturą nadpisania motywu."
+    },
+    "copySection": {
+      "title": "Skopiuj motyw z innej restauracji",
+      "source": "Restauracja źródłowa",
+      "placeholder": "Wybierz…",
+      "copy": "Kopiuj motyw",
+      "copying": "Kopiowanie…"
+    },
+    "errors": {
+      "selectRestaurant": "Najpierw wybierz restaurację.",
+      "invalidThemeJson": "Motyw musi być poprawnym obiektem JSON.",
+      "invalidFaviconType": "Favicon musi być typu ICO.",
+      "invalidFaviconExtension": "Rozszerzenie musi być .ico.",
+      "faviconUploadFailed": "Nie udało się przesłać faviconu."
+    },
+    "toast": {
+      "saveSuccessTitle": "Zapisano",
+      "saveSuccessBody": "Zaktualizowano konfigurację mobilną.",
+      "saveErrorTitle": "Błąd zapisu",
+      "saveErrorBody": "Nie udało się zapisać konfiguracji.",
+      "copySuccessTitle": "Skopiowano motyw",
+      "copySuccessBody": "Motyw został skopiowany z wybranej restauracji.",
+      "copyErrorTitle": "Błąd kopiowania",
+      "copyErrorBody": "Nie udało się skopiować motywu."
     }
   },
   "menuConfigurator": {
