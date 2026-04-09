@@ -1,6 +1,7 @@
 from datetime import date
 from decimal import Decimal
 from typing import Any
+from uuid import UUID
 
 from pydantic import Field
 
@@ -22,6 +23,12 @@ class CreateTransactionDTO(BaseDTO):
     email: str = Field(..., description="Payer email address")
     order: dict[str, Any] | None = Field(default=None, description="Order details")
     note: str | None = Field(default=None, description="Additional notes")
+
+
+class VerifyP24TransactionDTO(BaseDTO):
+    session_id: UUID = Field(
+        ..., description="Transaction session identifier (Przelewy24 sessionId)"
+    )
 
 
 class TransactionListQueryDTO(BaseDTO):

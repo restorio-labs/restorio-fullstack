@@ -78,8 +78,6 @@ class ExternalClient:
             try:
                 response = await client.get(url, headers=headers or {}, timeout=timeout)
                 response.raise_for_status()
-
-                return response.json()
             except httpx.HTTPStatusError as e:
                 error_message = self._extract_error_message(e)
                 raise ExternalAPIError(message=f"{service_name} error: {error_message}") from e
@@ -87,6 +85,34 @@ class ExternalClient:
                 raise ServiceUnavailableError(
                     message=f"Failed to connect to {service_name}: {e!s}",
                 ) from e
+            else:
+                return response.text
+
+    async def external_get_json(
+        self,
+        url: str,
+        *,
+        headers: dict[str, str] | None = None,
+        timeout: float = 30.0,
+        service_name: str = "External API",
+    ) -> dict[str, Any]:
+        _assert_url_safe(url)
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.get(url, headers=headers or {}, timeout=timeout)
+                response.raise_for_status()
+            except httpx.HTTPStatusError as e:
+                error_message = self._extract_error_message(e)
+                raise ExternalAPIError(message=f"{service_name} error: {error_message}") from e
+            except httpx.RequestError as e:
+                raise ServiceUnavailableError(
+                    message=f"Failed to connect to {service_name}: {e!s}",
+                ) from e
+            else:
+                payload = response.json()
+                if not isinstance(payload, dict):
+                    raise ExternalAPIError(message=f"{service_name} error: invalid response")
+                return payload
 
     async def post_json(
         self,
@@ -102,6 +128,43 @@ class ExternalClient:
         response.raise_for_status()
         return response.json()
 
+    async def _external_send_json(
+        self,
+        method: str,
+        url: str,
+        *,
+        json: dict[str, Any],
+        headers: dict[str, str] | None = None,
+        timeout: float = 30.0,
+        service_name: str = "External API",
+    ) -> dict[str, Any]:
+        _assert_url_safe(url)
+        merged_headers = {"Content-Type": "application/json", **(headers or {})}
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.request(
+                    method,
+                    url,
+                    json=json,
+                    headers=merged_headers,
+                    timeout=timeout,
+                )
+                response.raise_for_status()
+            except httpx.HTTPStatusError as e:
+                error_message = self._extract_error_message(e)
+                raise ExternalAPIError(message=f"{service_name} error: {error_message}") from e
+            except httpx.RequestError as e:
+                raise ServiceUnavailableError(
+                    message=f"Failed to connect to {service_name}: {e!s}",
+                ) from e
+            else:
+                if method == "PUT" and not response.text.strip():
+                    return {}
+                payload = response.json()
+                if not isinstance(payload, dict):
+                    raise ExternalAPIError(message=f"{service_name} error: invalid response")
+                return payload
+
     async def external_post_json(
         self,
         url: str,
@@ -114,25 +177,32 @@ class ExternalClient:
         """POST JSON to an external API. Returns parsed JSON on success.
         Raises ExternalAPIError on 4xx/5xx, ServiceUnavailableError on connection/timeout.
         """
-        _assert_url_safe(url)
-        merged_headers = {"Content-Type": "application/json", **(headers or {})}
-        async with httpx.AsyncClient() as client:
-            try:
-                response = await client.post(
-                    url,
-                    json=json,
-                    headers=merged_headers,
-                    timeout=timeout,
-                )
-                response.raise_for_status()
-                return response.json()
-            except httpx.HTTPStatusError as e:
-                error_message = self._extract_error_message(e)
-                raise ExternalAPIError(message=f"{service_name} error: {error_message}") from e
-            except httpx.RequestError as e:
-                raise ServiceUnavailableError(
-                    message=f"Failed to connect to {service_name}: {e!s}",
-                ) from e
+        return await self._external_send_json(
+            "POST",
+            url,
+            json=json,
+            headers=headers,
+            timeout=timeout,
+            service_name=service_name,
+        )
+
+    async def external_put_json(
+        self,
+        url: str,
+        *,
+        json: dict[str, Any],
+        headers: dict[str, str] | None = None,
+        timeout: float = 30.0,
+        service_name: str = "External API",
+    ) -> dict[str, Any]:
+        return await self._external_send_json(
+            "PUT",
+            url,
+            json=json,
+            headers=headers,
+            timeout=timeout,
+            service_name=service_name,
+        )
 
     @staticmethod
     def _extract_error_message(e: httpx.HTTPStatusError) -> str:

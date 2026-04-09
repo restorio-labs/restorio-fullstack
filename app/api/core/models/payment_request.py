@@ -40,3 +40,15 @@ class Przelewy24RegisterRequest(BaseModel):
     wait_for_result: bool = Field(..., alias="waitForResult")
     regulation_accept: bool = Field(..., alias="regulationAccept")
     sign: str
+
+
+class Przelewy24VerifyRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    merchant_id: int = Field(..., alias="merchantId")
+    pos_id: int = Field(..., alias="posId")
+    session_id: str = Field(..., alias="sessionId")
+    amount: int
+    currency: str
+    order_id: int = Field(..., alias="orderId")
+    sign: str

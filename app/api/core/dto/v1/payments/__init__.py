@@ -4,6 +4,7 @@ from core.dto.v1.payments.requests import (
     TransactionListQueryDTO,
     UpdateP24ConfigDTO,
     UpdatePaymentDTO,
+    VerifyP24TransactionDTO,
 )
 from core.dto.v1.payments.responses import PaymentResponseDTO, TransactionListItemDTO
 
@@ -15,4 +16,5 @@ __all__ = [
     "TransactionListQueryDTO",
     "UpdateP24ConfigDTO",
     "UpdatePaymentDTO",
+    "VerifyP24TransactionDTO",
 ]

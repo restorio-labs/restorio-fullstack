@@ -1,12 +1,15 @@
 from datetime import UTC, datetime
 from typing import Any
+from uuid import UUID
 
 from fastapi import APIRouter, Response, status
+from sqlalchemy import select
 
 from core.dto.v1.menus import TenantMenuResponseDTO
 from core.dto.v1.public import (
     PublicCreateOrderPaymentDTO,
     PublicCreateOrderPaymentResponseDTO,
+    PublicP24TransactionSyncResponseDTO,
     PublicTenantInfoResponseDTO,
 )
 from core.exceptions import BadRequestError, NotFoundResponse
@@ -27,6 +30,30 @@ from services.tenant_mobile_config_service import tenant_mobile_config_service
 router = APIRouter()
 
 _ORDERS_COLLECTION = "orders"
+
+MONGO_ORDER_STATUS_UNPAID = "unpaid"
+MONGO_ORDER_STATUS_PAID = "paid"
+MONGO_ORDER_STATUS_ACCEPTED = "accepted"
+MONGO_ORDER_STATUS_REFUNDED = "refunded"
+
+_TX_STATUS_UNPAID = 0
+_TX_STATUS_PAID = 1
+_TX_STATUS_ACCEPTED = 2
+_TX_STATUS_REFUNDED = 3
+
+_RESOURCE_TRANSACTION = "Transaction"
+
+
+def _mongo_order_status_from_transaction(transaction_status: int) -> str:
+    if transaction_status == _TX_STATUS_UNPAID:
+        return MONGO_ORDER_STATUS_UNPAID
+    if transaction_status == _TX_STATUS_PAID:
+        return MONGO_ORDER_STATUS_PAID
+    if transaction_status == _TX_STATUS_ACCEPTED:
+        return MONGO_ORDER_STATUS_ACCEPTED
+    if transaction_status == _TX_STATUS_REFUNDED:
+        return MONGO_ORDER_STATUS_REFUNDED
+    return MONGO_ORDER_STATUS_UNPAID
 
 
 @router.get(
@@ -206,7 +233,7 @@ async def create_public_order_payment(
         "totalAmount": total_amount,
         "currency": "PLN",
         "email": request.email,
-        "status": "pending",
+        "status": MONGO_ORDER_STATUS_UNPAID,
         "sessionId": str(result.session_id),
         "note": request.note,
         "createdAt": now,
@@ -221,5 +248,60 @@ async def create_public_order_payment(
         data=PublicCreateOrderPaymentResponseDTO(
             token=token,
             redirectUrl=redirect_url,
+        ),
+    )
+
+
+@router.post(
+    "/payments/sessions/{session_id}/p24-sync",
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessResponse[PublicP24TransactionSyncResponseDTO],
+)
+async def sync_public_transaction_from_p24(
+    session_id: UUID,
+    session: PostgresSession,
+    tenant_service: TenantServiceDep,
+    p24_service: P24ServiceDep,
+    external_client: ExternalClientDep,
+    db: MongoDB,
+) -> SuccessResponse[PublicP24TransactionSyncResponseDTO]:
+    result = await session.execute(select(Transaction).where(Transaction.session_id == session_id))
+    transaction = result.scalar_one_or_none()
+    if transaction is None:
+        raise NotFoundResponse(_RESOURCE_TRANSACTION, str(session_id))
+
+    tenant = await tenant_service.get_tenant(session, transaction.tenant_id)
+    data, p24_response_code = await p24_service.apply_p24_lookup_to_transaction(
+        external_client,
+        transaction=transaction,
+        tenant=tenant,
+    )
+    await session.commit()
+
+    mongo_status = _mongo_order_status_from_transaction(transaction.status)
+    await db[_ORDERS_COLLECTION].update_one(
+        {"sessionId": str(session_id)},
+        {"$set": {"status": mongo_status, "updatedAt": datetime.now(UTC)}},
+    )
+
+    p24_status_raw = data.get("status")
+    if not isinstance(p24_status_raw, int):
+        raise BadRequestError(message="Invalid Przelewy24 transaction status")
+
+    return SuccessResponse(
+        message="Transaction synced from Przelewy24",
+        data=PublicP24TransactionSyncResponseDTO(
+            sessionId=str(transaction.session_id),
+            status=transaction.status,
+            p24OrderId=transaction.p24_order_id,
+            amount=transaction.amount,
+            currency=transaction.currency,
+            p24Status=p24_status_raw,
+            responseCode=p24_response_code,
+            statement=data.get("statement") if isinstance(data.get("statement"), str) else None,
+            date=data.get("date") if isinstance(data.get("date"), str) else None,
+            dateOfTransaction=data.get("dateOfTransaction")
+            if isinstance(data.get("dateOfTransaction"), str)
+            else None,
         ),
     )

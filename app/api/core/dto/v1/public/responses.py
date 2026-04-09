@@ -22,3 +22,23 @@ class PublicTenantInfoResponseDTO(BaseDTO):
 class PublicCreateOrderPaymentResponseDTO(BaseDTO):
     token: str = Field(..., description="P24 transaction token for redirect")
     redirect_url: str = Field(..., alias="redirectUrl", description="Full P24 redirect URL")
+
+
+class PublicP24TransactionSyncResponseDTO(BaseDTO):
+    session_id: str = Field(..., alias="sessionId", serialization_alias="sessionId")
+    status: int = Field(..., description="Status stored in DB after sync (mirrors P24 0/1/2)")
+    p24_order_id: int | None = Field(None, alias="p24OrderId", serialization_alias="p24OrderId")
+    amount: int
+    currency: str
+    p24_status: int = Field(
+        ...,
+        alias="p24Status",
+        serialization_alias="p24Status",
+        description="Raw status from Przelewy24",
+    )
+    response_code: int = Field(..., alias="responseCode", serialization_alias="responseCode")
+    statement: str | None = None
+    date: str | None = None
+    date_of_transaction: str | None = Field(
+        None, alias="dateOfTransaction", serialization_alias="dateOfTransaction"
+    )
