@@ -1,7 +1,7 @@
 from datetime import UTC, datetime, timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, Request, status
+from fastapi import APIRouter, Query, Request, status
 from sqlalchemy import func, select
 
 from core.dto.v1.orders import (
@@ -12,8 +12,20 @@ from core.dto.v1.orders import (
     UpdateOrderStatusDTO,
 )
 from core.exceptions import BadRequestError
-from core.foundation.dependencies import MongoDB, OrderServiceDep, PostgresSession
-from core.foundation.http.responses import CreatedResponse, DeletedResponse, PaginatedResponse, SuccessResponse, UpdatedResponse
+from core.foundation.dependencies import (
+    AuthorizedTenantId,
+    MongoDB,
+    OrderServiceDep,
+    PostgresSession,
+)
+from core.foundation.http.responses import (
+    CreatedResponse,
+    DeletedResponse,
+    PaginatedResponse,
+    SuccessResponse,
+    UpdatedResponse,
+)
+from core.foundation.role_guard import RequireAnyStaff
 from core.models.archived_order import ArchivedOrder
 from services.archive_service import ArchiveService
 from services.refund_service import RefundService
@@ -35,6 +47,8 @@ async def list_orders(
     request: Request,
     db: MongoDB,
     service: OrderServiceDep,
+    _tenant_id: AuthorizedTenantId,
+    _role: RequireAnyStaff,
     status_filter: str | None = None,
 ) -> SuccessResponse[list[KitchenOrderResponseDTO]]:
     orders = await service.list_orders(
@@ -57,6 +71,8 @@ async def list_orders(
 async def list_archived_orders(
     restaurant_id: str,
     session: PostgresSession,
+    _tenant_id: AuthorizedTenantId,
+    _role: RequireAnyStaff,
     page: Annotated[int, Query(ge=1)] = 1,
     page_size: Annotated[int, Query(ge=1, le=100)] = 20,
     since_hours: Annotated[int | None, Query(alias="sinceHours", ge=1)] = 24,
@@ -117,6 +133,8 @@ async def get_order(
     request: Request,
     db: MongoDB,
     service: OrderServiceDep,
+    _tenant_id: AuthorizedTenantId,
+    _role: RequireAnyStaff,
 ) -> SuccessResponse[KitchenOrderResponseDTO]:
     order = await service.get_order(
         db,
@@ -141,6 +159,8 @@ async def create_order(
     request: Request,
     db: MongoDB,
     service: OrderServiceDep,
+    _tenant_id: AuthorizedTenantId,
+    _role: RequireAnyStaff,
 ) -> CreatedResponse[KitchenOrderResponseDTO]:
     data = payload.model_dump(by_alias=True)
     order = await service.create_order(
@@ -168,6 +188,8 @@ async def update_order(
     request: Request,
     db: MongoDB,
     service: OrderServiceDep,
+    _tenant_id: AuthorizedTenantId,
+    _role: RequireAnyStaff,
 ) -> UpdatedResponse[KitchenOrderResponseDTO]:
     data = payload.model_dump(by_alias=True, exclude_none=True)
     order = await service.update_order(
@@ -196,6 +218,8 @@ async def update_order_status(
     request: Request,
     db: MongoDB,
     service: OrderServiceDep,
+    _tenant_id: AuthorizedTenantId,
+    _role: RequireAnyStaff,
 ) -> UpdatedResponse[KitchenOrderResponseDTO]:
     order = await service.update_status(
         db,
@@ -223,6 +247,8 @@ async def delete_order(
     request: Request,
     db: MongoDB,
     service: OrderServiceDep,
+    _tenant_id: AuthorizedTenantId,
+    _role: RequireAnyStaff,
 ) -> DeletedResponse:
     await service.delete_order(
         db,
@@ -244,6 +270,8 @@ async def archive_order(
     db: MongoDB,
     session: PostgresSession,
     service: OrderServiceDep,
+    _tenant_id: AuthorizedTenantId,
+    _role: RequireAnyStaff,
 ) -> SuccessResponse[dict]:
     order_doc = await service.get_order_for_archive(db, restaurant_id, order_id)
     tenant_id = order_doc.get("restaurantId", restaurant_id)
@@ -270,6 +298,8 @@ async def refund_order(
     order_id: str,
     db: MongoDB,
     service: OrderServiceDep,
+    _tenant_id: AuthorizedTenantId,
+    _role: RequireAnyStaff,
 ) -> SuccessResponse[dict]:
     order = await service.get_order(db, restaurant_id, order_id)
     if order["status"] != "rejected":

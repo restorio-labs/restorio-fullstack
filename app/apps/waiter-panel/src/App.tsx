@@ -1,4 +1,4 @@
-import { AppWrapper } from "@restorio/auth";
+import { AppWrapper, RoleGuard } from "@restorio/auth";
 import type { ReactElement } from "react";
 import { Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
@@ -9,13 +9,15 @@ import { WaiterTenantSelectView, FloorRestaurantView } from "./views";
 export const App = (): ReactElement => {
   return (
     <AppWrapper client={api}>
-      <Suspense fallback={<div />}>
-        <Routes>
-          <Route path="/" element={<WaiterTenantSelectView />} />
-          <Route path="/:restaurantId" element={<FloorRestaurantView />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Suspense>
+      <RoleGuard allowedRoles={["owner", "manager", "waiter", "admin", "super_admin"]}>
+        <Suspense fallback={<div />}>
+          <Routes>
+            <Route path="/" element={<WaiterTenantSelectView />} />
+            <Route path="/:restaurantId" element={<FloorRestaurantView />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
+      </RoleGuard>
     </AppWrapper>
   );
 };

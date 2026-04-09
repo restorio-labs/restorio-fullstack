@@ -1,4 +1,4 @@
-import { AppWrapper } from "@restorio/auth";
+import { AppWrapper, RoleGuard } from "@restorio/auth";
 import { lazy, Suspense, type ReactElement, useEffect } from "react";
 import { Navigate, Outlet, Route, Routes, useNavigate, useLocation } from "react-router-dom";
 
@@ -66,27 +66,29 @@ const AdminShell = (): ReactElement => {
 export const App = (): ReactElement => {
   return (
     <AppWrapper client={api}>
-      <Suspense fallback={<div />}>
-        <Routes>
-          <Route path="/onboarding" element={<OnboardingPage />} />
-          <Route element={<AdminShell />}>
-            <Route index element={<FloorEditorPage />} />
-            <Route path="restaurant-creator" element={<RestaurantCreatorPage />} />
-            <Route path="menu-creator" element={<MenuCreatorPage />} />
-            <Route path="mobile-configuration" element={<MobileConfigurationPage />} />
-            {/* <Route path="main-page-configurator" element={<MenuPageConfiguratorPage />} /> */}
-            <Route path="qr-code-generator" element={<QRCodeGeneratorPage />} />
-            <Route path="payment-config" element={<PaymentConfigPage />} />
-            <Route path="profile" element={<TenantProfilePage />} />
-            <Route path="staff" element={<StaffPage />} />
-            <Route path="transactions" element={<TransactionListPage />} />
-          </Route>
-          <Route path="/qr-code/table/:tableId" element={<TableQRCodePage />} />
-          <Route path="/qr-code/restaurant" element={<RestaurantQRCodePage />} />
-          <Route path="/qr-code/tables" element={<QRCodePrintPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Suspense>
+      <RoleGuard allowedRoles={["owner", "manager", "admin", "super_admin"]}>
+        <Suspense fallback={<div />}>
+          <Routes>
+            <Route path="/onboarding" element={<OnboardingPage />} />
+            <Route element={<AdminShell />}>
+              <Route index element={<FloorEditorPage />} />
+              <Route path="restaurant-creator" element={<RestaurantCreatorPage />} />
+              <Route path="menu-creator" element={<MenuCreatorPage />} />
+              <Route path="mobile-configuration" element={<MobileConfigurationPage />} />
+              {/* <Route path="main-page-configurator" element={<MenuPageConfiguratorPage />} /> */}
+              <Route path="qr-code-generator" element={<QRCodeGeneratorPage />} />
+              <Route path="payment-config" element={<PaymentConfigPage />} />
+              <Route path="profile" element={<TenantProfilePage />} />
+              <Route path="staff" element={<StaffPage />} />
+              <Route path="transactions" element={<TransactionListPage />} />
+            </Route>
+            <Route path="/qr-code/table/:tableId" element={<TableQRCodePage />} />
+            <Route path="/qr-code/restaurant" element={<RestaurantQRCodePage />} />
+            <Route path="/qr-code/tables" element={<QRCodePrintPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
+      </RoleGuard>
     </AppWrapper>
   );
 };

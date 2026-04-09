@@ -1,4 +1,4 @@
-import { AppWrapper } from "@restorio/auth";
+import { AppWrapper, RoleGuard } from "@restorio/auth";
 import { lazy, Suspense, type ReactElement } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
@@ -17,23 +17,25 @@ const MenuAvailabilityView = lazy(async () =>
 export const App = (): ReactElement => {
   return (
     <AppWrapper client={api}>
-      <Suspense fallback={<div />}>
-        <Routes>
-          <Route path="/" element={<KitchenTenantSelectView />} />
-          <Route
-            path="/:tenantId"
-            element={
-              <AppLayout>
-                <TenantRouteGuard />
-              </AppLayout>
-            }
-          >
-            <Route index element={<KitchenView />} />
-            <Route path="menu" element={<MenuAvailabilityView />} />
-          </Route>
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Suspense>
+      <RoleGuard allowedRoles={["owner", "manager", "waiter", "kitchen_staff", "admin", "super_admin"]}>
+        <Suspense fallback={<div />}>
+          <Routes>
+            <Route path="/" element={<KitchenTenantSelectView />} />
+            <Route
+              path="/:tenantId"
+              element={
+                <AppLayout>
+                  <TenantRouteGuard />
+                </AppLayout>
+              }
+            >
+              <Route index element={<KitchenView />} />
+              <Route path="menu" element={<MenuAvailabilityView />} />
+            </Route>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
+      </RoleGuard>
     </AppWrapper>
   );
 };

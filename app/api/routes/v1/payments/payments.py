@@ -6,6 +6,7 @@ from core.dto.v1.payments import (
     CreateTransactionDTO,
 )
 from core.foundation.dependencies import (
+    AuthorizedTenantId,
     ExternalClientDep,
     P24ServiceDep,
     PostgresSession,
@@ -18,18 +19,20 @@ router = APIRouter()
 
 
 @router.post(
-    "/create",
+    "/{tenant_public_id}/create",
     status_code=status.HTTP_201_CREATED,
     response_model=CreatedResponse[dict[str, Any]],
 )
 async def create_payment(
+    tenant_public_id: str,
     request: CreateTransactionDTO,
     session: PostgresSession,
     tenant_service: TenantServiceDep,
     p24_service: P24ServiceDep,
     external_client: ExternalClientDep,
+    authorized_tenant_id: AuthorizedTenantId,
 ) -> CreatedResponse[dict[str, Any]]:
-    tenant = await tenant_service.get_tenant(session, request.tenant_id)
+    tenant = await tenant_service.get_tenant(session, authorized_tenant_id)
     p24_service.validate_tenant_p24_credentials(tenant)
 
     result = await p24_service.register_transaction(
@@ -44,7 +47,7 @@ async def create_payment(
 
     transaction = Transaction(
         session_id=result.session_id,
-        tenant_id=request.tenant_id,
+        tenant_id=authorized_tenant_id,
         merchant_id=result.merchant_id,
         pos_id=result.pos_id,
         amount=result.amount,

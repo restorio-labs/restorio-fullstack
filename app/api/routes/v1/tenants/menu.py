@@ -4,17 +4,18 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, status
 
 from core.dto.v1 import (
+    MenuCategoryDTO,
+    MenuItemDTO,
     TenantMenuResponseDTO,
     ToggleItemAvailabilityDTO,
     UpsertTenantMenuDTO,
-    MenuCategoryDTO,
-    MenuItemDTO,
 )
-from core.foundation.dependencies import MongoDB
+from core.foundation.dependencies import AuthorizedTenantId, MongoDB
 from core.foundation.http.responses import (
     SuccessResponse,
     UpdatedResponse,
 )
+from core.foundation.role_guard import RequireAnyStaff, RequireOwnerOrManager
 from services.mongo_menu_service import (
     CATEGORY_META_KEY,
     MENU_COLLECTION,
@@ -174,6 +175,8 @@ async def upsert_tenant_menu(
     tenant_public_id: str,
     payload: UpsertTenantMenuDTO,
     db: MongoDB,
+    _tenant_id: AuthorizedTenantId,
+    _role: RequireOwnerOrManager,
 ) -> UpdatedResponse[TenantMenuResponseDTO]:
     _validate_payload(payload)
 
@@ -207,6 +210,8 @@ async def toggle_item_availability(
     item_name: str,
     payload: ToggleItemAvailabilityDTO,
     db: MongoDB,
+    _tenant_id: AuthorizedTenantId,
+    _role: RequireAnyStaff,
 ) -> UpdatedResponse[TenantMenuResponseDTO]:
     document = await db[MENU_COLLECTION].find_one({"tenantPublicId": tenant_public_id})
     if document is None:
