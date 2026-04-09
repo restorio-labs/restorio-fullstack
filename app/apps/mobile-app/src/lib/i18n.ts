@@ -16,7 +16,7 @@ export const messagesByLocale: Record<SupportedLocale, Record<string, unknown>> 
 
 export const resolveInitialLocale = (): SupportedLocale => {
   if (typeof navigator === "undefined") {
-    return "en";
+    return "pl";
   }
 
   const raw = navigator.language.split("-")[0].toLowerCase();
@@ -25,5 +25,5 @@ export const resolveInitialLocale = (): SupportedLocale => {
     return raw as SupportedLocale;
   }
 
-  return "en";
+  return "pl";
 };

@@ -36,6 +36,18 @@ class PaymentStatus(str, Enum):
     REFUNDED = "refunded"
 
 
+class TableSessionOrigin(str, Enum):
+    MOBILE = "mobile"
+    WAITER = "waiter"
+
+
+class TableSessionStatus(str, Enum):
+    ACTIVE = "active"
+    RELEASED = "released"
+    EXPIRED = "expired"
+    COMPLETED = "completed"
+
+
 class AccountType(str, Enum):
     OWNER = "owner"
     WAITER = "waiter"

@@ -13,6 +13,18 @@ import { MenuCategorySection } from "../features/order/components/MenuCategorySe
 import { useCart } from "../features/order/hooks/useCart";
 
 const FAVICON_LINK_ID = "tenant-favicon";
+const extractApiErrorMessage = (error: unknown, fallback: string): string => {
+  if (typeof error === "object" && error !== null && "response" in error) {
+    const response = error as { response?: { data?: { detail?: unknown } } };
+    const detail = response.response?.data?.detail;
+
+    if (typeof detail === "string" && detail.trim() !== "") {
+      return detail;
+    }
+  }
+
+  return fallback;
+};
 
 export const OrderPage = (): ReactElement => {
   const { t } = useI18n();
@@ -22,6 +34,7 @@ export const OrderPage = (): ReactElement => {
   const [submitError, setSubmitError] = useState("");
   const checkoutRef = useRef<HTMLDivElement>(null);
   const cart = useCart();
+  const lockStorageKey = tenantSlug ? `restorio:table-lock:${tenantSlug}:${tableNum}` : "";
 
   const tenantQuery = useQuery<PublicTenantInfo>({
     queryKey: ["public-tenant-info", tenantSlug],
@@ -34,22 +47,24 @@ export const OrderPage = (): ReactElement => {
     queryFn: ({ signal }) => publicApi.getTenantMenu(tenantSlug!, signal),
     enabled: !!tenantSlug,
   });
+  const tenantData = tenantQuery.data;
 
   useEffect(() => {
-    const data = tenantQuery.data;
+    const data = tenantData;
 
     if (!data) {
       return;
     }
 
     const title = data.pageTitle?.trim() ? data.pageTitle : data.name;
+
     document.title = title;
 
     const path = data.faviconPath;
 
     if (path) {
       const href = `${API_BASE_URL.replace(/\/$/, "")}${path.startsWith("/") ? path : `/${path}`}`;
-      let link = document.querySelector(`link#${FAVICON_LINK_ID}`) as HTMLLinkElement | null;
+      let link = document.querySelector<HTMLLinkElement>(`link#${FAVICON_LINK_ID}`);
 
       if (!link) {
         link = document.createElement("link");
@@ -62,7 +77,7 @@ export const OrderPage = (): ReactElement => {
     } else {
       document.querySelector(`link#${FAVICON_LINK_ID}`)?.remove();
     }
-  }, [tenantQuery.data]);
+  }, [tenantData]);
 
   useEffect(() => {
     const raw = tenantQuery.data?.themeOverride;
@@ -83,6 +98,7 @@ export const OrderPage = (): ReactElement => {
       publicApi.createOrderPayment({
         tenantSlug: tenantSlug!,
         tableNumber: tableNum,
+        lockToken: lockStorageKey ? (window.localStorage.getItem(lockStorageKey) ?? undefined) : undefined,
         email: data.email,
         items: cart.items.map((item) => ({
           name: item.name,
@@ -92,10 +108,13 @@ export const OrderPage = (): ReactElement => {
         note: data.note || undefined,
       }),
     onSuccess: (data) => {
+      if (lockStorageKey) {
+        window.localStorage.setItem(lockStorageKey, data.lockToken);
+      }
       window.location.href = data.redirectUrl;
     },
-    onError: () => {
-      setSubmitError(t("checkout.paymentFailed"));
+    onError: (error: unknown) => {
+      setSubmitError(extractApiErrorMessage(error, t("checkout.paymentFailed")));
     },
   });
 

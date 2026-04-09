@@ -5,6 +5,8 @@ from core.models.enums import (
     OrderStatus,
     PaymentProvider,
     PaymentStatus,
+    TableSessionOrigin,
+    TableSessionStatus,
     TenantStatus,
 )
 from core.models.floor_canvas import FloorCanvas
@@ -16,6 +18,7 @@ from core.models.payment_request import (
     Przelewy24RegisterRequest,
     Przelewy24VerifyRequest,
 )
+from core.models.table_session import TableSession
 from core.models.tenant import Tenant
 from core.models.tenant_mobile_config import TenantMobileConfig
 from core.models.tenant_profile import TenantProfile
@@ -37,6 +40,9 @@ __all__ = [
     "PaymentStatus",
     "Przelewy24RegisterRequest",
     "Przelewy24VerifyRequest",
+    "TableSession",
+    "TableSessionOrigin",
+    "TableSessionStatus",
     "Tenant",
     "TenantMobileConfig",
     "TenantProfile",

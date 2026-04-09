@@ -10,6 +10,7 @@ from core.dto.v1.orders.responses import (
     KitchenOrderResponseDTO,
     OrderItemResponseDTO,
     OrderResponseDTO,
+    TableSessionResponseDTO,
 )
 
 __all__ = [
@@ -20,6 +21,7 @@ __all__ = [
     "KitchenOrderResponseDTO",
     "OrderItemResponseDTO",
     "OrderResponseDTO",
+    "TableSessionResponseDTO",
     "UpdateOrderDTO",
     "UpdateOrderStatusDTO",
 ]

@@ -79,4 +79,22 @@ describe("OrdersResource", () => {
       { signal: undefined },
     );
   });
+
+  it("listTableSessions calls GET /restaurants/:id/table-sessions", async () => {
+    client.get = vi.fn().mockResolvedValue({ data: [] });
+
+    await resource.listTableSessions("r1");
+
+    expect(client.get).toHaveBeenCalledWith("/restaurants/r1/table-sessions", { signal: undefined });
+  });
+
+  it("unlockTableSession calls POST /restaurants/:id/table-sessions/:ref/unlock", async () => {
+    await resource.unlockTableSession("r1", "table-7");
+
+    expect(client.post).toHaveBeenCalledWith(
+      "/restaurants/r1/table-sessions/table-7/unlock",
+      {},
+      { signal: undefined },
+    );
+  });
 });

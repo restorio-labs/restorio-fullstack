@@ -93,3 +93,17 @@ export interface RestaurantKitchenConfig {
   restaurantId: string;
   rejectionLabels: string[];
 }
+
+export interface TableSession {
+  id: string;
+  tableRef: string;
+  tableNumber?: number | null;
+  tableLabel?: string | null;
+  origin: "mobile" | "waiter";
+  status: "active" | "released" | "expired" | "completed";
+  sessionId?: string | null;
+  waiterUserId?: string | null;
+  acquiredAt: string;
+  lastSeenAt: string;
+  expiresAt: string;
+}

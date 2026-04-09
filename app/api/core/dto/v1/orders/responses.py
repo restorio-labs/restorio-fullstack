@@ -223,3 +223,21 @@ class ArchivedOrderResponseDTO(BaseDTO):
     notes: str | None = Field(None, description="Archived notes")
     created_at: datetime | str = Field(..., alias="createdAt", description="Original order creation time")
     archived_at: datetime | str = Field(..., alias="archivedAt", description="Archive creation time")
+
+
+class TableSessionResponseDTO(BaseDTO):
+    id: EntityId = Field(..., description="Table session identifier")
+    table_ref: str = Field(..., alias="tableRef", description="Canonical table reference")
+    table_number: int | None = Field(None, alias="tableNumber", description="Human table number")
+    table_label: str | None = Field(None, alias="tableLabel", description="Human table label")
+    origin: str = Field(..., description="Session origin")
+    status: str = Field(..., description="Session status")
+    session_id: str | None = Field(None, alias="sessionId", description="Payment session identifier")
+    waiter_user_id: EntityId | None = Field(
+        None,
+        alias="waiterUserId",
+        description="Staff member currently holding the lock",
+    )
+    acquired_at: datetime | str = Field(..., alias="acquiredAt", description="Acquisition timestamp")
+    last_seen_at: datetime | str = Field(..., alias="lastSeenAt", description="Last activity timestamp")
+    expires_at: datetime | str = Field(..., alias="expiresAt", description="Lease expiration timestamp")

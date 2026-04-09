@@ -5,6 +5,7 @@ import type {
   PaginatedResponse,
   RestaurantKitchenConfig,
   SuccessResponse,
+  TableSession,
 } from "@restorio/types";
 
 import { BaseResource } from "./base";
@@ -111,6 +112,27 @@ export class OrdersResource extends BaseResource {
     signal?: AbortSignal,
   ): Promise<SuccessResponse<{ id: string; originalOrderId: string }>> {
     return this.client.post(`/restaurants/${restaurantId}/orders/${orderId}/archive`, {}, { signal });
+  }
+
+  async listTableSessions(restaurantId: string, signal?: AbortSignal): Promise<TableSession[]> {
+    const response = await this.client.get<SuccessResponse<TableSession[]>>(
+      `/restaurants/${restaurantId}/table-sessions`,
+      { signal },
+    );
+
+    return response.data;
+  }
+
+  unlockTableSession(
+    restaurantId: string,
+    tableRef: string,
+    signal?: AbortSignal,
+  ): Promise<SuccessResponse<{ released: boolean; tableRef: string }>> {
+    return this.client.post(
+      `/restaurants/${restaurantId}/table-sessions/${encodeURIComponent(tableRef)}/unlock`,
+      {},
+      { signal },
+    );
   }
 
   getKitchenConfig(restaurantId: string, signal?: AbortSignal): Promise<SuccessResponse<RestaurantKitchenConfig>> {

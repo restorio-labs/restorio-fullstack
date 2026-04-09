@@ -3,6 +3,7 @@ import type {
   FloorCanvas as FloorCanvasType,
   OrderStatusDisplay,
   TableDisplayInfo,
+  TableSession,
   TableRuntimeState,
   Tenant,
   TenantMenu,
@@ -37,7 +38,6 @@ interface KitchenOrder {
   createdAt: string;
   updatedAt: string;
 }
-
 interface FloorRuntimeViewProps {
   venue: Tenant;
   selectedFloorId?: string | null;
@@ -269,6 +269,12 @@ export const FloorRuntimeView = ({
     refetchInterval: 5000,
   });
 
+  const { data: tableSessions = [] } = useQuery({
+    queryKey: ["waiter-panel", "table-sessions", venue.id],
+    queryFn: ({ signal }): Promise<TableSession[]> => ordersApi.listTableSessions(venue.id, signal),
+    refetchInterval: 5000,
+  });
+
   const remoteOrderIdsByTable = useMemo<Record<string, string>>(() => {
     return remoteOrders.reduce<Record<string, string>>((acc, order) => {
       if (!isOccupiedOrderStatus(order.status) || !order.tableId) {
@@ -301,6 +307,44 @@ export const FloorRuntimeView = ({
     }, {});
   }, [remoteOrders, t, occupationTick]);
 
+  const activeTableSessionsByTable = useMemo<Record<string, TableSession>>(() => {
+    return tableSessions.reduce<Record<string, TableSession>>((acc, session) => {
+      if (session.status !== "active") {
+        return acc;
+      }
+
+      acc[session.tableRef] = session;
+
+      return acc;
+    }, {});
+  }, [tableSessions]);
+
+  const sessionTableDisplayInfo = useMemo<Record<string, TableDisplayInfo>>(() => {
+    void occupationTick;
+
+    return Object.entries(activeTableSessionsByTable).reduce<Record<string, TableDisplayInfo>>(
+      (acc, [tableRef, session]) => {
+        if (Object.prototype.hasOwnProperty.call(remoteTableDisplayInfo, tableRef)) {
+          return acc;
+        }
+
+        const orderStatus: OrderStatusDisplay = session.origin === "mobile" ? "ordering" : "ordered";
+
+        acc[tableRef] = {
+          orderStatus,
+          orderStatusLabel:
+            session.origin === "mobile"
+              ? t("waiterDashboard.mobileLockStatus")
+              : t(`waiterDashboard.orderStatus.${orderStatus}`),
+          occupationTimeLabel: formatOccupationTime(session.acquiredAt),
+        };
+
+        return acc;
+      },
+      {},
+    );
+  }, [activeTableSessionsByTable, occupationTick, remoteTableDisplayInfo, t]);
+
   const remoteOrderCreatedAtByTable = useMemo<Record<string, string>>(() => {
     return remoteOrders.reduce<Record<string, string>>((acc, order) => {
       if (!isOccupiedOrderStatus(order.status) || !order.tableId) {
@@ -328,9 +372,10 @@ export const FloorRuntimeView = ({
   const effectiveTableDisplayInfo = useMemo<Record<string, TableDisplayInfo>>(
     () => ({
       ...tableDisplayInfo,
+      ...sessionTableDisplayInfo,
       ...remoteTableDisplayInfo,
     }),
-    [remoteTableDisplayInfo, tableDisplayInfo],
+    [remoteTableDisplayInfo, sessionTableDisplayInfo, tableDisplayInfo],
   );
 
   const selectedTableElement = useMemo(() => {
@@ -405,6 +450,14 @@ export const FloorRuntimeView = ({
 
     return order?.status;
   }, [remoteOrders, selectedTableElement]);
+  const selectedTableSession = useMemo(() => {
+    if (!selectedTableElement) {
+      return undefined;
+    }
+
+    return activeTableSessionsByTable[selectedTableElement.id];
+  }, [activeTableSessionsByTable, selectedTableElement]);
+  const selectedTableLockedByMobile = selectedTableSession?.origin === "mobile" && !selectedTableOrderId;
 
   const selectedTableName = useMemo(() => {
     if (!selectedTableElement) {
@@ -659,15 +712,22 @@ export const FloorRuntimeView = ({
   }, [isSelectedTableAvailable, selectedTableElement, selectedTableOrderId, selectedTableOrderItems, syncRemoteOrder]);
 
   const handleConfirmPayment = useCallback(async (): Promise<void> => {
-    if (!selectedTableElement || isSelectedTableAvailable || !selectedTableOrderId) {
+    if (!selectedTableElement || isSelectedTableAvailable) {
       return;
     }
 
     try {
-      await ordersApi.updateStatus(venue.id, selectedTableOrderId, "paid" as never);
-      await ordersApi.archive(venue.id, selectedTableOrderId);
+      if (selectedTableOrderId) {
+        await ordersApi.updateStatus(venue.id, selectedTableOrderId, "paid" as never);
+        await ordersApi.archive(venue.id, selectedTableOrderId);
+      } else if (selectedTableSession) {
+        await ordersApi.unlockTableSession(venue.id, selectedTableSession.tableRef);
+      } else {
+        return;
+      }
       void queryClient.invalidateQueries({ queryKey: ["waiter-panel", "kitchen-orders", venue.id] });
       void queryClient.invalidateQueries({ queryKey: ["waiter-panel", "archived-orders", venue.id] });
+      void queryClient.invalidateQueries({ queryKey: ["waiter-panel", "table-sessions", venue.id] });
 
       setTableDisplayInfo((prev) => ({
         ...prev,
@@ -708,6 +768,7 @@ export const FloorRuntimeView = ({
     showErrorToast,
     translate,
     venue.id,
+    selectedTableSession,
   ]);
 
   const handleForcePreparing = useCallback(async (): Promise<void> => {
@@ -822,8 +883,18 @@ export const FloorRuntimeView = ({
       return t("waiterDashboard.tableOccupiedByWaiter", { waiter: waiterFullName });
     }
 
+    if (selectedTableSession?.origin === "mobile") {
+      return t("waiterDashboard.tableOccupiedByMobile");
+    }
+
     return t("waiterDashboard.tableOccupied");
-  }, [isSelectedTableAvailable, selectedTableDisplayInfo?.servedByName, selectedTableDisplayInfo?.servedBySurname, t]);
+  }, [
+    isSelectedTableAvailable,
+    selectedTableDisplayInfo?.servedByName,
+    selectedTableDisplayInfo?.servedBySurname,
+    selectedTableSession?.origin,
+    t,
+  ]);
 
   if (!activeCanvas) {
     return (
@@ -935,7 +1006,9 @@ export const FloorRuntimeView = ({
               ) : (
                 <>
                   <div className="rounded-md border border-border-default bg-background-secondary px-3 py-2 text-sm text-text-secondary">
-                    {selectedTableOrderItems.length === 0 ? (
+                    {selectedTableLockedByMobile ? (
+                      <span>{t("waiterDashboard.mobileLockDescription")}</span>
+                    ) : selectedTableOrderItems.length === 0 ? (
                       <span>{t("waiterDashboard.noItemsYet")}</span>
                     ) : (
                       <div className="space-y-3 sm:space-y-1">
@@ -966,67 +1039,71 @@ export const FloorRuntimeView = ({
                       </div>
                     )}
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor={orderNoteFieldId} className="text-sm text-text-secondary">
-                      {t("waiterDashboard.orderNoteLabel")}
-                    </label>
-                    <textarea
-                      id={orderNoteFieldId}
-                      rows={2}
-                      value={selectedTableOrderNote}
-                      onChange={(event) => {
-                        const nextValue = event.target.value;
+                  {!selectedTableLockedByMobile && (
+                    <div className="flex flex-col gap-2">
+                      <label htmlFor={orderNoteFieldId} className="text-sm text-text-secondary">
+                        {t("waiterDashboard.orderNoteLabel")}
+                      </label>
+                      <textarea
+                        id={orderNoteFieldId}
+                        rows={2}
+                        value={selectedTableOrderNote}
+                        onChange={(event) => {
+                          const nextValue = event.target.value;
 
-                        setTableOrderNotes((prev) => ({
-                          ...prev,
-                          [selectedTableElement.id]: nextValue,
-                        }));
-                      }}
-                      onBlur={() => {
-                        void handlePersistOrderNote();
-                      }}
-                      className="w-full rounded-md border border-border-default bg-surface-primary px-4 py-3 text-sm text-text-primary"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <div className="flex gap-2">
-                      {selectedTableOrderItems.length > 0 && !selectedTableOrderStatus && (
-                        <Button
-                          type="button"
-                          variant="primary"
-                          className="flex-1"
-                          onClick={() => {
-                            void handleSendToKitchen();
-                          }}
-                        >
-                          {t("waiterDashboard.sendToKitchen")}
-                        </Button>
-                      )}
-                      {selectedTableOrderItems.length > 0 && selectedTableOrderStatus && (
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          className="flex-1"
-                          onClick={() => {
-                            void handleUpdateOrder();
-                          }}
-                        >
-                          {t("waiterDashboard.updateOrder")}
-                        </Button>
-                      )}
-                      {selectedTableOrderStatus === "new" && (
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          className="flex-1"
-                          onClick={() => {
-                            void handleForcePreparing();
-                          }}
-                        >
-                          {t("waiterDashboard.forcePreparing")}
-                        </Button>
-                      )}
+                          setTableOrderNotes((prev) => ({
+                            ...prev,
+                            [selectedTableElement.id]: nextValue,
+                          }));
+                        }}
+                        onBlur={() => {
+                          void handlePersistOrderNote();
+                        }}
+                        className="w-full rounded-md border border-border-default bg-surface-primary px-4 py-3 text-sm text-text-primary"
+                      />
                     </div>
+                  )}
+                  <div className="flex flex-col gap-2">
+                    {!selectedTableLockedByMobile && (
+                      <div className="flex gap-2">
+                        {selectedTableOrderItems.length > 0 && !selectedTableOrderStatus && (
+                          <Button
+                            type="button"
+                            variant="primary"
+                            className="flex-1"
+                            onClick={() => {
+                              void handleSendToKitchen();
+                            }}
+                          >
+                            {t("waiterDashboard.sendToKitchen")}
+                          </Button>
+                        )}
+                        {selectedTableOrderItems.length > 0 && selectedTableOrderStatus && (
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            className="flex-1"
+                            onClick={() => {
+                              void handleUpdateOrder();
+                            }}
+                          >
+                            {t("waiterDashboard.updateOrder")}
+                          </Button>
+                        )}
+                        {selectedTableOrderStatus === "new" && (
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            className="flex-1"
+                            onClick={() => {
+                              void handleForcePreparing();
+                            }}
+                          >
+                            {t("waiterDashboard.forcePreparing")}
+                          </Button>
+                        )}
+                      </div>
+                    )}
                     <Button
                       type="button"
                       variant="primary"
@@ -1035,7 +1112,9 @@ export const FloorRuntimeView = ({
                         setIsUnlockModalOpen(true);
                       }}
                     >
-                      {t("waiterDashboard.confirmPayment")}
+                      {selectedTableLockedByMobile
+                        ? t("waiterDashboard.unlockMobileTable")
+                        : t("waiterDashboard.confirmPayment")}
                     </Button>
                   </div>
                 </>
@@ -1070,7 +1149,11 @@ export const FloorRuntimeView = ({
         size="sm"
       >
         <div className="flex flex-col gap-6">
-          <p className="text-sm text-text-secondary">{t("waiterDashboard.confirmPaymentModalDescription")}</p>
+          <p className="text-sm text-text-secondary">
+            {selectedTableLockedByMobile
+              ? t("waiterDashboard.unlockMobileTableDescription")
+              : t("waiterDashboard.confirmPaymentModalDescription")}
+          </p>
           <div className="flex justify-end gap-3">
             <Button
               type="button"

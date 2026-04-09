@@ -22,6 +22,20 @@ class PublicTenantInfoResponseDTO(BaseDTO):
 class PublicCreateOrderPaymentResponseDTO(BaseDTO):
     token: str = Field(..., description="P24 transaction token for redirect")
     redirect_url: str = Field(..., alias="redirectUrl", description="Full P24 redirect URL")
+    lock_token: str = Field(..., alias="lockToken", description="Opaque table lock token")
+    expires_at: str = Field(..., alias="expiresAt", description="Lease expiration ISO datetime")
+    table_status: str = Field(..., alias="tableStatus", description="Current table session status")
+    owner_type: str = Field(..., alias="ownerType", description="Current lock owner type")
+
+
+class PublicTableSessionResponseDTO(BaseDTO):
+    lock_token: str = Field(..., alias="lockToken", description="Opaque table lock token")
+    expires_at: str = Field(..., alias="expiresAt", description="Lease expiration ISO datetime")
+    table_status: str = Field(..., alias="tableStatus", description="Current table session status")
+    owner_type: str = Field(..., alias="ownerType", description="Current lock owner type")
+    table_ref: str = Field(..., alias="tableRef", description="Canonical table reference")
+    table_number: int | None = Field(None, alias="tableNumber", description="Human table number")
+    message: str | None = Field(None, description="Optional explanatory message")
 
 
 class PublicP24TransactionSyncResponseDTO(BaseDTO):

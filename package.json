@@ -7,7 +7,7 @@
     "app/packages/*"
   ],
   "scripts": {
-    "dev": "turbo run dev --parallel",
+    "dev": "turbo run build --filter='./app/packages/*' && turbo run dev --parallel",
     "dev:ui-demo": "bun run --filter @restorio/ui-demo demo",
     "build": "turbo run build",
     "test:unit": "vitest run --passWithNoTests",
