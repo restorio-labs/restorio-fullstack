@@ -57,3 +57,16 @@ export interface PublicTenantInfo {
   name: string;
   slug: string;
 }
+
+export interface PublicP24TransactionSyncData {
+  sessionId: string;
+  status: number;
+  p24OrderId: number | null;
+  amount: number;
+  currency: string;
+  p24Status: number;
+  responseCode: number;
+  statement?: string | null;
+  date?: string | null;
+  dateOfTransaction?: string | null;
+}

@@ -17,8 +17,8 @@ async def test_external_post_json_success_returns_json() -> None:
     mock_response.json.return_value = {"token": "abc123", "status": "ok"}
 
     with patch("services.external_client_service.httpx.AsyncClient") as mock_client_cls:
-        mock_post = AsyncMock(return_value=mock_response)
-        mock_client_cls.return_value.__aenter__.return_value.post = mock_post
+        mock_request = AsyncMock(return_value=mock_response)
+        mock_client_cls.return_value.__aenter__.return_value.request = mock_request
         mock_client_cls.return_value.__aexit__ = AsyncMock(return_value=None)
 
         result = await ExternalClient().external_post_json(
@@ -30,7 +30,8 @@ async def test_external_post_json_success_returns_json() -> None:
         )
 
         assert result == {"token": "abc123", "status": "ok"}
-        mock_post.assert_called_once_with(
+        mock_request.assert_called_once_with(
+            "POST",
             "https://api.example.com/register",
             json={"key": "value"},
             headers={
@@ -49,14 +50,14 @@ async def test_external_post_json_http_status_error_raises_external_api_error() 
     mock_response.text = "Bad Request"
 
     with patch("services.external_client_service.httpx.AsyncClient") as mock_client_cls:
-        mock_post = AsyncMock(
+        mock_request = AsyncMock(
             side_effect=httpx.HTTPStatusError(
                 "Bad Request",
                 request=MagicMock(),
                 response=mock_response,
             ),
         )
-        mock_client_cls.return_value.__aenter__.return_value.post = mock_post
+        mock_client_cls.return_value.__aenter__.return_value.request = mock_request
         mock_client_cls.return_value.__aexit__ = AsyncMock(return_value=None)
 
         with pytest.raises(ExternalAPIError) as exc_info:
@@ -74,8 +75,8 @@ async def test_external_post_json_http_status_error_raises_external_api_error() 
 @pytest.mark.asyncio
 async def test_external_post_json_request_error_raises_service_unavailable() -> None:
     with patch("services.external_client_service.httpx.AsyncClient") as mock_client_cls:
-        mock_post = AsyncMock(side_effect=httpx.ConnectError("Connection refused"))
-        mock_client_cls.return_value.__aenter__.return_value.post = mock_post
+        mock_request = AsyncMock(side_effect=httpx.ConnectError("Connection refused"))
+        mock_client_cls.return_value.__aenter__.return_value.request = mock_request
         mock_client_cls.return_value.__aexit__ = AsyncMock(return_value=None)
 
         with pytest.raises(ServiceUnavailableError) as exc_info:
@@ -98,14 +99,14 @@ async def test_external_post_json_extract_error_from_body_errors_key() -> None:
     mock_response.text = "Unprocessable Entity"
 
     with patch("services.external_client_service.httpx.AsyncClient") as mock_client_cls:
-        mock_post = AsyncMock(
+        mock_request = AsyncMock(
             side_effect=httpx.HTTPStatusError(
                 "Unprocessable",
                 request=MagicMock(),
                 response=mock_response,
             ),
         )
-        mock_client_cls.return_value.__aenter__.return_value.post = mock_post
+        mock_client_cls.return_value.__aenter__.return_value.request = mock_request
         mock_client_cls.return_value.__aexit__ = AsyncMock(return_value=None)
 
         with pytest.raises(ExternalAPIError) as exc_info:
@@ -122,14 +123,14 @@ async def test_external_post_json_extract_error_fallback_to_response_text() -> N
     mock_response.text = "Internal Server Error"
 
     with patch("services.external_client_service.httpx.AsyncClient") as mock_client_cls:
-        mock_post = AsyncMock(
+        mock_request = AsyncMock(
             side_effect=httpx.HTTPStatusError(
                 "Server Error",
                 request=MagicMock(),
                 response=mock_response,
             ),
         )
-        mock_client_cls.return_value.__aenter__.return_value.post = mock_post
+        mock_client_cls.return_value.__aenter__.return_value.request = mock_request
         mock_client_cls.return_value.__aexit__ = AsyncMock(return_value=None)
 
         with pytest.raises(ExternalAPIError) as exc_info:
@@ -148,14 +149,14 @@ async def test_external_post_json_extract_error_fallback_inside_try_block() -> N
     mock_response.text = "I'm a teapot"
 
     with patch("services.external_client_service.httpx.AsyncClient") as mock_client_cls:
-        mock_post = AsyncMock(
+        mock_request = AsyncMock(
             side_effect=httpx.HTTPStatusError(
                 "Teapot Error",
                 request=MagicMock(),
                 response=mock_response,
             ),
         )
-        mock_client_cls.return_value.__aenter__.return_value.post = mock_post
+        mock_client_cls.return_value.__aenter__.return_value.request = mock_request
         mock_client_cls.return_value.__aexit__ = AsyncMock(return_value=None)
 
         with pytest.raises(ExternalAPIError) as exc_info:

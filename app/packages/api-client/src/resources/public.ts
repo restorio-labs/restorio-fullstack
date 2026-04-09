@@ -2,6 +2,7 @@ import type {
   CreatedResponse,
   PublicCreateOrderPaymentData,
   PublicCreateOrderPaymentRequest,
+  PublicP24TransactionSyncData,
   PublicTenantInfo,
   SuccessResponse,
   TenantMenu,
@@ -29,6 +30,16 @@ export class PublicResource extends BaseResource {
     const body = await this.client.post<CreatedResponse<PublicCreateOrderPaymentData>, PublicCreateOrderPaymentRequest>(
       "/public/payments/create",
       data,
+      { signal },
+    );
+
+    return body.data;
+  }
+
+  async syncPaymentSession(sessionId: string, signal?: AbortSignal): Promise<PublicP24TransactionSyncData> {
+    const body = await this.client.post<SuccessResponse<PublicP24TransactionSyncData>>(
+      `/public/payments/sessions/${encodeURIComponent(sessionId)}/p24-sync`,
+      {},
       { signal },
     );
 

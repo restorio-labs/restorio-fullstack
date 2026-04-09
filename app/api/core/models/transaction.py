@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
 
 from sqlalchemy import (
+    BigInteger,
     Boolean,
     CheckConstraint,
     DateTime,
@@ -48,7 +49,7 @@ class Transaction(Base):
     wait_for_result: Mapped[bool] = mapped_column(Boolean(), nullable=False, default=True)
     regulation_accept: Mapped[bool] = mapped_column(Boolean(), nullable=False, default=False)
     status: Mapped[int] = mapped_column(SmallInteger(), nullable=False, default=0)
-    p24_order_id: Mapped[int | None] = mapped_column(Integer(), nullable=True)
+    p24_order_id: Mapped[int | None] = mapped_column(BigInteger(), nullable=True)
     order: Mapped[dict[str, Any] | None] = mapped_column(JSONB(), nullable=True)
     note: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
