@@ -449,7 +449,9 @@ async def me(request: Request) -> SuccessResponse[AuthMeSessionData]:
     if not isinstance(subject, str):
         raise UnauthenticatedResponse(message="Unauthorized")
 
+    account_type = user.get("account_type")
+
     return SuccessResponse(
-        data=AuthMeSessionData(),
+        data=AuthMeSessionData(account_type=account_type),
         message="Authenticated",
     )

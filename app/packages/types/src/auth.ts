@@ -71,6 +71,7 @@ export interface DeleteUserData {
 
 export interface AuthMeData {
   authenticated: boolean;
+  account_type: string | null;
 }
 
 export interface LoginResponse {

@@ -19,19 +19,20 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
-table_session_origin = sa.Enum("mobile", "waiter", name="table_session_origin")
-table_session_status = sa.Enum(
+table_session_origin = postgresql.ENUM("mobile", "waiter", name="table_session_origin", create_type=False)
+table_session_status = postgresql.ENUM(
     "active",
     "released",
     "expired",
     "completed",
     name="table_session_status",
+    create_type=False,
 )
 
-
 def upgrade() -> None:
-    table_session_origin.create(op.get_bind(), checkfirst=True)
-    table_session_status.create(op.get_bind(), checkfirst=True)
+    conn = op.get_bind()
+    conn.execute(sa.text("DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'table_session_origin') THEN CREATE TYPE table_session_origin AS ENUM ('mobile', 'waiter'); END IF; END $$;"))
+    conn.execute(sa.text("DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'table_session_status') THEN CREATE TYPE table_session_status AS ENUM ('active', 'released', 'expired', 'completed'); END IF; END $$;"))
 
     op.create_table(
         "table_sessions",

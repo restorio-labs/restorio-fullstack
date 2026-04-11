@@ -1,7 +1,8 @@
-import { Button, FormActions, Loader, useI18n, useToast } from "@restorio/ui";
+import { Button, FormActions, Loader, Tooltip, useI18n, useToast } from "@restorio/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ChangeEvent, FormEvent, ReactElement } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { TbHelpCircle } from "react-icons/tb";
 
 import { api } from "../api/client";
 import { useCurrentTenant } from "../context/TenantContext";
@@ -18,8 +19,9 @@ export const MobileConfigurationPage = (): ReactElement => {
   const { selectedTenantId, tenants } = useCurrentTenant();
 
   const [pageTitle, setPageTitle] = useState("");
-  const [themeJson, setThemeJson] = useState("");
-  const [themeError, setThemeError] = useState("");
+  const [backgroundColor, setBackgroundColor] = useState("");
+  const [googleFontUrl, setGoogleFontUrl] = useState("");
+  const [fontError, setFontError] = useState("");
   const [faviconError, setFaviconError] = useState("");
   const [faviconFile, setFaviconFile] = useState<File | null>(null);
   const [copySourceId, setCopySourceId] = useState("");
@@ -35,19 +37,32 @@ export const MobileConfigurationPage = (): ReactElement => {
   useEffect(() => {
     if (!config) {
       setPageTitle("");
-      setThemeJson("");
-      setThemeError("");
+      setBackgroundColor("");
+      setGoogleFontUrl("");
+      setFontError("");
 
       return;
     }
 
     setPageTitle(config.pageTitle ?? "");
-    setThemeJson(
-      config.themeOverride && Object.keys(config.themeOverride).length > 0
-        ? JSON.stringify(config.themeOverride, null, 2)
-        : "",
-    );
-    setThemeError("");
+
+    const override = config.themeOverride;
+
+    if (override && typeof override === "object") {
+      const colors = override.colors as Record<string, Record<string, string>> | undefined;
+
+      setBackgroundColor(colors?.background?.primary ?? "");
+
+      const typography = override.typography as Record<string, Record<string, string>> | undefined;
+
+      setGoogleFontUrl(typography?.fontFamily?.googleFontUrl ?? "");
+    } else {
+      setBackgroundColor("");
+      setGoogleFontUrl("");
+    }
+
+    setFontError("");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config]);
 
   const otherTenants = useMemo(() => {
@@ -58,32 +73,54 @@ export const MobileConfigurationPage = (): ReactElement => {
     return tenants.filter((x) => x.id !== tenantId);
   }, [tenantId, tenants]);
 
+  const validateGoogleFontUrl = (url: string): boolean => {
+    if (!url.trim()) {
+      return true;
+    }
+
+    const pattern = /^https:\/\/fonts\.googleapis\.com\/css2?\?family=/;
+
+    return pattern.test(url.trim());
+  };
+
   const saveMutation = useMutation({
     mutationFn: async () => {
       if (!tenantId) {
         throw new Error("No tenant");
       }
 
+      const trimmedFont = googleFontUrl.trim();
+      if (trimmedFont && !validateGoogleFontUrl(trimmedFont)) {
+        setFontError(t("mobileConfiguration.errors.invalidGoogleFontUrl"));
+
+        throw new Error("font");
+      }
+
+      setFontError("");
+
       let themeOverride: Record<string, unknown> | null | undefined;
 
-      const trimmed = themeJson.trim();
+      const trimmedBg = backgroundColor.trim();
 
-      if (trimmed === "") {
+      if (!trimmedBg && !trimmedFont) {
         themeOverride = null;
       } else {
-        try {
-          const parsed: unknown = JSON.parse(trimmed);
+        themeOverride = {};
 
-          if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
-            throw new Error("invalid");
-          }
+        if (trimmedBg) {
+          themeOverride.colors = {
+            background: {
+              primary: trimmedBg,
+            },
+          };
+        }
 
-          themeOverride = parsed as Record<string, unknown>;
-          setThemeError("");
-        } catch {
-          setThemeError(t("mobileConfiguration.errors.invalidThemeJson"));
-
-          throw new Error("theme");
+        if (trimmedFont) {
+          themeOverride.typography = {
+            fontFamily: {
+              googleFontUrl: trimmedFont,
+            },
+          };
         }
       }
 
@@ -136,7 +173,7 @@ export const MobileConfigurationPage = (): ReactElement => {
       }
     },
     onError: (err: unknown) => {
-      if (err instanceof Error && err.message === "theme") {
+      if (err instanceof Error && err.message === "font") {
         return;
       }
 
@@ -157,12 +194,23 @@ export const MobileConfigurationPage = (): ReactElement => {
       return api.tenantMobileConfig.copyThemeFrom(tenantId, copySourceId);
     },
     onSuccess: (data) => {
-      setThemeJson(
-        data.themeOverride && Object.keys(data.themeOverride).length > 0
-          ? JSON.stringify(data.themeOverride, null, 2)
-          : "",
-      );
-      setThemeError("");
+      const override = data.themeOverride;
+
+      if (override && typeof override === "object") {
+        const colors = override.colors as Record<string, Record<string, string>> | undefined;
+
+        setBackgroundColor(colors?.background?.primary ?? "");
+
+        const typography = override.typography as Record<string, Record<string, string>> | undefined;
+
+        setGoogleFontUrl(typography?.fontFamily?.googleFontUrl ?? "");
+      } else {
+        setBackgroundColor("");
+        setGoogleFontUrl("");
+      }
+
+      setFontError("");
+
       showToast(
         "success",
         t("mobileConfiguration.toast.copySuccessTitle"),
@@ -241,9 +289,16 @@ export const MobileConfigurationPage = (): ReactElement => {
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-text-secondary" htmlFor="mobile-favicon">
-              {t("mobileConfiguration.fields.favicon")}
-            </label>
+            <div className="mb-1 flex items-center gap-1">
+              <label className="block text-xs font-medium text-text-secondary" htmlFor="mobile-favicon">
+                {t("mobileConfiguration.fields.favicon")}
+              </label>
+              <Tooltip content={t("mobileConfiguration.hints.favicon")} placement="right">
+                <button type="button" className="text-text-tertiary hover:text-text-secondary">
+                  <TbHelpCircle className="h-4 w-4" />
+                </button>
+              </Tooltip>
+            </div>
             <input
               id="mobile-favicon"
               type="file"
@@ -260,25 +315,70 @@ export const MobileConfigurationPage = (): ReactElement => {
               <p className="mt-1 text-xs text-text-tertiary">{t("mobileConfiguration.hints.faviconCurrent")}</p>
             )}
             {faviconError && <p className="mt-1 text-xs text-status-error-text">{faviconError}</p>}
-            <p className="mt-1 text-xs text-text-tertiary">{t("mobileConfiguration.hints.favicon")}</p>
           </div>
 
-          <div>
-            <label className="mb-1 block text-xs font-medium text-text-secondary" htmlFor="mobile-theme-json">
-              {t("mobileConfiguration.fields.themeOverride")}
-            </label>
-            <textarea
-              id="mobile-theme-json"
-              value={themeJson}
-              onChange={(e) => {
-                setThemeJson(e.target.value);
-                setThemeError("");
-              }}
-              className="min-h-48 w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 font-mono text-xs text-text-primary"
-              spellCheck={false}
-            />
-            {themeError && <p className="mt-1 text-xs text-status-error-text">{themeError}</p>}
-            <p className="mt-1 text-xs text-text-tertiary">{t("mobileConfiguration.hints.themeOverride")}</p>
+          <div className="rounded-lg border border-border-default bg-surface-secondary/40 p-4">
+            <p className="mb-4 text-sm font-medium text-text-primary">{t("mobileConfiguration.themeSection.title")}</p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="mb-1 block text-xs font-medium text-text-secondary" htmlFor="mobile-bg-color">
+                  {t("mobileConfiguration.fields.backgroundColor")}
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    id="mobile-bg-color"
+                    type="color"
+                    value={backgroundColor || "#ffffff"}
+                    onChange={(e) => setBackgroundColor(e.target.value)}
+                    className="h-10 w-14 cursor-pointer rounded-md border border-border-default bg-surface-primary p-1"
+                  />
+                  <input
+                    type="text"
+                    value={backgroundColor}
+                    onChange={(e) => setBackgroundColor(e.target.value)}
+                    placeholder="#ffffff"
+                    className="flex-1 rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary font-mono"
+                  />
+                  {backgroundColor && (
+                    <button
+                      type="button"
+                      onClick={() => setBackgroundColor("")}
+                      className="text-xs text-text-tertiary hover:text-text-secondary"
+                    >
+                      {t("mobileConfiguration.actions.clear")}
+                    </button>
+                  )}
+                </div>
+                <p className="mt-1 text-xs text-text-tertiary">{t("mobileConfiguration.hints.backgroundColor")}</p>
+              </div>
+
+              <div>
+                <div className="mb-1 flex items-center gap-1">
+                  <label className="block text-xs font-medium text-text-secondary" htmlFor="mobile-google-font">
+                    {t("mobileConfiguration.fields.googleFontUrl")}
+                  </label>
+                  <Tooltip content={t("mobileConfiguration.hints.googleFontUrlTooltip")} placement="right">
+                    <button type="button" className="text-text-tertiary hover:text-text-secondary">
+                      <TbHelpCircle className="h-4 w-4" />
+                    </button>
+                  </Tooltip>
+                </div>
+                <input
+                  id="mobile-google-font"
+                  type="url"
+                  value={googleFontUrl}
+                  onChange={(e) => {
+                    setGoogleFontUrl(e.target.value);
+                    setFontError("");
+                  }}
+                  placeholder="https://fonts.googleapis.com/css2?family=Roboto"
+                  className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
+                />
+                {fontError && <p className="mt-1 text-xs text-status-error-text">{fontError}</p>}
+                <p className="mt-1 text-xs text-text-tertiary">{t("mobileConfiguration.hints.googleFontUrl")}</p>
+              </div>
+            </div>
           </div>
 
           <div className="rounded-lg border border-border-default bg-surface-secondary/60 p-4">

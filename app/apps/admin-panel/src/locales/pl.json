@@ -228,12 +228,14 @@
     "loading": "Wczytywanie…",
     "actions": {
       "save": "Zapisz",
-      "saving": "Zapisywanie…"
+      "saving": "Zapisywanie…",
+      "clear": "Wyczyść"
     },
     "fields": {
       "pageTitle": "Tytuł w przeglądarce",
       "favicon": "Favicon (.ico)",
-      "themeOverride": "Nadpisanie motywu (JSON)"
+      "backgroundColor": "Kolor tła",
+      "googleFontUrl": "URL czcionki Google"
     },
     "placeholders": {
       "pageTitle": "Puste = nazwa restauracji"
@@ -243,7 +245,12 @@
       "favicon": "Tylko ICO. Dokładnie 16×16, 32×32, 64×64 lub 128×128 px.",
       "faviconCurrent": "Favicon jest już ustawiony. Wyślij nowy plik, aby go zmienić.",
       "faviconSelected": "Wybrano: {{name}}",
-      "themeOverride": "Opcjonalny JSON zgodny ze strukturą nadpisania motywu."
+      "backgroundColor": "Główny kolor tła aplikacji mobilnej.",
+      "googleFontUrl": "Wklej pełny URL z Google Fonts.",
+      "googleFontUrlTooltip": "Wejdź na fonts.google.com, wybierz czcionkę i skopiuj URL do osadzenia."
+    },
+    "themeSection": {
+      "title": "Personalizacja motywu"
     },
     "copySection": {
       "title": "Skopiuj motyw z innej restauracji",
@@ -254,7 +261,7 @@
     },
     "errors": {
       "selectRestaurant": "Najpierw wybierz restaurację.",
-      "invalidThemeJson": "Motyw musi być poprawnym obiektem JSON.",
+      "invalidGoogleFontUrl": "URL musi zaczynać się od https://fonts.googleapis.com/css",
       "invalidFaviconType": "Favicon musi być typu ICO.",
       "invalidFaviconExtension": "Rozszerzenie musi być .ico.",
       "faviconUploadFailed": "Nie udało się przesłać faviconu."

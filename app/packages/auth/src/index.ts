@@ -8,3 +8,4 @@ export * from "./RoleGuard";
 export * from "./AppWrapper";
 export * from "./sessionCheck";
 export * from "./LogoutButton";
+export * from "./AuthContext";

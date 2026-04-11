@@ -136,3 +136,4 @@ class LoginResponseData(BaseDTO):
 
 class AuthMeSessionData(BaseDTO):
     authenticated: bool = Field(default=True, description="Whether the user is authenticated")
+    account_type: str | None = Field(default=None, description="User's account type/role")

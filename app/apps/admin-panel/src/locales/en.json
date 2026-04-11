@@ -219,12 +219,14 @@
     "loading": "Loading…",
     "actions": {
       "save": "Save",
-      "saving": "Saving…"
+      "saving": "Saving…",
+      "clear": "Clear"
     },
     "fields": {
       "pageTitle": "Browser title",
       "favicon": "Favicon (.ico)",
-      "themeOverride": "Theme override (JSON)"
+      "backgroundColor": "Background color",
+      "googleFontUrl": "Google Font URL"
     },
     "placeholders": {
       "pageTitle": "Leave empty to use restaurant name"
@@ -234,7 +236,12 @@
       "favicon": "ICO only. Image must be exactly 16×16, 32×32, 64×64, or 128×128 pixels.",
       "faviconCurrent": "A favicon is already configured. Upload a new file to replace it.",
       "faviconSelected": "Selected: {{name}}",
-      "themeOverride": "Optional JSON matching the theme override structure (colors, spacing, etc.)."
+      "backgroundColor": "Primary background color for the mobile app.",
+      "googleFontUrl": "Paste the full URL from Google Fonts.",
+      "googleFontUrlTooltip": "Go to fonts.google.com, select a font, and copy the embed URL."
+    },
+    "themeSection": {
+      "title": "Theme customization"
     },
     "copySection": {
       "title": "Copy theme from another restaurant",
@@ -245,7 +252,7 @@
     },
     "errors": {
       "selectRestaurant": "Select a restaurant from the tenant switcher first.",
-      "invalidThemeJson": "Theme override must be valid JSON object.",
+      "invalidGoogleFontUrl": "URL must start with https://fonts.googleapis.com/css",
       "invalidFaviconType": "Favicon must be an ICO file (image/x-icon).",
       "invalidFaviconExtension": "File extension must be .ico.",
       "faviconUploadFailed": "Could not upload favicon to storage."

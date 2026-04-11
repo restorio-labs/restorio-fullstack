@@ -8,6 +8,8 @@ RUN apt-get update && \
 
 RUN pip install --no-cache-dir uv
 
+ENV UV_LINK_MODE=copy
+
 COPY pyproject.toml ./
 
 RUN uv pip compile pyproject.toml -o requirements.txt && \

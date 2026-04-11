@@ -38,6 +38,7 @@ interface KitchenOrder {
   createdAt: string;
   updatedAt: string;
 }
+
 interface FloorRuntimeViewProps {
   venue: Tenant;
   selectedFloorId?: string | null;

@@ -1,8 +1,7 @@
 import type { ReactElement, ReactNode } from "react";
-import { useMemo } from "react";
 import { Navigate } from "react-router-dom";
 
-import { TokenStorage } from "./storage";
+import { useAuthContext } from "./AuthContext";
 
 export type UserRole = "super_admin" | "admin" | "owner" | "manager" | "waiter" | "kitchen_staff";
 
@@ -13,30 +12,10 @@ export interface RoleGuardProps {
   fallback?: ReactNode;
 }
 
-const getRoleFromToken = (): UserRole | null => {
-  const token = TokenStorage.getAccessToken();
-
-  if (!token) {
-    return null;
-  }
-
-  const codePattern = /^\d{3}-\d{3}$/;
-
-  if (codePattern.test(token)) {
-    return null;
-  }
-
-  const decoded = TokenStorage.decodeToken(token);
-
-  if (!decoded?.account_type) {
-    return null;
-  }
-
-  return decoded.account_type as UserRole;
-};
-
 export const useCurrentRole = (): UserRole | null => {
-  return useMemo(() => getRoleFromToken(), []);
+  const { role } = useAuthContext();
+
+  return role;
 };
 
 export const RoleGuard = ({
