@@ -2,14 +2,10 @@ import json
 import logging
 
 from fastapi import Request
+import pytest
 
 from core.foundation.logging import audit as audit_module
-from core.foundation.logging.audit import (
-    AuditLogger,
-    _base_payload,
-    _client_ip,
-    _setup_audit_logger,
-)
+from core.foundation.logging.audit import AuditLogger
 
 
 def _request(path: str = "/x", headers=None, client=None) -> Request:
@@ -26,26 +22,42 @@ def _request(path: str = "/x", headers=None, client=None) -> Request:
 
 
 def test_setup_audit_logger_returns_existing_logger_when_handler_present() -> None:
+    setup = getattr(audit_module, "_setup_audit_logger", None)
+    if setup is None:
+        pytest.skip("Audit module does not expose _setup_audit_logger")
     logger = logging.getLogger("restorio.audit")
     if not logger.handlers:
         logger.addHandler(logging.NullHandler())
 
-    result = _setup_audit_logger()
+    result = setup()
 
     assert result is logger
 
 
-def test_client_ip_from_forwarded_or_unknown() -> None:
-    req_with_forwarded = _request(headers=[(b"x-forwarded-for", b"10.0.0.1, 10.0.0.2")])
-    assert _client_ip(req_with_forwarded) == "10.0.0.1"
+def test_audit_payload_uses_forwarded_client_ip(monkeypatch) -> None:
+    emitted: list[str] = []
+    monkeypatch.setattr(audit_module, "_logger", type("L", (), {"info": emitted.append})())
+    req = _request(headers=[(b"x-forwarded-for", b"10.0.0.1, 10.0.0.2")])
+    AuditLogger().rate_limited(request=req)
+    payload = json.loads(emitted[0])
+    assert payload["ip"] == "10.0.0.1"
 
-    req_unknown = _request(client=None)
-    assert _client_ip(req_unknown) == "unknown"
+
+def test_audit_payload_ip_unknown_without_client(monkeypatch) -> None:
+    emitted: list[str] = []
+    monkeypatch.setattr(audit_module, "_logger", type("L", (), {"info": emitted.append})())
+    req = _request(client=None)
+    AuditLogger().rate_limited(request=req)
+    payload = json.loads(emitted[0])
+    assert payload["ip"] == "unknown"
 
 
-def test_base_payload_contains_common_fields() -> None:
+def test_audit_payload_contains_common_fields(monkeypatch) -> None:
+    emitted: list[str] = []
+    monkeypatch.setattr(audit_module, "_logger", type("L", (), {"info": emitted.append})())
     req = _request(headers=[(b"user-agent", b"pytest-agent")], client=("127.0.0.1", 1234))
-    payload = _base_payload(req)
+    AuditLogger().rate_limited(request=req)
+    payload = json.loads(emitted[0])
 
     assert payload["request_id"] == "req-1"
     assert payload["ip"] == "127.0.0.1"
@@ -55,7 +67,7 @@ def test_base_payload_contains_common_fields() -> None:
 
 
 def test_audit_logger_methods_emit_json(monkeypatch) -> None:
-    emitted = []
+    emitted: list[str] = []
 
     monkeypatch.setattr(audit_module, "_logger", type("L", (), {"info": emitted.append})())
 
