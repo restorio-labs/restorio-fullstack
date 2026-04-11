@@ -51,7 +51,7 @@ class TestCreateUserDTO:
         with pytest.raises(ValidationError):
             CreateUserDTO(
                 email="user@example.com",
-                password="short",
+                password="Ab1!",
             )
 
     def test_password_too_long(self) -> None:

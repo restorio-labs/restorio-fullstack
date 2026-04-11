@@ -6,9 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 const buildKitchenWebSocketUrl = (restaurantId: string): string => {
   const apiBase = resolveApiBaseUrl({ preferRelativeInBrowser: true });
   const absolute =
-    apiBase.startsWith("/") && typeof window !== "undefined"
-      ? `${window.location.origin}${apiBase}`
-      : apiBase;
+    apiBase.startsWith("/") && typeof window !== "undefined" ? `${window.location.origin}${apiBase}` : apiBase;
   const parsed = new URL(absolute);
   const wsProto = parsed.protocol === "https:" ? "wss:" : "ws:";
   const path = parsed.pathname.replace(/\/$/, "");
