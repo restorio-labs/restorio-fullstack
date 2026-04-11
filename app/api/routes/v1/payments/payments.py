@@ -24,7 +24,7 @@ router = APIRouter()
     response_model=CreatedResponse[dict[str, Any]],
 )
 async def create_payment(
-    tenant_public_id: str,
+    tenant_public_id: str,  # noqa: ARG001
     request: CreateTransactionDTO,
     session: PostgresSession,
     tenant_service: TenantServiceDep,

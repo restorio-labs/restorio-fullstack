@@ -43,10 +43,7 @@ def normalize_mongo_menu_categories(
 
             price = float(raw_price) if isinstance(raw_price, int | float) else 0.0
             promoted = bool(raw_promoted) if isinstance(raw_promoted, bool) else raw_promoted == 1
-            if isinstance(raw_avail, bool):
-                is_available = raw_avail
-            else:
-                is_available = raw_avail != 0
+            is_available = raw_avail if isinstance(raw_avail, bool) else raw_avail != 0
             desc = raw_desc if isinstance(raw_desc, str) else ""
             tags = (
                 [tag for tag in raw_tags if isinstance(tag, str)]

@@ -373,7 +373,7 @@ async def refund_order(
     response_model=SuccessResponse[list[TableSessionResponseDTO]],
 )
 async def list_table_sessions(
-    tenant_public_id: str,
+    tenant_public_id: str,  # noqa: ARG001
     session: PostgresSession,
     table_session_service: TableSessionServiceDep,
     tenant_id: AuthorizedTenantId,

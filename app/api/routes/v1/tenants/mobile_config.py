@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Request, status
 
-from core.exceptions import BadRequestError
 from core.dto.v1.tenants.mobile_config import (
     CopyMobileThemeFromDTO,
     MenuImageFinalizeRequestDTO,
@@ -13,12 +12,13 @@ from core.dto.v1.tenants.mobile_config import (
     TenantMobileFaviconPresignResponseDTO,
     UpdateTenantMobileConfigDTO,
 )
+from core.exceptions import BadRequestError
 from core.foundation.dependencies import (
     AuthorizedTenantId,
     PostgresSession,
+    TenantMenuImageStorageServiceDep,
     TenantMobileConfigServiceDep,
     TenantMobileFaviconStorageServiceDep,
-    TenantMenuImageStorageServiceDep,
 )
 from core.foundation.http.responses import SuccessResponse, UpdatedResponse
 from core.foundation.role_guard import RequireOwnerOrManager

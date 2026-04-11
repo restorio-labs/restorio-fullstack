@@ -455,7 +455,7 @@ export const KitchenView = (): ReactElement => {
                                   </Text>
                                 ))}
                               </Box>
-                              {(order.notes || isSlidingView) && (
+                              {(order.notes ?? isSlidingView) && (
                                 <Stack
                                   direction={isSlidingView ? "row" : "column"}
                                   align={isSlidingView ? "end" : "start"}

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import json
 from contextlib import suppress
 from dataclasses import dataclass
 from datetime import timedelta
 from io import BytesIO
+import json
 from time import time
 from typing import ClassVar
 from urllib.parse import quote
@@ -153,7 +153,9 @@ class TenantMenuImageStorageService:
         invalid_type_message = "Menu image must be PNG, JPEG, or WEBP"
         invalid_image_message = "Uploaded file is not a valid image"
         too_large_dimensions_message = "Menu image dimensions are too large"
-        aspect_message = "Menu image must be square or nearly square (min side at least 95% of max side)"
+        aspect_message = (
+            "Menu image must be square or nearly square (min side at least 95% of max side)"
+        )
 
         try:
             with Image.open(BytesIO(content)) as image:

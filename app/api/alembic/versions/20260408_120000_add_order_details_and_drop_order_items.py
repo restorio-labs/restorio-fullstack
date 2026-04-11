@@ -24,9 +24,18 @@ def upgrade() -> None:
         "order_details",
         sa.Column("order_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("notes", sa.String(length=1000), nullable=True),
-        sa.Column("items_snapshot", postgresql.JSONB(astext_type=sa.Text()), nullable=False, server_default="[]"),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
-        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column(
+            "items_snapshot",
+            postgresql.JSONB(astext_type=sa.Text()),
+            nullable=False,
+            server_default="[]",
+        ),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
+        sa.Column(
+            "updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
         sa.ForeignKeyConstraint(["order_id"], ["orders.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("order_id"),
     )
@@ -78,7 +87,9 @@ def downgrade() -> None:
         sa.Column("name_snapshot", sa.String(length=255), nullable=False),
         sa.Column("quantity", sa.Integer(), nullable=False),
         sa.Column("unit_price", sa.Numeric(10, 2), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
         sa.CheckConstraint("quantity > 0", name="check_quantity_positive"),
         sa.CheckConstraint("unit_price >= 0", name="check_unit_price_non_negative"),
         sa.ForeignKeyConstraint(["order_id"], ["orders.id"], ondelete="CASCADE"),

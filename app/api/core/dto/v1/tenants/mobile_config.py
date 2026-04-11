@@ -11,6 +11,9 @@ class TenantMobileConfigResponseDTO(BaseDTO):
     has_favicon: bool = Field(False, alias="hasFavicon")
 
 
+_MAX_THEME_OVERRIDE_SIZE = 131072
+
+
 class UpdateTenantMobileConfigDTO(BaseDTO):
     page_title: str | None = Field(None, max_length=255, alias="pageTitle")
     theme_override: dict[str, Any] | None = Field(None, alias="themeOverride")
@@ -21,8 +24,9 @@ class UpdateTenantMobileConfigDTO(BaseDTO):
         if v is None:
             return v
         raw = str(v)
-        if len(raw) > 131072:
-            raise ValueError("Theme override is too large")
+        if len(raw) > _MAX_THEME_OVERRIDE_SIZE:
+            msg = "Theme override is too large"
+            raise ValueError(msg)
         return v
 
 

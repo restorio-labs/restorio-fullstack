@@ -77,7 +77,7 @@ export const OrdersSidebar = ({ isOpen, onClose, venueId }: OrdersSidebarProps):
                     <div className="flex items-center justify-between">
                       <span className="font-semibold text-text-primary">
                         {t("floorEditor.tableLabel", {
-                          number: order.tableLabel.split("-").pop() ?? order.tableLabel ?? "-",
+                          number: order.tableLabel.split("-").pop() ?? "-",
                         })}
                       </span>
                       <span className="text-sm text-text-secondary">
@@ -89,7 +89,7 @@ export const OrdersSidebar = ({ isOpen, onClose, venueId }: OrdersSidebarProps):
                     </div>
                     <div className="mt-2 flex items-center justify-between">
                       <span className="text-sm font-medium text-text-primary">
-                        {String(order.total ?? "0.00")} {order.currency ?? "PLN"}
+                        {String(order.total)} {order.currency}
                       </span>
                       <span
                         className={cn(

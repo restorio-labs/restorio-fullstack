@@ -132,6 +132,7 @@ def _normalize_categories(raw_menu: dict[str, dict]) -> list[MenuCategoryDTO]:
 
     return sorted(categories, key=lambda category: category.order)
 
+
 @router.get(
     "/{tenant_public_id}/menu",
     status_code=status.HTTP_200_OK,

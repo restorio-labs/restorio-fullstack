@@ -2,9 +2,9 @@ import json
 import os
 from urllib.parse import quote_plus, urlparse, urlunparse
 
+from dotenv import load_dotenv
 from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from dotenv import load_dotenv
 
 load_dotenv()
 

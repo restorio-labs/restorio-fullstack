@@ -44,4 +44,6 @@ class User(Base):
         "TenantRole", back_populates="account", cascade="all, delete-orphan"
     )
     audit_logs: Mapped[list[AuditLog]] = relationship("AuditLog", back_populates="actor_user")
-    table_sessions: Mapped[list[TableSession]] = relationship("TableSession", back_populates="waiter_user")
+    table_sessions: Mapped[list[TableSession]] = relationship(
+        "TableSession", back_populates="waiter_user"
+    )

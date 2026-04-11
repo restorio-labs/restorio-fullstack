@@ -14,9 +14,9 @@ from core.dto.v1.orders.responses import (
 )
 
 __all__ = [
+    "ArchivedOrderResponseDTO",
     "CreateOrderDTO",
     "CreateOrderItemDTO",
-    "ArchivedOrderResponseDTO",
     "KitchenOrderItemResponseDTO",
     "KitchenOrderResponseDTO",
     "OrderItemResponseDTO",

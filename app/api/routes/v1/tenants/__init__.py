@@ -9,7 +9,7 @@ __all__ = [
     "canvases_router",
     "menu_router",
     "mobile_config_router",
+    "orders_router",
     "profile_router",
     "tenants_router",
-    "orders_router",
 ]

@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from sqlalchemy import DateTime, ForeignKey, String, func
-from sqlalchemy.dialects.postgresql import JSONB, UUID as PGUUID
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.foundation.database.database import Base
@@ -35,4 +36,4 @@ class TenantMobileConfig(Base):
         DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()
     )
 
-    tenant: Mapped["Tenant"] = relationship("Tenant", back_populates="mobile_config")
+    tenant: Mapped[Tenant] = relationship("Tenant", back_populates="mobile_config")

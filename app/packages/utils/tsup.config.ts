@@ -1,11 +1,11 @@
 import { defineConfig } from "tsup";
 
 const sharedConfig = {
-  entry: ["src/index.ts"],
+  entry: ["src/index.ts"] as string[],
   dts: true,
   sourcemap: false,
   tsconfig: "./tsconfig.dts.json",
-} as const;
+};
 
 export default defineConfig([
   {
@@ -16,7 +16,7 @@ export default defineConfig([
   {
     ...sharedConfig,
     format: ["cjs"],
-    esbuildOptions(options) {
+    esbuildOptions(options): void {
       options.define = {
         ...(options.define ?? {}),
         "import.meta": "undefined",

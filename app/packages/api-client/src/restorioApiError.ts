@@ -22,13 +22,13 @@ export const parseRestorioApiError = (error: unknown): RestorioApiErrorPayload |
     return null;
   }
 
-  const message = data.message;
+  const { message } = data;
 
   if (typeof message !== "string") {
     return null;
   }
 
-  const details = data.details;
+  const { details } = data;
 
   if (details !== undefined && !isRecord(details)) {
     return { message };
@@ -53,7 +53,7 @@ export const parseOrderStatusTransitionDetails = (
     return null;
   }
 
-  const current = details.current;
+  const { current } = details;
   const newStatus = details.new_status;
 
   if (typeof current !== "string" || typeof newStatus !== "string") {

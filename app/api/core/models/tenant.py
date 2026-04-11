@@ -77,7 +77,7 @@ class Tenant(Base):
     tenant_profile: Mapped[TenantProfile | None] = relationship(
         "TenantProfile", back_populates="tenant", uselist=False, cascade="all, delete-orphan"
     )
-    mobile_config: Mapped["TenantMobileConfig | None"] = relationship(
+    mobile_config: Mapped[TenantMobileConfig | None] = relationship(
         "TenantMobileConfig", back_populates="tenant", uselist=False, cascade="all, delete-orphan"
     )
     transactions: Mapped[list[Transaction]] = relationship(

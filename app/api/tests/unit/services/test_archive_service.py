@@ -28,7 +28,9 @@ async def test_archive_order_persists_in_postgres_before_deleting_mongo() -> Non
     session.add = Mock()
     session.commit = AsyncMock()
     session.refresh = AsyncMock(
-        side_effect=lambda archived: setattr(archived, "id", UUID("11111111-1111-1111-1111-111111111111"))
+        side_effect=lambda archived: setattr(
+            archived, "id", UUID("11111111-1111-1111-1111-111111111111")
+        )
     )
     delete_one = AsyncMock()
     db = _FakeMongoDatabase(delete_one)

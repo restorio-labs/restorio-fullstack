@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import json
 from contextlib import suppress
 from datetime import timedelta
 from io import BytesIO
+import json
 from time import time
 from typing import ClassVar
 from urllib.parse import quote
@@ -91,7 +91,7 @@ class TenantMobileFaviconStorageService:
     def finalize_upload(self, tenant_id: UUID, object_key: str) -> str:
         invalid_object_message = "Favicon upload key is invalid"
         invalid_image_message = "Uploaded file is not a valid ICO image"
-        invalid_size_message = "Favicon must be 16×16, 32×32, 64×64, or 128×128 pixels"
+        invalid_size_message = "Favicon must be 16x16, 32x32, 64x64, or 128x128 pixels"
         storage_unavailable_message = "Object storage is unavailable"
 
         expected_prefix = f"{self._TEMP_PREFIX}/{tenant_id}/"

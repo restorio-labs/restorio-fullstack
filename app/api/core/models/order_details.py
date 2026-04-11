@@ -24,7 +24,9 @@ class OrderDetails(Base):
         primary_key=True,
     )
     notes: Mapped[str | None] = mapped_column(String(1000), nullable=True)
-    items_snapshot: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, nullable=False, default=list)
+    items_snapshot: Mapped[list[dict[str, Any]]] = mapped_column(
+        JSONB, nullable=False, default=list
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )

@@ -113,7 +113,9 @@ class OrderService:
                         "name": item.get("name", ""),
                         "quantity": item.get("quantity", 1),
                         "basePrice": float(item.get("basePrice", item.get("base_price", 0))),
-                        "selectedModifiers": item.get("selectedModifiers", item.get("selected_modifiers", [])),
+                        "selectedModifiers": item.get(
+                            "selectedModifiers", item.get("selected_modifiers", [])
+                        ),
                         "totalPrice": float(item.get("totalPrice", item.get("total_price", 0))),
                     }
                     for item in items

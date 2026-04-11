@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 import hashlib
 import secrets
-from typing import Any
 from uuid import UUID
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -17,7 +16,15 @@ from core.models.tenant import Tenant
 
 _KITCHEN_ORDERS_COLLECTION = "kitchen_orders"
 _ACTIVE_LOCK_TTL = timedelta(minutes=10)
-_ACTIVE_WAITER_STATUSES = {"new", "pending", "confirmed", "placed", "preparing", "ready", "ready_to_serve"}
+_ACTIVE_WAITER_STATUSES = {
+    "new",
+    "pending",
+    "confirmed",
+    "placed",
+    "preparing",
+    "ready",
+    "ready_to_serve",
+}
 
 
 @dataclass(slots=True)
@@ -62,24 +69,33 @@ class TableSessionService:
                         label = raw_element.get("label")
                         return ResolvedTableIdentity(
                             table_ref=element_id,
-                            table_number=candidate_number if isinstance(candidate_number, int) else None,
-                            table_label=label.strip() if isinstance(label, str) and label.strip() else None,
+                            table_number=candidate_number
+                            if isinstance(candidate_number, int)
+                            else None,
+                            table_label=label.strip()
+                            if isinstance(label, str) and label.strip()
+                            else None,
                         )
                     if table_number is not None and candidate_number == table_number:
                         label = raw_element.get("label")
                         matched = ResolvedTableIdentity(
                             table_ref=element_id,
                             table_number=table_number,
-                            table_label=label.strip() if isinstance(label, str) and label.strip() else f"Table {table_number}",
+                            table_label=label.strip()
+                            if isinstance(label, str) and label.strip()
+                            else f"Table {table_number}",
                         )
 
         if matched is not None:
             return matched
 
         if table_ref:
-            return ResolvedTableIdentity(table_ref=table_ref, table_number=table_number, table_label=None)
+            return ResolvedTableIdentity(
+                table_ref=table_ref, table_number=table_number, table_label=None
+            )
 
-        raise NotFoundResponse("Table", str(table_number) if table_number is not None else None)
+        msg = "Table" + (" " + str(table_number) if table_number is not None else "")
+        raise NotFoundResponse(msg)
 
     async def list_active_sessions(
         self,
@@ -116,7 +132,9 @@ class TableSessionService:
             table_number=table_number,
             table_ref=table_ref,
         )
-        await self._expire_stale_sessions(session, tenant_id=tenant.id, table_ref=table_identity.table_ref)
+        await self._expire_stale_sessions(
+            session, tenant_id=tenant.id, table_ref=table_identity.table_ref
+        )
 
         active_session = await self._get_active_session(
             session,
@@ -126,7 +144,8 @@ class TableSessionService:
 
         if active_session is not None:
             if active_session.origin == TableSessionOrigin.WAITER:
-                raise ConflictError("This table is currently being served by staff")
+                msg = "This table is currently being served by staff"
+                raise ConflictError(msg)
             if lock_token and active_session.lock_token == lock_token:
                 return await self._refresh_existing_session(
                     session,
@@ -135,10 +154,12 @@ class TableSessionService:
                     client_ip=client_ip,
                     client_fingerprint=client_fingerprint,
                 )
-            raise ConflictError("This table is temporarily unavailable")
+            msg = "This table is temporarily unavailable"
+            raise ConflictError(msg)
 
         if await self._has_active_waiter_order(db, tenant.public_id, table_identity.table_ref):
-            raise ConflictError("This table is currently being served by staff")
+            msg = "This table is currently being served by staff"
+            raise ConflictError(msg)
 
         now = datetime.now(UTC)
         created = TableSession(
@@ -174,9 +195,11 @@ class TableSessionService:
         await self._expire_session_if_needed(session, table_session)
 
         if table_session.status != TableSessionStatus.ACTIVE:
-            raise ConflictError("This table session is no longer active")
+            msg = "This table session is no longer active"
+            raise ConflictError(msg)
         if table_session.origin != TableSessionOrigin.MOBILE:
-            raise ConflictError("Only mobile table sessions can be refreshed")
+            msg = "Only mobile table sessions can be refreshed"
+            raise ConflictError(msg)
 
         return await self._refresh_existing_session(
             session,
@@ -222,7 +245,9 @@ class TableSessionService:
         table_number: int | None = None,
     ) -> TableSession:
         await self._expire_stale_sessions(session, tenant_id=tenant.id, table_ref=table_ref)
-        active_session = await self._get_active_session(session, tenant_id=tenant.id, table_ref=table_ref)
+        active_session = await self._get_active_session(
+            session, tenant_id=tenant.id, table_ref=table_ref
+        )
 
         if active_session is not None:
             if active_session.origin == TableSessionOrigin.WAITER:
@@ -232,7 +257,8 @@ class TableSessionService:
                     active_session.waiter_user_id = waiter_user_id
                 await session.flush()
                 return active_session
-            raise ConflictError("Table is currently locked by a mobile guest")
+            msg = "Table is currently locked by a mobile guest"
+            raise ConflictError(msg)
 
         now = datetime.now(UTC)
         created = TableSession(
@@ -264,7 +290,9 @@ class TableSessionService:
         reason: str,
     ) -> TableSession | None:
         await self._expire_stale_sessions(session, tenant_id=tenant_id, table_ref=table_ref)
-        table_session = await self._get_active_session(session, tenant_id=tenant_id, table_ref=table_ref)
+        table_session = await self._get_active_session(
+            session, tenant_id=tenant_id, table_ref=table_ref
+        )
         if table_session is None:
             return None
 
@@ -299,7 +327,9 @@ class TableSessionService:
             return
 
         await self._expire_stale_sessions(session, tenant_id=tenant_id, table_ref=table_ref)
-        table_session = await self._get_active_session(session, tenant_id=tenant_id, table_ref=table_ref)
+        table_session = await self._get_active_session(
+            session, tenant_id=tenant_id, table_ref=table_ref
+        )
         if table_session is None:
             return
         await self._set_terminal_status(session, table_session, final_status)
@@ -321,10 +351,13 @@ class TableSessionService:
         return result.scalar_one_or_none()
 
     async def _get_by_lock_token(self, session: AsyncSession, lock_token: str) -> TableSession:
-        result = await session.execute(select(TableSession).where(TableSession.lock_token == lock_token))
+        result = await session.execute(
+            select(TableSession).where(TableSession.lock_token == lock_token)
+        )
         table_session = result.scalar_one_or_none()
         if table_session is None:
-            raise NotFoundResponse("Table session", lock_token)
+            msg = "Table session not found"
+            raise NotFoundResponse(msg, lock_token)
         return table_session
 
     async def _resolve_new_lock_token(
@@ -351,7 +384,7 @@ class TableSessionService:
             select(TableSession).where(
                 TableSession.tenant_id == tenant_id,
                 TableSession.status == TableSessionStatus.ACTIVE,
-                *( [TableSession.table_ref == table_ref] if table_ref else [] ),
+                *([TableSession.table_ref == table_ref] if table_ref else []),
             )
         )
         for table_session in result.scalars().all():

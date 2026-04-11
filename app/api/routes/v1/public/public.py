@@ -1,7 +1,6 @@
 from datetime import UTC, datetime
 from typing import Any
-from uuid import UUID
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Request, Response, status
 from sqlalchemy import select
@@ -103,9 +102,7 @@ async def get_public_tenant_info(
 ) -> SuccessResponse[PublicTenantInfoResponseDTO]:
     tenant = await tenant_service.get_tenant_by_slug(session, tenant_slug)
     mc = await tenant_mobile_config_service.get_by_tenant_id(session, tenant.id)
-    favicon_path = (
-        f"/public/{tenant.slug}/favicon.ico" if mc and mc.favicon_object_key else None
-    )
+    favicon_path = f"/public/{tenant.slug}/favicon.ico" if mc and mc.favicon_object_key else None
 
     return SuccessResponse(
         message="Restaurant info retrieved",
@@ -134,7 +131,8 @@ async def get_public_tenant_favicon(
     mc = await tenant_mobile_config_service.get_by_tenant_id(session, tenant.id)
 
     if not mc or not mc.favicon_object_key:
-        raise NotFoundResponse("Favicon", tenant_slug)
+        msg = "Favicon"
+        raise NotFoundResponse(msg, tenant_slug)
 
     stream = storage.get_object_stream(mc.favicon_object_key)
     try:

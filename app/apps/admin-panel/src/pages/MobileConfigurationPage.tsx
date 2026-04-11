@@ -66,7 +66,7 @@ export const MobileConfigurationPage = (): ReactElement => {
   }, [config]);
 
   const otherTenants = useMemo(() => {
-    if (!tenantId || !tenants) {
+    if (!tenantId || tenants.length === 0) {
       return [];
     }
 
@@ -90,6 +90,7 @@ export const MobileConfigurationPage = (): ReactElement => {
       }
 
       const trimmedFont = googleFontUrl.trim();
+
       if (trimmedFont && !validateGoogleFontUrl(trimmedFont)) {
         setFontError(t("mobileConfiguration.errors.invalidGoogleFontUrl"));
 
@@ -168,6 +169,7 @@ export const MobileConfigurationPage = (): ReactElement => {
         t("mobileConfiguration.toast.saveSuccessTitle"),
         t("mobileConfiguration.toast.saveSuccessBody"),
       );
+
       if (tenantId) {
         void queryClient.invalidateQueries({ queryKey: mobileConfigQueryKey(tenantId) });
       }
@@ -216,6 +218,7 @@ export const MobileConfigurationPage = (): ReactElement => {
         t("mobileConfiguration.toast.copySuccessTitle"),
         t("mobileConfiguration.toast.copySuccessBody"),
       );
+
       if (tenantId) {
         void queryClient.invalidateQueries({ queryKey: mobileConfigQueryKey(tenantId) });
       }
@@ -228,6 +231,7 @@ export const MobileConfigurationPage = (): ReactElement => {
   const handleFaviconChange = (event: ChangeEvent<HTMLInputElement>): void => {
     setFaviconError("");
     const file = event.target.files?.[0] ?? null;
+
     setFaviconFile(file);
     event.target.value = "";
   };

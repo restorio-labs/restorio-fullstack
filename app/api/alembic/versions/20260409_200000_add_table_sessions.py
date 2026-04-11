@@ -19,7 +19,9 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
-table_session_origin = postgresql.ENUM("mobile", "waiter", name="table_session_origin", create_type=False)
+table_session_origin = postgresql.ENUM(
+    "mobile", "waiter", name="table_session_origin", create_type=False
+)
 table_session_status = postgresql.ENUM(
     "active",
     "released",
@@ -29,10 +31,19 @@ table_session_status = postgresql.ENUM(
     create_type=False,
 )
 
+
 def upgrade() -> None:
     conn = op.get_bind()
-    conn.execute(sa.text("DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'table_session_origin') THEN CREATE TYPE table_session_origin AS ENUM ('mobile', 'waiter'); END IF; END $$;"))
-    conn.execute(sa.text("DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'table_session_status') THEN CREATE TYPE table_session_status AS ENUM ('active', 'released', 'expired', 'completed'); END IF; END $$;"))
+    conn.execute(
+        sa.text(
+            "DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'table_session_origin') THEN CREATE TYPE table_session_origin AS ENUM ('mobile', 'waiter'); END IF; END $$;"
+        )
+    )
+    conn.execute(
+        sa.text(
+            "DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'table_session_status') THEN CREATE TYPE table_session_status AS ENUM ('active', 'released', 'expired', 'completed'); END IF; END $$;"
+        )
+    )
 
     op.create_table(
         "table_sessions",
@@ -50,8 +61,12 @@ def upgrade() -> None:
         sa.Column("session_id", sa.String(length=128), nullable=True),
         sa.Column("client_fingerprint_hash", sa.String(length=128), nullable=True),
         sa.Column("ip_hash", sa.String(length=128), nullable=True),
-        sa.Column("acquired_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
-        sa.Column("last_seen_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
+        sa.Column(
+            "acquired_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False
+        ),
+        sa.Column(
+            "last_seen_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False
+        ),
         sa.Column("expires_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("released_at", sa.DateTime(timezone=True), nullable=True),
         sa.ForeignKeyConstraint(["tenant_id"], ["tenants.id"], ondelete="CASCADE"),

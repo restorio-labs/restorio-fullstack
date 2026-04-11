@@ -18,8 +18,8 @@ from core.foundation.http.responses import (
     UpdatedResponse,
 )
 from core.models.enums import OrderStatus
-from core.models.order_details import OrderDetails
 from core.models.order import Order
+from core.models.order_details import OrderDetails
 from core.models.user import User
 
 router = APIRouter()
@@ -53,10 +53,7 @@ def _build_order_response(
         notes=details.notes if details is not None else None,
         created_at=order.created_at,
         updated_at=order.updated_at,
-        items=[
-            OrderItemResponseDTO(**item)
-            for item in item_snapshots
-        ],
+        items=[OrderItemResponseDTO(**item) for item in item_snapshots],
     )
 
 
@@ -85,9 +82,7 @@ async def list_tenant_orders(
         details_result = await session.execute(
             select(OrderDetails).where(OrderDetails.order_id.in_(order_ids))
         )
-        details_by_order = {
-            details.order_id: details for details in details_result.scalars().all()
-        }
+        details_by_order = {details.order_id: details for details in details_result.scalars().all()}
     waiter_ids = {order.waiter_user_id for order in orders if order.waiter_user_id is not None}
     waiters_by_id: dict[UUID, User] = {}
     if waiter_ids:
@@ -131,7 +126,9 @@ async def create_tenant_order(
     total_amount = sum(Decimal(item.unit_price) * item.quantity for item in request.items)
     order = Order(
         tenant_id=tenant_id,
-        table_id=_table_ref_to_uuid(tenant_public_id, request.table_id) if request.table_id else None,
+        table_id=_table_ref_to_uuid(tenant_public_id, request.table_id)
+        if request.table_id
+        else None,
         table_ref=request.table_id,
         waiter_user_id=waiter_user_id,
         status=OrderStatus.NEW.value,
@@ -145,8 +142,7 @@ async def create_tenant_order(
         order_id=order.id,
         notes=request.notes,
         items_snapshot=[
-            item.model_dump(by_alias=True, exclude_none=True)
-            for item in request.items
+            item.model_dump(by_alias=True, exclude_none=True) for item in request.items
         ],
     )
     session.add(details)
@@ -201,8 +197,7 @@ async def update_tenant_order(
 
     if request.items is not None:
         details.items_snapshot = [
-            item.model_dump(by_alias=True, exclude_none=True)
-            for item in request.items
+            item.model_dump(by_alias=True, exclude_none=True) for item in request.items
         ]
         order.total_amount = sum(Decimal(item.unit_price) * item.quantity for item in request.items)
 

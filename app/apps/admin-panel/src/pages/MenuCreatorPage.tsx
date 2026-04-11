@@ -280,6 +280,7 @@ export const MenuCreatorPage = (): ReactElement => {
     event: ChangeEvent<HTMLInputElement>,
   ): Promise<void> => {
     const file = event.target.files?.[0];
+
     event.target.value = "";
 
     if (!file || tenantId === null) {
@@ -313,6 +314,7 @@ export const MenuCreatorPage = (): ReactElement => {
       }
 
       const { imageUrl } = await api.tenantMobileConfig.finalizeMenuImage(tenantId, presign.objectKey);
+
       updateItem(categoryId, itemId, { imageUrl });
     } catch {
       showToast("error", t("menuCreator.toast.saveErrorTitle"), t("menuCreator.imageUpload.failed"));
@@ -384,6 +386,7 @@ export const MenuCreatorPage = (): ReactElement => {
           desc: item.desc.trim(),
           tags: item.tags,
         };
+
         if (item.imageUrl) {
           row.imageUrl = item.imageUrl;
         }

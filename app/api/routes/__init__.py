@@ -5,16 +5,15 @@ from routes.v1.health import router as health_router
 from routes.v1.kitchen_config import router as kitchen_config_router
 from routes.v1.orders import router as orders_restaurant_router
 from routes.v1.payments import router as payments_router
+from routes.v1.public import router as public_router
 from routes.v1.tenants import (
     canvases_router,
     menu_router,
     mobile_config_router,
+    orders_router,
     profile_router,
     tenants_router,
-    orders_router,
 )
-
-from routes.v1.public import router as public_router
 from routes.v1.users import router as users_router
 
 api_router = APIRouter()

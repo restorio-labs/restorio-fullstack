@@ -8,7 +8,9 @@ from core.dto.v1.common import BaseDTO
 class PublicTenantInfoResponseDTO(BaseDTO):
     name: str = Field(..., description="Restaurant name")
     slug: str = Field(..., description="Restaurant slug")
-    page_title: str | None = Field(None, alias="pageTitle", description="Mobile browser title override")
+    page_title: str | None = Field(
+        None, alias="pageTitle", description="Mobile browser title override"
+    )
     favicon_path: str | None = Field(
         None,
         alias="faviconPath",
