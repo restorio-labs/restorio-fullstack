@@ -1,6 +1,6 @@
 import type { KitchenOrderEvent } from "@restorio/types";
-import { useQueryClient } from "@tanstack/react-query";
 import { resolveApiBaseUrl } from "@restorio/utils";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const buildKitchenWebSocketUrl = (restaurantId: string): string => {
