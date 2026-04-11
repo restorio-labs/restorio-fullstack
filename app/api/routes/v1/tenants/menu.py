@@ -141,6 +141,7 @@ def _normalize_categories(raw_menu: dict[str, dict]) -> list[MenuCategoryDTO]:
 async def get_tenant_menu(
     tenant_public_id: str,
     db: MongoDB,
+    _tenant_id: AuthorizedTenantId,
 ) -> SuccessResponse[TenantMenuResponseDTO]:
     document = await db[MENU_COLLECTION].find_one({"tenantPublicId": tenant_public_id})
     if document is None:

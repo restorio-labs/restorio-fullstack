@@ -54,12 +54,12 @@ async def list_orders(
     service: OrderServiceDep,
     _tenant_id: AuthorizedTenantId,
     _role: RequireAnyStaff,
-    status_filter: str | None = None,
+    order_status: Annotated[str | None, Query(alias="status")] = None,
 ) -> SuccessResponse[list[KitchenOrderResponseDTO]]:
     orders = await service.list_orders(
         db,
         tenant_public_id,
-        status=status_filter,
+        status=order_status,
         timezone_name=request.headers.get("X-Timezone"),
     )
     return SuccessResponse(

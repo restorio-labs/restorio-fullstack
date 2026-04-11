@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 
-class TenantStatus(str, Enum):
+class TenantStatus(StrEnum):
     ACTIVE = "active"
     SUSPENDED = "suspended"
     INACTIVE = "inactive"
 
 
-class OrderStatus(str, Enum):
+class OrderStatus(StrEnum):
     PLACED = "placed"
     PAID = "paid"
     CANCELLED = "cancelled"
@@ -22,33 +22,33 @@ class OrderStatus(str, Enum):
     REFUNDED = "refunded"
 
 
-class PaymentProvider(str, Enum):
+class PaymentProvider(StrEnum):
     PRZELEWY24 = "przelewy24"
     CASH = "cash"
     TERMINAL = "terminal"
     OTHER = "other"
 
 
-class PaymentStatus(str, Enum):
+class PaymentStatus(StrEnum):
     PENDING = "pending"
     COMPLETED = "completed"
     FAILED = "failed"
     REFUNDED = "refunded"
 
 
-class TableSessionOrigin(str, Enum):
+class TableSessionOrigin(StrEnum):
     MOBILE = "mobile"
     WAITER = "waiter"
 
 
-class TableSessionStatus(str, Enum):
+class TableSessionStatus(StrEnum):
     ACTIVE = "active"
     RELEASED = "released"
     EXPIRED = "expired"
     COMPLETED = "completed"
 
 
-class AccountType(str, Enum):
+class AccountType(StrEnum):
     OWNER = "owner"
     WAITER = "waiter"
     KITCHEN = "kitchen"

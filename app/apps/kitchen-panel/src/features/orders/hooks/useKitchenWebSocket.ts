@@ -1,6 +1,20 @@
 import type { KitchenOrderEvent } from "@restorio/types";
 import { useQueryClient } from "@tanstack/react-query";
+import { resolveApiBaseUrl } from "@restorio/utils";
 import { useCallback, useEffect, useRef, useState } from "react";
+
+const buildKitchenWebSocketUrl = (restaurantId: string): string => {
+  const apiBase = resolveApiBaseUrl({ preferRelativeInBrowser: true });
+  const absolute =
+    apiBase.startsWith("/") && typeof window !== "undefined"
+      ? `${window.location.origin}${apiBase}`
+      : apiBase;
+  const parsed = new URL(absolute);
+  const wsProto = parsed.protocol === "https:" ? "wss:" : "ws:";
+  const path = parsed.pathname.replace(/\/$/, "");
+
+  return `${wsProto}//${parsed.host}${path}/ws/kitchen/${restaurantId}`;
+};
 
 type WsStatus = "connected" | "disconnected" | "reconnecting";
 
@@ -42,10 +56,7 @@ export const useKitchenWebSocket = (restaurantId: string | null): UseKitchenWebS
     let timeoutId: ReturnType<typeof setTimeout>;
 
     const connect = (): void => {
-      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const host = window.location.hostname;
-      const port = "80";
-      const url = `${protocol}//${host}:${port}/api/v1/ws/kitchen/${restaurantId}`;
+      const url = buildKitchenWebSocketUrl(restaurantId);
 
       const ws = new WebSocket(url);
 
