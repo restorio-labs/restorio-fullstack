@@ -145,7 +145,13 @@ async def test_create_payment_success(
     external_client = Mock()
 
     result = await create_payment(
-        create_transaction_request, mock_session, tenant_service, mock_p24_service, external_client
+        "tenant-public",
+        create_transaction_request,
+        mock_session,
+        tenant_service,
+        mock_p24_service,
+        external_client,
+        create_transaction_request.tenant_id,
     )
 
     assert isinstance(result, CreatedResponse)
@@ -180,7 +186,13 @@ async def test_create_payment_tenant_not_found(create_transaction_request, mock_
 
     with pytest.raises(NotFoundResponse):
         await create_payment(
-            create_transaction_request, session, tenant_service, mock_p24_service, external_client
+            "tenant-public",
+            create_transaction_request,
+            session,
+            tenant_service,
+            mock_p24_service,
+            external_client,
+            create_transaction_request.tenant_id,
         )
 
 
@@ -203,7 +215,13 @@ async def test_create_payment_missing_p24_credentials(
 
     with pytest.raises(BadRequestError) as exc_info:
         await create_payment(
-            create_transaction_request, session, tenant_service, mock_p24_service, external_client
+            "tenant-public",
+            create_transaction_request,
+            session,
+            tenant_service,
+            mock_p24_service,
+            external_client,
+            create_transaction_request.tenant_id,
         )
 
     mock_p24_service.validate_tenant_p24_credentials.assert_called_once_with(mock_tenant)
@@ -226,7 +244,13 @@ async def test_create_payment_p24_api_error(
 
     with pytest.raises(ExternalAPIError) as exc_info:
         await create_payment(
-            create_transaction_request, session, tenant_service, mock_p24_service, external_client
+            "tenant-public",
+            create_transaction_request,
+            session,
+            tenant_service,
+            mock_p24_service,
+            external_client,
+            create_transaction_request.tenant_id,
         )
 
     assert exc_info.value.status_code == 502  # noqa: PLR2004
@@ -249,7 +273,13 @@ async def test_create_payment_service_unavailable(
 
     with pytest.raises(ServiceUnavailableError) as exc_info:
         await create_payment(
-            create_transaction_request, session, tenant_service, mock_p24_service, external_client
+            "tenant-public",
+            create_transaction_request,
+            session,
+            tenant_service,
+            mock_p24_service,
+            external_client,
+            create_transaction_request.tenant_id,
         )
 
     assert exc_info.value.status_code == 503  # noqa: PLR2004
@@ -277,7 +307,13 @@ async def test_create_payment_optional_fields_empty(
     external_client = Mock()
 
     result = await create_payment(
-        request, mock_session, tenant_service, mock_p24_service, external_client
+        "tenant-public",
+        request,
+        mock_session,
+        tenant_service,
+        mock_p24_service,
+        external_client,
+        tenant_id,
     )
 
     assert isinstance(result, CreatedResponse)

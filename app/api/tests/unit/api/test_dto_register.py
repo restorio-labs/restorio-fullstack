@@ -7,6 +7,7 @@ from core.exceptions import ValidationError as CoreValidationError
 BASE_VALID = {
     "email": "chef@restorio.org",
     "password": "ValidPass1!",
+    "restaurant_name": "My Restaurant",
 }
 
 
@@ -16,8 +17,8 @@ class TestRegisterDTO:
 
     def test_password_length_check_in_validator_directly(self):
         with pytest.raises(CoreValidationError) as exc_info:
-            RegisterDTO.password_complexity("Ab1!")
-        assert "5 characters" in exc_info.value.detail
+            RegisterDTO.password_complexity("Abc1!xy")
+        assert "8 characters" in exc_info.value.detail
 
     def expect_password_error(self, password: str) -> str:
         with pytest.raises((PydanticValidationError, CoreValidationError)) as exc_info:
@@ -26,7 +27,7 @@ class TestRegisterDTO:
         return exc.detail if isinstance(exc, CoreValidationError) else str(exc)
 
     def test_password_too_short_raises(self):
-        self.expect_password_error("Ab1!")
+        self.expect_password_error("Sh0rt!")
 
     def test_password_missing_lowercase_raises(self):
         msg = self.expect_password_error("NOLOWER1!")

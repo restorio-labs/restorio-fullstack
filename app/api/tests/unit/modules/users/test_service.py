@@ -255,7 +255,7 @@ async def test_create_waiter_for_tenant_stores_name_and_surname() -> None:
     session = FakeAsyncSession()
     tenant_id = uuid4()
 
-    user, _ = await user_service.create_user_for_tenant(
+    user, _, _ = await user_service.create_user_for_tenant(
         session=session,
         email="waiter@example.com",
         password="StrongPass1!",
