@@ -13,7 +13,7 @@ import {
   useSnapToGrid,
   useTheme,
 } from "@restorio/ui";
-import type { PointerEvent as ReactPointerEvent, ReactElement, Reducer } from "react";
+import type { PointerEvent as ReactPointerEvent, ReactElement } from "react";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 
 import { FloorEditorCanvas } from "../features/floor/components/FloorEditorCanvas";
@@ -52,14 +52,11 @@ export const FloorLayoutEditorView = ({
   const { colors } = useTheme();
   const isDesktopUp = useBreakpoint("lg");
   const normalizedInitialLayout = ensureMinimumCanvasSize(initialLayout);
-  const [state, dispatch] = useReducer<Reducer<FloorLayoutEditorState, FloorEditorHistoryAction>>(
-    layoutHistoryReducer,
-    {
-      layout: normalizedInitialLayout,
-      history: [normalizedInitialLayout],
-      historyIndex: 0,
-    },
-  );
+  const [state, dispatch] = useReducer<FloorLayoutEditorState, [FloorEditorHistoryAction]>(layoutHistoryReducer, {
+    layout: normalizedInitialLayout,
+    history: [normalizedInitialLayout],
+    historyIndex: 0,
+  });
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [showCanvasGrid, setShowCanvasGrid] = useState((): boolean => readFloorEditorShowGrid());
   const [selectedIds, setSelectedIds] = useState<string[]>([]);

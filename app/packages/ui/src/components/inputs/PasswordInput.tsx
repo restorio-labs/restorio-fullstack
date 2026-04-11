@@ -1,9 +1,12 @@
-import { forwardRef, useState, type ReactElement } from "react";
+import { forwardRef, useState, type ComponentType, type ReactElement, type SVGProps } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
 import { cn } from "../../utils";
 
 import { Input, type InputProps } from "./Input";
+
+const EyeInvisibleIcon = AiOutlineEyeInvisible as ComponentType<SVGProps<SVGSVGElement>>;
+const EyeIcon = AiOutlineEye as ComponentType<SVGProps<SVGSVGElement>>;
 
 export type PasswordInputProps = Omit<InputProps, "type" | "endAdornment"> & {
   showPasswordAriaLabel?: string;
@@ -36,11 +39,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
             aria-label={visible ? hidePasswordAriaLabel : showPasswordAriaLabel}
             aria-pressed={visible}
           >
-            {visible ? (
-              <AiOutlineEyeInvisible className="size-5" aria-hidden />
-            ) : (
-              <AiOutlineEye className="size-5" aria-hidden />
-            )}
+            {visible ? <EyeInvisibleIcon className="size-5" aria-hidden /> : <EyeIcon className="size-5" aria-hidden />}
           </button>
         }
         {...props}

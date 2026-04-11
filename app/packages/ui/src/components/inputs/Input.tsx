@@ -1,8 +1,10 @@
-import { forwardRef, useId, type ReactElement, type ReactNode } from "react";
+import { forwardRef, useId, type ComponentType, type ReactElement, type ReactNode, type SVGProps } from "react";
 import { BsQuestion } from "react-icons/bs";
 
 import { cn } from "../../utils";
 import { Tooltip } from "../overlays/Tooltip";
+
+const QuestionMarkIcon = BsQuestion as ComponentType<SVGProps<SVGSVGElement>>;
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -40,7 +42,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                     className="inline-flex size-5 shrink-0 items-center justify-center self-center rounded-full border border-border-default/90 bg-surface-secondary/40 text-[11px] font-semibold leading-none text-text-secondary transition-colors hover:border-border-focus hover:bg-surface-secondary hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-1"
                     aria-label={labelTooltip}
                   >
-                    <BsQuestion className="size-3.5" aria-hidden />
+                    <QuestionMarkIcon className="size-3.5" aria-hidden />
                   </button>
                 </Tooltip>
               </span>
