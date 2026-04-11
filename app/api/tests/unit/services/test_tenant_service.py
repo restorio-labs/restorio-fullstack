@@ -12,20 +12,32 @@ from core.models.tenant_role import TenantRole
 from services.tenant_service import TenantService
 
 
-@pytest.mark.asyncio
-async def test_list_tenants_accepts_user_id_and_returns_list() -> None:
-    service = TenantService()
-    user_id = uuid4()
-
+def _make_fake_session(tenants: list[Tenant]) -> object:
     async def fake_execute(_self: object, query: object) -> object:
+        class Scalars:
+            def all(self) -> list[Tenant]:
+                return tenants
+
         result = type("Result", (), {})()
-        result.scalars = lambda: type("Scalars", (), {"all": lambda _s: []})()
+
+        def scalars() -> Scalars:
+            return Scalars()
+
+        result.scalars = scalars
         return result
 
     class FakeSession:
         execute = fake_execute
 
-    session = FakeSession()
+    return FakeSession()
+
+
+@pytest.mark.asyncio
+async def test_list_tenants_accepts_user_id_and_returns_list() -> None:
+    service = TenantService()
+    user_id = uuid4()
+
+    session = _make_fake_session([])
     tenants = await service.list_tenants(session, user_id)
 
     assert tenants == []
@@ -42,15 +54,7 @@ async def test_list_tenants_returns_tenants_from_execute_result() -> None:
         status=TenantStatus.ACTIVE,
     )
 
-    async def fake_execute(_self: object, query: object) -> object:
-        result = type("Result", (), {})()
-        result.scalars = lambda: type("Scalars", (), {"all": lambda _s: [tenant]})()
-        return result
-
-    class FakeSession:
-        execute = fake_execute
-
-    session = FakeSession()
+    session = _make_fake_session([tenant])
     tenants = await service.list_tenants(session, user_id)
 
     assert len(tenants) == 1
