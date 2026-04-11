@@ -3,13 +3,9 @@ import logging
 
 from fastapi import Request
 
+from core.foundation.client_ip import get_client_ip
 from core.foundation.logging import audit as audit_module
-from core.foundation.logging.audit import (
-    AuditLogger,
-    _base_payload,
-    _client_ip,
-    _setup_audit_logger,
-)
+from core.foundation.logging.audit import AuditLogger, _base_payload, _setup_audit_logger
 
 
 def _request(path: str = "/x", headers=None, client=None) -> Request:
@@ -36,11 +32,14 @@ def test_setup_audit_logger_returns_existing_logger_when_handler_present() -> No
 
 
 def test_client_ip_from_forwarded_or_unknown() -> None:
-    req_with_forwarded = _request(headers=[(b"x-forwarded-for", b"10.0.0.1, 10.0.0.2")])
-    assert _client_ip(req_with_forwarded) == "10.0.0.1"
+    req_with_forwarded = _request(
+        headers=[(b"x-forwarded-for", b"198.51.100.5, 10.0.0.2")],
+        client=("127.0.0.1", 1234),
+    )
+    assert get_client_ip(req_with_forwarded) == "198.51.100.5"
 
     req_unknown = _request(client=None)
-    assert _client_ip(req_unknown) == "unknown"
+    assert get_client_ip(req_unknown) == "unknown"
 
 
 def test_base_payload_contains_common_fields() -> None:
@@ -70,7 +69,7 @@ def test_audit_logger_methods_emit_json(monkeypatch) -> None:
     logger.activation_success(request=req, user_id="u1", tenant_id="t1")
     logger.password_set(request=req, user_id="u1")
     logger.rate_limited(request=req)
-    logger.register(request=req, email="a@b.com", tenant_name="Tenant")
+    logger.register(request=req, email="a@b.com")
 
     expected_audit_events_count = 9
     assert len(emitted) == expected_audit_events_count
