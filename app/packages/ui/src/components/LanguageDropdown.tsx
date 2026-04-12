@@ -64,14 +64,14 @@ export const LanguageDropdown = ({
           </Button>
         }
       >
-        <div className={cn("p-1", dropdownContentClassName)}>
+        <div className={cn("flex flex-col gap-0.5 p-1", dropdownContentClassName)}>
           {availableOptions.map((option) => (
             <button
               key={option.value}
               type="button"
               disabled={option.disabled}
               className={cn(
-                "w-full rounded px-2 py-1.5 text-left text-xs text-text-primary hover:bg-surface-secondary",
+                "w-full rounded-sm px-2 py-1.5 text-left text-xs text-text-primary hover:bg-surface-secondary",
                 "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-border-focus",
                 option.disabled && "opacity-50 cursor-not-allowed",
                 "overflow-hidden text-ellipsis whitespace-nowrap",

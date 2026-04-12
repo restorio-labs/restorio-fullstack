@@ -11,6 +11,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 from starlette.types import ASGIApp
 
+from core.foundation.client_ip import get_client_ip
 from core.foundation.infra.config import settings
 from core.foundation.logging.audit import audit
 from core.foundation.logging.logger import logger
@@ -44,13 +45,6 @@ def _match_rule(path: str) -> RateRule | None:
         if path == prefix or path.startswith((prefix + "/", prefix + "?")):
             return rule
     return None
-
-
-def _client_ip(request: Request) -> str:
-    forwarded = request.headers.get("X-Forwarded-For")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return request.client.host if request.client else "unknown"
 
 
 class RateLimitBackend(Protocol):
@@ -107,7 +101,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if rule is None:
             return await call_next(request)
 
-        ip = _client_ip(request)
+        ip = get_client_ip(request)
         key = f"rl:{request.url.path}:{ip}"
 
         limited, remaining = _backend.is_rate_limited(key, rule)

@@ -1,26 +1,27 @@
-import type { RefreshResponse } from "@restorio/types";
+import type { AuthMeData, RefreshResponse } from "@restorio/types";
 import type { ReactElement, ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
 
+import { AuthProvider } from "./AuthContext";
+import type { UserRole } from "./RoleGuard";
 import { TokenStorage } from "./storage";
-
-export type AuthStrategy = "code" | "none";
 
 interface AuthClient {
   auth: {
-    me: () => Promise<unknown>;
+    me: () => Promise<AuthMeData>;
     refresh: () => Promise<RefreshResponse>;
   };
 }
 
+export type CheckAuthResult = boolean | AuthCheckResult;
+
 export interface AuthGuardProps {
-  strategy?: AuthStrategy;
   children: ReactNode;
   loginPath?: string;
   redirectTo?: string;
   fallback?: ReactNode;
-  checkAuth?: () => boolean | Promise<boolean>;
+  checkAuth?: () => CheckAuthResult | Promise<CheckAuthResult>;
   revalidateIntervalMs?: number;
   revalidateOnFocus?: boolean;
   client?: AuthClient;
@@ -42,34 +43,35 @@ const fallbackTokenCheck = (): boolean => {
 
 const REVALIDATION_COOLDOWN_MS = 2000;
 
-const createDefaultCheckAuth = (client: AuthClient | undefined): (() => boolean | Promise<boolean>) => {
+interface AuthCheckResult {
+  authorized: boolean;
+  role: UserRole | null;
+}
+
+const createDefaultCheckAuth = (client: AuthClient | undefined): (() => AuthCheckResult | Promise<AuthCheckResult>) => {
   if (typeof window === "undefined" || !client) {
-    return (): boolean => fallbackTokenCheck();
+    return (): AuthCheckResult => ({ authorized: fallbackTokenCheck(), role: null });
   }
 
-  return async (): Promise<boolean> => {
-    if (fallbackTokenCheck()) {
-      return true;
-    }
-
+  return async (): Promise<AuthCheckResult> => {
     try {
-      await client.auth.me();
+      const meData = await client.auth.me();
 
-      return true;
+      return { authorized: true, role: meData.account_type as UserRole | null };
     } catch {
       try {
         await client.auth.refresh();
+        const meData = await client.auth.me();
 
-        return true;
+        return { authorized: true, role: meData.account_type as UserRole | null };
       } catch {
-        return false;
+        return { authorized: false, role: null };
       }
     }
   };
 };
 
 export const AuthGuard = ({
-  strategy = "code",
   children,
   loginPath = "/login",
   redirectTo,
@@ -79,7 +81,8 @@ export const AuthGuard = ({
   revalidateIntervalMs,
   revalidateOnFocus = true,
 }: AuthGuardProps): ReactElement | null => {
-  const [status, setStatus] = useState<AuthStatus>(strategy === "none" ? "allowed" : "pending");
+  const [status, setStatus] = useState<AuthStatus>("pending");
+  const [role, setRole] = useState<UserRole | null>(null);
 
   const redirectTarget = redirectTo ?? loginPath;
   const shouldPoll = useMemo(() => Boolean(revalidateIntervalMs && revalidateIntervalMs > 0), [revalidateIntervalMs]);
@@ -87,10 +90,6 @@ export const AuthGuard = ({
   const effectiveCheckAuth = useMemo(() => checkAuth ?? createDefaultCheckAuth(client), [checkAuth, client]);
 
   useEffect(() => {
-    if (strategy === "none") {
-      return;
-    }
-
     let isMounted = true;
     let isChecking = false;
     let intervalId: number | undefined;
@@ -102,11 +101,16 @@ export const AuthGuard = ({
 
       isChecking = true;
       let authorized = false;
+      let fetchedRole: UserRole | null = null;
 
       try {
         const result = await effectiveCheckAuth();
 
-        authorized = Boolean(result);
+        if (typeof result === "boolean") {
+          authorized = result;
+        } else {
+          ({ authorized, role: fetchedRole } = result);
+        }
       } catch {
         authorized = false;
       } finally {
@@ -118,6 +122,7 @@ export const AuthGuard = ({
       }
 
       if (authorized) {
+        setRole(fetchedRole);
         setStatus("allowed");
 
         if (intervalId !== undefined) {
@@ -185,10 +190,10 @@ export const AuthGuard = ({
         }
       }
     };
-  }, [effectiveCheckAuth, revalidateIntervalMs, shouldPoll, shouldRevalidateOnFocus, strategy]);
+  }, [effectiveCheckAuth, revalidateIntervalMs, shouldPoll, shouldRevalidateOnFocus]);
 
   if (status === "allowed") {
-    return <>{children}</>;
+    return <AuthProvider role={role}>{children}</AuthProvider>;
   }
 
   if (status === "unauthorized") {
@@ -197,7 +202,7 @@ export const AuthGuard = ({
 
       if (isCrossOrigin) {
         if (typeof window !== "undefined") {
-          window.location.href = redirectTarget;
+          window.location.replace(redirectTarget);
         }
 
         return fallback ? <>{fallback}</> : null;

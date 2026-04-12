@@ -1,25 +1,47 @@
 "use client";
 
-import { Button, Checkbox, Form, FormActions, FormField, Input } from "@restorio/ui";
+import { Button, Form, FormActions, FormField, Input, PasswordInput, useAuthRoute } from "@restorio/ui";
+import { getApiErrorData, getApiErrorMessage } from "@restorio/utils";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useState, type ReactElement } from "react";
+import { useId, useState, type ReactElement } from "react";
 
 import { api } from "@/api/client";
+import { AuthenticatedAppPicker } from "@/components/auth/AuthenticatedAppPicker";
 import { PasswordRulesPin } from "@/components/password/RulesPin";
+import { translateRegisterApiMessage } from "@/services/authApiMessages";
 import { getPasswordFieldsValidation } from "@/services/passwordFieldsValidation";
-import { isEmailValid } from "@/services/validation";
+import { MIN_PASSWORD_LENGTH, isEmailValid } from "@/services/validation";
 
 export const RegisterContent = (): ReactElement => {
+  const { authStatus } = useAuthRoute();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [restaurantName, setRestaurantName] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [showPasswordRules, setShowPasswordRules] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [feedbackStatus, setFeedbackStatus] = useState<"success" | "error" | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const t = useTranslations("register");
+  const animatedFieldClassName = "onboarding-fade-up motion-reduce:animate-none";
+
+  const checkboxId = useId();
+  const errorId = `${checkboxId}-error`;
+
+  const linkedTermsText: ReactElement = (
+    <>
+      {t("fields.accept")}{" "}
+      <Link href="/privacy" target="_blank" className="text-text-primary underline underline-offset-2 hover:underline">
+        {t("fields.statute")}
+      </Link>{" "}
+      {t("fields.and")}{" "}
+      <Link href="/terms" target="_blank" className="text-text-primary underline underline-offset-2 hover:underline">
+        {t("fields.terms")}
+      </Link>{" "}
+      {t("fields.ofService")}
+    </>
+  );
 
   const { passwordChecks, passwordValid, isPasswordFormValid } = getPasswordFieldsValidation(
     password,
@@ -51,11 +73,29 @@ export const RegisterContent = (): ReactElement => {
         : undefined
     : undefined;
 
-  const restaurantNameError =
-    submitted && restaurantName.trim().length === 0 ? t("errors.restaurantNameRequired") : undefined;
   const termsError = submitted && !acceptTerms ? t("errors.termsRequired") : undefined;
 
-  const isFormValid = isEmailValid(email) && isPasswordFormValid && restaurantName.trim().length > 0 && acceptTerms;
+  const isFormValid = isEmailValid(email) && isPasswordFormValid && acceptTerms;
+  const backendUnavailable = authStatus === "unavailable";
+  const reconnecting = authStatus === "reconnecting";
+  const blockAuthActions = backendUnavailable || reconnecting;
+
+  const confirmPasswordMeetsLength = confirmPassword.length >= MIN_PASSWORD_LENGTH;
+  const passwordsMatchByLength = confirmPasswordMeetsLength && confirmPassword === password;
+  const confirmPasswordMismatchHighlight =
+    password.trim().length > 0 && confirmPasswordMeetsLength && confirmPassword !== password && !confirmPasswordError;
+
+  const passwordInputStatusClassName =
+    !passwordError && passwordsMatchByLength
+      ? "border-status-success-border focus:ring-status-success-border focus:border-status-success-border"
+      : undefined;
+
+  const confirmPasswordInputStatusClassName =
+    !confirmPasswordError && passwordsMatchByLength
+      ? "border-status-success-border focus:ring-status-success-border focus:border-status-success-border"
+      : confirmPasswordMismatchHighlight
+        ? "border-status-error-border focus:ring-status-error-border focus:border-status-error-border"
+        : undefined;
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
@@ -63,7 +103,7 @@ export const RegisterContent = (): ReactElement => {
     setFeedbackStatus(null);
     setFeedbackMessage("");
 
-    if (!isFormValid) {
+    if (!isFormValid || blockAuthActions) {
       return;
     }
 
@@ -71,32 +111,25 @@ export const RegisterContent = (): ReactElement => {
       const response = await api.auth.register({
         email: email.trim(),
         password,
-        restaurant_name: restaurantName.trim(),
       });
 
       setFeedbackStatus("success");
       setFeedbackMessage(String(response.message));
       setSubmitted(false);
     } catch (err: unknown) {
-      interface AxiosErrorData {
-        response?: { data?: { message?: string; detail?: string } };
-      }
-      const data =
-        err && typeof err === "object" && "response" in err ? (err as AxiosErrorData).response?.data : undefined;
-
-      let apiMessage = t("errors.generic");
-
-      if (typeof data?.detail === "string" && data.detail.trim().length > 0) {
-        apiMessage = data.detail;
-      } else if (typeof data?.message === "string" && data.message.trim().length > 0) {
-        apiMessage = data.message;
-      }
+      const data = getApiErrorData(err);
+      const rawMessage = getApiErrorMessage(data);
+      const apiMessage = translateRegisterApiMessage(rawMessage, t) ?? t("errors.generic");
 
       setFeedbackStatus("error");
 
       setFeedbackMessage(apiMessage);
     }
   };
+
+  if (authStatus === "authenticated") {
+    return <AuthenticatedAppPicker />;
+  }
 
   return (
     <>
@@ -120,7 +153,7 @@ export const RegisterContent = (): ReactElement => {
         noValidate
         spacing="md"
       >
-        <FormField>
+        <FormField className={animatedFieldClassName} style={{ animationDelay: "120ms" }}>
           <Input
             label={t("fields.email")}
             type="email"
@@ -132,59 +165,64 @@ export const RegisterContent = (): ReactElement => {
           />
         </FormField>
 
-        <FormField>
+        <FormField className={animatedFieldClassName} style={{ animationDelay: "220ms" }}>
           <div className="relative">
-            <Input
+            <PasswordInput
               label={t("fields.password")}
-              type="password"
               autoComplete="new-password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               onFocus={() => setShowPasswordRules(true)}
               onBlur={() => setShowPasswordRules(false)}
               error={passwordError}
+              className={passwordInputStatusClassName}
               required
             />
             {showPasswordRules && <PasswordRulesPin checks={passwordChecks} />}
           </div>
         </FormField>
 
-        <FormField>
-          <Input
+        <FormField className={animatedFieldClassName} style={{ animationDelay: "320ms" }}>
+          <PasswordInput
             label={t("fields.confirmPassword")}
-            type="password"
             autoComplete="new-password"
             value={confirmPassword}
             onChange={(event) => setConfirmPassword(event.target.value)}
             error={confirmPasswordError}
+            className={confirmPasswordInputStatusClassName}
             required
           />
         </FormField>
 
-        <FormField>
-          <Input
-            label={t("fields.restaurantName")}
-            type="text"
-            autoComplete="organization"
-            value={restaurantName}
-            onChange={(event) => setRestaurantName(event.target.value)}
-            error={restaurantNameError}
-            required
-          />
+        <FormField className={animatedFieldClassName} style={{ animationDelay: "420ms" }}>
+          <div className="w-full">
+            <div className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                id={checkboxId}
+                className={`mt-0.5 w-4 h-4 text-interactive-primary bg-surface-primary border-border-default rounded-sm focus:ring-2 focus:ring-border-focus focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  termsError ? "border-status-error-border" : ""
+                }`}
+                aria-invalid={termsError ? "true" : undefined}
+                aria-describedby={termsError ? errorId : undefined}
+                checked={acceptTerms}
+                onChange={(event) => setAcceptTerms(event.target.checked)}
+                required
+              />
+              <label htmlFor={checkboxId} className="text-sm font-medium text-text-primary cursor-pointer">
+                {linkedTermsText}
+              </label>
+            </div>
+            {termsError && (
+              <span id={errorId} className="block mt-1 text-sm text-status-error-text" role="alert">
+                {termsError}
+              </span>
+            )}
+          </div>
         </FormField>
 
-        <FormField>
-          <Checkbox
-            label={t("fields.terms")}
-            checked={acceptTerms}
-            onChange={(event) => setAcceptTerms(event.target.checked)}
-            error={termsError}
-            required
-          />
-        </FormField>
-
-        <FormActions align="stretch">
-          <Button type="submit" size="lg" variant="primary" fullWidth disabled={!isFormValid}>
+        <FormActions align="stretch" className={animatedFieldClassName} style={{ animationDelay: "520ms" }}>
+          <Button type="submit" size="lg" variant="primary" fullWidth disabled={!isFormValid || blockAuthActions}>
             {t("button")}
           </Button>
         </FormActions>

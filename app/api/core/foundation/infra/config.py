@@ -1,8 +1,12 @@
 import json
 import os
+from urllib.parse import quote_plus, urlparse, urlunparse
 
+from dotenv import load_dotenv
 from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+load_dotenv()
 
 _INSECURE_SECRET_KEYS = frozenset({"change-me-in-production", "secret", ""})
 
@@ -14,16 +18,31 @@ class Settings(BaseSettings):
     DEBUG: bool = False
 
     API_V1_PREFIX: str = "/api/v1"
-
-    CORS_ORIGINS: list[str] = [
+    LOCAL_ORIGINS: list[str] = [
+        # Local development
         "http://localhost:3000",
         "http://localhost:3001",
         "http://localhost:3002",
         "http://localhost:3003",
         "http://localhost:3004",
-        "https://restorio.org",
-        "https://*.restorio.org",
     ]
+    # Production subdomains (explicit for security)
+    PRODUCTION_ORIGINS: list[str] = [
+        "https://restorio.org",
+        "https://www.restorio.org",
+        "https://api.restorio.org",
+        "https://admin.restorio.org",
+        "https://kitchen.restorio.org",
+        "https://waiter.restorio.org",
+        "https://mobile.restorio.org",
+    ]
+    _env = os.getenv("ENV", "development")
+    if _env in ("local", "development"):
+        CORS_ORIGINS: list[str] = LOCAL_ORIGINS
+    elif _env == "production":
+        CORS_ORIGINS: list[str] = PRODUCTION_ORIGINS
+    else:
+        CORS_ORIGINS: list[str] = LOCAL_ORIGINS
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
@@ -36,6 +55,8 @@ class Settings(BaseSettings):
 
     DATABASE_URL: str = "mongodb://localhost:27017/restorio"
     DATABASE_NAME: str = "restorio"
+    MONGODB_USERNAME: str = ""
+    MONGODB_PASSWORD: str = ""
 
     POSTGRES_DSN: str = "postgresql://restorio:restorio@localhost:5432/restorio"
 
@@ -55,6 +76,7 @@ class Settings(BaseSettings):
     MINIO_SECURE: bool = False
     MINIO_PRESIGN_EXPIRY_SECONDS: int = 900
     TENANT_LOGO_MAX_BYTES: int = 5 * 1024 * 1024
+    TENANT_MENU_IMAGE_MAX_BYTES: int = 5 * 1024 * 1024
 
     SECRET_KEY: str = "change-me-in-production"
     ALGORITHM: str = "HS256"
@@ -81,6 +103,25 @@ class Settings(BaseSettings):
     PRZELEWY24_CRC: str = ""
     PRZELEWY24_API_KEY: str = ""
     PRZELEWY24_API_URL: str = "https://sandbox.przelewy24.pl/api/v1"
+
+    @model_validator(mode="after")
+    def _inject_mongodb_credentials(self) -> "Settings":
+        if self.MONGODB_USERNAME and self.MONGODB_PASSWORD:
+            parsed = urlparse(self.DATABASE_URL)
+            safe_user = quote_plus(self.MONGODB_USERNAME)
+            safe_pass = quote_plus(self.MONGODB_PASSWORD)
+            netloc = f"{safe_user}:{safe_pass}@{parsed.hostname or ''}:{parsed.port or 27017}"
+            self.DATABASE_URL = urlunparse(
+                (
+                    parsed.scheme,
+                    netloc,
+                    parsed.path or "/restorio",
+                    parsed.params,
+                    parsed.query,
+                    parsed.fragment,
+                )
+            )
+        return self
 
     @model_validator(mode="after")
     def _reject_insecure_production_secrets(self) -> "Settings":

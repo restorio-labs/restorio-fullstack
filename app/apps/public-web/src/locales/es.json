@@ -3,7 +3,9 @@
     "skipToContent": "Saltar al contenido principal",
     "loading": "Cargando...",
     "error": "Error",
-    "learnMore": "Aprende Más"
+    "learnMore": "Aprende Más",
+    "backendUnavailable": "El servicio no está disponible temporalmente. Inténtalo de nuevo más tarde.",
+    "tryingToConnect": "Intentando conectar con nuestros servicios…"
   },
   "metadata": {
     "title": "Plataforma Restorio",
@@ -54,7 +56,6 @@
       "email": "Correo electrónico",
       "password": "Contraseña",
       "confirmPassword": "Confirmar contraseña",
-      "restaurantName": "Nombre del restaurante",
       "terms": "Acepto los términos y condiciones"
     },
     "errors": {
@@ -64,12 +65,11 @@
       "passwordInvalid": "La contraseña no cumple los requisitos",
       "confirmPasswordRequired": "Confirma tu contraseña",
       "confirmPasswordMismatch": "Las contraseñas no coinciden",
-      "restaurantNameRequired": "El nombre del restaurante es obligatorio",
       "termsRequired": "Debes aceptar los términos y condiciones",
       "generic": "No se pudo crear la cuenta. Inténtalo de nuevo."
     },
     "passwordRules": {
-      "minLength": "- Al menos 8 caracteres",
+      "minLength": "- Al menos 5 caracteres",
       "lowercase": "- 1 letra minúscula",
       "uppercase": "- 1 letra mayúscula",
       "number": "- 1 número",
@@ -84,7 +84,11 @@
     "demo": "Demo",
     "privacy": "Privacidad",
     "terms": "Términos",
-    "getStarted": "Comenzar"
+    "getStarted": "Comenzar",
+    "login": "Iniciar sesión",
+    "register": "Registrarse",
+    "logout": "Cerrar sesión",
+    "logoutLoading": "Cerrando sesión..."
   },
   "hero": {
     "title": "El Futuro de la Gestión de Restaurantes",

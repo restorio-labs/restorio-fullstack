@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactElement, ReactNode } from "react";
 
-export type AuthRouteStatus = "loading" | "authenticated" | "anonymous";
+export type AuthRouteStatus = "loading" | "reconnecting" | "authenticated" | "anonymous" | "unavailable";
 
 interface AuthRouteContextValue {
   authStatus: AuthRouteStatus;
@@ -11,9 +11,15 @@ interface AuthRouteContextValue {
 
 const AuthRouteContext = createContext<AuthRouteContextValue | null>(null);
 
+export type AuthRouteResolvedStatus = Exclude<AuthRouteStatus, "loading" | "reconnecting">;
+
+export interface AuthCheckContext {
+  onReconnecting: () => void;
+}
+
 export interface AuthRouteProviderProps {
   children: ReactNode;
-  checkAuth: () => Promise<boolean>;
+  checkAuth: (ctx: AuthCheckContext) => Promise<AuthRouteResolvedStatus>;
 }
 
 export const AuthRouteProvider = ({ children, checkAuth }: AuthRouteProviderProps): ReactElement => {
@@ -23,12 +29,18 @@ export const AuthRouteProvider = ({ children, checkAuth }: AuthRouteProviderProp
     let isMounted = true;
 
     const run = async (): Promise<void> => {
-      const authenticated = await checkAuth();
+      const resolved = await checkAuth({
+        onReconnecting: () => {
+          if (isMounted) {
+            setAuthStatus("reconnecting");
+          }
+        },
+      });
 
       if (!isMounted) {
         return;
       }
-      setAuthStatus(authenticated ? "authenticated" : "anonymous");
+      setAuthStatus(resolved);
     };
 
     void run();

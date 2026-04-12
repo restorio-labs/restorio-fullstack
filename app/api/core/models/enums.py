@@ -18,6 +18,8 @@ class OrderStatus(StrEnum):
     CONFIRMED = "confirmed"
     PREPARING = "preparing"
     READY = "ready"
+    REJECTED = "rejected"
+    REFUNDED = "refunded"
 
 
 class PaymentProvider(StrEnum):
@@ -32,6 +34,18 @@ class PaymentStatus(StrEnum):
     COMPLETED = "completed"
     FAILED = "failed"
     REFUNDED = "refunded"
+
+
+class TableSessionOrigin(StrEnum):
+    MOBILE = "mobile"
+    WAITER = "waiter"
+
+
+class TableSessionStatus(StrEnum):
+    ACTIVE = "active"
+    RELEASED = "released"
+    EXPIRED = "expired"
+    COMPLETED = "completed"
 
 
 class AccountType(StrEnum):

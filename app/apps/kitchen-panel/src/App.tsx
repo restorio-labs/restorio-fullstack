@@ -1,29 +1,41 @@
-import { AuthGuard } from "@restorio/auth";
-import type { ReactElement } from "react";
+import { AppWrapper, RoleGuard } from "@restorio/auth";
+import { lazy, Suspense, type ReactElement } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import { api } from "./api/client";
-import { KitchenRail } from "./components/KitchenRail";
+import { TenantRouteGuard } from "./components/TenantRouteGuard";
 import { AppLayout } from "./layouts/AppLayout";
-import { KitchenView } from "./views/KitchenView";
-import { LoginView } from "./views/LoginView";
+
+const KitchenTenantSelectView = lazy(async () =>
+  import("./views/KitchenTenantSelectView").then((module) => ({ default: module.KitchenTenantSelectView })),
+);
+const KitchenView = lazy(async () => import("./views/KitchenView").then((module) => ({ default: module.KitchenView })));
+const MenuAvailabilityView = lazy(async () =>
+  import("./views/MenuAvailabilityView").then((module) => ({ default: module.MenuAvailabilityView })),
+);
 
 export const App = (): ReactElement => {
   return (
-    <AppLayout sidebar={<KitchenRail />}>
-      <Routes>
-        <Route path="/" element={<Navigate to="/demo-tenant" replace />} />
-        <Route path="/login" element={<LoginView />} />
-        <Route
-          path="/:tenantId"
-          element={
-            <AuthGuard strategy="code" loginPath="/login" client={api}>
-              <KitchenView />
-            </AuthGuard>
-          }
-        />
-        <Route path="*" element={<Navigate to="/demo-tenant" replace />} />
-      </Routes>
-    </AppLayout>
+    <AppWrapper client={api}>
+      <RoleGuard allowedRoles={["owner", "manager", "waiter", "kitchen_staff", "admin", "super_admin"]}>
+        <Suspense fallback={<div />}>
+          <Routes>
+            <Route path="/" element={<KitchenTenantSelectView />} />
+            <Route
+              path="/:tenantId"
+              element={
+                <AppLayout>
+                  <TenantRouteGuard />
+                </AppLayout>
+              }
+            >
+              <Route index element={<KitchenView />} />
+              <Route path="menu" element={<MenuAvailabilityView />} />
+            </Route>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
+      </RoleGuard>
+    </AppWrapper>
   );
 };

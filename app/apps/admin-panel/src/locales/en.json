@@ -36,6 +36,7 @@
       "waiterPanel": "Waiter Panel",
       "floorEditor": "Floor Editor",
       "menuCreator": "Menu Creator",
+      "mobileConfiguration": "Mobile configuration",
       "pageConfigurator": "Page Configurator",
       "qrCodeGenerator": "QR Code Generator",
       "tenantProfile": "Profile",
@@ -93,6 +94,13 @@
     "deleteErrorTitle": "Delete failed",
     "deleteErrorMessage": "Could not delete this floor. Please try again.",
     "deletingButton": "Deleting...",
+    "deleteConfirm": {
+      "title": "Delete this floor?",
+      "message": "This permanently deletes the floor layout “{{name}}”. Type that exact name to confirm.",
+      "inputLabel": "Floor name",
+      "cancel": "Cancel",
+      "confirm": "Delete floor"
+    },
     "mobileUnavailableTitle": "Floor editor unavailable on mobile",
     "mobileUnavailableMessage": "Use a tablet or desktop device to edit floor layouts in the admin panel.",
     "floorSelector": {
@@ -106,7 +114,8 @@
       "undo": "Undo",
       "redo": "Redo",
       "save": "Save",
-      "add": "Add"
+      "add": "Add",
+      "showGrid": "Show grid"
     },
     "addMenu": {
       "table": "Add table",
@@ -125,6 +134,7 @@
       "name": "Name",
       "color": "Color",
       "seats": "Seats",
+      "move": "Move",
       "tableCustomLabel": "Table label",
       "label": "Label",
       "delete": "Delete",
@@ -173,7 +183,9 @@
       "itemActive": "Active",
       "itemPromoted": "Promoted",
       "itemDescription": "Description",
-      "itemTags": "Tags"
+      "itemTags": "Tags",
+      "itemImage": "Photo",
+      "itemImageHint": "Square or nearly square image (PNG, JPEG, or WebP)."
     },
     "placeholders": {
       "categoryName": "e.g. Starters",
@@ -186,6 +198,74 @@
       "saveFailed": "Failed to save menu. Please try again.",
       "invalidCategory": "Each category must have a valid name.",
       "invalidItem": "Each item must have a valid name and non-negative price."
+    },
+    "toast": {
+      "saveSuccessTitle": "Menu saved",
+      "saveErrorTitle": "Could not save menu",
+      "validationErrorTitle": "Check your menu"
+    },
+    "imageUpload": {
+      "upload": "Upload image",
+      "uploading": "Uploading…",
+      "remove": "Remove image",
+      "invalidType": "Use PNG, JPEG, or WebP.",
+      "tooLarge": "Image is too large.",
+      "failed": "Upload failed. Try again."
+    }
+  },
+  "mobileConfiguration": {
+    "title": "Mobile configuration",
+    "description": "Title, favicon, and theme for the customer mobile ordering app",
+    "loading": "Loading…",
+    "actions": {
+      "save": "Save",
+      "saving": "Saving…",
+      "clear": "Clear"
+    },
+    "fields": {
+      "pageTitle": "Browser title",
+      "favicon": "Favicon (.ico)",
+      "backgroundColor": "Background color",
+      "googleFontUrl": "Google Font URL"
+    },
+    "placeholders": {
+      "pageTitle": "Leave empty to use restaurant name"
+    },
+    "hints": {
+      "pageTitle": "Shown in the mobile browser tab and header when set.",
+      "favicon": "ICO only. Image must be exactly 16×16, 32×32, 64×64, or 128×128 pixels.",
+      "faviconCurrent": "A favicon is already configured. Upload a new file to replace it.",
+      "faviconSelected": "Selected: {{name}}",
+      "backgroundColor": "Primary background color for the mobile app.",
+      "googleFontUrl": "Paste the full URL from Google Fonts.",
+      "googleFontUrlTooltip": "Go to fonts.google.com, select a font, and copy the embed URL."
+    },
+    "themeSection": {
+      "title": "Theme customization"
+    },
+    "copySection": {
+      "title": "Copy theme from another restaurant",
+      "source": "Source restaurant",
+      "placeholder": "Select…",
+      "copy": "Copy theme",
+      "copying": "Copying…"
+    },
+    "errors": {
+      "selectRestaurant": "Select a restaurant from the tenant switcher first.",
+      "invalidGoogleFontUrl": "URL must start with https://fonts.googleapis.com/css",
+      "invalidFaviconType": "Favicon must be an ICO file (image/x-icon).",
+      "invalidFaviconExtension": "File extension must be .ico.",
+      "faviconUploadFailed": "Could not upload favicon to storage."
+    },
+    "toast": {
+      "saveSuccessTitle": "Saved",
+      "saveSuccessBody": "Mobile configuration was updated.",
+      "saveErrorTitle": "Save failed",
+      "saveErrorBody": "Could not save mobile configuration.",
+      "copySuccessTitle": "Theme copied",
+      "copySuccessBody": "Theme override was copied from the selected restaurant.",
+      "copyErrorTitle": "Copy failed",
+      "copyErrorBody": "Could not copy theme."
     }
   },
   "menuConfigurator": {
@@ -367,7 +447,7 @@
       "waiter": "Waiter"
     },
     "toggleForm": {
-      "show": "Add user",
+      "show": "Add users",
       "hide": "Cancel"
     },
     "form": {
@@ -375,8 +455,14 @@
       "nameLabel": "Name",
       "surnameLabel": "Surname",
       "accessLabel": "Access level",
-      "submit": "Create user",
-      "submitting": "Creating..."
+      "addRow": "Add another",
+      "removeRow": "Remove",
+      "saveSingle": "Save this user",
+      "submit": "Save all",
+      "submitting": "Saving..."
+    },
+    "emptyState": {
+      "heading": "Let's start by adding new members to the team 🚀"
     },
     "list": {
       "title": "All users",
@@ -386,10 +472,32 @@
       "notProvided": "-"
     },
     "validation": {
+      "invalidEmail": "One or more email addresses are invalid.",
+      "duplicateEmail": "Duplicate emails found. Each email must be unique.",
+      "existingEmail": "Already in this tenant: {{emails}}"
+    },
+    "toast": {
+      "bulkSuccessTitle": "Users added",
+      "bulkSuccessDescription": "All users created successfully. Activation emails will be sent shortly.",
+      "bulkPartialTitle": "Partial success",
+      "bulkPartialDescription": "{{created}} of {{total}} users created. Some failed — check the list for details.",
+      "bulkErrorTitle": "Could not add users",
+      "bulkErrorDescription": "Unable to create users.",
+      "singleSuccessTitle": "User added",
+      "singleSuccessDescription": "User created. Activation email will be sent shortly.",
+      "singleErrorTitle": "Could not add user",
+      "singleErrorDescription": "Unable to create user.",
+      "deleteSuccessTitle": "User removed",
+      "deleteSuccessDescription": "User deleted successfully.",
+      "deleteErrorTitle": "Could not remove user",
+      "deleteErrorDescription": "Unable to delete user.",
       "invalidEmail": "Enter a valid email address.",
       "waiterNameRequired": "Name and surname are required for waiter."
     },
     "feedback": {
+      "bulkSuccess": "All users created successfully. Activation emails will be sent shortly.",
+      "bulkPartial": "{{created}} of {{total}} users created. Some failed — check the list for details.",
+      "bulkError": "Unable to create users.",
       "createSuccess": "User created. Activation email should be sent shortly.",
       "createError": "Unable to create user.",
       "deleteSuccess": "User deleted successfully.",
@@ -401,6 +509,12 @@
       "cancel": "Cancel",
       "confirm": "Confirm",
       "deleting": "Deleting..."
+    },
+    "modal": {
+      "alreadyMemberTitle": "Already on the team",
+      "alreadyMemberDescription": "This email is already linked to this restaurant, so you can't add it again as staff.",
+      "ok": "OK",
+      "closeAria": "Close"
     }
   },
   "tenantProfile": {
@@ -551,6 +665,39 @@
     "actions": {
       "save": "Save Profile",
       "saving": "Saving..."
+    }
+  },
+  "onboarding": {
+    "title": "Create your first restaurant",
+    "description": "To get started, add your first restaurant. You can always add more later.",
+    "fields": {
+      "name": {
+        "label": "Restaurant name",
+        "placeholder": "e.g. Bella Italia",
+        "error": "Restaurant name is required"
+      },
+      "street": {
+        "label": "Street",
+        "placeholder": "e.g. Main Street",
+        "error": "Street is required"
+      },
+      "streetNumber": {
+        "label": "Number",
+        "placeholder": "e.g. 12",
+        "error": "Number is required"
+      },
+      "city": {
+        "label": "City",
+        "placeholder": "e.g. Warsaw",
+        "error": "City is required"
+      }
+    },
+    "actions": {
+      "create": "Create restaurant",
+      "creating": "Creating..."
+    },
+    "errors": {
+      "createFailed": "Failed to create restaurant. Please try again."
     }
   }
 }

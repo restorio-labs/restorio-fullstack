@@ -8,6 +8,8 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - DATABASE_URL=${DATABASE_URL:-mongodb://mongo:27017/restorio}
+      - MONGODB_USERNAME=${MONGODB_USERNAME:-}
+      - MONGODB_PASSWORD=${MONGODB_PASSWORD:-}
       - POSTGRES_DSN=${POSTGRES_DSN:-postgresql://restorio:restorio@postgres:5432/restorio}
       - RESEND_API_KEY=${RESEND_API_KEY:-}
       - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-}
@@ -53,11 +55,14 @@ services:
   mongo:
     image: mongo:7
     container_name: restorio-mongo-dev
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGODB_USERNAME:-}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD:-}
     ports:
       - "27017:27017"
     volumes:
       - mongo-data-dev:/data/db
-    command: ["mongod", "--quiet", "--logpath", "/dev/null"]  # Suppress MongoDB startup logs 0=errors only 1=warnings >2=more verbose
+    command: ["sh", "-c", "if [ -n \"$$MONGO_INITDB_ROOT_USERNAME\" ]; then exec mongod --quiet --logpath /dev/null --auth; else exec mongod --quiet --logpath /dev/null; fi"]
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s

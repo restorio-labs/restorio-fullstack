@@ -31,18 +31,7 @@ const ROUTER_FUTURE_FLAGS = {
 describe("AuthGuard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  it("should render children when strategy is none", () => {
-    render(
-      <MemoryRouter future={ROUTER_FUTURE_FLAGS}>
-        <AuthGuard strategy="none">
-          <div>Protected Content</div>
-        </AuthGuard>
-      </MemoryRouter>,
-    );
-
-    expect(screen.getByText("Protected Content")).toBeInTheDocument();
+    (mockClient.auth.me as Mock).mockResolvedValue({ authenticated: true, account_type: null });
   });
 
   it("should render children when authenticated with valid token", async () => {
@@ -51,7 +40,7 @@ describe("AuthGuard", () => {
 
     render(
       <MemoryRouter future={ROUTER_FUTURE_FLAGS}>
-        <AuthGuard client={mockClient}>
+        <AuthGuard client={mockClient} revalidateOnFocus={false}>
           <div>Protected Content</div>
         </AuthGuard>
       </MemoryRouter>,
@@ -68,7 +57,7 @@ describe("AuthGuard", () => {
 
     render(
       <MemoryRouter future={ROUTER_FUTURE_FLAGS} initialEntries={["/protected"]}>
-        <AuthGuard client={mockClient}>
+        <AuthGuard client={mockClient} revalidateOnFocus={false}>
           <div>Protected Content</div>
         </AuthGuard>
       </MemoryRouter>,
@@ -86,7 +75,7 @@ describe("AuthGuard", () => {
 
     render(
       <MemoryRouter future={ROUTER_FUTURE_FLAGS} initialEntries={["/protected"]}>
-        <AuthGuard client={mockClient}>
+        <AuthGuard client={mockClient} revalidateOnFocus={false}>
           <div>Protected Content</div>
         </AuthGuard>
       </MemoryRouter>,
@@ -103,7 +92,7 @@ describe("AuthGuard", () => {
 
     render(
       <MemoryRouter future={ROUTER_FUTURE_FLAGS} initialEntries={["/protected"]}>
-        <AuthGuard loginPath="/custom-login" client={mockClient}>
+        <AuthGuard loginPath="/custom-login" client={mockClient} revalidateOnFocus={false}>
           <div>Protected Content</div>
         </AuthGuard>
       </MemoryRouter>,
@@ -112,20 +101,18 @@ describe("AuthGuard", () => {
     await waitFor(() => expect(screen.queryByText("Protected Content")).not.toBeInTheDocument());
   });
 
-  it("should use code strategy by default", async () => {
+  it("renders children after auth check when token is present", async () => {
     (TokenStorage.getAccessToken as Mock).mockReturnValue("123-456");
     (TokenStorage.isAccessTokenValid as Mock).mockReturnValue(true);
 
     render(
       <MemoryRouter future={ROUTER_FUTURE_FLAGS}>
-        <AuthGuard client={mockClient}>
+        <AuthGuard client={mockClient} revalidateOnFocus={false}>
           <div>Protected Content</div>
         </AuthGuard>
       </MemoryRouter>,
     );
 
     await waitFor(() => expect(screen.getByText("Protected Content")).toBeInTheDocument());
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    expect(TokenStorage.getAccessToken).toHaveBeenCalled();
   });
 });

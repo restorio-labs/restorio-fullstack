@@ -1,8 +1,8 @@
-import { Text, Input, Button } from "@restorio/ui";
+import { Text, Button, PasswordInput } from "@restorio/ui";
 import { useTranslations } from "next-intl";
 import type { FormEvent, ReactElement } from "react";
 
-import type { PasswordChecks } from "../../services/validation";
+import { MIN_PASSWORD_LENGTH, type PasswordChecks } from "../../services/validation";
 import { PasswordRulesPin } from "../password/RulesPin";
 
 interface ActivateSetPasswordViewProps {
@@ -40,6 +40,23 @@ export const ActivateSetPasswordView = ({
 }: ActivateSetPasswordViewProps): ReactElement => {
   const t = useTranslations("activate");
 
+  const confirmPasswordMeetsLength = confirmPassword.length >= MIN_PASSWORD_LENGTH;
+  const passwordsMatchByLength = confirmPasswordMeetsLength && confirmPassword === password;
+  const confirmPasswordMismatchHighlight =
+    password.trim().length > 0 && confirmPasswordMeetsLength && confirmPassword !== password && !confirmPasswordError;
+
+  const passwordInputStatusClassName =
+    !passwordError && passwordsMatchByLength
+      ? "border-status-success-border focus:ring-status-success-border focus:border-status-success-border"
+      : undefined;
+
+  const confirmPasswordInputStatusClassName =
+    !confirmPasswordError && passwordsMatchByLength
+      ? "border-status-success-border focus:ring-status-success-border focus:border-status-success-border"
+      : confirmPasswordMismatchHighlight
+        ? "border-status-error-border focus:ring-status-error-border focus:border-status-error-border"
+        : undefined;
+
   return (
     <>
       <Text variant="h2" weight="bold" className="mb-4">
@@ -50,26 +67,26 @@ export const ActivateSetPasswordView = ({
       </Text>
       <form className="w-full space-y-4 text-left" onSubmit={onSubmit}>
         <div className="relative">
-          <Input
+          <PasswordInput
             label="Password"
-            type="password"
             autoComplete="new-password"
             value={password}
             onChange={(event) => onPasswordChange(event.target.value)}
             onFocus={onPasswordFocus}
             onBlur={onPasswordBlur}
             error={passwordError}
+            className={passwordInputStatusClassName}
             required
           />
           {showPasswordRules && <PasswordRulesPin checks={passwordChecks} />}
         </div>
-        <Input
+        <PasswordInput
           label="Repeat password"
-          type="password"
           autoComplete="new-password"
           value={confirmPassword}
           onChange={(event) => onConfirmPasswordChange(event.target.value)}
           error={confirmPasswordError}
+          className={confirmPasswordInputStatusClassName}
           required
         />
         {errorMessage && <p className="text-sm text-status-error-text">{errorMessage}</p>}

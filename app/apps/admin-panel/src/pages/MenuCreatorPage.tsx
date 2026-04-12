@@ -1,7 +1,7 @@
-import type { SaveTenantMenuPayload, TenantMenuCategory } from "@restorio/types";
-import { Button, FormActions, useI18n } from "@restorio/ui";
+import type { SaveTenantMenuPayload, TenantMenuCategory, TenantMenuItem } from "@restorio/types";
+import { Button, FormActions, useI18n, useToast, Loader } from "@restorio/ui";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import type { ReactElement } from "react";
+import type { ChangeEvent, ReactElement } from "react";
 import { useEffect, useMemo, useState } from "react";
 
 import { api } from "../api/client";
@@ -14,10 +14,11 @@ interface MenuItemFormState {
   name: string;
   price: string;
   promoted: boolean;
-  active: boolean;
+  isAvailable: boolean;
   desc: string;
   tags: string[];
   tagInput: string;
+  imageUrl: string | null;
 }
 
 interface MenuCategoryFormState {
@@ -38,6 +39,8 @@ interface QueryErrorWithStatusCode {
 
 const menuQueryKey = (tenantId: string): readonly string[] => ["tenant-menu", tenantId];
 const ITEM_DESCRIPTION_MAX_LENGTH = 2000;
+const MAX_MENU_IMAGE_BYTES = 5 * 1024 * 1024;
+const ALLOWED_MENU_IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 
 const createLocalId = (): string => `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
@@ -46,10 +49,11 @@ const createEmptyItem = (): MenuItemFormState => ({
   name: "",
   price: "",
   promoted: false,
-  active: true,
+  isAvailable: true,
   desc: "",
   tags: [],
   tagInput: "",
+  imageUrl: null,
 });
 
 const createEmptyCategory = (): MenuCategoryFormState => ({
@@ -66,22 +70,25 @@ const toFormCategories = (categories: TenantMenuCategory[]): MenuCategoryFormSta
       id: createLocalId(),
       name: item.name,
       price: String(item.price),
-      promoted: item.promoted === 1,
-      active: item.active !== 0,
+      promoted: item.promoted,
+      isAvailable: item.isAvailable,
       desc: item.desc,
       tags: item.tags,
       tagInput: "",
+      imageUrl: item.imageUrl ?? null,
     })),
   }));
 
+type BuildMenuPayloadResult = { ok: true; payload: SaveTenantMenuPayload } | { ok: false; message: string };
+
 export const MenuCreatorPage = (): ReactElement => {
   const { t } = useI18n();
+  const { showToast } = useToast();
   const { selectedTenantId } = useCurrentTenant();
   const [categories, setCategories] = useState<MenuCategoryFormState[]>([]);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successVisible, setSuccessVisible] = useState(false);
   const [didUserEdit, setDidUserEdit] = useState(false);
   const [loadedTenantId, setLoadedTenantId] = useState<string | null>(null);
+  const [imageUploadItemId, setImageUploadItemId] = useState<string | null>(null);
 
   const tenantId = selectedTenantId;
 
@@ -156,14 +163,13 @@ export const MenuCreatorPage = (): ReactElement => {
       return api.menus.save(tenantId, payload);
     },
     onSuccess: () => {
-      setErrorMessage("");
-      setSuccessVisible(true);
+      showToast("success", t("menuCreator.toast.saveSuccessTitle"), t("menuCreator.success"));
     },
     onError: (error: unknown) => {
-      setSuccessVisible(false);
-      setErrorMessage(
-        error instanceof Error && error.message.trim() !== "" ? error.message : t("menuCreator.errors.saveFailed"),
-      );
+      const message =
+        error instanceof Error && error.message.trim() !== "" ? error.message : t("menuCreator.errors.saveFailed");
+
+      showToast("error", t("menuCreator.toast.saveErrorTitle"), message);
     },
   });
 
@@ -268,6 +274,55 @@ export const MenuCreatorPage = (): ReactElement => {
     );
   };
 
+  const handleItemImageChange = async (
+    categoryId: string,
+    itemId: string,
+    event: ChangeEvent<HTMLInputElement>,
+  ): Promise<void> => {
+    const file = event.target.files?.[0];
+
+    event.target.value = "";
+
+    if (!file || tenantId === null) {
+      return;
+    }
+
+    if (!ALLOWED_MENU_IMAGE_TYPES.has(file.type)) {
+      showToast("error", t("menuCreator.toast.validationErrorTitle"), t("menuCreator.imageUpload.invalidType"));
+
+      return;
+    }
+
+    if (file.size > MAX_MENU_IMAGE_BYTES) {
+      showToast("error", t("menuCreator.toast.validationErrorTitle"), t("menuCreator.imageUpload.tooLarge"));
+
+      return;
+    }
+
+    setImageUploadItemId(itemId);
+
+    try {
+      const presign = await api.tenantMobileConfig.presignMenuImage(tenantId, file.type);
+      const put = await fetch(presign.uploadUrl, {
+        method: "PUT",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+
+      if (!put.ok) {
+        throw new Error("upload");
+      }
+
+      const { imageUrl } = await api.tenantMobileConfig.finalizeMenuImage(tenantId, presign.objectKey);
+
+      updateItem(categoryId, itemId, { imageUrl });
+    } catch {
+      showToast("error", t("menuCreator.toast.saveErrorTitle"), t("menuCreator.imageUpload.failed"));
+    } finally {
+      setImageUploadItemId(null);
+    }
+  };
+
   const removeTagFromItem = (categoryId: string, itemId: string, tagToRemove: string): void => {
     setDidUserEdit(true);
     setCategories((prev) =>
@@ -289,16 +344,14 @@ export const MenuCreatorPage = (): ReactElement => {
     );
   };
 
-  const buildPayload = (): SaveTenantMenuPayload | null => {
+  const buildPayload = (): BuildMenuPayloadResult => {
     const normalizedCategories: TenantMenuCategory[] = [];
 
     for (const [index, category] of categories.entries()) {
       const categoryName = category.name.trim();
 
       if (categoryName === "") {
-        setErrorMessage(t("menuCreator.errors.invalidCategory"));
-
-        return null;
+        return { ok: false, message: t("menuCreator.errors.invalidCategory") };
       }
 
       const normalizedItems: TenantMenuCategory["items"] = [];
@@ -309,36 +362,35 @@ export const MenuCreatorPage = (): ReactElement => {
         const rawPrice = item.price.trim();
 
         if (itemName === "" || rawPrice === "") {
-          setErrorMessage(t("menuCreator.errors.invalidItem"));
-
-          return null;
+          return { ok: false, message: t("menuCreator.errors.invalidItem") };
         }
 
         const itemPrice = Number(rawPrice);
 
         if (Number.isNaN(itemPrice) || itemPrice < 0) {
-          setErrorMessage(t("menuCreator.errors.invalidItem"));
-
-          return null;
+          return { ok: false, message: t("menuCreator.errors.invalidItem") };
         }
 
         const normalizedName = itemName.toLowerCase();
 
         if (seenItemNames.has(normalizedName)) {
-          setErrorMessage(t("menuCreator.errors.invalidItem"));
-
-          return null;
+          return { ok: false, message: t("menuCreator.errors.invalidItem") };
         }
 
         seenItemNames.add(normalizedName);
-        normalizedItems.push({
+        const row: TenantMenuItem = {
           name: itemName,
           price: itemPrice,
-          promoted: item.promoted ? 1 : 0,
-          active: item.active ? 1 : 0,
+          promoted: item.promoted,
+          isAvailable: item.isAvailable,
           desc: item.desc.trim(),
           tags: item.tags,
-        });
+        };
+
+        if (item.imageUrl) {
+          row.imageUrl = item.imageUrl;
+        }
+        normalizedItems.push(row);
       }
 
       normalizedCategories.push({
@@ -348,20 +400,19 @@ export const MenuCreatorPage = (): ReactElement => {
       });
     }
 
-    return { categories: normalizedCategories };
+    return { ok: true, payload: { categories: normalizedCategories } };
   };
 
   const handleSave = (): void => {
-    setErrorMessage("");
-    setSuccessVisible(false);
+    const result = buildPayload();
 
-    const payload = buildPayload();
+    if (!result.ok) {
+      showToast("error", t("menuCreator.toast.validationErrorTitle"), result.message);
 
-    if (!payload) {
       return;
     }
 
-    saveMutation.mutate(payload);
+    saveMutation.mutate(result.payload);
   };
 
   return (
@@ -386,17 +437,10 @@ export const MenuCreatorPage = (): ReactElement => {
           </div>
         )}
 
-        {isLoading && tenantId !== null && <div className="text-sm text-text-tertiary">{t("menuCreator.loading")}</div>}
-
-        {errorMessage !== "" && (
-          <div className="mb-4 rounded-lg border border-status-error-border bg-status-error-background px-4 py-3 text-sm text-status-error-text">
-            {errorMessage}
-          </div>
-        )}
-
-        {successVisible && (
-          <div className="mb-4 rounded-lg border border-status-success-border bg-status-success-background px-4 py-3 text-sm text-status-success-text">
-            {t("menuCreator.success")}
+        {isLoading && tenantId !== null && (
+          <div className="flex items-center gap-2 text-sm text-text-tertiary">
+            <Loader size="sm" />
+            <span>{t("menuCreator.loading")}</span>
           </div>
         )}
 
@@ -404,7 +448,7 @@ export const MenuCreatorPage = (): ReactElement => {
           {categories.map((category, categoryIndex) => (
             <section
               key={category.id}
-              className="rounded-xl border border-border-default bg-surface-secondary/60 p-4 shadow-sm"
+              className="rounded-xl border border-border-default bg-surface-secondary/60 p-5 shadow-sm"
             >
               <div className="grid gap-4 md:grid-cols-12">
                 <div className="md:col-span-5">
@@ -546,8 +590,10 @@ export const MenuCreatorPage = (): ReactElement => {
                           <input
                             id={`active-${item.id}`}
                             type="checkbox"
-                            checked={item.active}
-                            onChange={(event) => updateItem(category.id, item.id, { active: event.target.checked })}
+                            checked={item.isAvailable}
+                            onChange={(event) =>
+                              updateItem(category.id, item.id, { isAvailable: event.target.checked })
+                            }
                           />
                           <label htmlFor={`active-${item.id}`} className="text-xs text-text-secondary">
                             {t("menuCreator.fields.itemActive")}
@@ -578,10 +624,44 @@ export const MenuCreatorPage = (): ReactElement => {
                       <textarea
                         value={item.desc}
                         onChange={(event) => updateItem(category.id, item.id, { desc: event.target.value })}
-                        className="min-h-20 w-full rounded-md border border-border-default bg-surface-secondary px-3 py-2 text-sm text-text-primary"
+                        className="min-h-20 w-full rounded-md border border-border-default bg-surface-secondary px-4 py-3 text-sm text-text-primary"
                         placeholder={t("menuCreator.placeholders.itemDescription")}
                         maxLength={ITEM_DESCRIPTION_MAX_LENGTH}
                       />
+                    </div>
+                    <div className="mt-3 rounded-lg border border-border-default bg-surface-secondary/80 p-3">
+                      <p className="mb-2 text-xs font-medium text-text-secondary">
+                        {t("menuCreator.fields.itemImage")}
+                      </p>
+                      <p className="mb-2 text-xs text-text-tertiary">{t("menuCreator.fields.itemImageHint")}</p>
+                      <div className="flex flex-wrap items-center gap-3">
+                        {item.imageUrl ? (
+                          <img src={item.imageUrl} alt="" className="h-20 w-20 shrink-0 rounded-md object-cover" />
+                        ) : null}
+                        <div className="flex flex-col gap-2">
+                          <label className="inline-flex cursor-pointer items-center justify-center rounded-md border border-border-default bg-surface-primary px-3 py-2 text-xs font-medium text-text-primary">
+                            <input
+                              type="file"
+                              accept="image/png,image/jpeg,image/webp"
+                              className="sr-only"
+                              disabled={tenantId === null || imageUploadItemId === item.id}
+                              onChange={(event) => void handleItemImageChange(category.id, item.id, event)}
+                            />
+                            {imageUploadItemId === item.id
+                              ? t("menuCreator.imageUpload.uploading")
+                              : t("menuCreator.imageUpload.upload")}
+                          </label>
+                          {item.imageUrl ? (
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              onClick={() => updateItem(category.id, item.id, { imageUrl: null })}
+                            >
+                              {t("menuCreator.imageUpload.remove")}
+                            </Button>
+                          ) : null}
+                        </div>
+                      </div>
                     </div>
                     {item.tags.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-2">

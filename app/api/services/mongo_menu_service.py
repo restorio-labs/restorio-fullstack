@@ -36,21 +36,23 @@ def normalize_mongo_menu_categories(
 
             raw_price = item_payload.get("price", 0)
             raw_promoted = item_payload.get("promoted", 0)
-            raw_active = item_payload.get("active", 1)
+            raw_avail = item_payload.get("isAvailable", item_payload.get("active", 1))
             raw_desc = item_payload.get("desc", "")
             raw_tags = item_payload.get("tags", [])
+            raw_image = item_payload.get("imageUrl")
 
             price = float(raw_price) if isinstance(raw_price, int | float) else 0.0
-            promoted = 1 if raw_promoted == 1 else 0
-            active = 0 if raw_active == 0 else 1
+            promoted = bool(raw_promoted) if isinstance(raw_promoted, bool) else raw_promoted == 1
+            is_available = raw_avail if isinstance(raw_avail, bool) else raw_avail != 0
             desc = raw_desc if isinstance(raw_desc, str) else ""
             tags = (
                 [tag for tag in raw_tags if isinstance(tag, str)]
                 if isinstance(raw_tags, list)
                 else []
             )
+            image_url = raw_image if isinstance(raw_image, str) and raw_image.strip() else None
 
-            if active_items_only and active == 0:
+            if active_items_only and not is_available:
                 continue
 
             items.append(
@@ -58,9 +60,10 @@ def normalize_mongo_menu_categories(
                     name=item_name,
                     price=price,
                     promoted=promoted,
-                    active=active,
+                    is_available=is_available,
                     desc=desc,
                     tags=tags,
+                    image_url=image_url,
                 )
             )
 

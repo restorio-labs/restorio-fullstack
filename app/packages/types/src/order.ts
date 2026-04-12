@@ -4,9 +4,12 @@ export enum OrderStatus {
   CONFIRMED = "confirmed",
   PREPARING = "preparing",
   READY = "ready",
+  READY_TO_SERVE = "ready_to_serve",
   DELIVERED = "delivered",
   CANCELLED = "cancelled",
   PAID = "paid",
+  REJECTED = "rejected",
+  REFUNDED = "refunded",
 }
 
 export enum PaymentStatus {
@@ -31,6 +34,7 @@ export interface Order {
   table: string;
   time: string;
   notes?: string;
+  rejectionReason?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -68,7 +72,7 @@ export interface KitchenOrder {
   notes?: string;
 }
 
-export type KitchenStatusIconKey = "add" | "clock" | "check";
+export type KitchenStatusIconKey = "add" | "clock" | "check" | "x" | "undo";
 
 export interface KitchenStatusConfig {
   label: string;
@@ -76,4 +80,30 @@ export interface KitchenStatusConfig {
   indicatorClassName: string;
   iconClassName: string;
   iconKey: KitchenStatusIconKey;
+}
+
+export type KitchenOrderEventType = "order_created" | "order_updated" | "order_archived";
+
+export interface KitchenOrderEvent {
+  type: KitchenOrderEventType;
+  order: Order;
+}
+
+export interface RestaurantKitchenConfig {
+  restaurantId: string;
+  rejectionLabels: string[];
+}
+
+export interface TableSession {
+  id: string;
+  tableRef: string;
+  tableNumber?: number | null;
+  tableLabel?: string | null;
+  origin: "mobile" | "waiter";
+  status: "active" | "released" | "expired" | "completed";
+  sessionId?: string | null;
+  waiterUserId?: string | null;
+  acquiredAt: string;
+  lastSeenAt: string;
+  expiresAt: string;
 }

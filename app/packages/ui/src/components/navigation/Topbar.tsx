@@ -111,7 +111,7 @@ export const Topbar = ({
         aria-label={ariaLabel}
         aria-hidden={!menuOpen}
         className={cn(
-          "absolute left-0 right-0 top-16 z-dropdown border-t border-border-default bg-surface-primary shadow-lg",
+          "absolute left-0 right-0 top-16 z-dropdown border-b border-t border-border-default bg-surface-primary shadow-lg",
           "md:hidden",
           "overflow-hidden transition-all duration-200 ease-out",
           reducedMotion && "transition-none",
@@ -121,9 +121,9 @@ export const Topbar = ({
         <nav
           role="navigation"
           aria-label={ariaLabel}
-          className="flex flex-col py-2 [&_a]:min-h-12 [&_a]:flex [&_a]:items-center"
+          className="flex flex-col py-4 [&_a]:min-h-14 [&_a]:flex [&_a]:items-center"
         >
-          <div className="flex flex-col gap-0.5 px-4">{children}</div>
+          <div className="flex flex-col gap-3 px-20">{children}</div>
         </nav>
       </div>
     </header>

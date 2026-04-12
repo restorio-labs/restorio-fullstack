@@ -1,15 +1,60 @@
 {
   "common": {
-    "skipToContent": "Saltar al contenido principal",
+    "skipToContent": "Ir al contenido principal",
     "loading": "Cargando...",
-    "error": "Error"
+    "error": "Error",
+    "currency": "PLN"
   },
   "app": {
-    "title": "Aplicación de Tablet Restorio",
-    "comingSoon": "Interfaz de tablet/kiosco próximamente...",
-    "description": "Pedidos de autoservicio para clientes"
+    "title": "Pedido"
   },
   "errors": {
     "rootElementNotFound": "Elemento raíz no encontrado"
+  },
+  "deviceGate": {
+    "title": "Usa un teléfono o tableta",
+    "description": "Esta página solo está disponible en móviles y tabletas."
+  },
+  "order": {
+    "invalidLinkTitle": "Enlace no válido",
+    "invalidLinkDescription": "Vuelve a escanear el código QR.",
+    "loadingMenu": "Cargando menú...",
+    "loadErrorTitle": "No se pudo cargar",
+    "loadErrorDescription": "Comprueba tu conexión e inténtalo de nuevo.",
+    "reload": "Recargar página",
+    "emptyMenuTitle": "El menú está vacío",
+    "emptyMenuDescription": "Este restaurante aún no tiene platos.",
+    "tableLabel": "Mesa {{number}}",
+    "cartButton": "Carrito ({{count}}) · {{amount}} {{currency}}",
+    "summaryTitle": "Resumen",
+    "promotedBadge": "Destacado"
+  },
+  "checkout": {
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "tu@email.com",
+    "emailRequired": "El correo es obligatorio",
+    "emailInvalid": "Introduce un correo válido",
+    "noteLabel": "Notas del pedido (opcional)",
+    "notePlaceholder": "p. ej. sin cebolla, salsa extra…",
+    "payProcessing": "Procesando...",
+    "payButton": "Pagar {{amount}} {{currency}}",
+    "paymentFailed": "No se pudo procesar el pago. Inténtalo de nuevo."
+  },
+  "cart": {
+    "empty": "Tu carrito está vacío. Añade platos del menú.",
+    "title": "Tu pedido",
+    "lessAria": "Menos: {{name}}",
+    "moreAria": "Más: {{name}}",
+    "linePrice": "{{price}} {{currency}} × {{quantity}}",
+    "total": "Total"
+  },
+  "menuItem": {
+    "addAria": "Añadir {{name}}",
+    "removeAria": "Quitar {{name}}"
+  },
+  "paymentReturn": {
+    "title": "¡Gracias!",
+    "description": "Tu pedido fue recibido. El pago se procesa con Przelewy24.",
+    "closeHint": "Puedes cerrar esta página."
   }
 }

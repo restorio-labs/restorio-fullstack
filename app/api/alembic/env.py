@@ -9,11 +9,14 @@ from alembic import context
 from core.foundation.database.database import Base
 from core.foundation.infra.config import settings
 from core.models import (
+    ArchivedOrder,  # pyright: ignore[reportUnusedImport] # noqa: F401
     AuditLog,  # pyright: ignore[reportUnusedImport] # noqa: F401
     Order,  # pyright: ignore[reportUnusedImport] # noqa: F401
-    OrderItem,  # pyright: ignore[reportUnusedImport] # noqa: F401
+    OrderDetails,  # pyright: ignore[reportUnusedImport] # noqa: F401
     Payment,  # pyright: ignore[reportUnusedImport] # noqa: F401
+    TableSession,  # pyright: ignore[reportUnusedImport] # noqa: F401
     Tenant,  # pyright: ignore[reportUnusedImport] # noqa: F401
+    TenantMobileConfig,  # pyright: ignore[reportUnusedImport] # noqa: F401
     TenantProfile,  # pyright: ignore[reportUnusedImport] # noqa: F401
     TenantRole,  # pyright: ignore[reportUnusedImport] # noqa: F401
     Transaction,  # pyright: ignore[reportUnusedImport] # noqa: F401

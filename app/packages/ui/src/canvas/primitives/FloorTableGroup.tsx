@@ -1,4 +1,4 @@
-import type { CanvasBounds, TableDisplayInfo, TableRuntimeState } from "@restorio/types";
+import type { CanvasBounds, OrderStatusDisplay, TableDisplayInfo, TableRuntimeState } from "@restorio/types";
 import type { ReactElement } from "react";
 
 import { useI18n } from "../../providers/I18nProvider";
@@ -16,18 +16,29 @@ export interface FloorTableGroupProps {
   onPointerDown?: (e: React.PointerEvent) => void;
 }
 
-const stateStyles: Record<TableRuntimeState, string> = {
-  free: "bg-status-success-background border-status-success-border",
+const stateStyles: Record<TableRuntimeState | "neutral", string> = {
+  neutral: "bg-surface-primary border-border-default",
+  free: "bg-surface-primary border-border-default",
   occupied: "bg-status-error-background border-status-error-border",
   reserved: "bg-status-warning-background border-status-warning-border",
   dirty: "bg-status-error-background/30 border-status-error-border",
+};
+
+const orderStatusStyles: Record<OrderStatusDisplay, string> = {
+  browsing: "bg-surface-primary border-border-default",
+  ordering: "bg-status-info-background border-status-info-border",
+  ordered: "bg-status-warning-background border-status-warning-border",
+  preparing: "bg-orange-500/20 border-orange-500/50",
+  ready_to_serve: "bg-cyan-500/20 border-cyan-600/50",
+  served: "bg-status-success-background border-status-success-border",
+  bill_requested: "bg-purple-500/20 border-purple-500/50",
 };
 
 export const FloorTableGroup = ({
   bounds,
   tableNumbers,
   seats,
-  state = "free",
+  state,
   displayInfo,
   isSelected = false,
   "aria-label": ariaLabel,
@@ -36,20 +47,28 @@ export const FloorTableGroup = ({
   const { t } = useI18n();
   const tablesLabel = tableNumbers.join(", ");
   const needHelp = displayInfo?.needHelp;
-  const hasActiveOrder = displayInfo?.orderStatus !== undefined && displayInfo.orderStatus !== "browsing";
-  const resolvedState: TableRuntimeState = hasActiveOrder ? "occupied" : state === "free" ? "free" : state;
+  const orderStatus = displayInfo?.orderStatus;
+  const hasActiveOrder = orderStatus !== undefined && orderStatus !== "browsing";
+  const statusLine =
+    hasActiveOrder && displayInfo !== undefined ? (displayInfo.orderStatusLabel ?? displayInfo.orderStatus) : undefined;
+  const defaultState: TableRuntimeState | "neutral" = state ?? "neutral";
+  const resolvedState: TableRuntimeState | "neutral" = hasActiveOrder ? "occupied" : defaultState;
+  const tableStyle = hasActiveOrder ? orderStatusStyles[orderStatus] : stateStyles[resolvedState];
   const label =
     ariaLabel ??
-    `${t("floorEditor.panel.name")} ${tablesLabel}, ${seats} ${t("floorEditor.panel.seats")}, ${resolvedState}`;
+    (resolvedState === "neutral"
+      ? `${t("floorEditor.panel.name")} ${tablesLabel}, ${seats} ${t("floorEditor.panel.seats")}`
+      : `${t("floorEditor.panel.name")} ${tablesLabel}, ${seats} ${t("floorEditor.panel.seats")}, ${resolvedState}`);
 
   return (
     <CanvasElement bounds={bounds} aria-label={label} role="img" onPointerDown={onPointerDown}>
       <div
         className={cn(
           "relative flex h-full w-full flex-col items-center justify-center rounded-lg border-2 text-text-primary",
-          "focus-within:outline focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-border-focus",
-          stateStyles[resolvedState],
-          isSelected && "ring-2 ring-border-focus ring-offset-2 ring-offset-background-primary",
+          !isSelected &&
+            "focus-within:outline focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-border-focus",
+          tableStyle,
+          isSelected && "ring-2 ring-interactive-primary ring-offset-1",
         )}
       >
         {needHelp && (
@@ -64,9 +83,22 @@ export const FloorTableGroup = ({
         <span className="text-xs md:text-sm lg:text-base font-medium" aria-hidden="true">
           {tablesLabel}
         </span>
-        <span className="text-[10px] md:text-xs lg:text-sm text-text-secondary" aria-hidden="true">
+        <span
+          className="font-semibold tabular-nums text-[10px] md:text-xs lg:text-sm text-text-secondary"
+          aria-hidden="true"
+        >
           {seats}
         </span>
+        {statusLine !== undefined && (
+          <span className="text-xs font-medium text-text-primary text-center" aria-hidden="true">
+            {statusLine}
+          </span>
+        )}
+        {displayInfo?.occupationTimeLabel !== undefined && displayInfo.occupationTimeLabel !== "" && (
+          <span className="text-[10px] font-medium tabular-nums text-text-tertiary md:text-xs" aria-hidden="true">
+            {displayInfo.occupationTimeLabel}
+          </span>
+        )}
       </div>
     </CanvasElement>
   );

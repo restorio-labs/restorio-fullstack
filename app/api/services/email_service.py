@@ -24,15 +24,21 @@ class EmailService:
     async def send_activation_email(
         self,
         to_email: str,
-        restaurant_name: str,
         activation_link: str,
+        restaurant_name: str | None = None,
     ) -> None:
         resend_api_key, resend_from_email = self._get_resend_settings()
         resend.api_key = resend_api_key
 
-        subject = f"Activate your {restaurant_name} account"
+        if restaurant_name:
+            subject = f"Activate your {restaurant_name} account"
+            greeting = f"Welcome to Restorio, {restaurant_name}!"
+        else:
+            subject = "Activate your Restorio account"
+            greeting = "Welcome to Restorio!"
+
         html = f"""
-        <p>Welcome to Restorio, {restaurant_name}!</p>
+        <p>{greeting}</p>
         <p>Please activate your account by clicking the link below:</p>
         <p><a href="{activation_link}">Activate my account</a></p>
         <p>If you did not request this activation, please ignore this email.</p>

@@ -236,7 +236,11 @@ class TenantLogoStorageService:
                         "Effect": "Allow",
                         "Principal": {"AWS": "*"},
                         "Action": "s3:GetObject",
-                        "Resource": f"arn:aws:s3:::{settings.MINIO_BUCKET}/{self._FINAL_PREFIX}/*",
+                        "Resource": [
+                            f"arn:aws:s3:::{settings.MINIO_BUCKET}/{self._FINAL_PREFIX}/*",
+                            f"arn:aws:s3:::{settings.MINIO_BUCKET}/tenant-mobile-favicons/*",
+                            f"arn:aws:s3:::{settings.MINIO_BUCKET}/menu-items/*",
+                        ],
                     },
                 ],
             }

@@ -48,6 +48,30 @@ export interface TenantLogoViewPresignResponse {
   url: string;
 }
 
+export interface ProfileFormData {
+  nip: string;
+  companyName: string;
+  contactEmail: string;
+  phone: string;
+  addressStreetName: string;
+  addressStreetNumber: string;
+  addressCity: string;
+  addressPostalCode: string;
+  addressCountry: string;
+  ownerFirstName: string;
+  ownerLastName: string;
+  ownerEmail: string;
+  ownerPhone: string;
+  contactPersonFirstName: string;
+  contactPersonLastName: string;
+  contactPersonEmail: string;
+  contactPersonPhone: string;
+  socialFacebook: string;
+  socialInstagram: string;
+  socialTiktok: string;
+  socialWebsite: string;
+}
+
 export interface CreateTenantProfileRequest {
   nip: string;
   company_name: string;

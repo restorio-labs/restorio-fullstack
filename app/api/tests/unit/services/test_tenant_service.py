@@ -14,17 +14,15 @@ from services.tenant_service import TenantService
 
 def _make_fake_session(tenants: list[Tenant]) -> object:
     async def fake_execute(_self: object, query: object) -> object:
-        class Scalars:
-            def all(self) -> list[Tenant]:
-                return tenants
+        class FakeScalars:
+            def all(self) -> list[object]:
+                return []
 
-        result = type("Result", (), {})()
+        class FakeResult:
+            def scalars(self) -> FakeScalars:
+                return FakeScalars()
 
-        def scalars() -> Scalars:
-            return Scalars()
-
-        result.scalars = scalars
-        return result
+        return FakeResult()
 
     class FakeSession:
         execute = fake_execute
@@ -54,7 +52,21 @@ async def test_list_tenants_returns_tenants_from_execute_result() -> None:
         status=TenantStatus.ACTIVE,
     )
 
-    session = _make_fake_session([tenant])
+    async def fake_execute(_self: object, query: object) -> object:
+        class FakeScalars:
+            def all(self) -> list[Tenant]:
+                return [tenant]
+
+        class FakeResult:
+            def scalars(self) -> FakeScalars:
+                return FakeScalars()
+
+        return FakeResult()
+
+    class FakeSession:
+        execute = fake_execute
+
+    session = FakeSession()
     tenants = await service.list_tenants(session, user_id)
 
     assert len(tenants) == 1

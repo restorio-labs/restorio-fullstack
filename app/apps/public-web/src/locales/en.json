@@ -3,7 +3,9 @@
     "skipToContent": "Skip to main content",
     "loading": "Loading...",
     "error": "Error",
-    "learnMore": "Learn More"
+    "learnMore": "Learn More",
+    "backendUnavailable": "The service is temporarily unavailable. Please try again later.",
+    "tryingToConnect": "Trying to reach our services…"
   },
   "metadata": {
     "title": "Restorio Platform",
@@ -43,7 +45,9 @@
       "emailInvalid": "Enter a valid email address",
       "passwordRequired": "Password is required",
       "passwordInvalid": "Password does not meet the requirements",
-      "passwordMinLength": "Password must be at least {min} characters"
+      "passwordMinLength": "Password must be at least {min} characters",
+      "invalidCredentials": "Invalid email or password",
+      "accountNotActive": "This account is not active yet"
     }
   },
   "register": {
@@ -54,7 +58,6 @@
       "email": "Email",
       "password": "Password",
       "confirmPassword": "Confirm password",
-      "restaurantName": "Restaurant name",
       "terms": "I accept the terms and conditions"
     },
     "errors": {
@@ -64,9 +67,9 @@
       "passwordInvalid": "Password does not meet the requirements",
       "confirmPasswordRequired": "Confirm your password",
       "confirmPasswordMismatch": "Passwords do not match",
-      "restaurantNameRequired": "Restaurant name is required",
       "termsRequired": "You must accept the terms and conditions",
-      "generic": "Unable to create account. Please try again."
+      "generic": "Unable to create account. Please try again.",
+      "emailAlreadyRegistered": "This email is already registered"
     },
     "passwordRules": {
       "minLength": "- At least 8 characters",
@@ -84,7 +87,13 @@
     "demo": "Demo",
     "privacy": "Privacy",
     "terms": "Terms",
-    "getStarted": "Get Started"
+    "contact": "Contact",
+    "status": "Status",
+    "getStarted": "Get Started",
+    "login": "Log in",
+    "register": "Register",
+    "logout": "Log out",
+    "logoutLoading": "Logging out..."
   },
   "sidebar": {
     "items": {
@@ -100,6 +109,69 @@
       "adminPanel": "Admin Panel",
       "kitchenPanel": "Kitchen Panel",
       "waiterPanel": "Waiter Panel"
+    }
+  },
+  "landing": {
+    "nav": {
+      "mission": "Mission"
+    },
+    "hero": {
+      "badge": "Open source & community driven",
+      "title": "The Future of Your <br></br><accent>Restaurant</accent>",
+      "subtitle": "A complete management ecosystem that connects kitchen, service, and guests into one smooth operation. QR, KDS, and analytics in one place.",
+      "ctaTrial": "Start free",
+      "ctaDemo": "View demo",
+      "previewLabel": "Platform Preview"
+    },
+    "mission": {
+      "title": "Our mission",
+      "body": "We believe restaurant technology should fuel creativity, not create barriers. We’re building an open, intuitive system so you can focus on food and people.",
+      "goalsTitle": "Project goals",
+      "goalsBody": "Smarter staff time through intelligent order queuing and streamlined information flow.",
+      "sustainTitle": "Sustainable growth",
+      "sustainBody": "Less waste through better planning and transparent operational data."
+    },
+    "pillars": {
+      "title": "Who are we building the future for?",
+      "ownersTitle": "Owners",
+      "ownersBody": "Full control over finances, margin, and staff from anywhere in real time.",
+      "ownersB1": "Reports & KPIs",
+      "ownersB2": "Cost control",
+      "ownersB3": "Multi-location",
+      "staffTitle": "Staff",
+      "staffBody": "An intuitive interface that cuts order errors and improves kitchen communication.",
+      "staffB1": "Fast service mode",
+      "staffB2": "Split bills",
+      "staffB3": "Live notifications",
+      "guestsTitle": "Guests",
+      "guestsBody": "Modern ordering, loyalty, and easy payments at the table.",
+      "guestsB1": "QR ordering",
+      "guestsB2": "Loyalty programs",
+      "guestsB3": "Mobile payments"
+    },
+    "precision": {
+      "title": "Precision in every pixel",
+      "body": "More than tables and lists — visual tools for the floor, dish status in real time, and fast responses to guest needs.",
+      "qrTitle": "QR ordering",
+      "qrBody": "From table to kitchen in a fraction of a second.",
+      "kdsTitle": "Real-time KDS",
+      "kdsBody": "See every course progress on the kitchen display."
+    },
+    "community": {
+      "title": "Powered by the community",
+      "body": "Restorio grows as an open-core project. Join the community shaping standards for hospitality tech.",
+      "github": "GitHub",
+      "discord": "Discord",
+      "contact": "Contact us"
+    },
+    "finalCta": {
+      "title": "Ready to transform your restaurant?",
+      "subtitle": "Start a free trial and see the ecosystem in action.",
+      "primary": "Start free trial",
+      "secondary": "Learn more",
+      "note": "No card required. Cancel anytime.",
+      "loggedTitle": "Back to work",
+      "loggedSubtitle": "Pick an app from the menu or head straight to your panel."
     }
   },
   "hero": {
@@ -186,25 +258,25 @@
     "mission": {
       "title": "Our Mission",
       "subtitle": "Empowering small restaurants with enterprise-grade tools.",
-      "description": "Restorio is an open-source restaurant management platform built to democratize access to powerful SaaS tools. We believe every restaurant, regardless of size, deserves modern technology to compete and thrive."
+      "description": "We believe in the democratization of technology. For years, advanced SaaS systems were reserved for large chains. Restorio changes the game, providing innovative solutions that allow local venues to compete at the highest level without a financial barrier. We focus on the engineering of tomorrow, so the heart of your restaurant beats with the rhythm of technology."
     },
     "goals": {
       "title": "Project Goals",
       "waiterless": {
         "title": "Waiterless Ordering",
-        "description": "Enable customers to scan QR codes and place orders without waiter assistance."
+        "description": "Optimized self-service process for customers."
       },
       "multiLocation": {
         "title": "Multi-location Support",
-        "description": "Manage multiple restaurants under one tenant with location-specific settings."
+        "description": "Manage your entire ecosystem from a single dashboard."
       },
       "secure": {
         "title": "Secure & Scalable",
-        "description": "Built on modern infrastructure with JWT authentication and FastAPI backend."
+        "description": "Infrastructure ready for your dynamic growth."
       },
       "costEfficient": {
         "title": "Cost Efficient",
-        "description": "Open source and self-hostable to minimize recurring costs for small businesses."
+        "description": "The best quality-to-price ratio on the market."
       }
     },
     "openSource": {
@@ -212,22 +284,31 @@
       "description": "This project is built as an academic engineer-degree project at NTNU. The codebase is open-source, and we encourage contributions from the community. By making restaurant technology accessible, we aim to support small businesses in their digital transformation."
     },
     "problem": {
-      "title": "The Problem",
-      "description": "Traditional restaurant operations are labor-intensive and prone to inefficiencies. Small to medium-sized restaurants often lack the resources to adopt enterprise-level technology, leading to manual order-taking, kitchen miscommunication, and limited scalability. Existing SaaS solutions are expensive and not tailored for smaller establishments."
+      "title": "Why are we doing this?",
+      "description": "Traditional restaurant operations are labor-intensive and prone to inefficiencies. Small to medium-sized restaurants often lack the resources to adopt enterprise-level technology, leading to manual order-taking, kitchen miscommunication, and limited scalability. Existing SaaS solutions are expensive and not tailored for smaller establishments.",
+      "manual": {
+        "title": "Manual Process Problem",
+        "description": "Many owners still rely on paper and memory. Order errors, kitchen chaos, and lack of transparency cost time and money that small restaurants cannot afford to lose."
+      },
+      "cost": {
+        "title": "Cost Barrier",
+        "description": "Existing Enterprise-class solutions are often unaffordable or require complex infrastructure. Restorio eliminates these obstacles, offering lightness and scalability."
+      }
     },
     "users": {
-      "title": "Target Users",
+      "title": "Who are we building the future for?",
+      "subtitle": "Three pillars of success for every modern restaurant.",
       "owners": {
         "title": "Restaurant Owners",
-        "description": "Manage operations, view analytics, and configure menus across multiple locations."
+        "description": "Full control over margins, inventory, and real-time sales analytics."
       },
       "staff": {
         "title": "Staff & Kitchen",
-        "description": "Receive orders in real-time and manage kitchen workflows efficiently."
+        "description": "No more unreadable tickets. A clear KDS system for smooth operation."
       },
       "customers": {
         "title": "End Customers",
-        "description": "Browse menus, place orders, and track order status without waiter interaction."
+        "description": "Fast ordering, secure payments, and a modern experience."
       }
     },
     "engineering": {

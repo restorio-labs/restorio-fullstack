@@ -21,6 +21,8 @@ if TYPE_CHECKING:
     from core.models.audit_log import AuditLog
     from core.models.floor_canvas import FloorCanvas
     from core.models.order import Order
+    from core.models.table_session import TableSession
+    from core.models.tenant_mobile_config import TenantMobileConfig
     from core.models.tenant_profile import TenantProfile
     from core.models.tenant_role import TenantRole
     from core.models.transaction import Transaction
@@ -75,6 +77,12 @@ class Tenant(Base):
     tenant_profile: Mapped[TenantProfile | None] = relationship(
         "TenantProfile", back_populates="tenant", uselist=False, cascade="all, delete-orphan"
     )
+    mobile_config: Mapped[TenantMobileConfig | None] = relationship(
+        "TenantMobileConfig", back_populates="tenant", uselist=False, cascade="all, delete-orphan"
+    )
     transactions: Mapped[list[Transaction]] = relationship(
         "Transaction", back_populates="tenant", cascade="all, delete-orphan"
+    )
+    table_sessions: Mapped[list[TableSession]] = relationship(
+        "TableSession", back_populates="tenant", cascade="all, delete-orphan"
     )

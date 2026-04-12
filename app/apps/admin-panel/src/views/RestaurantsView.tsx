@@ -2,7 +2,7 @@ import type { FloorCanvas as FloorCanvasType, TenantSummary } from "@restorio/ty
 import { Button, FloorCanvas, useI18n } from "@restorio/ui";
 import type { ReactElement } from "react";
 
-import { RestaurantListCard } from "../components/RestaurantListCard";
+import { RestaurantListCard } from "../features/floor/RestaurantListCard";
 
 interface RestaurantsViewProps {
   restaurants: TenantSummary[];
@@ -55,6 +55,7 @@ export const RestaurantsView = ({
                       <FloorCanvas
                         layout={activeCanvas}
                         showGrid={false}
+                        runtimeTableStyling={false}
                         interactive={false}
                         centered
                         transformStyle={getPreviewTransform(activeCanvas)}

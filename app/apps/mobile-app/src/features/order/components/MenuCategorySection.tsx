@@ -21,7 +21,7 @@ export const MenuCategorySection = ({
 }: MenuCategorySectionProps): ReactElement => {
   return (
     <section className="mb-6">
-      <Text as="h2" variant="h4" weight="semibold" className="mb-3 px-1">
+      <Text as="h2" variant="h4" weight="semibold" className="mb-3 px-1 text-center">
         {category.name}
       </Text>
       <div className="flex flex-col gap-2">

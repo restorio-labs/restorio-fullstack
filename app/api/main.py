@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from core.exceptions.handlers import setup_exception_handlers
 from core.foundation.infra.config import settings
 from core.middleware import (
+    CSRFMiddleware,
     RateLimitMiddleware,
     TimingMiddleware,
     UnauthorizedMiddleware,
@@ -10,6 +11,7 @@ from core.middleware import (
 )
 from routes import api_router as api_router_v1
 from routes.v1.health import router as health_router
+from routes.v1.ws import router as ws_router
 
 
 def create_application() -> FastAPI:
@@ -25,6 +27,7 @@ def create_application() -> FastAPI:
     setup_exception_handlers(app=app, settings=settings)
 
     app.add_middleware(RateLimitMiddleware)
+    app.add_middleware(CSRFMiddleware)
     app.add_middleware(UnauthorizedMiddleware)
     app.add_middleware(TimingMiddleware)
     # Keep CORS as the outermost middleware so short-circuit 401 responses
@@ -43,6 +46,7 @@ def create_application() -> FastAPI:
 
     app.include_router(api_router_v1, prefix=settings.API_V1_PREFIX)
     app.include_router(health_router, prefix="/health", tags=["health"])
+    app.include_router(ws_router, prefix=settings.API_V1_PREFIX, tags=["websocket"])
     return app
 
 

@@ -1,4 +1,4 @@
-import { useI18n } from "@restorio/ui";
+import { Loader, useI18n } from "@restorio/ui";
 import { getAppHref } from "@restorio/utils";
 import type { ReactElement } from "react";
 import { useMemo } from "react";
@@ -53,7 +53,8 @@ export const QRCodeGeneratorPage = (): ReactElement => {
   if (isLoading) {
     return (
       <PageLayout title={t("qrGenerator.title")} description={t("qrGenerator.description")}>
-        <div className="flex flex-1 items-center justify-center p-8">
+        <div className="flex flex-1 flex-col gap-4 items-center justify-center p-8">
+          <Loader />
           <div className="text-sm text-text-tertiary">{t("qrGenerator.loadingRestaurant")}</div>
         </div>
       </PageLayout>

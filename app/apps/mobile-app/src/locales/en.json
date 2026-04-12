@@ -2,14 +2,59 @@
   "common": {
     "skipToContent": "Skip to main content",
     "loading": "Loading...",
-    "error": "Error"
+    "error": "Error",
+    "currency": "PLN"
   },
   "app": {
-    "title": "Restorio Tablet App",
-    "comingSoon": "Tablet/kiosk interface coming soon...",
-    "description": "Customer self-service ordering"
+    "title": "Order"
   },
   "errors": {
     "rootElementNotFound": "Root element not found"
+  },
+  "deviceGate": {
+    "title": "Use a phone or tablet",
+    "description": "This page is only available on mobile devices and tablets."
+  },
+  "order": {
+    "invalidLinkTitle": "Invalid link",
+    "invalidLinkDescription": "Scan the QR code again.",
+    "loadingMenu": "Loading menu...",
+    "loadErrorTitle": "Could not load",
+    "loadErrorDescription": "Check your internet connection and try again.",
+    "reload": "Reload page",
+    "emptyMenuTitle": "Menu is empty",
+    "emptyMenuDescription": "This restaurant has no menu items yet.",
+    "tableLabel": "Table {{number}}",
+    "cartButton": "Cart ({{count}}) · {{amount}} {{currency}}",
+    "summaryTitle": "Summary",
+    "promotedBadge": "Featured"
+  },
+  "checkout": {
+    "emailLabel": "Email address",
+    "emailPlaceholder": "you@example.com",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Enter a valid email address",
+    "noteLabel": "Order notes (optional)",
+    "notePlaceholder": "e.g. no onions, extra sauce…",
+    "payProcessing": "Processing...",
+    "payButton": "Pay {{amount}} {{currency}}",
+    "paymentFailed": "Payment could not be processed. Please try again."
+  },
+  "cart": {
+    "empty": "Your cart is empty. Add items from the menu.",
+    "title": "Your order",
+    "lessAria": "Decrease: {{name}}",
+    "moreAria": "Increase: {{name}}",
+    "linePrice": "{{price}} {{currency}} × {{quantity}}",
+    "total": "Total"
+  },
+  "menuItem": {
+    "addAria": "Add {{name}}",
+    "removeAria": "Remove {{name}}"
+  },
+  "paymentReturn": {
+    "title": "Thank you!",
+    "description": "Your order was received. Payment is being processed by Przelewy24.",
+    "closeHint": "You can close this page."
   }
 }

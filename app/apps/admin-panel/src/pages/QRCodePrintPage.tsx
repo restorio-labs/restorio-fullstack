@@ -1,4 +1,4 @@
-import { useI18n } from "@restorio/ui";
+import { Loader, useI18n } from "@restorio/ui";
 import type { ReactElement } from "react";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
@@ -40,7 +40,8 @@ export const QRCodePrintPage = (): ReactElement => {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-8">
+      <div className="flex min-h-screen items-center justify-center p-8 flex-col gap-4">
+        <Loader />
         <div className="text-sm text-text-tertiary">{t("qrPrint.loadingRestaurant")}</div>
       </div>
     );
@@ -67,8 +68,8 @@ export const QRCodePrintPage = (): ReactElement => {
 
   if (tables.length === 0) {
     return (
-      <div className="p-6 text-center text-sm text-text-tertiary">
-        <p className="mb-2">{t("qrPrint.noTablesTitle")}</p>
+      <div className="p-6 text-center text-sm text-text-tertiary ">
+        <p className="mb-2 text-center text-text-tertiary">{t("qrPrint.noTablesTitle")}</p>
         <Link to="/floor-editor" className="text-interactive-primary hover:underline">
           {t("qrPrint.noTablesAction")}
         </Link>

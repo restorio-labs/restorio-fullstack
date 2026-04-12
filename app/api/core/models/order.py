@@ -22,7 +22,7 @@ from core.foundation.database.database import Base
 from core.models.enums import OrderStatus
 
 if TYPE_CHECKING:
-    from core.models.order_item import OrderItem
+    from core.models.order_details import OrderDetails
     from core.models.payment import Payment
     from core.models.tenant import Tenant
     from core.models.user import User
@@ -68,8 +68,8 @@ class Order(Base):
 
     tenant: Mapped[Tenant] = relationship("Tenant", back_populates="orders")
     assigned_waiter: Mapped[User | None] = relationship("User", foreign_keys=[waiter_user_id])
-    order_items: Mapped[list[OrderItem]] = relationship(
-        "OrderItem", back_populates="order", cascade="all, delete-orphan"
+    details: Mapped[OrderDetails | None] = relationship(
+        "OrderDetails", back_populates="order", cascade="all, delete-orphan", uselist=False
     )
     payments: Mapped[list[Payment]] = relationship(
         "Payment", back_populates="order", cascade="all, delete-orphan"

@@ -22,16 +22,16 @@ describe("UserResource", () => {
     resource = new UserResource(client as ApiClient);
   });
 
-  it("create calls POST users", async () => {
+  it("create calls POST users/:tenantId", async () => {
     const body = {
       email: "staff@example.com",
       password: "secret",
       role: "waiter",
     };
 
-    await resource.create(body as never);
+    await resource.create("tenant-pub-id", body as never);
 
-    expect(client.post).toHaveBeenCalledWith("users", body, { signal: undefined });
+    expect(client.post).toHaveBeenCalledWith("users/tenant-pub-id", body, { signal: undefined });
   });
 
   it("list calls encoded GET users/:tenantId and returns data", async () => {
@@ -43,12 +43,12 @@ describe("UserResource", () => {
     expect(result).toEqual([{ id: "1" }]);
   });
 
-  it("delete calls encoded DELETE users/:userId and returns data", async () => {
+  it("delete calls encoded DELETE users/:tenantId/:userId and returns data", async () => {
     client.delete = vi.fn().mockResolvedValue({ data: { deleted: true } });
 
-    const result = await resource.delete("user/id");
+    const result = await resource.delete("tenant/id", "user/id");
 
-    expect(client.delete).toHaveBeenCalledWith("users/user%2Fid", { signal: undefined });
+    expect(client.delete).toHaveBeenCalledWith("users/tenant%2Fid/user%2Fid", { signal: undefined });
     expect(result).toEqual({ deleted: true });
   });
 });

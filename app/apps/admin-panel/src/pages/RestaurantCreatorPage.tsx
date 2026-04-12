@@ -1,4 +1,4 @@
-import type { TenantSummary } from "@restorio/types";
+import type { TenantSummary, ProfileFormData } from "@restorio/types";
 import { Button, Form, FormActions, Input, useI18n } from "@restorio/ui";
 import { slugify } from "@restorio/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -9,9 +9,8 @@ import type { UseFormRegister } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
 import { api } from "../api/client";
-import type { ProfileFormData } from "../components/tenant-profile/profileForm";
-import { CompanyFieldset, ContactFieldset, OwnerFieldset } from "../components/tenant-profile/TenantProfileFieldsets";
 import { tenantDetailsQueryKey, useCurrentTenant } from "../context/TenantContext";
+import { CompanyFieldset, ContactFieldset, OwnerFieldset } from "../features/profile/TenantProfileFieldsets";
 import { tenantsQueryKey } from "../hooks/useTenants";
 import { useValidationErrors } from "../hooks/useValidationErrors";
 import { PageLayout } from "../layouts/PageLayout";
@@ -252,7 +251,7 @@ export const RestaurantCreatorPage = (): ReactElement => {
         </FormActions>
       }
     >
-      <div className="mx-auto max-w-lg p-6">
+      <div className="mx-auto max-w-lg px-2 py-6">
         <Form
           id="restaurant-creator-form"
           onSubmit={(event: FormEvent<HTMLFormElement>): void => {
@@ -272,7 +271,7 @@ export const RestaurantCreatorPage = (): ReactElement => {
             })}
           />
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
             <Input
               label={t("tenantProfile.fields.addressStreetName.label")}
               placeholder={t("tenantProfile.fields.addressStreetName.placeholder")}
@@ -299,7 +298,7 @@ export const RestaurantCreatorPage = (): ReactElement => {
           <div className="rounded-xl border border-border-default bg-surface-secondary/50">
             <button
               type="button"
-              className="flex w-full items-center justify-between px-4 py-3 text-left"
+              className="flex w-full items-center justify-between px-6 py-3 text-left"
               aria-expanded={isProfileExpanded}
               onClick={() => setIsProfileExpanded((current) => !current)}
             >
@@ -313,8 +312,8 @@ export const RestaurantCreatorPage = (): ReactElement => {
             </button>
 
             {isProfileExpanded && (
-              <div className="border-t border-border-default px-4 py-4">
-                <div className="grid items-start gap-4 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
+              <div className="border-t border-border-default px-6 py-6">
+                <div className="grid items-start gap-6 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
                   <CompanyFieldset
                     showLogoField={false}
                     getFieldError={getCombinedFieldError}
@@ -324,11 +323,11 @@ export const RestaurantCreatorPage = (): ReactElement => {
                   />
                   <ContactFieldset getFieldError={getCombinedFieldError} register={profileRegister} t={t} />
                   <OwnerFieldset getFieldError={getCombinedFieldError} register={profileRegister} t={t} />
-                  <fieldset className="h-fit rounded-xl border border-border-default bg-surface-secondary/60 p-4 shadow-sm">
+                  <fieldset className="h-fit rounded-xl border border-border-default bg-surface-secondary/60 p-6 shadow-sm">
                     <legend className="mb-0 text-sm font-semibold text-text-primary">
                       {t("tenantProfile.sections.address")}
                     </legend>
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                       <Input
                         label={t("tenantProfile.fields.addressPostalCode.label")}
                         placeholder={t("tenantProfile.fields.addressPostalCode.placeholder")}
@@ -351,13 +350,13 @@ export const RestaurantCreatorPage = (): ReactElement => {
           </div>
 
           {submitStatus === "success" && (
-            <div className="rounded-lg border border-status-success-border bg-status-success-background px-4 py-3 text-sm text-status-success-text">
+            <div className="rounded-lg border border-status-success-border bg-status-success-background px-6 py-3 text-sm text-status-success-text">
               {t("restaurantCreator.success")}
             </div>
           )}
 
           {(submitStatus === "error" || submitStatus === "validation" || submitStatus === "profileError") && (
-            <div className="rounded-lg border border-status-error-border bg-status-error-background px-4 py-3 text-sm text-status-error-text">
+            <div className="rounded-lg border border-status-error-border bg-status-error-background px-6 py-3 text-sm text-status-error-text">
               {submitStatus === "validation" && t("restaurantCreator.errors.validationFailed")}
               {submitStatus === "error" && t("restaurantCreator.errors.createFailed")}
               {submitStatus === "profileError" && t("restaurantCreator.errors.profileSaveFailed")}

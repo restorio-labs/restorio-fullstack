@@ -15,6 +15,8 @@ from typing import Any
 
 from fastapi import Request
 
+from core.foundation.client_ip import get_client_ip
+
 
 def _setup_audit_logger() -> logging.Logger:
     log = logging.getLogger("restorio.audit")
@@ -38,17 +40,10 @@ def _setup_audit_logger() -> logging.Logger:
 _logger = _setup_audit_logger()
 
 
-def _client_ip(request: Request) -> str:
-    forwarded = request.headers.get("X-Forwarded-For")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return request.client.host if request.client else "unknown"
-
-
 def _base_payload(request: Request) -> dict[str, Any]:
     return {
         "request_id": getattr(request.state, "request_id", None),
-        "ip": _client_ip(request),
+        "ip": get_client_ip(request),
         "user_agent": request.headers.get("User-Agent", ""),
         "path": str(request.url.path),
         "ts": time.time(),
@@ -79,7 +74,9 @@ class AuditLogger:
     def token_reuse_detected(self, *, request: Request, user_id: str | None, family: str) -> None:
         self._emit("token_reuse_detected", request, user_id=user_id, family=family)
 
-    def activation_success(self, *, request: Request, user_id: str, tenant_id: str) -> None:
+    def activation_success(
+        self, *, request: Request, user_id: str, tenant_id: str | None = None
+    ) -> None:
         self._emit("activation_success", request, user_id=user_id, tenant_id=tenant_id)
 
     def password_set(self, *, request: Request, user_id: str) -> None:
@@ -88,8 +85,8 @@ class AuditLogger:
     def rate_limited(self, *, request: Request) -> None:
         self._emit("rate_limited", request)
 
-    def register(self, *, request: Request, email: str, tenant_name: str) -> None:
-        self._emit("register", request, email=email, tenant_name=tenant_name)
+    def register(self, *, request: Request, email: str) -> None:
+        self._emit("register", request, email=email)
 
 
 audit = AuditLogger()

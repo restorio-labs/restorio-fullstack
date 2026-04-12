@@ -36,6 +36,7 @@
       "waiterPanel": "Panel kelnera",
       "floorEditor": "Edytor układu sali",
       "menuCreator": "Kreator menu",
+      "mobileConfiguration": "Konfiguracja mobilna",
       "pageConfigurator": "Konfigurator strony",
       "qrCodeGenerator": "Generator kodów QR",
       "tenantProfile": "Profil lokalu",
@@ -48,6 +49,15 @@
       "closeMenu": "Zamknij menu nawigacji"
     },
     "logoutLoading": "Wylogowywanie..."
+  },
+  "chooseApp": {
+    "title": "Jesteś zalogowany",
+    "subtitle": "Wybierz, dokąd chcesz przejść dalej.",
+    "labels": {
+      "adminPanel": "Panel administracyjny",
+      "kitchenPanel": "Panel kuchni",
+      "waiterPanel": "Panel kelnerski"
+    }
   },
   "languageSwitcher": {
     "label": "Język",
@@ -93,6 +103,13 @@
     "deleteErrorTitle": "Nie udało się usunąć",
     "deleteErrorMessage": "Nie można usunąć tej sali. Spróbuj ponownie.",
     "deletingButton": "Usuwanie...",
+    "deleteConfirm": {
+      "title": "Usunąć tę salę?",
+      "message": "To trwale usunie układ pomieszczenia „{{name}}”. Wpisz dokładnie tę nazwę, aby potwierdzić.",
+      "inputLabel": "Nazwa sali",
+      "cancel": "Anuluj",
+      "confirm": "Usuń salę"
+    },
     "mobileUnavailableTitle": "Edytor układu sali niedostępny na telefonie",
     "mobileUnavailableMessage": "Aby edytować układ sali w panelu administratora, użyj tabletu lub komputera.",
     "floorSelector": {
@@ -105,8 +122,9 @@
     "toolbar": {
       "undo": "Cofnij",
       "redo": "Ponów",
-      "save": "Zapisz",
-      "add": "Dodaj"
+      "save": "Zapisz układ",
+      "add": "Dodaj",
+      "showGrid": "Pokaż siatkę"
     },
     "addMenu": {
       "table": "Stolik",
@@ -125,6 +143,7 @@
       "name": "Nazwa",
       "color": "Kolor",
       "seats": "Miejsca",
+      "move": "Przesuń",
       "tableCustomLabel": "Etykieta stolika",
       "label": "Etykieta",
       "delete": "Usuń",
@@ -173,7 +192,9 @@
       "itemActive": "Aktywna",
       "itemPromoted": "Promowana",
       "itemDescription": "Opis",
-      "itemTags": "Tagi"
+      "itemTags": "Tagi",
+      "itemImage": "Zdjęcie",
+      "itemImageHint": "Kwadratowe lub prawie kwadratowe (PNG, JPEG lub WebP)."
     },
     "placeholders": {
       "categoryName": "np. Przystawki",
@@ -186,6 +207,74 @@
       "saveFailed": "Nie udało się zapisać menu. Spróbuj ponownie.",
       "invalidCategory": "Każda kategoria musi mieć poprawną nazwę.",
       "invalidItem": "Każda pozycja musi mieć poprawną nazwę i nieujemną cenę."
+    },
+    "toast": {
+      "saveSuccessTitle": "Menu zapisane",
+      "saveErrorTitle": "Nie udało się zapisać menu",
+      "validationErrorTitle": "Sprawdź menu"
+    },
+    "imageUpload": {
+      "upload": "Prześlij zdjęcie",
+      "uploading": "Przesyłanie…",
+      "remove": "Usuń zdjęcie",
+      "invalidType": "Użyj PNG, JPEG lub WebP.",
+      "tooLarge": "Plik jest za duży.",
+      "failed": "Przesyłanie nie powiodło się."
+    }
+  },
+  "mobileConfiguration": {
+    "title": "Konfiguracja mobilna",
+    "description": "Tytuł, favicon i motyw aplikacji mobilnej dla gości",
+    "loading": "Wczytywanie…",
+    "actions": {
+      "save": "Zapisz",
+      "saving": "Zapisywanie…",
+      "clear": "Wyczyść"
+    },
+    "fields": {
+      "pageTitle": "Tytuł w przeglądarce",
+      "favicon": "Favicon (.ico)",
+      "backgroundColor": "Kolor tła",
+      "googleFontUrl": "URL czcionki Google"
+    },
+    "placeholders": {
+      "pageTitle": "Puste = nazwa restauracji"
+    },
+    "hints": {
+      "pageTitle": "Widoczna w karcie przeglądarki i nagłówku.",
+      "favicon": "Tylko ICO. Dokładnie 16×16, 32×32, 64×64 lub 128×128 px.",
+      "faviconCurrent": "Favicon jest już ustawiony. Wyślij nowy plik, aby go zmienić.",
+      "faviconSelected": "Wybrano: {{name}}",
+      "backgroundColor": "Główny kolor tła aplikacji mobilnej.",
+      "googleFontUrl": "Wklej pełny URL z Google Fonts.",
+      "googleFontUrlTooltip": "Wejdź na fonts.google.com, wybierz czcionkę i skopiuj URL do osadzenia."
+    },
+    "themeSection": {
+      "title": "Personalizacja motywu"
+    },
+    "copySection": {
+      "title": "Skopiuj motyw z innej restauracji",
+      "source": "Restauracja źródłowa",
+      "placeholder": "Wybierz…",
+      "copy": "Kopiuj motyw",
+      "copying": "Kopiowanie…"
+    },
+    "errors": {
+      "selectRestaurant": "Najpierw wybierz restaurację.",
+      "invalidGoogleFontUrl": "URL musi zaczynać się od https://fonts.googleapis.com/css",
+      "invalidFaviconType": "Favicon musi być typu ICO.",
+      "invalidFaviconExtension": "Rozszerzenie musi być .ico.",
+      "faviconUploadFailed": "Nie udało się przesłać faviconu."
+    },
+    "toast": {
+      "saveSuccessTitle": "Zapisano",
+      "saveSuccessBody": "Zaktualizowano konfigurację mobilną.",
+      "saveErrorTitle": "Błąd zapisu",
+      "saveErrorBody": "Nie udało się zapisać konfiguracji.",
+      "copySuccessTitle": "Skopiowano motyw",
+      "copySuccessBody": "Motyw został skopiowany z wybranej restauracji.",
+      "copyErrorTitle": "Błąd kopiowania",
+      "copyErrorBody": "Nie udało się skopiować motywu."
     }
   },
   "menuConfigurator": {
@@ -363,7 +452,7 @@
       "waiter": "Kelner"
     },
     "toggleForm": {
-      "show": "Dodaj użytkownika",
+      "show": "Dodaj użytkowników",
       "hide": "Anuluj"
     },
     "form": {
@@ -371,8 +460,14 @@
       "nameLabel": "Imię",
       "surnameLabel": "Nazwisko",
       "accessLabel": "Poziom dostępu",
-      "submit": "Utwórz użytkownika",
-      "submitting": "Tworzenie..."
+      "addRow": "Dodaj kolejnego",
+      "removeRow": "Usuń",
+      "saveSingle": "Zapisz tego użytkownika",
+      "submit": "Zapisz wszystkich",
+      "submitting": "Zapisywanie..."
+    },
+    "emptyState": {
+      "heading": "Zacznijmy od dodania nowych członków zespołu 🚀"
     },
     "list": {
       "title": "Wszyscy użytkownicy",
@@ -382,10 +477,32 @@
       "notProvided": "-"
     },
     "validation": {
+      "invalidEmail": "Co najmniej jeden adres e-mail jest nieprawidłowy.",
+      "duplicateEmail": "Znaleziono powtarzające się adresy e-mail. Każdy musi być unikalny.",
+      "existingEmail": "{{emails}} jest już w tym lokalu"
+    },
+    "toast": {
+      "bulkSuccessTitle": "Dodano użytkowników",
+      "bulkSuccessDescription": "Wszyscy użytkownicy zostali utworzeni. Linki aktywacyjne zostaną wkrótce wysłane.",
+      "bulkPartialTitle": "Częściowy sukces",
+      "bulkPartialDescription": "Utworzono {{created}} z {{total}} użytkowników. Niektóre nie powiodły się — sprawdź listę.",
+      "bulkErrorTitle": "Nie udało się dodać użytkowników",
+      "bulkErrorDescription": "Nie udało się utworzyć użytkowników.",
+      "singleSuccessTitle": "Dodano użytkownika",
+      "singleSuccessDescription": "Użytkownik utworzony. Link aktywacyjny zostanie wkrótce wysłany.",
+      "singleErrorTitle": "Nie udało się dodać użytkownika",
+      "singleErrorDescription": "Nie udało się utworzyć użytkownika.",
+      "deleteSuccessTitle": "Użytkownik usunięty",
+      "deleteSuccessDescription": "Użytkownik został usunięty.",
+      "deleteErrorTitle": "Nie udało się usunąć",
+      "deleteErrorDescription": "Nie udało się usunąć użytkownika.",
       "invalidEmail": "Podaj prawidłowy adres e-mail.",
       "waiterNameRequired": "Imię i nazwisko są wymagane dla konta kelnera."
     },
     "feedback": {
+      "bulkSuccess": "Wszyscy użytkownicy zostali utworzeni. Linki aktywacyjne zostaną wkrótce wysłane.",
+      "bulkPartial": "Utworzono {{created}} z {{total}} użytkowników. Niektóre nie powiodły się — sprawdź listę.",
+      "bulkError": "Nie udało się utworzyć użytkowników.",
       "createSuccess": "Użytkownik utworzony. Link aktywacyjny zostanie wkrótce wysłany.",
       "createError": "Nie udało się utworzyć użytkownika.",
       "deleteSuccess": "Użytkownik został usunięty.",
@@ -397,6 +514,12 @@
       "cancel": "Anuluj",
       "confirm": "Potwierdź",
       "deleting": "Usuwanie..."
+    },
+    "modal": {
+      "alreadyMemberTitle": "Już w zespole",
+      "alreadyMemberDescription": "Ten adres e-mail jest już powiązany z tym lokalem — nie możesz dodać go ponownie jako personelu.",
+      "ok": "OK",
+      "closeAria": "Zamknij"
     }
   },
   "tenantProfile": {
@@ -452,7 +575,7 @@
       },
       "addressStreetName": {
         "label": "Nazwa ulicy",
-        "placeholder": "Marszałkowska",
+        "placeholder": "Wierzbięcice",
         "error": "Nazwa ulicy jest wymagana"
       },
       "addressStreetNumber": {
@@ -462,7 +585,7 @@
       },
       "addressCity": {
         "label": "Miasto",
-        "placeholder": "Warszawa",
+        "placeholder": "Poznań",
         "error": "Miasto jest wymagane"
       },
       "addressPostalCode": {
@@ -553,5 +676,38 @@
     "generateError": "Nie udało się wygenerować kodu QR dla stolika {{table}}:",
     "loadError": "Nie udało się wczytać kodu QR stolika.",
     "title": "Stolik {{table}}"
+  },
+  "onboarding": {
+    "title": "Utwórz swoją pierwszą restaurację",
+    "description": "Aby rozpocząć, dodaj swoją pierwszą restaurację!",
+    "fields": {
+      "name": {
+        "label": "Nazwa restauracji",
+        "placeholder": "np. Bella Italia",
+        "error": "Nazwa restauracji jest wymagana"
+      },
+      "street": {
+        "label": "Ulica",
+        "placeholder": "Wierzbięcice",
+        "error": "Ulica jest wymagana"
+      },
+      "streetNumber": {
+        "label": "Numer",
+        "placeholder": "12",
+        "error": "Numer jest wymagany"
+      },
+      "city": {
+        "label": "Miasto",
+        "placeholder": "Poznań",
+        "error": "Miasto jest wymagane"
+      }
+    },
+    "actions": {
+      "create": "Utwórz restaurację",
+      "creating": "Tworzenie..."
+    },
+    "errors": {
+      "createFailed": "Nie udało się utworzyć restauracji. Spróbuj ponownie."
+    }
   }
 }

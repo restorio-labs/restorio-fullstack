@@ -12,6 +12,7 @@ from core.foundation.database.database import Base
 
 if TYPE_CHECKING:
     from core.models.audit_log import AuditLog
+    from core.models.table_session import TableSession
     from core.models.tenant_role import TenantRole
 
 
@@ -43,3 +44,6 @@ class User(Base):
         "TenantRole", back_populates="account", cascade="all, delete-orphan"
     )
     audit_logs: Mapped[list[AuditLog]] = relationship("AuditLog", back_populates="actor_user")
+    table_sessions: Mapped[list[TableSession]] = relationship(
+        "TableSession", back_populates="waiter_user"
+    )

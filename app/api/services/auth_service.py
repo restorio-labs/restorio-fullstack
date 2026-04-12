@@ -16,9 +16,8 @@ from core.exceptions import (
     UnauthorizedError,
 )
 from core.foundation.security import SecurityService
-from core.foundation.slug import to_compact_slug
 from core.models.activation_link import ActivationLink
-from core.models.enums import AccountType, TenantStatus
+from core.models.enums import TenantStatus
 from core.models.tenant import Tenant
 from core.models.tenant_role import TenantRole
 from core.models.user import User
@@ -29,25 +28,15 @@ class AuthService:
         self._resend_cooldown_seconds = 300
         self.security = security
 
-    async def create_user_with_tenant(
+    async def create_user(
         self,
         session: AsyncSession,
         email: str,
         password: str,
-        restaurant_name: str,
-    ) -> tuple[User, Tenant]:
-        # await self.check_password_pwned(password)  # noqa: ERA001 If we ever want to check passwords against HIBP
-
-        slug = to_compact_slug(restaurant_name)
-
+    ) -> User:
         existing_user = await session.scalar(select(User).where(User.email == email))
         if existing_user:
             msg = "Email already registered"
-            raise ConflictError(msg)
-
-        existing_tenant = await session.scalar(select(Tenant).where(Tenant.slug == slug))
-        if existing_tenant:
-            msg = "Restaurant slug already exists"
             raise ConflictError(msg)
 
         user = User(
@@ -55,36 +44,18 @@ class AuthService:
             password_hash=self.security.hash_password(password),
             is_active=False,
         )
-        tenant = Tenant(
-            name=restaurant_name,
-            slug=slug,
-            status=TenantStatus.INACTIVE,
-        )
-
-        session.add_all([user, tenant])
-        await session.flush()
-        user.tenant_id = tenant.id
-        tenant.owner_id = user.id
+        session.add(user)
         await session.flush()
         await session.refresh(user)
-        await session.refresh(tenant)
 
-        tenant_role = TenantRole(
-            account_id=user.id,
-            tenant_id=tenant.id,
-            account_type=AccountType.OWNER,
-        )
-        session.add(tenant_role)
-        await session.flush()
-
-        return user, tenant
+        return user
 
     async def create_activation_link(
         self,
         session: AsyncSession,
         email: str,
         user_id: UUID,
-        tenant_id: UUID,
+        tenant_id: UUID | None = None,
     ) -> ActivationLink:
         activation_link = ActivationLink(
             email=email,
@@ -101,8 +72,8 @@ class AuthService:
         self,
         session: AsyncSession,
         activation_id: UUID,
-    ) -> tuple[Tenant, bool]:
-        """Returns (tenant, already_activated)."""
+    ) -> tuple[Tenant | None, bool]:
+        """Returns (tenant_or_none, already_activated)."""
         activation_link = await session.get(ActivationLink, activation_id)
         if activation_link is None:
             msg = "Activation link not found"
@@ -113,10 +84,12 @@ class AuthService:
             msg = "Activation link has expired"
             raise GoneError(msg)
 
-        tenant = await session.get(Tenant, activation_link.tenant_id)
-        if tenant is None:
-            msg = "Account"
-            raise NotFoundResponse(msg, "activation link")
+        tenant: Tenant | None = None
+        if activation_link.tenant_id is not None:
+            tenant = await session.get(Tenant, activation_link.tenant_id)
+            if tenant is None:
+                msg = "Account"
+                raise NotFoundResponse(msg, "activation link")
 
         if activation_link.used_at is not None:
             return tenant, True
@@ -126,7 +99,8 @@ class AuthService:
             msg = "Account"
             raise NotFoundResponse(msg, "activation link")
         user.is_active = True
-        tenant.status = TenantStatus.ACTIVE
+        if tenant is not None:
+            tenant.status = TenantStatus.ACTIVE
         activation_link.used_at = now
         return tenant, False
 
@@ -134,7 +108,7 @@ class AuthService:
         self,
         session: AsyncSession,
         activation_id: UUID,
-    ) -> tuple[ActivationLink, Tenant]:
+    ) -> tuple[ActivationLink, Tenant | None]:
         """Resend only when link is expired. Cooldown is per activation link (last_resend_at)."""
         activation_link = await session.get(ActivationLink, activation_id)
         if activation_link is None:
@@ -156,10 +130,13 @@ class AuthService:
                 raise TooManyRequestsError(msg)
 
         activation_link.last_resend_at = now
-        tenant = await session.get(Tenant, activation_link.tenant_id)
-        if tenant is None:
-            msg = "Account"
-            raise NotFoundResponse(msg, "activation link")
+
+        tenant: Tenant | None = None
+        if activation_link.tenant_id is not None:
+            tenant = await session.get(Tenant, activation_link.tenant_id)
+            if tenant is None:
+                msg = "Account"
+                raise NotFoundResponse(msg, "activation link")
 
         new_link = ActivationLink(
             email=activation_link.email,

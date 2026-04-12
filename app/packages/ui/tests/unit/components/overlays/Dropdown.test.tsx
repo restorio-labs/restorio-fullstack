@@ -151,6 +151,13 @@ describe("Dropdown", () => {
     expect(screen.getByRole("menu").className).toContain("top-full");
 
     rerender(
+      <Dropdown trigger={<button type="button">Open</button>} isOpen placement="bottom-center">
+        <div>Menu</div>
+      </Dropdown>,
+    );
+    expect(screen.getByRole("menu").className).toContain("-translate-x-1/2");
+
+    rerender(
       <Dropdown trigger={<button type="button">Open</button>} isOpen placement="top-end">
         <div>Menu</div>
       </Dropdown>,

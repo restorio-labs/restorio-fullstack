@@ -1,6 +1,7 @@
 export const typographyTokens = {
   fontFamily: {
     sans: [
+      "Inter",
       "-apple-system",
       "BlinkMacSystemFont",
       '"Segoe UI"',

@@ -1,5 +1,5 @@
 import type { PublicP24TransactionSyncData } from "@restorio/types";
-import { Button, Loader, Text } from "@restorio/ui";
+import { Button, Loader, Text, useI18n } from "@restorio/ui";
 import { useQuery } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -8,7 +8,7 @@ import { publicApi } from "../api/client";
 
 const UUID_RE = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i;
 
-const extractApiErrorMessage = (error: unknown): string => {
+const extractApiErrorMessage = (error: unknown, fallback: string): string => {
   if (typeof error === "object" && error !== null && "response" in error) {
     const r = error as { response?: { data?: { detail?: unknown } } };
     const d = r.response?.data?.detail;
@@ -22,54 +22,59 @@ const extractApiErrorMessage = (error: unknown): string => {
     return error.message;
   }
 
-  return "Nie udało się sprawdzić statusu płatności.";
+  return fallback;
 };
 
 const paymentStatusPresentation = (
   status: number,
+  t: (key: string) => string,
 ): { title: string; description: string; tone: "success" | "warning" | "error" } => {
   switch (status) {
     case 2:
       return {
-        title: "Dziękujemy!",
-        description: "Płatność została zaksięgowana. Twoje zamówienie jest przyjęte.",
+        title: t("paymentReturn.status.success.title"),
+        description: t("paymentReturn.status.success.description"),
         tone: "success",
       };
     case 1:
       return {
-        title: "Zamówienie dotarło do kuchni. Oczekuje na przyjęcie.",
-        description: "Zamówienie oczekuje na zaakceptowanie przez kuchnię.",
+        title: t("paymentReturn.status.pending.title"),
+        description: t("paymentReturn.status.pending.description"),
         tone: "warning",
       };
     case 3:
       return {
-        title: "Zwrot płatności",
-        description: "Ta transakcja została zwrócona.",
+        title: t("paymentReturn.status.refunded.title"),
+        description: t("paymentReturn.status.refunded.description"),
         tone: "error",
       };
     default:
       return {
-        title: "Płatność nieukończona",
-        description:
-          "Nie udało się potwierdzić płatności. Jeśli środki zostały pobrane, skontaktuj się z obsługą Przelewy24.",
+        title: t("paymentReturn.status.unfinished.title"),
+        description: t("paymentReturn.status.unfinished.description"),
         tone: "warning",
       };
   }
 };
 
 export const PaymentReturnPage = (): ReactElement => {
+  const { t } = useI18n();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("sessionId")?.trim() ?? "";
   const sessionIdValid = sessionId.length > 0 && UUID_RE.test(sessionId);
 
   const { data, isError, error, refetch, isFetching, isPending } = useQuery<PublicP24TransactionSyncData, Error>({
     queryKey: ["public-p24-sync", sessionId],
-    queryFn: ({ signal }) => publicApi.syncPaymentSession(sessionId, signal),
+    queryFn: ({ signal }) =>
+      (publicApi.syncPaymentSession as (id: string, signal?: AbortSignal) => Promise<PublicP24TransactionSyncData>)(
+        sessionId,
+        signal,
+      ),
     enabled: sessionIdValid,
     retry: 2,
   });
 
-  const presentation = data ? paymentStatusPresentation(data.status) : null;
+  const presentation = data ? paymentStatusPresentation(data.status, t) : null;
 
   const iconCircleClass =
     presentation?.tone === "success"
@@ -90,10 +95,10 @@ export const PaymentReturnPage = (): ReactElement => {
       <div className="flex min-h-screen items-center justify-center bg-background-primary p-6">
         <div className="max-w-sm text-center">
           <Text as="h1" variant="h3" weight="bold" className="mb-2">
-            Brak danych płatności
+            {t("paymentReturn.noPaymentDataTitle")}
           </Text>
           <Text as="p" variant="body-md" className="text-text-secondary">
-            Nie można ustalić sesji płatności. Wróć do menu z kodu QR i spróbuj ponownie.
+            {t("paymentReturn.noPaymentSession")}
           </Text>
         </div>
       </div>
@@ -105,7 +110,7 @@ export const PaymentReturnPage = (): ReactElement => {
       <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-background-primary p-6">
         <Loader size="lg" />
         <Text as="p" variant="body-md" className="text-text-secondary">
-          Sprawdzanie statusu płatności…
+          {t("paymentReturn.checkingStatus")}
         </Text>
       </div>
     );
@@ -127,13 +132,13 @@ export const PaymentReturnPage = (): ReactElement => {
             </svg>
           </div>
           <Text as="h1" variant="h3" weight="bold" className="mb-2">
-            Błąd sprawdzania
+            {t("paymentReturn.errorTitle")}
           </Text>
           <Text as="p" variant="body-md" className="text-text-secondary mb-6">
-            {extractApiErrorMessage(error)}
+            {extractApiErrorMessage(error, t("paymentReturn.checkStatusErrorFallback"))}
           </Text>
           <Button variant="primary" onClick={() => void refetch()}>
-            Spróbuj ponownie
+            {t("common.tryAgain")}
           </Button>
         </div>
       </div>
@@ -183,21 +188,24 @@ export const PaymentReturnPage = (): ReactElement => {
         <Text as="h1" variant="h3" weight="bold" className="mb-2">
           {presentation.title}
         </Text>
-        <Text as="p" variant="body-md" className="text-text-secondary mb-6">
+        <Text as="p" variant="body-md" className="mb-6 text-text-secondary">
           {presentation.description}
+        </Text>
+        <Text as="p" variant="body-sm" className="text-text-tertiary">
+          {t("paymentReturn.closeHint")}
         </Text>
         {data.status !== 2 ? (
           <>
             <Button variant="primary" fullWidth disabled={isFetching} className="mb-4" onClick={() => void refetch()}>
-              {isFetching ? "Sprawdzanie…" : "Sprawdź status ponownie"}
+              {isFetching ? t("common.loading") : t("common.checkAgain")}
             </Button>
             <Text as="p" variant="body-sm" className="text-text-tertiary">
-              Status może się zmienić po chwili — możesz odświeżyć albo zamknąć stronę i wrócić później.
+              {t("paymentReturn.statusChangeHint")}
             </Text>
           </>
         ) : (
           <Text as="p" variant="body-sm" className="text-text-tertiary">
-            Możesz zamknąć tę stronę.
+            {t("paymentReturn.closeHint")}
           </Text>
         )}
       </div>

@@ -5,7 +5,7 @@ import { useSearchParams } from "react-router-dom";
 export const useColumnNavigation = (
   statusKeys: OrderStatus[],
   useHorizontalLayout: boolean,
-): RefObject<HTMLDivElement> => {
+): RefObject<HTMLDivElement | null> => {
   const [searchParams] = useSearchParams();
   const boardRef = useRef<HTMLDivElement>(null);
 

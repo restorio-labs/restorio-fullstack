@@ -1,13 +1,30 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { ReactElement } from "react";
 import { describe, expect, it } from "vitest";
 
 import { ThemeSwitcher } from "../../../src/components/ThemeSwitcher";
+import { I18nProvider } from "../../../src/providers/I18nProvider";
 import { ThemeProvider } from "../../../src/theme/ThemeProvider";
+
+const themeMessages = {
+  themeSwitcher: {
+    light: "Light",
+    dark: "Dark",
+    ariaLabel: "Current theme: {{theme}}. Click to cycle theme.",
+  },
+};
+
+const renderWithProviders = (ui: ReactElement) =>
+  render(
+    <I18nProvider locale="en" messages={themeMessages}>
+      {ui}
+    </I18nProvider>,
+  );
 
 describe("ThemeSwitcher", () => {
   it("renders with default mode", () => {
-    render(
+    renderWithProviders(
       <ThemeProvider>
         <ThemeSwitcher />
       </ThemeProvider>,
@@ -19,7 +36,7 @@ describe("ThemeSwitcher", () => {
   it("toggles between light and dark modes", async () => {
     const user = userEvent.setup();
 
-    render(
+    renderWithProviders(
       <ThemeProvider defaultMode="light">
         <ThemeSwitcher />
       </ThemeProvider>,
@@ -39,7 +56,7 @@ describe("ThemeSwitcher", () => {
   });
 
   it("shows label when showLabel is true", () => {
-    render(
+    renderWithProviders(
       <ThemeProvider defaultMode="light">
         <ThemeSwitcher showLabel />
       </ThemeProvider>,
@@ -49,7 +66,7 @@ describe("ThemeSwitcher", () => {
   });
 
   it("hides label when showLabel is false", () => {
-    render(
+    renderWithProviders(
       <ThemeProvider defaultMode="dark">
         <ThemeSwitcher showLabel={false} />
       </ThemeProvider>,
@@ -59,7 +76,7 @@ describe("ThemeSwitcher", () => {
   });
 
   it("applies custom className", () => {
-    render(
+    renderWithProviders(
       <ThemeProvider>
         <ThemeSwitcher className="custom-class" />
       </ThemeProvider>,
@@ -68,27 +85,5 @@ describe("ThemeSwitcher", () => {
     const button = screen.getByRole("button");
 
     expect(button.className).toContain("custom-class");
-  });
-
-  it("uses custom labels", () => {
-    render(
-      <ThemeProvider defaultMode="light">
-        <ThemeSwitcher showLabel lightLabel="Claro" darkLabel="Oscuro" />
-      </ThemeProvider>,
-    );
-
-    expect(screen.getByText("Claro")).toBeDefined();
-  });
-
-  it("uses custom aria-label template", () => {
-    render(
-      <ThemeProvider defaultMode="dark">
-        <ThemeSwitcher ariaLabelTemplate={(theme) => `Cambiar tema: ${theme}`} />
-      </ThemeProvider>,
-    );
-
-    const button = screen.getByRole("button");
-
-    expect(button.getAttribute("aria-label")).toContain("Cambiar tema:");
   });
 });

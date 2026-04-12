@@ -1,5 +1,6 @@
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
+import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { PasswordRulesPin } from "../../../../src/components/password/RulesPin";
@@ -60,11 +61,11 @@ describe("PasswordRulesPin", () => {
       />,
     );
 
-    expect(screen.getByText("minLength")).toHaveClass("text-green-600");
-    expect(screen.getByText("lowercase")).toHaveClass("text-green-600");
-    expect(screen.getByText("uppercase")).toHaveClass("text-green-600");
-    expect(screen.getByText("number")).toHaveClass("text-green-600");
-    expect(screen.getByText("special")).toHaveClass("text-green-600");
+    expect(screen.getByText("minLength")).toHaveClass("text-status-success-text");
+    expect(screen.getByText("lowercase")).toHaveClass("text-status-success-text");
+    expect(screen.getByText("uppercase")).toHaveClass("text-status-success-text");
+    expect(screen.getByText("number")).toHaveClass("text-status-success-text");
+    expect(screen.getByText("special")).toHaveClass("text-status-success-text");
   });
 
   it("applies default class when checks fail", () => {
@@ -80,10 +81,10 @@ describe("PasswordRulesPin", () => {
       />,
     );
 
-    expect(screen.getByText("minLength")).toHaveClass("text-gray-500");
-    expect(screen.getByText("lowercase")).toHaveClass("text-gray-500");
-    expect(screen.getByText("uppercase")).toHaveClass("text-gray-500");
-    expect(screen.getByText("number")).toHaveClass("text-gray-500");
-    expect(screen.getByText("special")).toHaveClass("text-gray-500");
+    expect(screen.getByText("minLength")).toHaveClass("text-text-tertiary");
+    expect(screen.getByText("lowercase")).toHaveClass("text-text-tertiary");
+    expect(screen.getByText("uppercase")).toHaveClass("text-text-tertiary");
+    expect(screen.getByText("number")).toHaveClass("text-text-tertiary");
+    expect(screen.getByText("special")).toHaveClass("text-text-tertiary");
   });
 });
