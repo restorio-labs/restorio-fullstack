@@ -83,10 +83,6 @@ describe("PublicResource", () => {
     client.post = vi.fn().mockResolvedValue({ data: { id: "pay" } });
     const r = await resource.syncPaymentSession("a/b");
     expect(r).toEqual({ id: "pay" });
-    expect(client.post).toHaveBeenCalledWith(
-      "/public/payments/sessions/a%2Fb/p24-sync",
-      {},
-      { signal: undefined },
-    );
+    expect(client.post).toHaveBeenCalledWith("/public/payments/sessions/a%2Fb/p24-sync", {}, { signal: undefined });
   });
 });
