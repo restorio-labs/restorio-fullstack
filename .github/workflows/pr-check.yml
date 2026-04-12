@@ -34,24 +34,132 @@ jobs:
           filters: |
             packages-and-apps:
               - 'app/packages/**'
-              - 'app/apps/kitchen-panel/**'
-              - 'app/apps/mobile-app/**'
-              - 'app/apps/admin-panel/**'
-              - 'app/apps/public-web/**'
+              - 'app/apps/**'
             api:
               - 'app/api/**'
 
-  apps-and-packages:
-    name: Apps and Packages Validation
+  typescript-lint:
+    name: TypeScript — format & lint
     runs-on: ubuntu-slim
     needs: detect-changes
     if: needs.detect-changes.outputs.packages-and-apps == 'true'
     steps:
       - uses: actions/checkout@v6
 
-      - name: Validate all Apps and Packages
-        uses: ./.github/actions/pr-validate/typescript
-      
+      - uses: ./.github/actions/setup-bun
+
+      - name: Format and lint
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: bun run check
+
+  typescript-matrix:
+    name: TS ${{ matrix.target }}
+    runs-on: ubuntu-slim
+    needs: detect-changes
+    if: needs.detect-changes.outputs.packages-and-apps == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: packages
+            kind: packages
+          - target: admin-panel
+            kind: app
+            package: '@restorio/admin-panel'
+          - target: public-web
+            kind: app
+            package: '@restorio/public-web'
+          - target: kitchen-panel
+            kind: app
+            package: '@restorio/kitchen-panel'
+          - target: mobile-app
+            kind: app
+            package: '@restorio/mobile-app'
+          - target: waiter-panel
+            kind: app
+            package: '@restorio/waiter-panel'
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: ./.github/actions/setup-bun
+
+      - name: Build workspace packages
+        run: bun run turbo run build --filter='./app/packages/*'
+
+      - name: Packages — check & unit tests
+        if: matrix.kind == 'packages'
+        env:
+          GITHUB_ACTIONS: true
+        run: |
+          bun run turbo run check --filter='./app/packages/*'
+          bun run turbo run test:unit --filter='./app/packages/*' -- --coverage --coverage.reporter=json-summary
+
+      - name: App — build, check & unit tests
+        if: matrix.kind == 'app'
+        env:
+          GITHUB_ACTIONS: true
+        run: |
+          bun run turbo run build --filter='${{ matrix.package }}'
+          bun run turbo run check --filter='${{ matrix.package }}' --only
+          bun run turbo run test:unit --filter='${{ matrix.package }}' --only -- --coverage --coverage.reporter=json-summary
+
+      - name: Stage coverage artifact
+        if: success()
+        run: |
+          set -euo pipefail
+          mkdir -p coverage-artifacts
+          if [ "${{ matrix.target }}" = "packages" ]; then
+            FILES=$(find app/packages -name coverage-summary.json -type f 2>/dev/null | tr '\n' ' ' | sed 's/[[:space:]]*$//')
+            if [ -z "$FILES" ]; then
+              echo "No package coverage-summary.json files found"
+              exit 1
+            fi
+            bun run scripts/merge-coverage-summaries.ts coverage-artifacts/coverage-${{ matrix.target }}.json $FILES
+          else
+            APP_DIR="app/apps/${{ matrix.target }}"
+            if [ ! -f "$APP_DIR/coverage/coverage-summary.json" ]; then
+              echo "Missing $APP_DIR/coverage/coverage-summary.json"
+              exit 1
+            fi
+            cp "$APP_DIR/coverage/coverage-summary.json" coverage-artifacts/coverage-${{ matrix.target }}.json
+          fi
+
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: coverage-${{ matrix.target }}
+          path: coverage-artifacts/coverage-${{ matrix.target }}.json
+
+  typescript-coverage:
+    name: TypeScript — coverage report
+    runs-on: ubuntu-slim
+    needs:
+      - detect-changes
+      - typescript-matrix
+    if: needs.detect-changes.outputs.packages-and-apps == 'true' && needs.typescript-matrix.result == 'success'
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: ./.github/actions/setup-bun
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-*
+          merge-multiple: true
+          path: coverage-merge
+
+      - name: Merge coverage and write PR summary
+        run: |
+          set -euo pipefail
+          FILES=$(find coverage-merge -name 'coverage-*.json' -type f | sort | tr '\n' ' ')
+          if [ -z "$FILES" ]; then
+            echo "No coverage artifacts to merge"
+            exit 1
+          fi
+          bun run scripts/merge-coverage-summaries.ts coverage/coverage-summary.json $FILES
+          bun run coverage:report
+
       - name: Comment coverage on PR
         uses: marocchino/sticky-pull-request-comment@v2
         with:
