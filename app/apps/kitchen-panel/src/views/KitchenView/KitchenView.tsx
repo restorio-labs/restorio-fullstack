@@ -175,6 +175,7 @@ export const KitchenView = (): ReactElement => {
     (orderId: string, targetStatus: OrderStatus): void => {
       if (targetStatus === OrderStatus.REJECTED) {
         handleOpenRejection(orderId);
+
         return;
       }
       moveOrder(orderId, targetStatus);
