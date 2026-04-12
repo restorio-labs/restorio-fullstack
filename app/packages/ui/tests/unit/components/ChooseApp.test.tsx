@@ -1,21 +1,41 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { ReactElement } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { ChooseApp } from "../../../src/components/ChooseApp";
+import { I18nProvider } from "../../../src/providers/I18nProvider";
 
-const labels = {
-  adminPanel: "Admin",
-  kitchenPanel: "Kitchen",
-  waiterPanel: "Waiter",
+const i18nMessages = {
+  chooseApp: {
+    labels: {
+      adminPanel: "Admin",
+      kitchenPanel: "Kitchen",
+      waiterPanel: "Waiter",
+    },
+  },
 };
+
+const renderWithI18n = (ui: ReactElement) =>
+  render(
+    <I18nProvider locale="en" messages={i18nMessages}>
+      {ui}
+    </I18nProvider>,
+  );
 
 describe("ChooseApp", () => {
   it("renders button variant and calls onSelectApp", async () => {
     const onSelectApp = vi.fn();
     const user = userEvent.setup();
 
-    render(<ChooseApp onSelectApp={onSelectApp} ariaLabel="choose app" />);
+    renderWithI18n(
+      <ChooseApp
+        onSelectApp={onSelectApp}
+        ariaLabel="choose app"
+        title="You're logged in"
+        subtitle="Choose where you want to go next."
+      />,
+    );
 
     expect(screen.getByText("You’re logged in")).toBeDefined();
     expect(screen.getByText("Choose where you want to go next.")).toBeDefined();
@@ -33,7 +53,7 @@ describe("ChooseApp", () => {
     const onSelectApp = vi.fn();
     const user = userEvent.setup();
 
-    render(
+    renderWithI18n(
       <ChooseApp
         variant="dropdown"
         value="admin-panel"
@@ -61,7 +81,7 @@ describe("ChooseApp", () => {
     const onSelectApp = vi.fn();
     const user = userEvent.setup();
 
-    render(
+    renderWithI18n(
       <ChooseApp
         variant="dropdown"
         subvariant="large"

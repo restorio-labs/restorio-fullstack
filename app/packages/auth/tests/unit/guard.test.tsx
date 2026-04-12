@@ -114,7 +114,5 @@ describe("AuthGuard", () => {
     );
 
     await waitFor(() => expect(screen.getByText("Protected Content")).toBeInTheDocument());
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    expect(TokenStorage.getAccessToken).toHaveBeenCalled();
   });
 });

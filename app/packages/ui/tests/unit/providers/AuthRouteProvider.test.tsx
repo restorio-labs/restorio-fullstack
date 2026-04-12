@@ -83,9 +83,7 @@ describe("AuthRouteProvider", () => {
   });
 
   it("useAuthRoute throws when used outside provider", () => {
-    const { result } = renderHook(() => useAuthRoute());
-
-    expect(result.error?.message).toBe("useAuthRoute must be used within AuthRouteProvider");
+    expect(() => renderHook(() => useAuthRoute())).toThrow("useAuthRoute must be used within AuthRouteProvider");
   });
 
   it("does not update auth status after unmount", async () => {

@@ -7,9 +7,7 @@ import { useToast } from "../../../src/hooks/useToast";
 
 describe("useToast", () => {
   it("throws when used outside ToastProvider", () => {
-    const { result } = renderHook(() => useToast());
-
-    expect(result.error?.message).toBe("useToast must be used within a ToastProvider");
+    expect(() => renderHook(() => useToast())).toThrow("useToast must be used within a ToastProvider");
   });
 
   it("shows and auto-dismisses a toast", async () => {
