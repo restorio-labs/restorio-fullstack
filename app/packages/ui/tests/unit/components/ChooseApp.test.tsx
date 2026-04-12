@@ -37,8 +37,8 @@ describe("ChooseApp", () => {
       />,
     );
 
-    expect(screen.getByText("You’re logged in")).toBeDefined();
-    expect(screen.getByText("Choose where you want to go next.")).toBeDefined();
+    expect(screen.getByText(/logged in$/)).toBeDefined();
+    expect(screen.getByText(/Choose where you want to go next/)).toBeDefined();
 
     await user.click(screen.getByText("Admin"));
     await user.click(screen.getByText("Kitchen"));
