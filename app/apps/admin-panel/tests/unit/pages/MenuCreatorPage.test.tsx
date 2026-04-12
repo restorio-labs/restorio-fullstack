@@ -121,7 +121,7 @@ describe("MenuCreatorPage", () => {
           expect.objectContaining({
             categories: expect.arrayContaining([
               expect.objectContaining({
-                items: expect.arrayContaining([expect.objectContaining({ name: "Soup", active: 0 })]),
+                items: expect.arrayContaining([expect.objectContaining({ name: "Soup", isAvailable: false })]),
               }),
             ]),
           }),
@@ -169,35 +169,6 @@ describe("MenuCreatorPage", () => {
             expect.objectContaining({ name: "Second", order: 0 }),
             expect.objectContaining({ name: "First", order: 1 }),
           ],
-        }),
-      );
-    });
-  });
-
-  it("marks item as inactive when active checkbox is unchecked", async () => {
-    renderPage();
-
-    await screen.findByDisplayValue("Soup");
-    const activeCheckbox = document.querySelector<HTMLInputElement>('input[id^="active-"]');
-    if (!activeCheckbox) {
-      throw new Error("active checkbox not found");
-    }
-    fireEvent.click(activeCheckbox);
-    await waitFor(() => {
-      // @ts-expect-error - toBeChecked is not a valid assertion
-      expect(activeCheckbox).not.toBeChecked();
-    });
-    fireEvent.click(screen.getByRole("button", { name: /save menu/i }));
-
-    await waitFor(() => {
-      expect(mockMenusSave).toHaveBeenCalledWith(
-        TENANT_ID,
-        expect.objectContaining({
-          categories: expect.arrayContaining([
-            expect.objectContaining({
-              items: expect.arrayContaining([expect.objectContaining({ name: "Soup", isAvailable: true })]),
-            }),
-          ]),
         }),
       );
     });

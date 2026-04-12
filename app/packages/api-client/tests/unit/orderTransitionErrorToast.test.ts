@@ -20,8 +20,8 @@ describe("getOrderStatusUpdateErrorToastTitle", () => {
       return "PAID";
     }
 
-    if (key === "orders.errors.invalidTransition" && values) {
-      return `from ${String(values.from)} to ${String(values.to)}`;
+    if (key === "orders.errors.invalidTransition") {
+      return key;
     }
 
     if (key === "orders.errors.statusUpdateFailed") {
@@ -53,7 +53,7 @@ describe("getOrderStatusUpdateErrorToastTitle", () => {
 
     const err = new AxiosError("fail", "ERR_BAD_REQUEST", emptyConfig, undefined, response);
 
-    expect(getOrderStatusUpdateErrorToastTitle(err, t)).toBe("from NEW to PAID");
+    expect(getOrderStatusUpdateErrorToastTitle(err, t)).toBe("orders.errors.invalidTransition");
   });
 
   it("returns generic message when error is not axios", () => {

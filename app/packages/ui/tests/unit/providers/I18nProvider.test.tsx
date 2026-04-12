@@ -58,6 +58,8 @@ describe("I18nProvider", () => {
   });
 
   it("useI18n throws outside provider", () => {
-    expect(() => renderHook(() => useI18n())).toThrow("I18nProvider is missing");
+    const { result } = renderHook(() => useI18n());
+
+    expect(result.error?.message).toBe("I18nProvider is missing");
   });
 });
