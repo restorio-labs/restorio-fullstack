@@ -13,7 +13,7 @@ INVALID_ORDER_STATUS_TRANSITION_CODE = "INVALID_ORDER_STATUS_TRANSITION"
 
 _VALID_TRANSITIONS: dict[str, set[str]] = {
     "new": {"preparing", "rejected"},
-    "preparing": {"ready_to_serve"},
+    "preparing": {"ready_to_serve", "rejected"},
     "ready_to_serve": {"paid"},
     "ready": set(),
     "rejected": {"refunded"},

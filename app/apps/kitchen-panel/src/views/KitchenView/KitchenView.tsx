@@ -166,21 +166,33 @@ export const KitchenView = (): ReactElement => {
 
   const boardRef = useColumnNavigation(statusKeys, useHorizontalLayout);
 
-  const { dragState, getDragHandleProps, draggedOrder } = useOrdersDragAndDrop(orders, moveOrder);
-
-  const handleDropZoneClick = useCallback(
-    (zoneId: string): void => {
-      if (dragState.draggedItemId) {
-        moveOrder(dragState.draggedItemId, zoneId as StatusKey);
-      }
-    },
-    [dragState.draggedItemId, moveOrder],
-  );
-
   const handleOpenRejection = useCallback((orderId: string): void => {
     setRejectingOrderId(orderId);
     setRejectionModalOpen(true);
   }, []);
+
+  const handleOrderMove = useCallback(
+    (orderId: string, targetStatus: OrderStatus): void => {
+      if (targetStatus === OrderStatus.REJECTED) {
+        handleOpenRejection(orderId);
+
+        return;
+      }
+      moveOrder(orderId, targetStatus);
+    },
+    [handleOpenRejection, moveOrder],
+  );
+
+  const { dragState, getDragHandleProps, draggedOrder } = useOrdersDragAndDrop(orders, handleOrderMove);
+
+  const handleDropZoneClick = useCallback(
+    (zoneId: string): void => {
+      if (dragState.draggedItemId) {
+        handleOrderMove(dragState.draggedItemId, zoneId as OrderStatus);
+      }
+    },
+    [dragState.draggedItemId, handleOrderMove],
+  );
 
   const handleConfirmRejection = useCallback(
     (orderId: string, reason: string): void => {
