@@ -18,9 +18,15 @@ async def test_list_tenants_accepts_user_id_and_returns_list() -> None:
     user_id = uuid4()
 
     async def fake_execute(_self: object, query: object) -> object:
-        result = type("Result", (), {})()
-        result.scalars = lambda: type("Scalars", (), {"all": lambda _s: []})()
-        return result
+        class FakeScalars:
+            def all(self) -> list[object]:
+                return []
+
+        class FakeResult:
+            def scalars(self) -> FakeScalars:
+                return FakeScalars()
+
+        return FakeResult()
 
     class FakeSession:
         execute = fake_execute
@@ -43,9 +49,15 @@ async def test_list_tenants_returns_tenants_from_execute_result() -> None:
     )
 
     async def fake_execute(_self: object, query: object) -> object:
-        result = type("Result", (), {})()
-        result.scalars = lambda: type("Scalars", (), {"all": lambda _s: [tenant]})()
-        return result
+        class FakeScalars:
+            def all(self) -> list[Tenant]:
+                return [tenant]
+
+        class FakeResult:
+            def scalars(self) -> FakeScalars:
+                return FakeScalars()
+
+        return FakeResult()
 
     class FakeSession:
         execute = fake_execute

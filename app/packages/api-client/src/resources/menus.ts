@@ -30,4 +30,20 @@ export class MenusResource extends BaseResource {
 
     return response.data;
   }
+
+  async toggleItemAvailability(
+    tenantId: string,
+    categoryOrder: number,
+    itemName: string,
+    isAvailable: boolean,
+    signal?: AbortSignal,
+  ): Promise<TenantMenu> {
+    const response = await this.client.patch<UpdatedResponse<TenantMenu>>(
+      `/tenants/${tenantId}/menu/categories/${categoryOrder}/items/${encodeURIComponent(itemName)}/availability`,
+      { isAvailable },
+      { signal },
+    );
+
+    return response.data;
+  }
 }

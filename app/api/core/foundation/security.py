@@ -52,13 +52,14 @@ class SecurityService:
     def decode_access_token(self, token: str) -> dict:
         try:
             return jwt.decode(token, self._secret_key, algorithms=[self._algorithm])
+        except jwt.ExpiredSignatureError as err:
+            logger.debug(f"Expired token: {err!s}")
+            raise UnauthorizedError(message="Unauthorized") from None
         except jwt.InvalidTokenError as err:
-            logger.error(f"Invalid token: {err!s}", exc_info=True)
-
+            logger.debug(f"Invalid token: {err!s}")
             raise UnauthorizedError(message="Unauthorized") from None
         except Exception as err:
-            logger.error(f"Invalid token: {err!s}", exc_info=True)
-
+            logger.error(f"Error decoding token: {err!s}", exc_info=True)
             raise UnauthorizedError(message="Unauthorized") from None
 
 

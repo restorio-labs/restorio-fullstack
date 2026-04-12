@@ -76,12 +76,12 @@ export class AuthResource extends BaseResource {
   async me(signal?: AbortSignal, accessToken?: string | null): Promise<AuthMeData> {
     const headers = accessToken != null && accessToken !== "" ? { Authorization: `Bearer ${accessToken}` } : undefined;
 
-    const { data } = await this.client.get<SuccessResponse<{ authenticated: boolean }>>("auth/me", {
+    const { data } = await this.client.get<SuccessResponse<AuthMeData>>("auth/me", {
       signal,
       withCredentials: true,
       ...(headers ? { headers } : {}),
     });
 
-    return { authenticated: data.authenticated };
+    return { authenticated: data.authenticated, account_type: data.account_type };
   }
 }

@@ -2,7 +2,14 @@ import { Button, Dropdown, Stack, Text } from "@restorio/ui";
 import type { DropdownPlacement } from "@restorio/ui";
 import { useState, type ReactElement } from "react";
 
-const placements: DropdownPlacement[] = ["bottom-start", "bottom-end", "top-start", "top-end"];
+const placements: DropdownPlacement[] = [
+  "bottom-start",
+  "bottom-center",
+  "bottom-end",
+  "top-start",
+  "top-center",
+  "top-end",
+];
 
 const DropdownPage = (): ReactElement => {
   const [isControlledOpen, setIsControlledOpen] = useState(false);

@@ -12,49 +12,60 @@ export interface FloorGridProps {
 
 export const FloorGrid = ({ width, height, cellSize, showGrid, className }: FloorGridProps): ReactElement => {
   if (!showGrid) {
-    return <div className={cn("absolute inset-0", className)} style={{ width, height }} />;
+    return (
+      <div
+        className={cn("pointer-events-none absolute inset-0 box-border border border-border-default", className)}
+        style={{ width, height }}
+        aria-hidden="true"
+      />
+    );
   }
 
-  const cols = Math.ceil(width / cellSize);
-  const rows = Math.ceil(height / cellSize);
+  const axisSteps = (total: number): number[] => {
+    const steps: number[] = [];
+    let p = 0;
+
+    while (p < total) {
+      steps.push(p);
+      p += cellSize;
+    }
+
+    if (steps[steps.length - 1] !== total) {
+      steps.push(total);
+    }
+
+    return steps;
+  };
+
+  const innerW = Math.max(0, width - 1);
+  const innerH = Math.max(0, height - 1);
+  const xs = axisSteps(innerW);
+  const ys = axisSteps(innerH);
 
   return (
     <div
-      className={cn("absolute left-0 top-0", className)}
+      className={cn("absolute left-0 top-0 overflow-hidden", className)}
       style={{
         width: `${width}px`,
         height: `${height}px`,
-        backgroundImage: `
-          linear-gradient(to right, var(--color-border-muted) 1px, transparent 1px),
-          linear-gradient(to bottom, var(--color-border-muted) 1px, transparent 1px)
-        `,
-        backgroundSize: `${cellSize}px ${cellSize}px`,
       }}
       aria-hidden="true"
     >
-      <svg width={width} height={height} className="pointer-events-none" aria-hidden="true">
-        {Array.from({ length: cols + 1 }, (_, i) => (
-          <line
-            key={`v-${i}`}
-            x1={i * cellSize}
-            y1={0}
-            x2={i * cellSize}
-            y2={height}
-            stroke="var(--color-border-muted)"
-            strokeWidth="1"
-          />
-        ))}
-        {Array.from({ length: rows + 1 }, (_, i) => (
-          <line
-            key={`h-${i}`}
-            x1={0}
-            y1={i * cellSize}
-            x2={width}
-            y2={i * cellSize}
-            stroke="var(--color-border-muted)"
-            strokeWidth="1"
-          />
-        ))}
+      <svg
+        width={width}
+        height={height}
+        className="pointer-events-none block"
+        aria-hidden="true"
+        shapeRendering="crispEdges"
+      >
+        <g transform="translate(0.5, 0.5)">
+          {xs.map((x) => (
+            <line key={`v-${x}`} x1={x} y1={0} x2={x} y2={innerH} stroke="var(--color-border-muted)" strokeWidth="1" />
+          ))}
+          {ys.map((y) => (
+            <line key={`h-${y}`} x1={0} y1={y} x2={innerW} y2={y} stroke="var(--color-border-muted)" strokeWidth="1" />
+          ))}
+        </g>
       </svg>
     </div>
   );

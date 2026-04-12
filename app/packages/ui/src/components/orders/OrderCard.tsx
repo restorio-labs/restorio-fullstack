@@ -10,6 +10,7 @@ import { Stack } from "../primitives/Stack";
 export interface OrderCardProps extends React.HTMLAttributes<HTMLDivElement> {
   id: string;
   summary: ReactNode;
+  headerTrailing?: ReactNode;
   details?: ReactNode;
   footer?: ReactNode;
   statusIndicator?: ReactNode;
@@ -38,6 +39,7 @@ export interface OrderCardProps extends React.HTMLAttributes<HTMLDivElement> {
 export const OrderCard = ({
   id,
   summary,
+  headerTrailing,
   details,
   footer,
   statusIndicator,
@@ -103,7 +105,7 @@ export const OrderCard = ({
       data-dragging={isDragging}
       data-order-id={id}
       className={cn(
-        "w-full rounded-card border border-border-strong bg-surface-primary shadow-card",
+        "w-full overflow-hidden rounded-md border border-border-strong bg-surface-primary p-2 shadow-card",
         "outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-4 focus-visible:ring-offset-background-secondary",
         isDragging && "pointer-events-none opacity-40",
         isDisabled && "opacity-60",
@@ -112,14 +114,14 @@ export const OrderCard = ({
       {...props}
     >
       <Stack spacing="sm">
-        <Stack direction="row" align="center" spacing="sm">
+        <Stack direction="row" align="start" spacing="xs" className="min-w-0 gap-1.5 overflow-hidden">
           <Button
             variant="secondary"
             size="lg"
             className={cn(
-              "flex-1 justify-between border border-border-strong bg-surface-secondary text-text-primary",
+              "min-w-0 flex-1 justify-center rounded-sm bg-surface-secondary text-text-primary",
               "hover:bg-surface-tertiary active:bg-surface-secondary",
-              "min-h-14 px-5 py-4 pe-6",
+              "min-h-[88px] px-4 py-3",
             )}
             onClick={handleToggle}
             aria-expanded={canExpand ? expanded : undefined}
@@ -127,107 +129,107 @@ export const OrderCard = ({
             aria-label={toggleLabel}
             disabled={isDisabled || !canExpand}
           >
-            <Stack direction="row" align="center" justify="between" spacing="sm" className="w-full">
-              <Stack direction="row" align="center" spacing="sm" className="min-w-0 flex-1">
+            <Stack spacing="xs" className="w-full items-center justify-center">
+              <Stack direction="row" align="center" justify="between" spacing="sm" className="w-full">
                 {statusIndicator}
                 <div className="min-w-0 flex-1">{summary}</div>
+                {headerTrailing ? <div className="flex flex-shrink-0 items-center">{headerTrailing}</div> : null}
+                <Icon
+                  size="md"
+                  viewBox="0 0 24 24"
+                  className={cn(
+                    "mt-0.5 flex-shrink-0",
+                    !prefersReducedMotion && "transition-transform duration-200",
+                    expanded && "-scale-y-100",
+                  )}
+                >
+                  <path d="M6 9l6 6 6-6" />
+                </Icon>
               </Stack>
-              <Icon
-                size="md"
-                viewBox="0 0 24 24"
-                className={cn(
-                  "flex-shrink-0",
-                  !prefersReducedMotion && "transition-transform duration-200",
-                  expanded && "-scale-y-100",
-                )}
-              >
-                <path d="M6 9l6 6 6-6" />
-              </Icon>
             </Stack>
           </Button>
-          {showReorderButtons && (
-            <Stack direction="row" spacing="xs" className="flex-shrink-0">
-              <Button
-                variant="secondary"
-                size="sm"
-                className={cn(
-                  "min-h-10 min-w-10 border border-border-strong bg-surface-tertiary text-text-secondary",
-                  "hover:bg-surface-secondary active:bg-surface-tertiary disabled:opacity-30",
-                )}
-                aria-label={moveUpLabel}
-                disabled={isDisabled || !canMoveUp}
-                onClick={onMoveUp}
-              >
-                <Icon size="md" aria-hidden="true" viewBox="0 0 24 24">
-                  <path
-                    d="M7 14l5-5 5 5"
-                    strokeWidth="2"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </Icon>
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                className={cn(
-                  "min-h-10 min-w-10 border border-border-strong bg-surface-tertiary text-text-secondary",
-                  "hover:bg-surface-secondary active:bg-surface-tertiary disabled:opacity-30",
-                )}
-                aria-label={moveDownLabel}
-                disabled={isDisabled || !canMoveDown}
-                onClick={onMoveDown}
-              >
-                <Icon size="md" aria-hidden="true" viewBox="0 0 24 24">
-                  <path
-                    d="M7 10l5 5 5-5"
-                    strokeWidth="2"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </Icon>
-              </Button>
-            </Stack>
-          )}
-          <Button
-            variant="secondary"
-            size="sm"
-            className={cn(
-              "min-h-10 min-w-10 flex-shrink-0 border border-border-strong bg-surface-tertiary text-text-secondary",
-              "hover:bg-surface-secondary active:bg-surface-tertiary",
-              dragHandleClassName,
+          <Stack spacing="xs" className="w-[5.5rem] flex-shrink-0 items-stretch">
+            {showReorderButtons && (
+              <Stack direction="row" spacing="xs" className="gap-1">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className={cn(
+                    "h-[42px] w-[42px] rounded-sm border border-border-strong bg-surface-tertiary text-text-secondary p-0",
+                    "hover:bg-surface-secondary active:bg-surface-tertiary disabled:opacity-30",
+                  )}
+                  aria-label={moveUpLabel}
+                  disabled={isDisabled || !canMoveUp}
+                  onClick={onMoveUp}
+                >
+                  <Icon size="md" aria-hidden="true" viewBox="0 0 24 24">
+                    <path
+                      d="M7 14l5-5 5 5"
+                      strokeWidth="2"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </Icon>
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className={cn(
+                    "h-[42px] w-[42px] rounded-sm border border-border-strong bg-surface-tertiary text-text-secondary p-0",
+                    "hover:bg-surface-secondary active:bg-surface-tertiary disabled:opacity-30",
+                  )}
+                  aria-label={moveDownLabel}
+                  disabled={isDisabled || !canMoveDown}
+                  onClick={onMoveDown}
+                >
+                  <Icon size="md" aria-hidden="true" viewBox="0 0 24 24">
+                    <path
+                      d="M7 10l5 5 5-5"
+                      strokeWidth="2"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </Icon>
+                </Button>
+              </Stack>
             )}
-            style={dragHandleStyle}
-            aria-label={dragHandleLabel}
-            disabled={isDragHandleDisabled}
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            onPointerCancel={onPointerCancel}
-            {...restDragHandleProps}
-          >
-            <Icon size="lg" aria-hidden="true" viewBox="0 0 24 24">
-              <path d="M9 6h1M9 10h1M9 14h1M14 6h1M14 10h1M14 14h1" />
-            </Icon>
-          </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              className={cn(
+                "h-[44px] w-full flex-shrink-0 rounded-sm border border-border-strong bg-surface-tertiary text-text-secondary p-0",
+                "hover:bg-surface-secondary active:bg-surface-tertiary",
+                dragHandleClassName,
+              )}
+              style={dragHandleStyle}
+              aria-label={dragHandleLabel}
+              disabled={isDragHandleDisabled}
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+              onPointerCancel={onPointerCancel}
+              {...restDragHandleProps}
+            >
+              <Icon size="lg" aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M9 6h1M9 10h1M9 14h1M14 6h1M14 10h1M14 14h1" />
+              </Icon>
+            </Button>
+          </Stack>
         </Stack>
         {details && (
           <div
             id={contentId}
             aria-hidden={!expanded}
             className={cn(
-              "overflow-hidden",
-              prefersReducedMotion ? "transition-none" : "transition-all duration-200",
-              expanded ? "max-h-64 opacity-100 mt-3" : "max-h-0 opacity-0 mt-0",
+              expanded ? "mt-3 block" : "hidden",
+              prefersReducedMotion ? "transition-none" : "transition-opacity duration-150",
             )}
           >
-            <div className="max-h-64 overflow-auto rounded-card border border-border-muted bg-surface-secondary px-4 py-3">
-              {details}
-            </div>
+            <div className="rounded-sm border border-border-muted bg-surface-secondary px-4 py-3">{details}</div>
           </div>
         )}
         {footer && <div className="pt-2">{footer}</div>}

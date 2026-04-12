@@ -1,6 +1,7 @@
 from core.dto.v1.menus.requests import (
     MenuCategoryInputDTO,
     MenuItemInputDTO,
+    ToggleItemAvailabilityDTO,
     UpsertTenantMenuDTO,
 )
 from core.dto.v1.menus.responses import (
@@ -15,5 +16,6 @@ __all__ = [
     "MenuItemDTO",
     "MenuItemInputDTO",
     "TenantMenuResponseDTO",
+    "ToggleItemAvailabilityDTO",
     "UpsertTenantMenuDTO",
 ]

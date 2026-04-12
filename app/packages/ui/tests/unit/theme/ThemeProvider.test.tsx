@@ -584,7 +584,7 @@ describe("ThemeProvider", () => {
       wrapper: ({ children }) => <ThemeProvider defaultMode="dark">{children}</ThemeProvider>,
     });
 
-    expect(result.current.colors.background.primary).toBe("#1a1a1a");
+    expect(result.current.colors.background.primary).toBe("#0a0e14");
   });
 
   it("should throw error when useTheme is used outside ThemeProvider", () => {

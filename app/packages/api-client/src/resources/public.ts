@@ -3,6 +3,10 @@ import type {
   PublicCreateOrderPaymentData,
   PublicCreateOrderPaymentRequest,
   PublicP24TransactionSyncData,
+  PublicTableSessionData,
+  PublicTableSessionRefreshRequest,
+  PublicTableSessionReleaseRequest,
+  PublicTableSessionRequest,
   PublicTenantInfo,
   SuccessResponse,
   TenantMenu,
@@ -29,6 +33,42 @@ export class PublicResource extends BaseResource {
   ): Promise<PublicCreateOrderPaymentData> {
     const body = await this.client.post<CreatedResponse<PublicCreateOrderPaymentData>, PublicCreateOrderPaymentRequest>(
       "/public/payments/create",
+      data,
+      { signal },
+    );
+
+    return body.data;
+  }
+
+  async acquireTableSession(data: PublicTableSessionRequest, signal?: AbortSignal): Promise<PublicTableSessionData> {
+    const body = await this.client.post<CreatedResponse<PublicTableSessionData>, PublicTableSessionRequest>(
+      "/public/table-sessions/acquire",
+      data,
+      { signal },
+    );
+
+    return body.data;
+  }
+
+  async refreshTableSession(
+    data: PublicTableSessionRefreshRequest,
+    signal?: AbortSignal,
+  ): Promise<PublicTableSessionData> {
+    const body = await this.client.post<SuccessResponse<PublicTableSessionData>, PublicTableSessionRefreshRequest>(
+      "/public/table-sessions/refresh",
+      data,
+      { signal },
+    );
+
+    return body.data;
+  }
+
+  async releaseTableSession(
+    data: PublicTableSessionReleaseRequest,
+    signal?: AbortSignal,
+  ): Promise<PublicTableSessionData> {
+    const body = await this.client.post<SuccessResponse<PublicTableSessionData>, PublicTableSessionReleaseRequest>(
+      "/public/table-sessions/release",
       data,
       { signal },
     );

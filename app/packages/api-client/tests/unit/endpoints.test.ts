@@ -11,6 +11,7 @@ describe("RestorioApi", () => {
 
     mockClient = {
       get: vi.fn(),
+      getHttpStatus: vi.fn(),
       post: vi.fn(),
       put: vi.fn(),
       patch: vi.fn(),
@@ -22,6 +23,7 @@ describe("RestorioApi", () => {
     const api = new RestorioApi(mockClient);
 
     expect(api.auth).toBeDefined();
+    expect(api.health).toBeDefined();
     expect(api.payments).toBeDefined();
     expect(api.tenantProfiles).toBeDefined();
     expect(api.restaurants).toBeDefined();
@@ -29,6 +31,7 @@ describe("RestorioApi", () => {
     expect(api.orders).toBeDefined();
     expect(api.tables).toBeDefined();
     expect(api.tenants).toBeDefined();
+    expect(api.tenantOrders).toBeDefined();
     expect(api.floorCanvases).toBeDefined();
     expect(api.users).toBeDefined();
   });

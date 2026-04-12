@@ -3,8 +3,10 @@
 import { ContentContainer } from "@restorio/ui";
 import type { ReactElement, ReactNode } from "react";
 
+import { ConnectionStatusBubble } from "@/components/app/ConnectionStatusBubble";
 import { Footer } from "@/components/app/Footer";
 import { Header } from "@/components/app/Header";
+import CookieConsentBanner from "@/components/legal/CookieConsentBanner";
 
 interface PublicLayoutProps {
   children: ReactNode;
@@ -19,7 +21,9 @@ export default function PublicLayout({ children }: PublicLayoutProps): ReactElem
           {children}
         </ContentContainer>
       </main>
+      <ConnectionStatusBubble />
       <Footer />
+      <CookieConsentBanner />
     </div>
   );
 }

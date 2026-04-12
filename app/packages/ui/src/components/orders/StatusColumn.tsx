@@ -49,7 +49,7 @@ export const StatusColumn = forwardRef<HTMLDivElement, StatusColumnProps>(
         data-zone-id={zoneId}
         style={minWidth ? { minWidth } : undefined}
         className={cn(
-          "flex w-full min-w-0 flex-shrink-0 flex-col gap-3 rounded-card border shadow-card transition-all duration-200",
+          "flex w-full min-w-0 flex-shrink-0 flex-col gap-3 rounded-card border shadow-card transition-all duration-200 px-3 pt-1",
           isActive
             ? "border-2 border-border-focus bg-surface-tertiary ring-2 ring-border-focus ring-opacity-50"
             : "border border-border-strong bg-surface-secondary",

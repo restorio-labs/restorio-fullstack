@@ -26,8 +26,7 @@ const baseStyles =
 
 const stateStyles = {
   default: "text-text-secondary hover:text-text-primary hover:bg-surface-tertiary active:bg-surface-tertiary text-left",
-  active:
-    "text-interactive-primary bg-surface-tertiary border-border-strong [box-shadow:inset_0_0_0_1px_var(--color-border-strong)]",
+  active: "text-interactive-primary bg-surface-secondary",
   disabled: "text-text-disabled cursor-not-allowed pointer-events-none",
 };
 

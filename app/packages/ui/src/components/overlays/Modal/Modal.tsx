@@ -3,6 +3,7 @@ import { useEffect, useRef, type ReactNode, type ReactElement } from "react";
 import { cn } from "../../../utils";
 
 export type ModalSize = "sm" | "md" | "lg" | "xl" | "full";
+export type ModalVariant = "default" | "cookie";
 
 export interface ModalProps {
   isOpen: boolean;
@@ -14,6 +15,8 @@ export interface ModalProps {
   closeOnEscape?: boolean;
   className?: string;
   closeButtonAriaLabel?: string;
+  variant?: ModalVariant;
+  hideCloseButton?: boolean;
 }
 
 const sizeStyles: Record<ModalSize, string> = {
@@ -34,10 +37,15 @@ export const Modal = ({
   closeOnEscape = true,
   className,
   closeButtonAriaLabel = "Close modal",
+  variant = "default",
+  hideCloseButton = false,
 }: ModalProps): ReactElement | null => {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
+
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     if (!isOpen) {
@@ -48,7 +56,7 @@ export const Modal = ({
 
     const handleEscape = (e: KeyboardEvent): void => {
       if (closeOnEscape && e.key === "Escape") {
-        onClose();
+        onCloseRef.current();
       }
     };
 
@@ -62,21 +70,26 @@ export const Modal = ({
       document.body.style.overflow = "";
       previousActiveElement.current?.focus();
     };
-  }, [isOpen, closeOnEscape, onClose]);
+  }, [isOpen, closeOnEscape]);
 
   if (!isOpen) {
     return null;
   }
 
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>): void => {
-    if (closeOnOverlayClick && e.target === e.currentTarget) {
+    const shouldCloseOnOverlay = closeOnOverlayClick && variant !== "cookie";
+
+    if (shouldCloseOnOverlay && e.target === e.currentTarget) {
       onClose();
     }
   };
 
   return (
     <div
-      className="fixed inset-0 z-[1000] flex items-center justify-center bg-surface-overlay p-4"
+      className={cn(
+        "fixed inset-0 z-[1000] flex items-center justify-center bg-surface-overlay p-4",
+        "animate-in fade-in duration-200",
+      )}
       onClick={handleOverlayClick}
       role="dialog"
       aria-modal="true"
@@ -87,7 +100,9 @@ export const Modal = ({
         className={cn(
           "relative z-[1001] w-full rounded-lg bg-surface-primary shadow-lg",
           "focus:outline-none",
+          "animate-in zoom-in-95 duration-200",
           sizeStyles[size],
+          variant === "cookie" && "border border-border-default",
           className,
         )}
         role="document"
@@ -96,17 +111,19 @@ export const Modal = ({
           <h2 id="modal-title" className="text-xl font-semibold text-text-primary">
             {title}
           </h2>
-          <button
-            ref={closeButtonRef}
-            type="button"
-            onClick={onClose}
-            className="p-1 text-text-secondary hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus rounded-sm"
-            aria-label={closeButtonAriaLabel}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          {!hideCloseButton && (
+            <button
+              ref={closeButtonRef}
+              type="button"
+              onClick={onClose}
+              className="p-1 text-text-secondary hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus rounded-sm"
+              aria-label={closeButtonAriaLabel}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
         <div className="p-6">{children}</div>
       </div>

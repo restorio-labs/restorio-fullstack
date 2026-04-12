@@ -12,6 +12,23 @@ class PublicOrderItemDTO(BaseDTO):
 class PublicCreateOrderPaymentDTO(BaseDTO):
     tenant_slug: str = Field(..., min_length=1, max_length=255, alias="tenantSlug")
     table_number: int = Field(..., ge=0, alias="tableNumber")
+    table_ref: str | None = Field(default=None, alias="tableRef", max_length=255)
+    lock_token: str | None = Field(default=None, alias="lockToken", max_length=128)
     email: str = Field(..., min_length=1, max_length=255)
     items: list[PublicOrderItemDTO] = Field(..., min_length=1)
     note: str | None = Field(default=None, max_length=1024)
+
+
+class PublicAcquireTableSessionDTO(BaseDTO):
+    tenant_slug: str = Field(..., min_length=1, max_length=255, alias="tenantSlug")
+    table_number: int = Field(..., ge=0, alias="tableNumber")
+    table_ref: str | None = Field(default=None, alias="tableRef", max_length=255)
+    lock_token: str | None = Field(default=None, alias="lockToken", max_length=128)
+
+
+class PublicRefreshTableSessionDTO(BaseDTO):
+    lock_token: str = Field(..., alias="lockToken", min_length=1, max_length=128)
+
+
+class PublicReleaseTableSessionDTO(BaseDTO):
+    lock_token: str = Field(..., alias="lockToken", min_length=1, max_length=128)

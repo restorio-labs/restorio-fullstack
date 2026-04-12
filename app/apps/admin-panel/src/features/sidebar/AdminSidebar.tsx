@@ -1,15 +1,30 @@
-import { LogoutButton } from "@restorio/auth";
-import { ChooseApp, ThemeSwitcher, NavItem, NavSection, Sidebar, useI18n } from "@restorio/ui";
+import { LogoutButton, AUTH_LOGIN_REDIRECT_URL } from "@restorio/auth";
+import { ChooseApp, NavIcon, ThemeSwitcher, NavItem, NavSection, Sidebar, useI18n } from "@restorio/ui";
 import { goToApp } from "@restorio/utils";
 import type { ReactElement } from "react";
 import { useCallback } from "react";
+import { IoFastFoodSharp } from "react-icons/io5";
+import {
+  TbBuildingStore,
+  TbCreditCard,
+  TbDeviceMobile,
+  TbLayoutDashboardFilled,
+  TbQrcode,
+  TbUsersGroup,
+  TbTransactionDollar,
+} from "react-icons/tb";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { api } from "../../api/client";
-import { PUBLIC_WEB_URL } from "../../config";
 import { TenantSwitcher } from "../tenant/TenantSwitcher";
 
 const FLOOR_EDITOR_NAVIGATION_EVENT = "restorio:floor-editor-navigation-attempt";
+
+const NAV_ITEM_ROW_CLASS =
+  "flex-row-reverse justify-between text-end [&>span:last-child]:w-full [&>span:last-child]:text-end lg:flex-row lg:justify-start lg:text-start lg:[&>span:last-child]:w-auto lg:[&>span:last-child]:text-start";
+
+const NAV_ITEM_ICON_SIZE = "8";
+const NAV_ITEM_ICON_CLASS = `h-${NAV_ITEM_ICON_SIZE} w-${NAV_ITEM_ICON_SIZE}`;
 
 export const AdminSidebar = (): ReactElement => {
   const { t } = useI18n();
@@ -59,58 +74,79 @@ export const AdminSidebar = (): ReactElement => {
         <TenantSwitcher />
       </div>
 
-      <div className="flex flex-col gap-2 py-2">
-        <NavSection aria-label={t("sidebar.sections.floorLayout")}>
+      <div className="flex flex-col gap-2 p-2">
+        <NavSection aria-label={t("sidebar.sections")}>
           <NavItem
             as={Link}
             to="/"
             active={isActive("/")}
             role="menuitem"
+            className={NAV_ITEM_ROW_CLASS}
+            icon={
+              <NavIcon className={NAV_ITEM_ICON_CLASS}>
+                <TbLayoutDashboardFilled className={NAV_ITEM_ICON_CLASS} />
+              </NavIcon>
+            }
             onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/")}
           >
             {t("sidebar.items.floorEditor")}
           </NavItem>
-        </NavSection>
-
-        <NavSection aria-label={t("sidebar.sections.menu")}>
           <NavItem
             as={Link}
             to="/menu-creator"
             active={isActive("/menu-creator")}
             role="menuitem"
+            className={NAV_ITEM_ROW_CLASS}
+            icon={
+              <NavIcon className={NAV_ITEM_ICON_CLASS}>
+                <IoFastFoodSharp className={NAV_ITEM_ICON_CLASS} />
+              </NavIcon>
+            }
             onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/menu-creator")}
           >
             {t("sidebar.items.menuCreator")}
+          </NavItem>
+          <NavItem
+            as={Link}
+            to="/mobile-configuration"
+            active={isActive("/mobile-configuration")}
+            role="menuitem"
+            className={NAV_ITEM_ROW_CLASS}
+            icon={
+              <NavIcon className={NAV_ITEM_ICON_CLASS}>
+                <TbDeviceMobile className={NAV_ITEM_ICON_CLASS} />
+              </NavIcon>
+            }
+            onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/mobile-configuration")}
+          >
+            {t("sidebar.items.mobileConfiguration")}
           </NavItem>
           {/* <NavItem
             as={Link}
             to="/main-page-configurator"
             active={isActive("/main-page-configurator")}
             role="menuitem"
+            className={NAV_ITEM_ROW_CLASS}
+            icon={
+              <NavIcon className={NAV_ITEM_ICON_CLASS}>
+                <RiPagesFill className={NAV_ITEM_ICON_CLASS} />
+              </NavIcon>
+            }
             onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/main-page-configurator")}
           >
             {t("sidebar.items.pageConfigurator")}
           </NavItem> */}
-        </NavSection>
-
-        <NavSection aria-label={t("sidebar.sections.tools")}>
-          <NavItem
-            as={Link}
-            to="/qr-code-generator"
-            active={isActive("/qr-code-generator")}
-            role="menuitem"
-            onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/qr-code-generator")}
-          >
-            {t("sidebar.items.qrCodeGenerator")}
-          </NavItem>
-        </NavSection>
-
-        <NavSection aria-label={t("sidebar.sections.settings")}>
           <NavItem
             as={Link}
             to="/profile"
             active={isActive("/profile")}
             role="menuitem"
+            className={NAV_ITEM_ROW_CLASS}
+            icon={
+              <NavIcon className={NAV_ITEM_ICON_CLASS}>
+                <TbBuildingStore className={NAV_ITEM_ICON_CLASS} />
+              </NavIcon>
+            }
             onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/profile")}
           >
             {t("sidebar.items.tenantProfile")}
@@ -120,9 +156,30 @@ export const AdminSidebar = (): ReactElement => {
             to="/payment-config"
             active={isActive("/payment-config")}
             role="menuitem"
+            className={NAV_ITEM_ROW_CLASS}
+            icon={
+              <NavIcon className={NAV_ITEM_ICON_CLASS}>
+                <TbCreditCard className={NAV_ITEM_ICON_CLASS} />
+              </NavIcon>
+            }
             onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/payment-config")}
           >
             {t("sidebar.items.paymentConfig")}
+          </NavItem>
+          <NavItem
+            as={Link}
+            to="/staff"
+            active={isActive("/staff")}
+            role="menuitem"
+            className={NAV_ITEM_ROW_CLASS}
+            icon={
+              <NavIcon className={NAV_ITEM_ICON_CLASS}>
+                <TbUsersGroup className={NAV_ITEM_ICON_CLASS} />
+              </NavIcon>
+            }
+            onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/staff")}
+          >
+            {t("sidebar.items.staff")}
           </NavItem>
           <NavItem
             as={Link}
@@ -130,17 +187,29 @@ export const AdminSidebar = (): ReactElement => {
             active={isActive("/transactions")}
             role="menuitem"
             onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/transactions")}
+            className={NAV_ITEM_ROW_CLASS}
+            icon={
+              <NavIcon className={NAV_ITEM_ICON_CLASS}>
+                <TbTransactionDollar className={NAV_ITEM_ICON_CLASS} />
+              </NavIcon>
+            }
           >
             {t("sidebar.items.transactions")}
           </NavItem>
           <NavItem
             as={Link}
-            to="/staff"
-            active={isActive("/staff")}
+            to="/qr-code-generator"
+            active={isActive("/qr-code-generator")}
             role="menuitem"
-            onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/staff")}
+            className={NAV_ITEM_ROW_CLASS}
+            icon={
+              <NavIcon className={NAV_ITEM_ICON_CLASS}>
+                <TbQrcode className={NAV_ITEM_ICON_CLASS} />
+              </NavIcon>
+            }
+            onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/qr-code-generator")}
           >
-            {t("sidebar.items.staff")}
+            {t("sidebar.items.qrCodeGenerator")}
           </NavItem>
         </NavSection>
       </div>
@@ -157,13 +226,9 @@ export const AdminSidebar = (): ReactElement => {
             <span>{t("sidebar.items.label")}</span>
             <ChooseApp
               variant="dropdown"
+              subvariant="large"
               value="admin-panel"
               onSelectApp={goToApp}
-              labels={{
-                adminPanel: t("sidebar.items.adminPanel"),
-                kitchenPanel: t("sidebar.items.kitchenPanel"),
-                waiterPanel: t("sidebar.items.waiterPanel"),
-              }}
               ariaLabel={t("sidebar.items.label")}
               className="w-auto"
             />
@@ -173,7 +238,7 @@ export const AdminSidebar = (): ReactElement => {
           variant="danger"
           fullWidth
           onLogout={handleLogout}
-          redirectTo={`${PUBLIC_WEB_URL}/login`}
+          redirectTo={AUTH_LOGIN_REDIRECT_URL}
           loadingLabel={t("sidebar.logoutLoading")}
         />
       </div>

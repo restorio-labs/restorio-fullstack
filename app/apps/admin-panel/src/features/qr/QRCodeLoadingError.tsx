@@ -1,4 +1,4 @@
-import { useI18n } from "@restorio/ui";
+import { Loader, useI18n } from "@restorio/ui";
 import type { ReactElement } from "react";
 
 interface QRCodeLoadingErrorProps {
@@ -19,7 +19,8 @@ export const QRCodeLoadingError = ({
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex h-screen items-center justify-center flex-col gap-4">
+        <Loader />
         <div className="text-sm text-text-tertiary">{t("common.loading")}</div>
       </div>
     );

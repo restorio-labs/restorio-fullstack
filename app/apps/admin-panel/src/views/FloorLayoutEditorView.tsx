@@ -10,11 +10,10 @@ import {
   useDragResize,
   type DragResizeMode,
   useI18n,
-  useMediaQuery,
   useSnapToGrid,
   useTheme,
 } from "@restorio/ui";
-import type { PointerEvent as ReactPointerEvent, ReactElement, Reducer } from "react";
+import type { PointerEvent as ReactPointerEvent, ReactElement } from "react";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 
 import { FloorEditorCanvas } from "../features/floor/components/FloorEditorCanvas";
@@ -26,6 +25,7 @@ import {
   clampElementBounds,
   ensureMinimumCanvasSize,
 } from "../features/floor/editorShared";
+import { readFloorEditorShowGrid, writeFloorEditorShowGrid } from "../features/floor/floorEditorStorage";
 import {
   createElementFromToAdd,
   layoutHistoryReducer,
@@ -51,17 +51,14 @@ export const FloorLayoutEditorView = ({
   const { t } = useI18n();
   const { colors } = useTheme();
   const isDesktopUp = useBreakpoint("lg");
-  const isTabletUp = useMediaQuery("(min-width: 650px)");
   const normalizedInitialLayout = ensureMinimumCanvasSize(initialLayout);
-  const [state, dispatch] = useReducer<Reducer<FloorLayoutEditorState, FloorEditorHistoryAction>>(
-    layoutHistoryReducer,
-    {
-      layout: normalizedInitialLayout,
-      history: [normalizedInitialLayout],
-      historyIndex: 0,
-    },
-  );
+  const [state, dispatch] = useReducer<FloorLayoutEditorState, [FloorEditorHistoryAction]>(layoutHistoryReducer, {
+    layout: normalizedInitialLayout,
+    history: [normalizedInitialLayout],
+    historyIndex: 0,
+  });
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [showCanvasGrid, setShowCanvasGrid] = useState((): boolean => readFloorEditorShowGrid());
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [clipboardElements, setClipboardElements] = useState<FloorElement[]>([]);
   const [isMultiSelectModifierPressed, setIsMultiSelectModifierPressed] = useState(false);
@@ -126,6 +123,7 @@ export const FloorLayoutEditorView = ({
     snapSize: (w, h) => snapGridSize(w, h),
     minWidth: GRID_CELL,
     minHeight: GRID_CELL,
+    canvasBounds: { width: state.layout.width, height: state.layout.height },
   });
   const { setSelectedId } = dragResize;
 
@@ -297,6 +295,8 @@ export const FloorLayoutEditorView = ({
         onAddTable={handleAddTable}
         onAddZone={handleAddZone}
         onAddElement={addElement}
+        showCanvasGrid={showCanvasGrid}
+        onShowCanvasGridChange={setShowCanvasGrid}
         direction="row"
         className=""
       />
@@ -311,6 +311,7 @@ export const FloorLayoutEditorView = ({
       isAddOpen,
       isDesktopUp,
       onSave,
+      showCanvasGrid,
       state.layout,
     ],
   );
@@ -320,11 +321,7 @@ export const FloorLayoutEditorView = ({
       return null;
     }
 
-    return (
-      <Button variant="primary" size="sm" onClick={() => void onSave(state.layout)}>
-        {t("floorEditor.toolbar.save")}
-      </Button>
-    );
+    return <Button onClick={() => void onSave(state.layout)}>{t("floorEditor.toolbar.save")}</Button>;
   }, [isDesktopUp, onSave, state.layout, t]);
 
   useEffect(() => {
@@ -343,17 +340,31 @@ export const FloorLayoutEditorView = ({
     onDirtyChange?.(isDirty);
   }, [isDirty, onDirtyChange]);
 
+  useEffect(() => {
+    writeFloorEditorShowGrid(showCanvasGrid);
+  }, [showCanvasGrid]);
+
   return (
     <div className="box-border flex h-full min-h-0 flex-col gap-4 overflow-hidden p-4">
-      <div className="rounded-lg border border-border-default bg-surface-primary p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          {extraControls ? <div className="min-w-0 flex-1">{extraControls}</div> : null}
-          {toolbar}
+      <div className="relative z-10 overflow-visible rounded-lg border border-border-default bg-surface-primary px-6 py-4">
+        <div
+          className={
+            extraControls
+              ? "flex min-w-0 flex-col gap-3 lg:flex-row lg:flex-nowrap lg:items-center lg:justify-between"
+              : "flex min-w-0 flex-nowrap items-center gap-3 justify-end"
+          }
+        >
+          {extraControls ? (
+            <div className="min-w-0 flex-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {extraControls}
+            </div>
+          ) : null}
+          <div className="flex min-w-0 shrink-0 justify-end">{toolbar}</div>
         </div>
       </div>
 
-      <div className={["flex flex-1 min-h-0", isDesktopUp ? "flex-row" : "flex-col gap-4"].join(" ")}>
-        {!isDesktopUp && isTabletUp && (
+      <div className="flex min-h-0 flex-1 flex-col overflow-visible rounded-lg border border-border-default">
+        <div className="relative z-30 flex h-[150px] w-full min-h-0 shrink-0 flex-col overflow-visible rounded-t-lg border-b border-border-default bg-surface-primary">
           <FloorEditorInspector
             layout={state.layout}
             selectedElement={selectedElement}
@@ -362,33 +373,24 @@ export const FloorLayoutEditorView = ({
             isMultiSelectModifierPressed={isMultiSelectModifierPressed}
             dispatch={dispatch}
             onRemoveSelected={removeSelectedElements}
-            className="flex w-full flex-col gap-3 overflow-auto rounded-lg border border-border-default bg-surface-primary p-4"
+            className="flex h-full min-h-0 w-full flex-col gap-3 overflow-visible rounded-none border-0 p-6"
           />
-        )}
-
-        <FloorEditorCanvas
-          layout={state.layout}
-          selectedIds={selectedIds}
-          selectedElements={selectedElements}
-          selectedElement={selectedElement}
-          onElementPointerDown={handleElementPointerDown}
-          onClearSelection={() => {
-            setSelectedIds([]);
-            setSelectedId(null);
-          }}
-        />
-
-        {isDesktopUp && (
-          <FloorEditorInspector
+        </div>
+        <div className="relative z-0 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-b-lg bg-background-secondary">
+          <FloorEditorCanvas
+            className="min-h-0 flex-1 rounded-none border-0 bg-transparent"
+            showGrid={showCanvasGrid}
             layout={state.layout}
-            selectedElement={selectedElement}
             selectedIds={selectedIds}
-            zoneColors={zoneColors}
-            isMultiSelectModifierPressed={isMultiSelectModifierPressed}
-            dispatch={dispatch}
-            onRemoveSelected={removeSelectedElements}
+            selectedElements={selectedElements}
+            selectedElement={selectedElement}
+            onElementPointerDown={handleElementPointerDown}
+            onClearSelection={() => {
+              setSelectedIds([]);
+              setSelectedId(null);
+            }}
           />
-        )}
+        </div>
       </div>
     </div>
   );

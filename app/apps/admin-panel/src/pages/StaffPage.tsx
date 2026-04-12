@@ -1,8 +1,13 @@
-import type { CreateStaffUserRequest } from "@restorio/types";
-import { Button, Input, Select, useI18n } from "@restorio/ui";
+import { TokenStorage } from "@restorio/auth";
+import type { BulkCreateStaffUserResponse, CreateStaffUserRequest } from "@restorio/types";
+import { Button, FormActions, Input, Modal, Dropdown, useI18n, useToast, Loader } from "@restorio/ui";
 import { isEmailValid } from "@restorio/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { type FormEvent, type ReactElement, useMemo, useState } from "react";
+import { type ReactElement, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { BiSolidSave } from "react-icons/bi";
+import { FaCirclePlus } from "react-icons/fa6";
+import { TbTrash } from "react-icons/tb";
 
 import { api } from "../api/client";
 import { useCurrentTenant } from "../context/TenantContext";
@@ -19,6 +24,14 @@ interface StaffUser {
   isActive: boolean;
 }
 
+interface FormRow {
+  key: number;
+  email: string;
+  name?: string;
+  surname?: string;
+  accessLevel: AccessLevel;
+}
+
 const toAccessLevel = (value: unknown): AccessLevel | null => {
   if (value === "kitchen" || value === "waiter") {
     return value;
@@ -28,6 +41,61 @@ const toAccessLevel = (value: unknown): AccessLevel | null => {
 };
 
 const staffQueryKey = ["staff-users"] as const;
+
+const tenantProfileQueryKey = (tenantId: string): readonly string[] => ["tenant-profile", tenantId];
+
+const STAFF_ALREADY_MEMBER_BACKEND_DETAIL = "User already belongs to this tenant";
+
+interface HttpErrorLike {
+  response?: {
+    status?: number;
+    data?: unknown;
+  };
+}
+
+const getHttpErrorDetail = (error: unknown): string | null => {
+  if (error && typeof error === "object" && "response" in error) {
+    const data = (error as HttpErrorLike).response?.data;
+
+    if (data && typeof data === "object" && "detail" in data) {
+      const { detail } = data as { detail: unknown };
+
+      if (typeof detail === "string") {
+        return detail;
+      }
+    }
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return null;
+};
+
+const isStaffAlreadyMemberConflict = (error: unknown): boolean => {
+  if (!error || typeof error !== "object" || !("response" in error)) {
+    return false;
+  }
+
+  const status = (error as HttpErrorLike).response?.status;
+
+  if (status !== 409) {
+    return false;
+  }
+
+  return getHttpErrorDetail(error) === STAFF_ALREADY_MEMBER_BACKEND_DETAIL;
+};
+
+let nextRowKey = 0;
+
+const createEmptyRow = (): FormRow => ({
+  key: nextRowKey++,
+  email: "",
+  name: "",
+  surname: "",
+  accessLevel: "kitchen",
+});
 
 const parseUsers = (
   rawUsers: {
@@ -60,15 +128,34 @@ const parseUsers = (
 
 export const StaffPage = (): ReactElement => {
   const { t } = useI18n();
+  const { showToast } = useToast();
   const { selectedTenantId } = useCurrentTenant();
   const queryClient = useQueryClient();
+  const refreshStaffUsers = useCallback(async (): Promise<void> => {
+    await queryClient.refetchQueries({
+      predicate: (query) => Array.isArray(query.queryKey) && query.queryKey[0] === staffQueryKey[0],
+    });
+  }, [queryClient]);
   const [showForm, setShowForm] = useState(false);
-  const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
-  const [surname, setSurname] = useState("");
-  const [accessLevel, setAccessLevel] = useState<AccessLevel>("kitchen");
+  const [rows, setRows] = useState<FormRow[]>(() => [createEmptyRow()]);
   const [pendingDeleteUserId, setPendingDeleteUserId] = useState<string | null>(null);
-  const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [deleteConfirmPos, setDeleteConfirmPos] = useState<{ top: number; left: number } | null>(null);
+  const deleteButtonRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+  const [formError, setFormError] = useState<string | null>(null);
+  const [savingRowKey, setSavingRowKey] = useState<number | null>(null);
+  const [isAlreadyMemberModalOpen, setIsAlreadyMemberModalOpen] = useState(false);
+
+  const currentUserEmail = useMemo((): string | null => {
+    const token = TokenStorage.getAccessToken();
+
+    if (!token) {
+      return null;
+    }
+
+    const decoded = TokenStorage.decodeToken(token);
+
+    return decoded?.email ?? null;
+  }, []);
 
   const { data: users = [], isLoading: isLoadingUsers } = useQuery({
     queryKey: [...staffQueryKey, selectedTenantId ?? ""],
@@ -84,6 +171,12 @@ export const StaffPage = (): ReactElement => {
     enabled: selectedTenantId !== null,
   });
 
+  const { data: tenantProfile } = useQuery({
+    queryKey: tenantProfileQueryKey(selectedTenantId ?? ""),
+    queryFn: () => api.tenantProfiles.get(selectedTenantId!),
+    enabled: selectedTenantId !== null,
+  });
+
   const accessOptions = useMemo(
     () => [
       { value: "kitchen", label: t("staff.accessLevels.kitchen") },
@@ -92,68 +185,276 @@ export const StaffPage = (): ReactElement => {
     [t],
   );
 
-  const createMutation = useMutation({
-    mutationFn: (payload: CreateStaffUserRequest) => api.users.create(payload),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: staffQueryKey });
-      setEmail("");
-      setName("");
-      setSurname("");
-      setAccessLevel("kitchen");
-      setShowForm(false);
-      setFeedback({ type: "success", message: t("staff.feedback.createSuccess") });
+  const resetForm = useCallback((): void => {
+    setRows([createEmptyRow()]);
+    setShowForm(false);
+  }, []);
+
+  const bulkMutation = useMutation<BulkCreateStaffUserResponse, Error, { users: CreateStaffUserRequest[] }>({
+    mutationFn: async (payload) => {
+      if (!selectedTenantId) {
+        throw new Error("No tenant selected");
+      }
+
+      const result: BulkCreateStaffUserResponse = await api.users.bulkCreate(selectedTenantId, payload);
+
+      return result;
+    },
+    onSuccess: async (response) => {
+      await refreshStaffUsers();
+      resetForm();
+
+      const created = response.results.filter((r) => r.status === "created").length;
+
+      const total = response.results.length;
+
+      if (created === total) {
+        showToast("success", t("staff.toast.bulkSuccessTitle"), t("staff.toast.bulkSuccessDescription"));
+      } else {
+        showToast(
+          "warning",
+          t("staff.toast.bulkPartialTitle"),
+          t("staff.toast.bulkPartialDescription", { created: String(created), total: String(total) }),
+        );
+      }
     },
     onError: (error: unknown) => {
       const message =
-        error instanceof Error && error.message.trim() !== "" ? error.message : t("staff.feedback.createError");
+        error instanceof Error && error.message.trim() !== "" ? error.message : t("staff.toast.bulkErrorDescription");
 
-      setFeedback({ type: "error", message });
+      showToast("error", t("staff.toast.bulkErrorTitle"), message);
     },
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: (userId: string) => api.users.delete(userId),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: staffQueryKey });
-      setPendingDeleteUserId(null);
-      setFeedback({ type: "success", message: t("staff.feedback.deleteSuccess") });
+  const singleCreateMutation = useMutation({
+    mutationFn: (payload: CreateStaffUserRequest) => {
+      if (!selectedTenantId) {
+        throw new Error("No tenant selected");
+      }
+
+      return api.users.create(selectedTenantId, payload);
+    },
+    onSuccess: async () => {
+      await refreshStaffUsers();
+
+      if (savingRowKey !== null) {
+        removeRow(savingRowKey);
+      }
+
+      setSavingRowKey(null);
+      showToast("success", t("staff.toast.singleSuccessTitle"), t("staff.toast.singleSuccessDescription"));
     },
     onError: (error: unknown) => {
-      const message =
-        error instanceof Error && error.message.trim() !== "" ? error.message : t("staff.feedback.deleteError");
+      setSavingRowKey(null);
 
-      setFeedback({ type: "error", message });
+      if (isStaffAlreadyMemberConflict(error)) {
+        setIsAlreadyMemberModalOpen(true);
+
+        return;
+      }
+
+      const message =
+        error instanceof Error && error.message.trim() !== "" ? error.message : t("staff.toast.singleErrorDescription");
+
+      showToast("error", t("staff.toast.singleErrorTitle"), message);
     },
   });
 
-  const isWaiter = accessLevel === "waiter";
-  const normalizedName = name.trim();
-  const normalizedSurname = surname.trim();
-  const isFormValid = isWaiter
-    ? isEmailValid(email) && normalizedName.length > 0 && normalizedSurname.length > 0
-    : isEmailValid(email);
+  const handleSaveSingle = (row: FormRow): void => {
+    setFormError(null);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
-    event.preventDefault();
-    setFeedback(null);
+    const isWaiter = row.accessLevel === "waiter";
+    const normalizedName = row.name?.trim() ?? "";
+    const normalizedSurname = row.surname?.trim() ?? "";
 
-    if (!isFormValid) {
-      setFeedback({ type: "error", message: t("staff.validation.invalidEmail") });
+    if (!isEmailValid(row.email)) {
+      setFormError(t("staff.validation.invalidEmail"));
 
       return;
     }
 
     if (isWaiter && (normalizedName.length === 0 || normalizedSurname.length === 0)) {
-      setFeedback({ type: "error", message: t("staff.validation.waiterNameRequired") });
+      setFormError(t("staff.validation.waiterNameRequired"));
 
       return;
     }
 
-    createMutation.mutate({
-      email: email.trim(),
-      access_level: accessLevel,
+    const trimmed = row.email.trim();
+
+    if (blockedEmails.has(trimmed.toLowerCase())) {
+      setFormError(t("staff.validation.existingEmail", { emails: trimmed }));
+
+      return;
+    }
+
+    setSavingRowKey(row.key);
+    singleCreateMutation.mutate({
+      email: trimmed,
+      access_level: row.accessLevel,
       ...(isWaiter ? { name: normalizedName, surname: normalizedSurname } : {}),
     });
+  };
+
+  const deleteMutation = useMutation({
+    mutationFn: (userId: string) => {
+      if (!selectedTenantId) {
+        throw new Error("No tenant selected");
+      }
+
+      return api.users.delete(selectedTenantId, userId);
+    },
+    onSuccess: async () => {
+      await refreshStaffUsers();
+      setPendingDeleteUserId(null);
+      showToast("success", t("staff.toast.deleteSuccessTitle"), t("staff.toast.deleteSuccessDescription"));
+    },
+    onError: (error: unknown) => {
+      const message =
+        error instanceof Error && error.message.trim() !== "" ? error.message : t("staff.toast.deleteErrorDescription");
+
+      showToast("error", t("staff.toast.deleteErrorTitle"), message);
+    },
+  });
+
+  const updateRow = (key: number, field: keyof Omit<FormRow, "key">, value: string): void => {
+    setRows((current) =>
+      current.map((row) => {
+        if (row.key !== key) {
+          return row;
+        }
+
+        if (field === "accessLevel") {
+          const level = toAccessLevel(value);
+
+          if (level !== null) {
+            const updates: Partial<FormRow> = { accessLevel: level };
+
+            if (level === "kitchen") {
+              updates.name = "";
+              updates.surname = "";
+            }
+
+            return { ...row, ...updates };
+          }
+
+          return row;
+        }
+
+        return { ...row, [field]: value };
+      }),
+    );
+  };
+
+  const removeRow = (key: number): void => {
+    setRows((current) => {
+      const next = current.filter((row) => row.key !== key);
+
+      return next.length === 0 ? [createEmptyRow()] : next;
+    });
+  };
+
+  const handleTrashClick = (key: number): void => {
+    if (rows.length === 1 && rows[0].email.trim() === "") {
+      resetForm();
+
+      return;
+    }
+
+    removeRow(key);
+  };
+
+  const addRow = (): void => {
+    setRows((current) => [...current, createEmptyRow()]);
+  };
+
+  const isFormValid =
+    rows.length > 0 &&
+    rows.every((row) => {
+      const isWaiter = row.accessLevel === "waiter";
+      const hasValidEmail = isEmailValid(row.email);
+
+      if (!isWaiter) {
+        return hasValidEmail;
+      }
+
+      const normalizedName = row.name?.trim() ?? "";
+      const normalizedSurname = row.surname?.trim() ?? "";
+
+      return hasValidEmail && normalizedName.length > 0 && normalizedSurname.length > 0;
+    });
+
+  const blockedEmails = useMemo((): Set<string> => {
+    const set = new Set<string>();
+
+    for (const u of users) {
+      set.add(u.email.toLowerCase());
+    }
+
+    if (currentUserEmail) {
+      set.add(currentUserEmail.toLowerCase());
+    }
+
+    const owner = tenantProfile?.ownerEmail?.trim();
+
+    if (owner) {
+      set.add(owner.toLowerCase());
+    }
+
+    return set;
+  }, [users, currentUserEmail, tenantProfile?.ownerEmail]);
+
+  const hasDuplicateEmails = (): boolean => {
+    const emails = rows.map((r) => r.email.trim().toLowerCase());
+
+    return new Set(emails).size !== emails.length;
+  };
+
+  const getExistingConflicts = (emails: string[]): string[] => emails.filter((e) => blockedEmails.has(e.toLowerCase()));
+
+  const handleSubmit = (): void => {
+    setFormError(null);
+
+    if (!selectedTenantId) {
+      return;
+    }
+
+    if (!isFormValid) {
+      setFormError(t("staff.validation.invalidEmail"));
+
+      return;
+    }
+
+    if (hasDuplicateEmails()) {
+      setFormError(t("staff.validation.duplicateEmail"));
+
+      return;
+    }
+
+    const trimmedEmails = rows.map((r) => r.email.trim());
+    const conflicts = getExistingConflicts(trimmedEmails);
+
+    if (conflicts.length > 0) {
+      setFormError(t("staff.validation.existingEmail", { emails: conflicts.join(", ") }));
+
+      return;
+    }
+
+    const payload = rows.map((row) => {
+      const isWaiter = row.accessLevel === "waiter";
+
+      return {
+        email: row.email.trim(),
+        access_level: row.accessLevel,
+        ...(isWaiter
+          ? {
+              name: row.name?.trim() ?? "",
+              surname: row.surname?.trim() ?? "",
+            }
+          : {}),
+      };
+    });
+
+    bulkMutation.mutate({ users: payload });
   };
 
   const handleDeleteUser = (userId: string): void => {
@@ -161,112 +462,244 @@ export const StaffPage = (): ReactElement => {
       return;
     }
 
-    setFeedback(null);
+    setFormError(null);
     deleteMutation.mutate(userId);
   };
 
-  return (
-    <PageLayout title={t("staff.title")} description={t("staff.description")}>
-      <div className="w-full p-6 space-y-4">
-        <div className="rounded-lg border border-border-default bg-surface-secondary p-4">
-          <Button type="button" onClick={() => setShowForm((current) => !current)}>
-            {showForm ? t("staff.toggleForm.hide") : t("staff.toggleForm.show")}
+  const openForm = (): void => {
+    setRows([createEmptyRow()]);
+    setShowForm(true);
+  };
+
+  const registerDeleteButton =
+    (userId: string) =>
+    (el: HTMLButtonElement | null): void => {
+      if (el) {
+        deleteButtonRefs.current.set(userId, el);
+      } else {
+        deleteButtonRefs.current.delete(userId);
+      }
+    };
+
+  useLayoutEffect(() => {
+    if (pendingDeleteUserId === null) {
+      setDeleteConfirmPos(null);
+
+      return;
+    }
+
+    const updatePosition = (): void => {
+      const btn = deleteButtonRefs.current.get(pendingDeleteUserId);
+
+      if (!btn) {
+        return;
+      }
+
+      const r = btn.getBoundingClientRect();
+      const panelW = 256;
+      const margin = 8;
+      const left = Math.min(Math.max(margin, r.right - panelW), window.innerWidth - panelW - margin);
+      const top = r.bottom + margin;
+
+      setDeleteConfirmPos({ top, left });
+    };
+
+    updatePosition();
+    window.addEventListener("scroll", updatePosition, true);
+    window.addEventListener("resize", updatePosition);
+
+    return () => {
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, [pendingDeleteUserId]);
+
+  const hasUsers = !isLoadingUsers && users.length > 0;
+  const showEmptyState = !isLoadingUsers && users.length === 0;
+  const showFormCard = showForm;
+
+  const headerActions = ((): ReactElement | undefined => {
+    if (showForm) {
+      return (
+        <FormActions>
+          <Button type="button" disabled={!isFormValid || bulkMutation.isPending} onClick={handleSubmit}>
+            {bulkMutation.isPending ? t("staff.form.submitting") : t("staff.form.submit")}
           </Button>
+        </FormActions>
+      );
+    }
 
-          {showForm && (
-            <form
-              className={`mt-4 grid gap-3 ${
-                isWaiter ? "md:grid-cols-[1fr_1fr_1fr_200px_auto]" : "md:grid-cols-[1fr_200px_auto]"
-              }`}
-              onSubmit={(event) => void handleSubmit(event)}
-            >
-              <Input
-                label={t("staff.form.emailLabel")}
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                required
-              />
-              {isWaiter && (
-                <>
-                  <Input
-                    label={t("staff.form.nameLabel")}
-                    value={name}
-                    maxLength={50}
-                    onChange={(event) => setName(event.target.value)}
-                    required
-                  />
-                  <Input
-                    label={t("staff.form.surnameLabel")}
-                    value={surname}
-                    maxLength={50}
-                    onChange={(event) => setSurname(event.target.value)}
-                    required
-                  />
-                </>
-              )}
-              <Select
-                label={t("staff.form.accessLabel")}
-                value={accessLevel}
-                onChange={(event) => {
-                  const nextValue = toAccessLevel(event.target.value);
+    if (showEmptyState || hasUsers) {
+      return (
+        <FormActions>
+          <Button type="button" onClick={openForm}>
+            {t("staff.toggleForm.show")}
+          </Button>
+        </FormActions>
+      );
+    }
 
-                  if (nextValue !== null) {
-                    setAccessLevel(nextValue);
+    return undefined;
+  })();
 
-                    if (nextValue === "kitchen") {
-                      setName("");
-                      setSurname("");
-                    }
-                  }
-                }}
-                options={accessOptions}
-              />
-              <div className="md:self-end">
-                <Button type="submit" disabled={!isFormValid || createMutation.isPending}>
-                  {createMutation.isPending ? t("staff.form.submitting") : t("staff.form.submit")}
-                </Button>
-              </div>
-            </form>
-          )}
-
-          {feedback && (
-            <div
-              className={`mt-4 rounded-md border px-3 py-2 text-sm ${
-                feedback.type === "success"
-                  ? "border-green-300 bg-green-50 text-green-800 dark:border-green-700 dark:bg-green-900/20 dark:text-green-300"
-                  : "border-red-300 bg-red-50 text-red-800 dark:border-red-700 dark:bg-red-900/20 dark:text-red-300"
-              }`}
-            >
-              {feedback.message}
-            </div>
-          )}
-        </div>
-
-        <div className="rounded-lg border border-border-default">
-          <div className="border-b border-border-default px-4 py-3 text-sm font-medium text-text-secondary">
-            {t("staff.list.title")}
+  return (
+    <PageLayout title={t("staff.title")} description={t("staff.description")} headerActions={headerActions}>
+      <div className="relative min-w-0 w-full space-y-4 p-6">
+        {isLoadingUsers && (
+          <div className="flex items-center gap-2 text-sm text-text-tertiary">
+            <Loader size="sm" />
+            <span>{t("staff.list.loading")}</span>
           </div>
-          <div className="px-4">
-            {isLoadingUsers && <p className="text-sm text-text-tertiary">{t("staff.list.loading")}</p>}
-            {!isLoadingUsers && users.length === 0 && (
-              <p className="text-sm text-text-tertiary">{t("staff.list.empty")}</p>
+        )}
+
+        {showEmptyState && !showForm && (
+          <h1 className="text-2xl mt-4 font-semibold text-center text-text-primary">{t("staff.emptyState.heading")}</h1>
+        )}
+
+        {showFormCard && (
+          <div className="overflow-hidden rounded-lg border border-border-default bg-surface-secondary p-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button type="button" variant="secondary" onClick={resetForm}>
+                {t("staff.toggleForm.hide")}
+              </Button>
+            </div>
+
+            <div className="mt-4 space-y-3">
+              {rows.map((row) => (
+                <div key={row.key} className="flex flex-col md:flex-row items-end gap-3">
+                  <div className="flex-1 w-full md:w-auto">
+                    <Input
+                      label={t("staff.form.emailLabel")}
+                      type="email"
+                      autoComplete="email"
+                      value={row.email}
+                      onChange={(event) => updateRow(row.key, "email", event.target.value)}
+                      required
+                    />
+                  </div>
+
+                  {row.accessLevel === "waiter" && (
+                    <>
+                      <div className="flex-1 w-full md:w-auto">
+                        <Input
+                          label={t("staff.form.nameLabel")}
+                          value={row.name ?? ""}
+                          maxLength={50}
+                          onChange={(event) => updateRow(row.key, "name", event.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="flex-1 w-full md:w-auto">
+                        <Input
+                          label={t("staff.form.surnameLabel")}
+                          value={row.surname ?? ""}
+                          maxLength={50}
+                          onChange={(event) => updateRow(row.key, "surname", event.target.value)}
+                          required
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  <div className="w-full md:w-48 shrink-0">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-sm font-medium text-text-primary">{t("staff.form.accessLabel")}</label>
+                      <Dropdown
+                        trigger={
+                          <Button variant="outline" className="w-full justify-between font-normal">
+                            {accessOptions.find((opt) => opt.value === row.accessLevel)?.label}
+                          </Button>
+                        }
+                        placement="bottom-start"
+                        className="w-full md:w-48"
+                        closeOnSelect
+                      >
+                        <div className="flex flex-col p-1">
+                          {accessOptions.map((option) => (
+                            <button
+                              key={option.value}
+                              type="button"
+                              className="w-full md:w-12 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-surface-secondary"
+                              onClick={() => updateRow(row.key, "accessLevel", option.value)}
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </div>
+                      </Dropdown>
+                    </div>
+                  </div>
+
+                  <div className="flex shrink-0 gap-3 w-full md:w-auto justify-end">
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="primary"
+                      disabled={
+                        !isEmailValid(row.email) ||
+                        (row.accessLevel === "waiter" && (!row.name?.trim() || !row.surname?.trim())) ||
+                        singleCreateMutation.isPending ||
+                        bulkMutation.isPending
+                      }
+                      onClick={() => handleSaveSingle(row)}
+                      aria-label={t("staff.form.saveSingle")}
+                      className="h-11 w-11 min-h-11 min-w-11"
+                    >
+                      <BiSolidSave className="size-6" aria-hidden />
+                    </Button>
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="danger"
+                      onClick={() => handleTrashClick(row.key)}
+                      aria-label={t("staff.form.removeRow")}
+                      className="h-11 w-11 min-h-11 min-w-11"
+                    >
+                      <TbTrash className="size-6" aria-hidden />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+
+              <Button
+                type="button"
+                variant="secondary"
+                size="icon"
+                onClick={addRow}
+                aria-label={t("staff.form.addRow")}
+                className="h-11 w-11 min-h-11 min-w-11 shrink-0"
+              >
+                <FaCirclePlus className="size-6" aria-hidden />
+              </Button>
+            </div>
+
+            {formError && (
+              <div className="mt-4 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-700 dark:bg-red-900/20 dark:text-red-300">
+                {formError}
+              </div>
             )}
-            {!isLoadingUsers && users.length > 0 && (
+          </div>
+        )}
+
+        {hasUsers && (
+          <div className="relative min-w-0 rounded-lg border border-border-default">
+            <div className="rounded-t-lg border-b border-border-default px-6 py-4 text-sm font-medium text-text-secondary">
+              {t("staff.list.title")}
+            </div>
+            <div className="rounded-b-lg px-6 pb-1 pt-0">
               <ul className="m-0 list-none divide-y divide-border-default p-0">
                 {users.map((user) => (
-                  <li key={user.id} className="flex items-center justify-between py-3">
-                    <div className="flex flex-col">
-                      <span className="text-sm text-text-primary">{user.email}</span>
-                      <span className="text-xs text-text-secondary">
+                  <li key={user.id} className="flex min-w-0 items-center justify-between gap-3 py-4">
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="truncate text-sm text-text-primary">{user.email}</span>
+                      <span className="text-xs text-text-secondary truncate">
                         {t("staff.list.personLabel", {
                           name: user.name ?? t("staff.list.notProvided"),
                           surname: user.surname ?? t("staff.list.notProvided"),
                         })}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex shrink-0 items-center gap-3">
                       <span
                         className={`text-xs font-medium ${
                           user.isActive ? "text-green-700 dark:text-green-400" : "text-amber-700 dark:text-amber-400"
@@ -277,54 +710,91 @@ export const StaffPage = (): ReactElement => {
                       <span className="text-xs uppercase tracking-wide text-text-tertiary">
                         {t(`staff.accessLevels.${user.accessLevel}`)}
                       </span>
-                      <div className="relative">
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="danger"
-                          disabled={deleteMutation.isPending && deleteMutation.variables === user.id}
-                          onClick={() => {
-                            setPendingDeleteUserId((current) => (current === user.id ? null : user.id));
-                          }}
-                        >
-                          {deleteMutation.isPending && deleteMutation.variables === user.id
-                            ? t("staff.delete.deleting")
-                            : t("staff.delete.button")}
-                        </Button>
-                        {pendingDeleteUserId === user.id && (
-                          <div className="absolute bottom-full right-0 z-10 mb-2 w-64 rounded-md border border-border-default bg-surface-primary p-3 shadow-lg">
-                            <p className="text-xs text-text-secondary">{t("staff.delete.confirmTitle")}</p>
-                            <div className="mt-3 flex justify-end gap-2">
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="secondary"
-                                onClick={() => {
-                                  setPendingDeleteUserId(null);
-                                }}
-                              >
-                                {t("staff.delete.cancel")}
-                              </Button>
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="danger"
-                                disabled={deleteMutation.isPending && deleteMutation.variables === user.id}
-                                onClick={() => handleDeleteUser(user.id)}
-                              >
-                                {t("staff.delete.confirm")}
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
+                      <Button
+                        ref={registerDeleteButton(user.id)}
+                        type="button"
+                        size="sm"
+                        variant="danger"
+                        className="shadow-none"
+                        disabled={deleteMutation.isPending && deleteMutation.variables === user.id}
+                        onClick={() => {
+                          setPendingDeleteUserId((current) => (current === user.id ? null : user.id));
+                        }}
+                      >
+                        {deleteMutation.isPending && deleteMutation.variables === user.id
+                          ? t("staff.delete.deleting")
+                          : t("staff.delete.button")}
+                      </Button>
                     </div>
                   </li>
                 ))}
               </ul>
-            )}
+            </div>
           </div>
-        </div>
+        )}
+
+        {pendingDeleteUserId !== null &&
+          deleteConfirmPos !== null &&
+          typeof document !== "undefined" &&
+          createPortal(
+            <>
+              <div className="fixed inset-0 z-[90]" aria-hidden onClick={() => setPendingDeleteUserId(null)} />
+              <div
+                className="fixed z-[100] w-64 rounded-md border border-border-default bg-surface-primary p-3 shadow-lg"
+                style={{ top: deleteConfirmPos.top, left: deleteConfirmPos.left }}
+                role="dialog"
+                aria-modal="true"
+              >
+                <p className="text-xs text-text-secondary">{t("staff.delete.confirmTitle")}</p>
+                <div className="mt-3 flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => {
+                      setPendingDeleteUserId(null);
+                    }}
+                  >
+                    {t("staff.delete.cancel")}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="danger"
+                    disabled={deleteMutation.isPending && deleteMutation.variables === pendingDeleteUserId}
+                    onClick={() => handleDeleteUser(pendingDeleteUserId)}
+                  >
+                    {t("staff.delete.confirm")}
+                  </Button>
+                </div>
+              </div>
+            </>,
+            document.body,
+          )}
+
+        <Modal
+          isOpen={isAlreadyMemberModalOpen}
+          onClose={() => {
+            setIsAlreadyMemberModalOpen(false);
+          }}
+          title={t("staff.modal.alreadyMemberTitle")}
+          size="sm"
+          className="border-2 border-status-warning-border"
+          closeButtonAriaLabel={t("staff.modal.closeAria")}
+        >
+          <p className="text-sm text-text-secondary">{t("staff.modal.alreadyMemberDescription")}</p>
+          <div className="mt-6 flex justify-end">
+            <Button
+              type="button"
+              variant="primary"
+              onClick={() => {
+                setIsAlreadyMemberModalOpen(false);
+              }}
+            >
+              {t("staff.modal.ok")}
+            </Button>
+          </div>
+        </Modal>
       </div>
     </PageLayout>
   );

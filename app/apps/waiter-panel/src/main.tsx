@@ -4,7 +4,7 @@ import { createRoot } from "react-dom/client";
 
 import { App } from "./App";
 import { AppProviders } from "./wrappers/AppProviders";
-import "./index.css";
+import "@restorio/ui/styles";
 
 runThemeBootScript();
 

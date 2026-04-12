@@ -156,8 +156,9 @@ class P24Service:
         email: str,
         description: str = "",
         url_return: str | None = None,
+        session_id: str | None = None,
     ) -> P24RegistrationResult:
-        session_id = str(uuid4())
+        session_id = session_id or str(uuid4())
 
         sign = self._przelewy24_sign(
             session_id=session_id,

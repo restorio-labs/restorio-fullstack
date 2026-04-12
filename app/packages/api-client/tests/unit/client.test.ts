@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import axios, { type AxiosResponse, type AxiosError, type AxiosRequestConfig } from "axios";
+import axios, {
+  type AxiosResponse,
+  type AxiosError,
+  type AxiosRequestConfig,
+  type InternalAxiosRequestConfig,
+} from "axios";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { ApiClient } from "../../src/client";
@@ -237,6 +242,89 @@ describe("Api Client", () => {
     const result = (await ctx.requestInterceptor?.(config)) ?? config;
 
     expect((result as AxiosRequestConfig).headers?.Authorization).toBeUndefined();
+  });
+
+  it("adds X-Timezone when browser timezone is available", async () => {
+    vi.stubGlobal("Intl", {
+      DateTimeFormat: () => ({
+        resolvedOptions: () => ({ timeZone: "Europe/Warsaw" }),
+      }),
+    });
+
+    new ApiClient({ baseURL: "x" });
+
+    const config = { headers: {} } as AxiosRequestConfig;
+
+    const result = (await ctx.requestInterceptor?.(config)) ?? config;
+
+    expect((result as AxiosRequestConfig).headers?.["X-Timezone"]).toBe("Europe/Warsaw");
+
+    vi.unstubAllGlobals();
+  });
+
+  it("does not override an existing X-Timezone header", async () => {
+    vi.stubGlobal("Intl", {
+      DateTimeFormat: () => ({
+        resolvedOptions: () => ({ timeZone: "Europe/Warsaw" }),
+      }),
+    });
+
+    new ApiClient({ baseURL: "x" });
+
+    const config = {
+      headers: { "X-Timezone": "America/New_York" },
+    } as AxiosRequestConfig;
+
+    const result = (await ctx.requestInterceptor?.(config)) ?? config;
+
+    expect((result as AxiosRequestConfig).headers?.["X-Timezone"]).toBe("America/New_York");
+
+    vi.unstubAllGlobals();
+  });
+
+  it("adds X-CSRF-Token on POST when csrf_token cookie is present", async () => {
+    vi.stubGlobal("document", { cookie: "csrf_token=signed-token-value" });
+
+    new ApiClient({ baseURL: "x" });
+
+    const config = { headers: {}, method: "post" } as InternalAxiosRequestConfig;
+
+    const result = (await ctx.requestInterceptor?.(config)) ?? config;
+
+    expect((result as AxiosRequestConfig).headers?.["X-CSRF-Token"]).toBe("signed-token-value");
+
+    vi.unstubAllGlobals();
+  });
+
+  it("does not set X-CSRF-Token when header already present", async () => {
+    vi.stubGlobal("document", { cookie: "csrf_token=cookie-value" });
+
+    new ApiClient({ baseURL: "x" });
+
+    const config = {
+      headers: { "X-CSRF-Token": "preset" },
+      method: "post",
+    } as InternalAxiosRequestConfig;
+
+    const result = (await ctx.requestInterceptor?.(config)) ?? config;
+
+    expect((result as AxiosRequestConfig).headers?.["X-CSRF-Token"]).toBe("preset");
+
+    vi.unstubAllGlobals();
+  });
+
+  it("does not add X-CSRF-Token for GET requests", async () => {
+    vi.stubGlobal("document", { cookie: "csrf_token=should-not-apply" });
+
+    new ApiClient({ baseURL: "x" });
+
+    const config = { headers: {}, method: "get" } as InternalAxiosRequestConfig;
+
+    const result = (await ctx.requestInterceptor?.(config)) ?? config;
+
+    expect((result as AxiosRequestConfig).headers?.["X-CSRF-Token"]).toBeUndefined();
+
+    vi.unstubAllGlobals();
   });
 
   it("uses custom tokenExpiryBufferMs when provided", () => {

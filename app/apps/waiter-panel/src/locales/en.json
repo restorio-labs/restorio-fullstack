@@ -1,4 +1,12 @@
 {
+  "tenantSelect": {
+    "title": "Restaurants",
+    "description": "Choose a restaurant to open the waiter floor view.",
+    "loading": "Loading restaurants...",
+    "loadError": "Failed to load restaurants.",
+    "none": "No restaurants are assigned to this account.",
+    "switchRestaurant": "Switch restaurant"
+  },
   "waiterDashboard": {
     "title": "Waiter dashboard",
     "description": "Live floor view from the administration panel configuration.",
@@ -18,10 +26,12 @@
     "selectedElement": "Selected table/element",
     "tableGroupLabel": "Tables {{numbers}}",
     "tableSeats": "Seats: {{seats}}",
+    "occupiedFor": "{{time}}",
     "closePanel": "Close",
     "tableAvailable": "Table available",
     "tableOccupied": "Table occupied",
     "tableOccupiedByWaiter": "Table occupied - served by {{waiter}}",
+    "tableOccupiedByMobile": "Table occupied by a mobile guest session",
     "beginOrder": "Begin order",
     "addItemLabel": "Add item from menu",
     "selectMenuItem": "Select menu item",
@@ -34,10 +44,32 @@
     "orderNotePlaceholder": "e.g. remove cucumber from dish",
     "orderTotal": "Total: {{total}}",
     "confirmPayment": "Confirm payment",
+    "unlockMobileTable": "Unlock mobile table",
+    "unlockMobileTableDescription": "This will release the active mobile lock and let the staff take over the table.",
+    "mobileLockDescription": "This table is currently locked by a guest in the mobile app.",
+    "mobileLockStatus": "Mobile lock",
+    "sendToKitchen": "Send to kitchen",
+    "updateOrder": "Update order",
+    "forcePreparing": "Force preparing",
+    "confirmPaymentModalTitle": "Unlock table",
+    "confirmPaymentModalDescription": "Are you sure you want to unlock this table? This will clear the current order.",
+    "confirmPaymentModalConfirm": "Unlock",
+    "confirmPaymentModalCancel": "Cancel",
+    "todaysOrders": "Today's orders",
+    "noOrdersToday": "No orders created today.",
     "zoomLabel": "Zoom: {{value}}%",
     "zoomIn": "Zoom in",
     "zoomOut": "Zoom out",
-    "zoomReset": "Reset"
+    "zoomReset": "Reset",
+    "orderStatus": {
+      "browsing": "Browsing",
+      "ordering": "Ordering",
+      "ordered": "Ordered",
+      "preparing": "Preparing",
+      "ready_to_serve": "Ready to serve",
+      "served": "Served",
+      "bill_requested": "Bill requested"
+    }
   },
   "floorRuntime": {
     "noLayout": "No floor layout for this venue."
@@ -47,6 +79,26 @@
     "panel": {
       "name": "Name",
       "seats": "Seats"
+    }
+  },
+  "orders": {
+    "status": {
+      "new": "New",
+      "preparing": "Preparing",
+      "ready": "Ready",
+      "readyToServe": "Ready to Serve",
+      "rejected": "Rejected",
+      "refunded": "Refunded",
+      "paid": "Paid",
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled",
+      "unknown": "Unknown"
+    },
+    "errors": {
+      "invalidTransition": "Cannot change status from {{from}} to {{to}}.",
+      "statusUpdateFailed": "Could not update order status."
     }
   }
 }

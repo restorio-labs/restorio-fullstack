@@ -8,13 +8,6 @@
     "save": "Save",
     "close": "Close"
   },
-  "auth": {
-    "title": "Kitchen Login",
-    "description": "Enter your 6-digit access code to continue.",
-    "accessCode": "Access code",
-    "accessCodePlaceholder": "123-456",
-    "signIn": "Sign in"
-  },
   "kitchen": {
     "title": "Kitchen Orders",
     "activeRestaurant": "Active restaurant: {{name}}",
@@ -27,13 +20,50 @@
     "viewMode": {
       "all": "All View",
       "sliding": "Sliding"
+    },
+    "history": {
+      "open": "History",
+      "title": "Completed Orders",
+      "description": "Archived kitchen orders are fetched only while this panel is open.",
+      "windowLabel": "History range",
+      "empty": "No archived orders found for the selected time range.",
+      "unknownTable": "Unknown table",
+      "archivedAt": "Archived: {{value}}",
+      "previous": "Previous",
+      "next": "Next",
+      "paginationSummary": "{{total}} orders · page {{page}} of {{pages}}",
+      "windows": {
+        "last24h": "Last 24h",
+        "last72h": "Last 72h",
+        "last7d": "Last 7 days",
+        "all": "All time"
+      }
     }
   },
   "orders": {
     "status": {
       "new": "New",
       "preparing": "Preparing",
-      "ready": "Ready"
+      "ready": "Ready",
+      "readyToServe": "Ready to Serve",
+      "rejected": "Rejected",
+      "refunded": "Refunded",
+      "paid": "Paid",
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled",
+      "unknown": "Unknown"
+    },
+    "errors": {
+      "invalidTransition": "Cannot change status from {{from}} to {{to}}.",
+      "statusUpdateFailed": "Could not update order status."
+    },
+    "actions": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "markReadyToServe": "Ready to Serve",
+      "refund": "Refund"
     }
   },
   "aria": {
@@ -46,7 +76,9 @@
     "moveOrderDown": "Move {{id}} down",
     "newOrders": "New orders",
     "preparingOrders": "Preparing orders",
-    "readyOrders": "Ready for pickup"
+    "readyOrders": "Ready for pickup",
+    "readyToServeOrders": "Ready to serve orders",
+    "rejectedOrders": "Rejected orders"
   },
   "restaurants": {
     "demo": {

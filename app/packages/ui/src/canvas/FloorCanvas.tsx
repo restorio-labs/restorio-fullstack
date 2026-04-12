@@ -21,6 +21,7 @@ export interface FloorCanvasProps {
   tableStates?: Record<string, TableRuntimeState>;
   tableDisplayInfo?: Record<string, TableDisplayInfo>;
   selectedElementId?: string | null;
+  runtimeTableStyling?: boolean;
   className?: string;
   transformStyle?: string;
   centered?: boolean;
@@ -49,10 +50,12 @@ const renderElement = (
   tableDisplayInfo: Record<string, TableDisplayInfo>,
   selectedId: string | null,
   interactive: boolean,
+  runtimeTableStyling: boolean,
   onElementPointerDown: FloorCanvasProps["onElementPointerDown"],
 ): ReactNode => {
   const bounds = { x: el.x, y: el.y, w: el.w, h: el.h, rotation: el.rotation };
-  const state = el.type === "table" && el.id ? (tableStates[el.id] ?? "free") : "free";
+  const rawTableState = (el.type === "table" || el.type === "tableGroup") && el.id ? tableStates[el.id] : undefined;
+  const state = runtimeTableStyling ? (rawTableState ?? "free") : rawTableState;
   const displayInfo = el.id ? tableDisplayInfo[el.id] : undefined;
   const isSelected = selectedId === el.id;
   const onPointerDown =
@@ -108,6 +111,7 @@ export const FloorCanvas = ({
   tableStates = {},
   tableDisplayInfo = {},
   selectedElementId = null,
+  runtimeTableStyling = true,
   className,
   transformStyle,
   centered = false,
@@ -144,7 +148,15 @@ export const FloorCanvas = ({
         }
       >
         {sortedElements.map((el) =>
-          renderElement(el, tableStates, tableDisplayInfo, selectedElementId, interactive, onElementPointerDown),
+          renderElement(
+            el,
+            tableStates,
+            tableDisplayInfo,
+            selectedElementId,
+            interactive,
+            runtimeTableStyling,
+            onElementPointerDown,
+          ),
         )}
       </div>
     </div>
@@ -152,8 +164,8 @@ export const FloorCanvas = ({
 
   if (centered) {
     return (
-      <div className={cn("flex min-h-0 min-w-0 flex-1 items-center justify-center overflow-auto", className)}>
-        {inner}
+      <div className={cn("flex min-h-0 min-w-0 flex-1 overflow-auto", className)}>
+        <div className="m-auto min-h-0 min-w-0">{inner}</div>
       </div>
     );
   }

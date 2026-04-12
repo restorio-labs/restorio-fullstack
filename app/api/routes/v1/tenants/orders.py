@@ -19,7 +19,7 @@ from core.foundation.http.responses import (
 )
 from core.models.enums import OrderStatus
 from core.models.order import Order
-from core.models.order_item import OrderItem
+from core.models.order_details import OrderDetails
 from core.models.user import User
 
 router = APIRouter()
@@ -34,10 +34,11 @@ def _table_ref_to_uuid(tenant_public_id: str, value: str) -> UUID:
 
 def _build_order_response(
     order: Order,
-    items: list[OrderItem],
+    details: OrderDetails | None,
     waiters_by_id: dict[UUID, User],
 ) -> OrderResponseDTO:
     waiter = waiters_by_id.get(order.waiter_user_id) if order.waiter_user_id else None
+    item_snapshots = details.items_snapshot if details is not None else []
 
     return OrderResponseDTO(
         id=order.id,
@@ -49,18 +50,10 @@ def _build_order_response(
         status=order.status,
         total_amount=order.total_amount,
         currency=order.currency,
+        notes=details.notes if details is not None else None,
         created_at=order.created_at,
         updated_at=order.updated_at,
-        items=[
-            OrderItemResponseDTO(
-                id=item.id,
-                product_id=item.product_id,
-                name=item.name_snapshot,
-                quantity=item.quantity,
-                unit_price=item.unit_price,
-            )
-            for item in items
-        ],
+        items=[OrderItemResponseDTO(**item) for item in item_snapshots],
     )
 
 
@@ -83,14 +76,13 @@ async def list_tenant_orders(
     orders = list(orders_result.scalars().all())
 
     order_ids = [order.id for order in orders]
-    items_by_order: dict[UUID, list[OrderItem]] = {}
+    details_by_order: dict[UUID, OrderDetails] = {}
 
     if order_ids:
-        items_result = await session.execute(
-            select(OrderItem).where(OrderItem.order_id.in_(order_ids))
+        details_result = await session.execute(
+            select(OrderDetails).where(OrderDetails.order_id.in_(order_ids))
         )
-        for item in items_result.scalars().all():
-            items_by_order.setdefault(item.order_id, []).append(item)
+        details_by_order = {details.order_id: details for details in details_result.scalars().all()}
     waiter_ids = {order.waiter_user_id for order in orders if order.waiter_user_id is not None}
     waiters_by_id: dict[UUID, User] = {}
     if waiter_ids:
@@ -100,7 +92,7 @@ async def list_tenant_orders(
     return SuccessResponse(
         message="Orders retrieved successfully",
         data=[
-            _build_order_response(order, items_by_order.get(order.id, []), waiters_by_id)
+            _build_order_response(order, details_by_order.get(order.id), waiters_by_id)
             for order in orders
         ],
     )
@@ -134,37 +126,35 @@ async def create_tenant_order(
     total_amount = sum(Decimal(item.unit_price) * item.quantity for item in request.items)
     order = Order(
         tenant_id=tenant_id,
-        table_id=_table_ref_to_uuid(tenant_public_id, request.table_id),
+        table_id=_table_ref_to_uuid(tenant_public_id, request.table_id)
+        if request.table_id
+        else None,
         table_ref=request.table_id,
         waiter_user_id=waiter_user_id,
-        status=OrderStatus.PENDING.value,
+        status=OrderStatus.NEW.value,
         total_amount=total_amount,
         currency="PLN",
     )
     session.add(order)
     await session.flush()
 
-    created_items: list[OrderItem] = []
-    for item in request.items:
-        order_item = OrderItem(
-            order_id=order.id,
-            product_id=item.product_id,
-            name_snapshot=item.name,
-            quantity=item.quantity,
-            unit_price=item.unit_price,
-        )
-        session.add(order_item)
-        created_items.append(order_item)
+    details = OrderDetails(
+        order_id=order.id,
+        notes=request.notes,
+        items_snapshot=[
+            item.model_dump(by_alias=True, exclude_none=True) for item in request.items
+        ],
+    )
+    session.add(details)
 
     await session.commit()
     await session.refresh(order)
     waiter = await session.get(User, waiter_user_id)
-    for order_item in created_items:
-        await session.refresh(order_item)
+    await session.refresh(details)
 
     return CreatedResponse(
         message="Order created successfully",
-        data=_build_order_response(order, created_items, {waiter.id: waiter} if waiter else {}),
+        data=_build_order_response(order, details, {waiter.id: waiter} if waiter else {}),
     )
 
 
@@ -191,34 +181,28 @@ async def update_tenant_order(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
 
     if request.status is not None:
-        order.status = request.status.value
+        order.status = request.status
     if request.currency is not None:
         order.currency = request.currency
-
-    updated_items: list[OrderItem] = []
-    if request.items is not None:
-        existing_items_result = await session.execute(
-            select(OrderItem).where(OrderItem.order_id == order.id)
-        )
-        for existing_item in existing_items_result.scalars().all():
-            await session.delete(existing_item)
+    details = await session.get(OrderDetails, order.id)
+    if details is None:
+        details = OrderDetails(order_id=order.id, items_snapshot=[])
+        session.add(details)
         await session.flush()
 
-        for item in request.items:
-            order_item = OrderItem(
-                order_id=order.id,
-                product_id=item.product_id,
-                name_snapshot=item.name,
-                quantity=item.quantity,
-                unit_price=item.unit_price,
-            )
-            session.add(order_item)
-            updated_items.append(order_item)
+    if request.notes is not None:
+        details.notes = request.notes
+    elif "notes" in request.model_fields_set:
+        details.notes = None
 
+    if request.items is not None:
+        details.items_snapshot = [
+            item.model_dump(by_alias=True, exclude_none=True) for item in request.items
+        ]
         order.total_amount = sum(Decimal(item.unit_price) * item.quantity for item in request.items)
 
-    if request.total_amount is not None:
-        order.total_amount = request.total_amount
+    if request.total is not None:
+        order.total_amount = request.total
 
     await session.commit()
     await session.refresh(order)
@@ -228,16 +212,9 @@ async def update_tenant_order(
         if waiter is not None:
             waiter_map[waiter.id] = waiter
 
-    if not updated_items:
-        updated_items_result = await session.execute(
-            select(OrderItem).where(OrderItem.order_id == order.id)
-        )
-        updated_items = list(updated_items_result.scalars().all())
-    else:
-        for order_item in updated_items:
-            await session.refresh(order_item)
+    await session.refresh(details)
 
     return UpdatedResponse(
         message="Order updated successfully",
-        data=_build_order_response(order, updated_items, waiter_map),
+        data=_build_order_response(order, details, waiter_map),
     )

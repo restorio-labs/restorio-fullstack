@@ -43,6 +43,8 @@ export interface PublicOrderItemRequest {
 export interface PublicCreateOrderPaymentRequest {
   tenantSlug: string;
   tableNumber: number;
+  tableRef?: string;
+  lockToken?: string;
   email: string;
   items: PublicOrderItemRequest[];
   note?: string;
@@ -51,11 +53,43 @@ export interface PublicCreateOrderPaymentRequest {
 export interface PublicCreateOrderPaymentData {
   token: string;
   redirectUrl: string;
+  lockToken: string;
+  expiresAt: string;
+  tableStatus: string;
+  ownerType: string;
+}
+
+export interface PublicTableSessionRequest {
+  tenantSlug: string;
+  tableNumber: number;
+  tableRef?: string;
+  lockToken?: string;
+}
+
+export interface PublicTableSessionRefreshRequest {
+  lockToken: string;
+}
+
+export interface PublicTableSessionReleaseRequest {
+  lockToken: string;
+}
+
+export interface PublicTableSessionData {
+  lockToken: string;
+  expiresAt: string;
+  tableStatus: string;
+  ownerType: string;
+  tableRef: string;
+  tableNumber?: number | null;
+  message?: string | null;
 }
 
 export interface PublicTenantInfo {
   name: string;
   slug: string;
+  pageTitle?: string | null;
+  faviconPath?: string | null;
+  themeOverride?: Record<string, unknown> | null;
 }
 
 export interface PublicP24TransactionSyncData {

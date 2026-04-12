@@ -214,7 +214,7 @@ describe("Activation views", () => {
     expect(handlePasswordChange).toHaveBeenCalledWith("NewPassword1!");
     expect(handleConfirmPasswordChange).toHaveBeenCalledWith("NewPassword1!");
 
-    const submitButton = screen.getByRole("button");
+    const submitButton = screen.getByRole("button", { name: "setPassword.submit" });
 
     expect(submitButton).toBeEnabled();
 
@@ -253,6 +253,6 @@ describe("Activation views", () => {
     );
 
     expect(screen.getByText("Form error")).toBeInTheDocument();
-    expect(screen.getByRole("button")).toBeDisabled();
+    expect(screen.getByRole("button", { name: "setPassword.submit" })).toBeDisabled();
   });
 });

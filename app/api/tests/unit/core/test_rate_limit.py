@@ -1,6 +1,7 @@
 from fastapi import Request, Response, status
 import pytest
 
+from core.foundation.client_ip import get_client_ip
 from core.middleware import rate_limit as rl
 
 
@@ -26,10 +27,10 @@ def test_client_ip_forwarded_and_unknown() -> None:
     req_forwarded = _request(
         "/x", headers=[(b"x-forwarded-for", b"203.0.113.1, 10.0.0.2")], client=("127.0.0.1", 1)
     )
-    assert rl._client_ip(req_forwarded) == "203.0.113.1"
+    assert get_client_ip(req_forwarded) == "203.0.113.1"
 
     req_unknown = _request("/x", client=None)
-    assert rl._client_ip(req_unknown) == "unknown"
+    assert get_client_ip(req_unknown) == "unknown"
 
 
 def test_inmemory_backend_blocks_after_limit(monkeypatch) -> None:

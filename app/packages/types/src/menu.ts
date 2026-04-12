@@ -1,10 +1,11 @@
 export interface TenantMenuItem {
   name: string;
   price: number;
-  promoted: 0 | 1;
-  active: 0 | 1;
+  promoted: boolean;
   desc: string;
   tags: string[];
+  isAvailable: boolean;
+  imageUrl?: string | null;
 }
 
 export interface TenantMenuCategory {

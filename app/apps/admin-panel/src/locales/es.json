@@ -33,6 +33,13 @@
     "deleteSuccessMessage": "El piso fue eliminado.",
     "deleteErrorTitle": "No se pudo eliminar",
     "deleteErrorMessage": "No se pudo eliminar este piso. Inténtalo de nuevo.",
+    "deleteConfirm": {
+      "title": "¿Eliminar este piso?",
+      "message": "Esto eliminará permanentemente el diseño del piso «{{name}}». Escribe exactamente ese nombre para confirmar.",
+      "inputLabel": "Nombre del piso",
+      "cancel": "Cancelar",
+      "confirm": "Eliminar piso"
+    },
     "floorSelector": {
       "label": "Piso",
       "addFloor": "Añadir piso",
@@ -61,5 +68,38 @@
   "qrGenerator": {
     "noTables": "No se encontraron mesas en ningún piso.",
     "noTablesOnFloor": "No hay mesas en este piso."
+  },
+  "onboarding": {
+    "title": "Crea tu primer restaurante",
+    "description": "Para empezar, añade tu primer restaurante. Siempre puedes añadir más después.",
+    "fields": {
+      "name": {
+        "label": "Nombre del restaurante",
+        "placeholder": "ej. Bella Italia",
+        "error": "El nombre del restaurante es obligatorio"
+      },
+      "street": {
+        "label": "Calle",
+        "placeholder": "ej. Calle Mayor",
+        "error": "La calle es obligatoria"
+      },
+      "streetNumber": {
+        "label": "Número",
+        "placeholder": "ej. 12",
+        "error": "El número es obligatorio"
+      },
+      "city": {
+        "label": "Ciudad",
+        "placeholder": "ej. Madrid",
+        "error": "La ciudad es obligatoria"
+      }
+    },
+    "actions": {
+      "create": "Crear restaurante",
+      "creating": "Creando..."
+    },
+    "errors": {
+      "createFailed": "No se pudo crear el restaurante. Inténtalo de nuevo."
+    }
   }
 }

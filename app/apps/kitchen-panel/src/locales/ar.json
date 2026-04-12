@@ -8,13 +8,6 @@
     "save": "حفظ",
     "close": "إغلاق"
   },
-  "auth": {
-    "title": "تسجيل دخول المطبخ",
-    "description": "أدخل رمز الوصول المكون من 6 أرقام للمتابعة.",
-    "accessCode": "رمز الوصول",
-    "accessCodePlaceholder": "123-456",
-    "signIn": "تسجيل الدخول"
-  },
   "kitchen": {
     "title": "طلبات المطبخ",
     "activeRestaurant": "المطعم النشط: {{name}}",
@@ -27,13 +20,44 @@
     "viewMode": {
       "all": "عرض الكل",
       "sliding": "منزلق"
+    },
+    "history": {
+      "open": "السجل",
+      "title": "الطلبات المكتملة",
+      "description": "يتم تحميل طلبات المطبخ المؤرشفة فقط أثناء فتح هذه اللوحة.",
+      "windowLabel": "نطاق السجل",
+      "empty": "لم يتم العثور على طلبات مؤرشفة ضمن النطاق المحدد.",
+      "unknownTable": "طاولة غير معروفة",
+      "archivedAt": "تمت الأرشفة: {{value}}",
+      "previous": "السابق",
+      "next": "التالي",
+      "paginationSummary": "{{total}} طلبات · الصفحة {{page}} من {{pages}}",
+      "windows": {
+        "last24h": "آخر 24 ساعة",
+        "last72h": "آخر 72 ساعة",
+        "last7d": "آخر 7 أيام",
+        "all": "كل الوقت"
+      }
     }
   },
   "orders": {
     "status": {
       "new": "جديد",
       "preparing": "قيد التحضير",
-      "ready": "جاهز"
+      "ready": "جاهز",
+      "readyToServe": "جاهز للتقديم",
+      "rejected": "مرفوض",
+      "refunded": "مسترد",
+      "paid": "مدفوع",
+      "pending": "قيد الانتظار",
+      "confirmed": "مؤكد",
+      "delivered": "تم التسليم",
+      "cancelled": "ملغى",
+      "unknown": "غير معروف"
+    },
+    "errors": {
+      "invalidTransition": "لا يمكن تغيير الحالة من {{from}} إلى {{to}}.",
+      "statusUpdateFailed": "تعذر تحديث حالة الطلب."
     }
   },
   "aria": {

@@ -33,6 +33,13 @@
     "deleteSuccessMessage": "تم حذف الطابق.",
     "deleteErrorTitle": "فشل الحذف",
     "deleteErrorMessage": "تعذّر حذف هذا الطابق. حاول مرة أخرى.",
+    "deleteConfirm": {
+      "title": "حذف هذا الطابق؟",
+      "message": "سيؤدي ذلك إلى حذف تصميم الطابق «{{name}}» نهائيًا. اكتب هذا الاسم حرفيًا للتأكيد.",
+      "inputLabel": "اسم الطابق",
+      "cancel": "إلغاء",
+      "confirm": "حذف الطابق"
+    },
     "floorSelector": {
       "label": "الطابق",
       "addFloor": "إضافة طابق",
@@ -56,5 +63,38 @@
   "qrGenerator": {
     "noTables": "لم يتم العثور على طاولات في أي طابق.",
     "noTablesOnFloor": "لا توجد طاولات في هذا الطابق."
+  },
+  "onboarding": {
+    "title": "أنشئ مطعمك الأول",
+    "description": "للبدء، أضف مطعمك الأول. يمكنك دائمًا إضافة المزيد لاحقًا.",
+    "fields": {
+      "name": {
+        "label": "اسم المطعم",
+        "placeholder": "مثال: بيلا إيطاليا",
+        "error": "اسم المطعم مطلوب"
+      },
+      "street": {
+        "label": "الشارع",
+        "placeholder": "مثال: شارع الرئيسي",
+        "error": "الشارع مطلوب"
+      },
+      "streetNumber": {
+        "label": "الرقم",
+        "placeholder": "مثال: 12",
+        "error": "الرقم مطلوب"
+      },
+      "city": {
+        "label": "المدينة",
+        "placeholder": "مثال: القاهرة",
+        "error": "المدينة مطلوبة"
+      }
+    },
+    "actions": {
+      "create": "إنشاء مطعم",
+      "creating": "جارٍ الإنشاء..."
+    },
+    "errors": {
+      "createFailed": "فشل إنشاء المطعم. يرجى المحاولة مرة أخرى."
+    }
   }
 }

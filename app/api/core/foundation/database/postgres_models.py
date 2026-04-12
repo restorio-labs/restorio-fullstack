@@ -87,24 +87,20 @@ class OrderCreate(BaseModel):
     currency: str = Field(default="PLN", max_length=3)
 
 
-class OrderItem(BaseModel):
-    id: UUID
+class OrderDetails(BaseModel):
     order_id: UUID
-    product_id: str
-    name_snapshot: str = Field(..., max_length=255)
-    quantity: int = Field(..., gt=0)
-    unit_price: Decimal = Field(..., ge=0, decimal_places=2)
+    notes: str | None = Field(None, max_length=1000)
+    items_snapshot: list[dict] = Field(default_factory=list)
     created_at: datetime
+    updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
 
-class OrderItemCreate(BaseModel):
+class OrderDetailsCreate(BaseModel):
     order_id: UUID
-    product_id: str
-    name_snapshot: str = Field(..., max_length=255)
-    quantity: int = Field(..., gt=0)
-    unit_price: Decimal = Field(..., ge=0, decimal_places=2)
+    notes: str | None = Field(None, max_length=1000)
+    items_snapshot: list[dict] = Field(default_factory=list)
 
 
 class Payment(BaseModel):

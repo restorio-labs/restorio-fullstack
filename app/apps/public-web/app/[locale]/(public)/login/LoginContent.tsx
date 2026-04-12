@@ -1,21 +1,22 @@
 "use client";
 
 import { APP_SLUGS, type AppSlug } from "@restorio/types";
-import { Button, ChooseApp, Form, FormActions, FormField, Input } from "@restorio/ui";
+import { Button, Form, FormActions, FormField, Input, PasswordInput, useAuthRoute } from "@restorio/ui";
 import {
   getApiErrorData,
   getApiErrorMessage,
   getApiValidationFieldLeafs,
   LAST_VISITED_APP_STORAGE_KEY,
   getAppHref,
-  goToApp,
 } from "@restorio/utils";
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 import { useMemo, useState } from "react";
 
 import { api } from "@/api/client";
-import { isEmailValid, MIN_PASSWORD_LENGTH } from "@/services/validation";
+import { AuthenticatedAppPicker } from "@/components/auth/AuthenticatedAppPicker";
+import { translateLoginApiMessage } from "@/services/authApiMessages";
+import { isEmailValid } from "@/services/validation";
 
 type ViewState = "form" | "choosing_app";
 type LoginField = "email" | "password";
@@ -39,8 +40,10 @@ const extractFieldErrors = (data: unknown, t: ReturnType<typeof useTranslations>
 
   return errors;
 };
+const MIN_PASSWORD_LENGTH_FACADE = 1;
 
 export const LoginContent = (): ReactElement => {
+  const { authStatus } = useAuthRoute();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -49,9 +52,13 @@ export const LoginContent = (): ReactElement => {
   const [fieldErrors, setFieldErrors] = useState<LoginFieldErrors>({});
   const [view, setView] = useState<ViewState>("form");
   const t = useTranslations();
+  const animatedFieldClassName = "onboarding-fade-up motion-reduce:animate-none";
 
-  const passwordValid = useMemo(() => password.trim().length >= MIN_PASSWORD_LENGTH, [password]);
+  const passwordValid = useMemo(() => password.trim().length >= MIN_PASSWORD_LENGTH_FACADE, [password]);
   const isFormValid = useMemo(() => isEmailValid(email) && passwordValid, [email, passwordValid]);
+  const backendUnavailable = authStatus === "unavailable";
+  const reconnecting = authStatus === "reconnecting";
+  const blockAuthActions = backendUnavailable || reconnecting;
 
   const emailError = fieldErrors.email
     ? fieldErrors.email
@@ -68,7 +75,7 @@ export const LoginContent = (): ReactElement => {
       ? password.trim().length === 0
         ? t("login.errors.passwordRequired")
         : !passwordValid
-          ? t("login.errors.passwordMinLength", { min: MIN_PASSWORD_LENGTH })
+          ? t("login.errors.passwordMinLength", { min: MIN_PASSWORD_LENGTH_FACADE })
           : undefined
       : undefined;
 
@@ -78,7 +85,7 @@ export const LoginContent = (): ReactElement => {
     setErrorMessage("");
     setFieldErrors({});
 
-    if (!isFormValid || submitting) {
+    if (!isFormValid || submitting || blockAuthActions) {
       return;
     }
 
@@ -114,7 +121,8 @@ export const LoginContent = (): ReactElement => {
       const data = getApiErrorData(err);
       const extractedFieldErrors = extractFieldErrors(data, t);
       const hasFieldErrors = Object.keys(extractedFieldErrors).length > 0;
-      const apiMessage = getApiErrorMessage(data);
+      const rawApiMessage = getApiErrorMessage(data);
+      const apiMessage = translateLoginApiMessage(rawApiMessage, t);
 
       if (hasFieldErrors) {
         setFieldErrors(extractedFieldErrors);
@@ -126,21 +134,8 @@ export const LoginContent = (): ReactElement => {
     }
   };
 
-  if (view === "choosing_app") {
-    const chooseAppLabels = {
-      adminPanel: t("chooseApp.labels.adminPanel"),
-      kitchenPanel: t("chooseApp.labels.kitchenPanel"),
-      waiterPanel: t("chooseApp.labels.waiterPanel"),
-    };
-
-    return (
-      <ChooseApp
-        onSelectApp={(slug) => goToApp(slug)}
-        labels={chooseAppLabels}
-        title={t("chooseApp.title")}
-        subtitle={t("chooseApp.subtitle")}
-      />
-    );
+  if (authStatus === "authenticated" || view === "choosing_app") {
+    return <AuthenticatedAppPicker />;
   }
 
   return (
@@ -160,8 +155,9 @@ export const LoginContent = (): ReactElement => {
         noValidate
         spacing="md"
       >
-        <FormField>
+        <FormField className={animatedFieldClassName} style={{ animationDelay: "120ms" }}>
           <Input
+            id="login-email"
             label={t("login.email")}
             type="email"
             autoComplete="email"
@@ -178,10 +174,10 @@ export const LoginContent = (): ReactElement => {
           />
         </FormField>
 
-        <FormField>
-          <Input
+        <FormField className={animatedFieldClassName} style={{ animationDelay: "220ms" }}>
+          <PasswordInput
+            id="login-password"
             label={t("login.password")}
-            type="password"
             autoComplete="current-password"
             value={password}
             onChange={(event) => {
@@ -196,8 +192,14 @@ export const LoginContent = (): ReactElement => {
           />
         </FormField>
 
-        <FormActions align="stretch">
-          <Button type="submit" size="lg" variant="primary" fullWidth disabled={!isFormValid || submitting}>
+        <FormActions align="stretch" className={animatedFieldClassName} style={{ animationDelay: "320ms" }}>
+          <Button
+            type="submit"
+            size="lg"
+            variant="primary"
+            fullWidth
+            disabled={!isFormValid || submitting || blockAuthActions}
+          >
             {submitting ? t("login.submitting") : t("login.submit")}
           </Button>
         </FormActions>

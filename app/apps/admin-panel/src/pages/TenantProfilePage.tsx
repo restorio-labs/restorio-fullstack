@@ -1,11 +1,13 @@
-import { Button, Form, FormActions, useI18n } from "@restorio/ui";
+import type { ProfileFormData } from "@restorio/types";
+import { Button, Form, FormActions, useI18n, Loader } from "@restorio/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ChangeEvent, FormEvent, ReactElement } from "react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { api } from "../api/client";
-import { EMPTY_FORM, type ProfileFormData, toFormData } from "../components/tenant-profile/profileForm";
+import { useCurrentTenant } from "../context/TenantContext";
+import { EMPTY_FORM, toFormData } from "../features/profile/profileForm";
 import {
   AddressFieldset,
   CompanyFieldset,
@@ -13,8 +15,7 @@ import {
   ContactPersonFieldset,
   OwnerFieldset,
   SocialsFieldset,
-} from "../components/tenant-profile/TenantProfileFieldsets";
-import { useCurrentTenant } from "../context/TenantContext";
+} from "../features/profile/TenantProfileFieldsets";
 import { useValidationErrors } from "../hooks/useValidationErrors";
 import { PageLayout } from "../layouts/PageLayout";
 
@@ -237,7 +238,12 @@ export const TenantProfilePage = (): ReactElement => {
             void handleSubmit(onSubmit)(event);
           }}
         >
-          {isLoadingProfile && <div className="text-xs text-text-tertiary">{t("tenantProfile.loadingProfile")}</div>}
+          {isLoadingProfile && (
+            <div className="flex items-center gap-2 mb-4 text-xs text-text-tertiary">
+              <Loader size="sm" />
+              <span>{t("tenantProfile.loadingProfile")}</span>
+            </div>
+          )}
           {submitStatus === "error" && (
             <div className="text-xs text-status-error-text">{t("tenantProfile.errors.saveFailed")}</div>
           )}

@@ -9,6 +9,7 @@ test.describe("Restorio Platform E2E Tests", () => {
   test("API health check", async ({ request }) => {
     const response = await request.get("http://localhost:8000/health");
     expect(response.ok()).toBeTruthy();
-    expect(await response.json()).toMatchObject({ status: "healthy" });
+    expect(response.status()).toBe(200);
+    expect(await response.json()).toEqual({});
   });
 });

@@ -20,10 +20,10 @@ class ActivationLink(Base):
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
-    tenant_id: Mapped[UUID] = mapped_column(
+    tenant_id: Mapped[UUID | None] = mapped_column(
         PGUUID(as_uuid=True),
         ForeignKey("tenants.id", ondelete="CASCADE"),
-        nullable=False,
+        nullable=True,
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()

@@ -2,7 +2,7 @@ import { Button, Stack, Text } from "@restorio/ui";
 import type { ButtonSize, ButtonVariant } from "@restorio/ui";
 import type { ReactElement } from "react";
 
-const variants: ButtonVariant[] = ["primary", "secondary", "danger"];
+const variants: ButtonVariant[] = ["primary", "secondary", "danger", "teal", "warm"];
 const sizes: ButtonSize[] = ["sm", "md", "lg"];
 
 const ButtonPage = (): ReactElement => {

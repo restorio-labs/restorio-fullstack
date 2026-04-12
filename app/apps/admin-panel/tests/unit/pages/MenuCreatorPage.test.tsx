@@ -5,6 +5,15 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 
+vi.mock("@restorio/ui", async () => {
+  const actual = await vi.importActual<typeof import("@restorio/ui")>("@restorio/ui");
+
+  return {
+    ...actual,
+    useToast: () => ({ showToast: vi.fn() }),
+  };
+});
+
 vi.mock("../../../src/api/client", () => ({
   api: {
     menus: {
@@ -22,6 +31,7 @@ import { api } from "../../../src/api/client";
 import { useCurrentTenant } from "../../../src/context/TenantContext";
 import { fallbackMessages, getMessages } from "../../../src/i18n/messages";
 import { MenuCreatorPage } from "../../../src/pages/MenuCreatorPage";
+import React from "react";
 
 const TENANT_ID = "550e8400-e29b-41d4-a716-446655440000";
 const mockMenusGet = api.menus.get as Mock;
@@ -47,12 +57,12 @@ const baseMenuResponse = {
     {
       name: "First",
       order: 0,
-      items: [{ name: "Soup", price: 12, promoted: 0 as const, active: 1 as const, desc: "Hot soup", tags: ["vegan"] }],
+      items: [{ name: "Soup", price: 12, promoted: false, isAvailable: true, desc: "Hot soup", tags: ["vegan"] }],
     },
     {
       name: "Second",
       order: 1,
-      items: [{ name: "Steak", price: 45, promoted: 1 as const, active: 1 as const, desc: "Premium", tags: [] }],
+      items: [{ name: "Steak", price: 45, promoted: true, isAvailable: true, desc: "Premium", tags: [] }],
     },
   ],
 };
@@ -80,6 +90,7 @@ describe("MenuCreatorPage", () => {
 
     const removeButton = (await screen.findAllByRole("button", { name: /remove item/i }))[0];
     expect(removeButton.querySelector("svg")).toBeTruthy();
+    // @ts-expect-error - toHaveTextContent is not a valid assertion
     expect(removeButton).not.toHaveTextContent(/^x$/i);
   });
 
@@ -110,7 +121,7 @@ describe("MenuCreatorPage", () => {
           expect.objectContaining({
             categories: expect.arrayContaining([
               expect.objectContaining({
-                items: expect.arrayContaining([expect.objectContaining({ name: "Soup", active: 0 })]),
+                items: expect.arrayContaining([expect.objectContaining({ name: "Soup", isAvailable: false })]),
               }),
             ]),
           }),
@@ -133,7 +144,33 @@ describe("MenuCreatorPage", () => {
     fireEvent.click(screen.getAllByText("-")[0]);
 
     await waitFor(() => {
+      // @ts-expect-error - toBeInTheDocument is not a valid assertion
       expect(screen.queryByText("vegan")).not.toBeInTheDocument();
+    });
+  });
+
+  it("reorders categories with arrows and saves correct order", async () => {
+    renderPage();
+
+    await screen.findByDisplayValue("First");
+
+    fireEvent.click(screen.getAllByRole("button", { name: /move category down/i })[0]);
+    await waitFor(() => {
+      // @ts-expect-error - toHaveValue is not a valid assertion
+      expect(screen.getAllByDisplayValue(/First|Second/)[0]).toHaveValue("Second");
+    });
+    fireEvent.click(screen.getByRole("button", { name: /save menu/i }));
+
+    await waitFor(() => {
+      expect(mockMenusSave).toHaveBeenCalledWith(
+        TENANT_ID,
+        expect.objectContaining({
+          categories: [
+            expect.objectContaining({ name: "Second", order: 0 }),
+            expect.objectContaining({ name: "First", order: 1 }),
+          ],
+        }),
+      );
     });
   });
 });

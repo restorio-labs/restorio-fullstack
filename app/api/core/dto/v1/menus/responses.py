@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Any
 
 from pydantic import Field
 
@@ -9,10 +8,15 @@ from core.dto.v1.common import BaseDTO
 class MenuItemDTO(BaseDTO):
     name: str = Field(..., description="Menu item name")
     price: float = Field(..., description="Menu item price")
-    promoted: int = Field(..., description="Promotion flag (0 or 1)")
-    active: int = Field(..., description="Activity flag (0 or 1)")
+    promoted: bool = Field(..., description="Promotion flag")
+    is_available: bool = Field(
+        default=True, alias="isAvailable", description="Whether item is available"
+    )
     desc: str = Field(..., description="Menu item description")
     tags: list[str] = Field(default_factory=list, description="Menu item tags")
+    image_url: str | None = Field(
+        default=None, alias="imageUrl", description="Public image URL when set"
+    )
 
 
 class MenuCategoryDTO(BaseDTO):
@@ -22,7 +26,7 @@ class MenuCategoryDTO(BaseDTO):
 
 
 class TenantMenuResponseDTO(BaseDTO):
-    menu: dict[str, dict[str, Any]] = Field(..., description="Raw menu payload stored in MongoDB")
+    menu: dict[str, dict] = Field(..., description="Raw menu payload stored in MongoDB")
     categories: list[MenuCategoryDTO] = Field(
         default_factory=list, description="Normalized category view"
     )

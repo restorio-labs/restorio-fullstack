@@ -1,4 +1,12 @@
 {
+  "tenantSelect": {
+    "title": "Restaurantes",
+    "description": "Elige un restaurante para abrir la vista de sala del camarero.",
+    "loading": "Cargando restaurantes...",
+    "loadError": "No se pudieron cargar los restaurantes.",
+    "none": "No hay restaurantes asignados a esta cuenta.",
+    "switchRestaurant": "Cambiar de restaurante"
+  },
   "waiterDashboard": {
     "title": "Panel de camarero",
     "description": "Vista de sala en vivo segun la configuracion del panel de administracion.",
@@ -18,10 +26,12 @@
     "selectedElement": "Mesa/elemento seleccionado",
     "tableGroupLabel": "Mesas {{numbers}}",
     "tableSeats": "Asientos: {{seats}}",
+    "occupiedFor": "{{time}}",
     "closePanel": "Cerrar",
     "tableAvailable": "Mesa disponible",
     "tableOccupied": "Mesa ocupada",
     "tableOccupiedByWaiter": "Mesa ocupada - atendida por {{waiter}}",
+    "tableOccupiedByMobile": "Mesa ocupada por una sesion movil",
     "beginOrder": "Iniciar pedido",
     "addItemLabel": "Agregar producto del menu",
     "selectMenuItem": "Seleccionar producto",
@@ -34,10 +44,23 @@
     "orderNotePlaceholder": "p. ej. sin pepino",
     "orderTotal": "Total: {{total}}",
     "confirmPayment": "Confirmar pago",
+    "unlockMobileTable": "Liberar mesa movil",
+    "unlockMobileTableDescription": "Esto liberara el bloqueo activo del movil y permitira que el personal tome la mesa.",
+    "mobileLockDescription": "Esta mesa esta bloqueada por un invitado en la aplicacion movil.",
+    "mobileLockStatus": "Bloqueo movil",
     "zoomLabel": "Zoom: {{value}}%",
     "zoomIn": "Acercar",
     "zoomOut": "Alejar",
-    "zoomReset": "Restablecer"
+    "zoomReset": "Restablecer",
+    "orderStatus": {
+      "browsing": "Navegando",
+      "ordering": "Pidiendo",
+      "ordered": "Pedido",
+      "preparing": "En preparación",
+      "ready_to_serve": "Listo para servir",
+      "served": "Servido",
+      "bill_requested": "Cuenta solicitada"
+    }
   },
   "floorRuntime": {
     "noLayout": "No hay plano de sala para este local."
@@ -47,6 +70,26 @@
     "panel": {
       "name": "Nombre",
       "seats": "Asientos"
+    }
+  },
+  "orders": {
+    "status": {
+      "new": "Nuevo",
+      "preparing": "Preparando",
+      "ready": "Listo",
+      "readyToServe": "Listo para servir",
+      "rejected": "Rechazado",
+      "refunded": "Reembolsado",
+      "paid": "Pagado",
+      "pending": "Pendiente",
+      "confirmed": "Confirmado",
+      "delivered": "Entregado",
+      "cancelled": "Cancelado",
+      "unknown": "Desconocido"
+    },
+    "errors": {
+      "invalidTransition": "No se puede cambiar el estado de {{from}} a {{to}}.",
+      "statusUpdateFailed": "No se pudo actualizar el estado del pedido."
     }
   }
 }

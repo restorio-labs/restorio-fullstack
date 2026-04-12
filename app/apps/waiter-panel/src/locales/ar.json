@@ -1,4 +1,12 @@
 {
+  "tenantSelect": {
+    "title": "المطاعم",
+    "description": "اختر مطعماً لفتح لوحة النادل وعرض القاعة.",
+    "loading": "جارٍ تحميل المطاعم...",
+    "loadError": "تعذر تحميل المطاعم.",
+    "none": "لا توجد مطاعم مرتبطة بهذا الحساب.",
+    "switchRestaurant": "تبديل المطعم"
+  },
   "waiterDashboard": {
     "title": "لوحة النادل",
     "description": "عرض مباشر لقاعة المطعم وفق إعدادات لوحة الإدارة.",
@@ -18,10 +26,12 @@
     "selectedElement": "الطاولة/العنصر المحدد",
     "tableGroupLabel": "الطاولات {{numbers}}",
     "tableSeats": "المقاعد: {{seats}}",
+    "occupiedFor": "{{time}}",
     "closePanel": "إغلاق",
     "tableAvailable": "الطاولة متاحة",
     "tableOccupied": "الطاولة مشغولة",
     "tableOccupiedByWaiter": "الطاولة مشغولة - يخدمها {{waiter}}",
+    "tableOccupiedByMobile": "الطاولة مشغولة بواسطة جلسة هاتفية",
     "beginOrder": "بدء الطلب",
     "addItemLabel": "إضافة عنصر من القائمة",
     "selectMenuItem": "اختر عنصراً من القائمة",
@@ -34,10 +44,23 @@
     "orderNotePlaceholder": "مثال: بدون خيار",
     "orderTotal": "الإجمالي: {{total}}",
     "confirmPayment": "تأكيد الدفع",
+    "unlockMobileTable": "إلغاء قفل الطاولة الهاتفية",
+    "unlockMobileTableDescription": "سيؤدي هذا إلى تحرير القفل النشط من تطبيق الهاتف والسماح للموظف باستلام الطاولة.",
+    "mobileLockDescription": "هذه الطاولة مقفلة حالياً بواسطة ضيف في تطبيق الهاتف.",
+    "mobileLockStatus": "قفل هاتفي",
     "zoomLabel": "التكبير: {{value}}%",
     "zoomIn": "تكبير",
     "zoomOut": "تصغير",
-    "zoomReset": "إعادة ضبط"
+    "zoomReset": "إعادة ضبط",
+    "orderStatus": {
+      "browsing": "تصفح",
+      "ordering": "طلب",
+      "ordered": "تم الطلب",
+      "preparing": "قيد التحضير",
+      "ready_to_serve": "جاهز للتقديم",
+      "served": "مُقدَّم",
+      "bill_requested": "طلب الحساب"
+    }
   },
   "floorRuntime": {
     "noLayout": "لا يوجد مخطط قاعة لهذا المكان."
@@ -47,6 +70,26 @@
     "panel": {
       "name": "الاسم",
       "seats": "المقاعد"
+    }
+  },
+  "orders": {
+    "status": {
+      "new": "جديد",
+      "preparing": "قيد التحضير",
+      "ready": "جاهز",
+      "readyToServe": "جاهز للتقديم",
+      "rejected": "مرفوض",
+      "refunded": "مسترد",
+      "paid": "مدفوع",
+      "pending": "قيد الانتظار",
+      "confirmed": "مؤكد",
+      "delivered": "تم التسليم",
+      "cancelled": "ملغى",
+      "unknown": "غير معروف"
+    },
+    "errors": {
+      "invalidTransition": "لا يمكن تغيير الحالة من {{from}} إلى {{to}}.",
+      "statusUpdateFailed": "تعذر تحديث حالة الطلب."
     }
   }
 }

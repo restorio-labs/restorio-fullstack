@@ -2,6 +2,7 @@ from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from fastapi import APIRouter, Request, Response, status
+from sqlalchemy import select
 
 from core.dto.v1.auth import (
     ActivateResponseData,
@@ -25,7 +26,6 @@ from core.foundation.dependencies import (
     EmailServiceDep,
     PostgresSession,
     SecurityServiceDep,
-    UserServiceDep,
 )
 from core.foundation.http.responses import CreatedResponse, SuccessResponse, UnauthenticatedResponse
 from core.foundation.infra.config import settings
@@ -38,6 +38,7 @@ from core.foundation.token_store import (
 from core.models.activation_link import ActivationLink
 from core.models.enums import AccountType
 from core.models.tenant import Tenant
+from core.models.tenant_role import TenantRole
 from core.models.user import User
 
 router = APIRouter()
@@ -97,47 +98,40 @@ async def login(
 
 @router.post(
     "/register",
-    response_description="User and tenant created successfully",
+    response_description="User created successfully",
     status_code=status.HTTP_201_CREATED,
     response_model=CreatedResponse[RegisterCreatedData],
-    summary="Register a new user and tenant",
-    description="Register a new user and tenant",
+    summary="Register a new user",
+    description="Register a new user",
 )
 async def register(
     data: RegisterDTO,
     request: Request,
     session: PostgresSession,
     auth_service: AuthServiceDep,
-    user_service: UserServiceDep,
     email_service: EmailServiceDep,
 ) -> CreatedResponse[RegisterCreatedData]:
-    user, tenant, _ = await user_service.create_user_with_tenant(
+    user = await auth_service.create_user(
         session=session,
         email=data.email,
         password=data.password,
-        restaurant_name=data.restaurant_name,
     )
     activation = await auth_service.create_activation_link(
         session=session,
         email=user.email,
         user_id=user.id,
-        tenant_id=tenant.id,
     )
     activation_link = f"{settings.FRONTEND_URL}/activate?activation_id={activation.id}"
     await email_service.send_activation_email(
         to_email=user.email,
-        restaurant_name=tenant.name,
         activation_link=activation_link,
     )
-    audit.register(request=request, email=user.email, tenant_name=tenant.name)
+    audit.register(request=request, email=user.email)
 
     return CreatedResponse(
         data=RegisterCreatedData(
             user_id=str(user.id),
             email=user.email,
-            tenant_id=tenant.public_id,
-            tenant_name=tenant.name,
-            tenant_slug=tenant.slug,
         ),
         message="Account created successfully, you should receive email shortly",
     )
@@ -147,9 +141,9 @@ async def register(
     "/activate",
     status_code=status.HTTP_200_OK,
     response_model=SuccessResponse[ActivateResponseData],
-    summary="Activate a tenant account",
-    description="Activate a tenant account",
-    response_description="Tenant activated successfully",
+    summary="Activate an account",
+    description="Activate an account",
+    response_description="Account activated successfully",
 )
 async def activate(
     activation_id: UUID,
@@ -169,12 +163,13 @@ async def activate(
         raise NotFoundResponse(msg, "activation link")
 
     if activation_link.used_at is None and user.force_password_change and not user.is_active:
-        tenant = await session.get(Tenant, activation_link.tenant_id)
-        if tenant is None:
-            msg = "Account"
-            raise NotFoundResponse(msg, "activation link")
+        tenant_slug: str | None = None
+        if activation_link.tenant_id is not None:
+            tenant = await session.get(Tenant, activation_link.tenant_id)
+            if tenant is not None:
+                tenant_slug = tenant.slug
         return SuccessResponse(
-            data=ActivateResponseData(tenant_slug=tenant.slug, requires_password_change=True),
+            data=ActivateResponseData(tenant_slug=tenant_slug, requires_password_change=True),
             message="Password change required",
         )
 
@@ -185,11 +180,13 @@ async def activate(
     if activation_link is not None:
         activated_user = await session.get(User, activation_link.user_id)
         if activated_user is not None:
-            token_data = {
+            tenant_ids = [tenant.public_id] if tenant is not None else []
+            account_type = AccountType.OWNER.value if tenant is not None else None
+            token_data: dict[str, str | list[str] | None] = {
                 "sub": str(user.id),
                 "email": user.email,
-                "tenant_ids": [tenant.public_id],
-                "account_type": AccountType.OWNER.value,
+                "tenant_ids": tenant_ids,
+                "account_type": account_type,
             }
             access_token = auth_service.security.create_access_token(token_data)
             act_family = generate_family()
@@ -205,10 +202,15 @@ async def activate(
                 refresh_token=refresh_token,
             )
             audit.activation_success(
-                request=request, user_id=str(user.id), tenant_id=tenant.public_id
+                request=request,
+                user_id=str(user.id),
+                tenant_id=tenant.public_id if tenant is not None else None,
             )
     return SuccessResponse(
-        data=ActivateResponseData(tenant_slug=tenant.slug, requires_password_change=False),
+        data=ActivateResponseData(
+            tenant_slug=tenant.slug if tenant is not None else None,
+            requires_password_change=False,
+        ),
         message="Account already activated"
         if already_activated
         else "Account activated successfully",
@@ -283,7 +285,10 @@ async def set_password(
     audit.password_set(request=request, user_id=str(user.id))
 
     return SuccessResponse(
-        data=ActivateResponseData(tenant_slug=tenant.slug, requires_password_change=False),
+        data=ActivateResponseData(
+            tenant_slug=tenant.slug if tenant is not None else None,
+            requires_password_change=False,
+        ),
         message="Password set and account activated successfully",
     )
 
@@ -308,11 +313,11 @@ async def resend_activation(
     activation_url = f"{settings.FRONTEND_URL}/activate?activation_id={new_link.id}"
     await email_service.send_activation_email(
         to_email=new_link.email,
-        restaurant_name=tenant.name,
         activation_link=activation_url,
+        restaurant_name=tenant.name if tenant is not None else None,
     )
     return SuccessResponse(
-        data=TenantSlugData(tenant_slug=tenant.slug),
+        data=TenantSlugData(tenant_slug=tenant.slug if tenant is not None else None),
         message="Activation email sent",
     )
 
@@ -325,6 +330,7 @@ async def resend_activation(
 async def refresh_token(
     request: Request,
     response: Response,
+    session: PostgresSession,
     security_service: SecurityServiceDep,
 ) -> SuccessResponse[dict[str, str]]:
     refresh_token_value = get_refresh_token_from_request(request)
@@ -356,18 +362,27 @@ async def refresh_token(
     if family and old_jti:
         refresh_token_store.revoke(family, old_jti)
 
-    tenant_ids_claim = payload.get("tenant_ids")
+    user_uuid = UUID(user_id)
+    tenant_role_ids = list(
+        await session.scalars(
+            select(TenantRole.tenant_id).where(TenantRole.account_id == user_uuid)
+        )
+    )
+
     tenant_ids: list[str] = []
-    if isinstance(tenant_ids_claim, list):
-        tenant_ids = [
-            tenant_id_item for tenant_id_item in tenant_ids_claim if isinstance(tenant_id_item, str)
-        ]
-    account_type = payload.get("account_type")
+    if tenant_role_ids:
+        rows = await session.execute(select(Tenant.public_id).where(Tenant.id.in_(tenant_role_ids)))
+        tenant_ids = [row[0] for row in rows.all()]
+
+    role = await session.scalar(
+        select(TenantRole).where(TenantRole.account_id == user_uuid).limit(1)
+    )
+
     email = payload.get("email")
-    token_data = {
+    token_data: dict[str, str | list[str] | None] = {
         "sub": user_id,
         "tenant_ids": tenant_ids,
-        "account_type": account_type if isinstance(account_type, str) else None,
+        "account_type": role.account_type.value if role is not None else None,
         "email": email if isinstance(email, str) else None,
     }
     access_token = security_service.create_access_token(token_data)
@@ -434,7 +449,9 @@ async def me(request: Request) -> SuccessResponse[AuthMeSessionData]:
     if not isinstance(subject, str):
         raise UnauthenticatedResponse(message="Unauthorized")
 
+    account_type = user.get("account_type")
+
     return SuccessResponse(
-        data=AuthMeSessionData(),
+        data=AuthMeSessionData(account_type=account_type),
         message="Authenticated",
     )

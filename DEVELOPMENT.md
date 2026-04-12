@@ -57,10 +57,10 @@ For detailed Docker documentation, see [DOCKER.md](./DOCKER.md).
 # Install dependencies (first time)
 bun install
 
-# Build Packages
+# Build packages once
 bun run build
 
-# Start all frontend apps
+# Start app dev servers and rebuild shared packages on change
 bun run dev
 ```
 
@@ -103,7 +103,7 @@ restorio-fullstack/
 # Install all dependencies
 bun install
 
-# Run all apps in dev mode
+# Run all apps in dev mode and watch shared packages for rebuilds
 bun run dev
 
 # Build all apps
