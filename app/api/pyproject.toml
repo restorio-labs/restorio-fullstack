@@ -109,8 +109,9 @@ filterwarnings = []
 addopts = [
     "--strict-markers",
     "--cov=core",
-    "--cov=api",
-    "--cov=modules",
+    "--cov=services",
+    "--cov=routes",
+    "--cov=main",
     "--cov-report=json:coverage/coverage.json",
     "--cov-report=term",
     "--cov-report=html:coverage/html",
@@ -118,6 +119,7 @@ addopts = [
 
 [tool.coverage.run]
 data_file = "coverage/.coverage"
+omit = ["*/alembic/*"]
 
 [tool.coverage.report]
 fail_under = 0
