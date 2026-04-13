@@ -2,10 +2,6 @@ from fastapi import APIRouter, Request, status
 
 from core.dto.v1.tenants.mobile_config import (
     CopyMobileThemeFromDTO,
-    MenuImageFinalizeRequestDTO,
-    MenuImageFinalizeResponseDTO,
-    MenuImagePresignRequestDTO,
-    MenuImagePresignResponseDTO,
     TenantMobileConfigResponseDTO,
     TenantMobileFaviconFinalizeRequestDTO,
     TenantMobileFaviconPresignRequestDTO,
@@ -16,7 +12,6 @@ from core.exceptions import BadRequestError
 from core.foundation.dependencies import (
     AuthorizedTenantId,
     PostgresSession,
-    TenantMenuImageStorageServiceDep,
     TenantMobileConfigServiceDep,
     TenantMobileFaviconStorageServiceDep,
 )
@@ -147,40 +142,3 @@ async def copy_mobile_theme_from_tenant(
         data=tenant_mobile_config_to_response(row),
     )
 
-
-@router.post(
-    "/{tenant_public_id}/menu/images/presign",
-    status_code=status.HTTP_200_OK,
-    response_model=SuccessResponse[MenuImagePresignResponseDTO],
-)
-async def presign_menu_item_image(
-    _role: RequireOwnerOrManager,
-    tenant_id: AuthorizedTenantId,
-    body: MenuImagePresignRequestDTO,
-    storage: TenantMenuImageStorageServiceDep,
-) -> SuccessResponse[MenuImagePresignResponseDTO]:
-    upload_url, object_key = storage.create_presigned_upload(tenant_id, body.content_type)
-
-    return SuccessResponse(
-        message="Menu image upload URL created",
-        data=MenuImagePresignResponseDTO(uploadUrl=upload_url, objectKey=object_key),
-    )
-
-
-@router.post(
-    "/{tenant_public_id}/menu/images/finalize",
-    status_code=status.HTTP_200_OK,
-    response_model=SuccessResponse[MenuImageFinalizeResponseDTO],
-)
-async def finalize_menu_item_image(
-    _role: RequireOwnerOrManager,
-    tenant_id: AuthorizedTenantId,
-    body: MenuImageFinalizeRequestDTO,
-    storage: TenantMenuImageStorageServiceDep,
-) -> SuccessResponse[MenuImageFinalizeResponseDTO]:
-    result = storage.finalize_upload(tenant_id, body.object_key)
-
-    return SuccessResponse(
-        message="Menu image saved",
-        data=MenuImageFinalizeResponseDTO(imageUrl=result.public_url),
-    )

@@ -12,10 +12,6 @@ export interface TenantMobileFaviconPresignResponse {
   objectKey: string;
 }
 
-export interface MenuImageFinalizeResponse {
-  imageUrl: string;
-}
-
 export class TenantMobileConfigResource extends BaseResource {
   async get(tenantId: string, signal?: AbortSignal): Promise<TenantMobileConfig> {
     const body = await this.client.get<SuccessResponse<TenantMobileConfig>>(`/tenants/${tenantId}/mobile-config`, {
@@ -71,34 +67,6 @@ export class TenantMobileConfigResource extends BaseResource {
     const body = await this.client.post<UpdatedResponse<TenantMobileConfig>, { sourceTenantPublicId: string }>(
       `/tenants/${tenantId}/mobile-config/theme/copy-from`,
       { sourceTenantPublicId },
-      { signal },
-    );
-
-    return body.data;
-  }
-
-  async presignMenuImage(
-    tenantId: string,
-    contentType: string,
-    signal?: AbortSignal,
-  ): Promise<TenantMobileFaviconPresignResponse> {
-    const body = await this.client.post<SuccessResponse<TenantMobileFaviconPresignResponse>, { contentType: string }>(
-      `/tenants/${tenantId}/menu/images/presign`,
-      { contentType },
-      { signal },
-    );
-
-    return body.data;
-  }
-
-  async finalizeMenuImage(
-    tenantId: string,
-    objectKey: string,
-    signal?: AbortSignal,
-  ): Promise<MenuImageFinalizeResponse> {
-    const body = await this.client.post<SuccessResponse<MenuImageFinalizeResponse>, { objectKey: string }>(
-      `/tenants/${tenantId}/menu/images/finalize`,
-      { objectKey },
       { signal },
     );
 

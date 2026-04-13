@@ -10,7 +10,14 @@ from core.dto.v1 import (
     ToggleItemAvailabilityDTO,
     UpsertTenantMenuDTO,
 )
+from core.dto.v1.tenants.mobile_config import (
+    MenuImageFinalizeRequestDTO,
+    MenuImageFinalizeResponseDTO,
+    MenuImagePresignRequestDTO,
+    MenuImagePresignResponseDTO,
+)
 from core.foundation.dependencies import AuthorizedTenantId, MongoDB
+from core.foundation.dependencies import TenantMenuImageStorageServiceDep
 from core.foundation.http.responses import (
     SuccessResponse,
     UpdatedResponse,
@@ -248,4 +255,42 @@ async def toggle_item_availability(
             categories=_normalize_categories(normalized_menu),
             updatedAt=now,
         ),
+    )
+
+
+@router.post(
+    "/{tenant_public_id}/menu/images/presign",
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessResponse[MenuImagePresignResponseDTO],
+)
+async def presign_menu_item_image(
+    _role: RequireOwnerOrManager,
+    tenant_id: AuthorizedTenantId,
+    body: MenuImagePresignRequestDTO,
+    storage: TenantMenuImageStorageServiceDep,
+) -> SuccessResponse[MenuImagePresignResponseDTO]:
+    upload_url, object_key = storage.create_presigned_upload(tenant_id, body.content_type)
+
+    return SuccessResponse(
+        message="Menu image upload URL created",
+        data=MenuImagePresignResponseDTO(uploadUrl=upload_url, objectKey=object_key),
+    )
+
+
+@router.post(
+    "/{tenant_public_id}/menu/images/finalize",
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessResponse[MenuImageFinalizeResponseDTO],
+)
+async def finalize_menu_item_image(
+    _role: RequireOwnerOrManager,
+    tenant_id: AuthorizedTenantId,
+    body: MenuImageFinalizeRequestDTO,
+    storage: TenantMenuImageStorageServiceDep,
+) -> SuccessResponse[MenuImageFinalizeResponseDTO]:
+    result = storage.finalize_upload(tenant_id, body.object_key)
+
+    return SuccessResponse(
+        message="Menu image saved",
+        data=MenuImageFinalizeResponseDTO(imageUrl=result.public_url),
     )

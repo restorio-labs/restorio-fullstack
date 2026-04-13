@@ -8,6 +8,15 @@ interface ErrorWithStatusCode {
   };
 }
 
+export interface MenuImagePresignResponse {
+  uploadUrl: string;
+  objectKey: string;
+}
+
+export interface MenuImageFinalizeResponse {
+  imageUrl: string;
+}
+
 export class MenusResource extends BaseResource {
   async get(tenantId: string, signal?: AbortSignal): Promise<TenantMenu | null> {
     try {
@@ -41,6 +50,26 @@ export class MenusResource extends BaseResource {
     const response = await this.client.patch<UpdatedResponse<TenantMenu>>(
       `/tenants/${tenantId}/menu/categories/${categoryOrder}/items/${encodeURIComponent(itemName)}/availability`,
       { isAvailable },
+      { signal },
+    );
+
+    return response.data;
+  }
+
+  async presignImage(tenantId: string, contentType: string, signal?: AbortSignal): Promise<MenuImagePresignResponse> {
+    const response = await this.client.post<SuccessResponse<MenuImagePresignResponse>, { contentType: string }>(
+      `/tenants/${tenantId}/menu/images/presign`,
+      { contentType },
+      { signal },
+    );
+
+    return response.data;
+  }
+
+  async finalizeImage(tenantId: string, objectKey: string, signal?: AbortSignal): Promise<MenuImageFinalizeResponse> {
+    const response = await this.client.post<SuccessResponse<MenuImageFinalizeResponse>, { objectKey: string }>(
+      `/tenants/${tenantId}/menu/images/finalize`,
+      { objectKey },
       { signal },
     );
 

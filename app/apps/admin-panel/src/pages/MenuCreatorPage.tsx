@@ -302,7 +302,7 @@ export const MenuCreatorPage = (): ReactElement => {
     setImageUploadItemId(itemId);
 
     try {
-      const presign = await api.tenantMobileConfig.presignMenuImage(tenantId, file.type);
+      const presign = await api.menus.presignImage(tenantId, file.type);
       const put = await fetch(presign.uploadUrl, {
         method: "PUT",
         headers: { "Content-Type": file.type },
@@ -313,7 +313,7 @@ export const MenuCreatorPage = (): ReactElement => {
         throw new Error("upload");
       }
 
-      const { imageUrl } = await api.tenantMobileConfig.finalizeMenuImage(tenantId, presign.objectKey);
+      const { imageUrl } = await api.menus.finalizeImage(tenantId, presign.objectKey);
 
       updateItem(categoryId, itemId, { imageUrl });
     } catch {
