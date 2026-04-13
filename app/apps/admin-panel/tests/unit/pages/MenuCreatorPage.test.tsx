@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 
+import { ROUTER_FUTURE_FLAGS } from "../routerFutureFlags";
+
 vi.mock("@restorio/ui", async () => {
   const actual = await vi.importActual<typeof import("@restorio/ui")>("@restorio/ui");
 
@@ -42,7 +44,7 @@ const renderPage = (): RenderResult =>
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
       <I18nProvider locale="en" messages={getMessages("en")} fallbackMessages={fallbackMessages}>
-        <MemoryRouter>
+        <MemoryRouter future={ROUTER_FUTURE_FLAGS}>
           <MenuCreatorPage />
         </MemoryRouter>
       </I18nProvider>

@@ -218,7 +218,14 @@ class OrderService:
             msg = "Order"
             raise NotFoundResponse(msg, order_id)
 
-        if doc["status"] not in ("ready", "ready_to_serve", "delivered", "paid", "refunded", "rejected"):
+        if doc["status"] not in (
+            "ready",
+            "ready_to_serve",
+            "delivered",
+            "paid",
+            "refunded",
+            "rejected",
+        ):
             msg = (
                 "Only orders with status 'ready', 'ready_to_serve', 'delivered', 'paid', 'refunded' or 'rejected' "
                 "can be archived"

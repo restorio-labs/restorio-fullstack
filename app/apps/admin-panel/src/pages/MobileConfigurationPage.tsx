@@ -251,7 +251,7 @@ export const MobileConfigurationPage = (): ReactElement => {
   }, [copyMutation, copySourceId]);
 
   const copyThemeTriggerLabel = copySourceId
-    ? otherTenants.find((x) => x.id === copySourceId)?.name ?? t("mobileConfiguration.copySection.placeholder")
+    ? (otherTenants.find((x) => x.id === copySourceId)?.name ?? t("mobileConfiguration.copySection.placeholder"))
     : t("mobileConfiguration.copySection.placeholder");
 
   const canSave = tenantId !== null && !saveMutation.isPending;
@@ -421,23 +421,23 @@ export const MobileConfigurationPage = (): ReactElement => {
                       className="max-h-60 w-full min-w-full overflow-y-auto p-1"
                       closeOnSelect
                     >
-                    <button
-                      type="button"
-                      className="w-full rounded-sm px-2 py-1.5 text-left text-sm text-text-tertiary hover:bg-surface-secondary"
-                      onClick={() => setCopySourceId("")}
-                    >
-                      {t("mobileConfiguration.copySection.placeholder")}
-                    </button>
-                    {otherTenants.map((tenant) => (
                       <button
-                        key={tenant.id}
                         type="button"
-                        className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-surface-secondary"
-                        onClick={() => setCopySourceId(tenant.id)}
+                        className="w-full rounded-sm px-2 py-1.5 text-left text-sm text-text-tertiary hover:bg-surface-secondary"
+                        onClick={() => setCopySourceId("")}
                       >
-                        {tenant.name}
+                        {t("mobileConfiguration.copySection.placeholder")}
                       </button>
-                    ))}
+                      {otherTenants.map((tenant) => (
+                        <button
+                          key={tenant.id}
+                          type="button"
+                          className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-surface-secondary"
+                          onClick={() => setCopySourceId(tenant.id)}
+                        >
+                          {tenant.name}
+                        </button>
+                      ))}
                     </Dropdown>
                   </div>
                 )}

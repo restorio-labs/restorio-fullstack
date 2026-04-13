@@ -141,4 +141,3 @@ async def copy_mobile_theme_from_tenant(
         message="Theme copied",
         data=tenant_mobile_config_to_response(row),
     )
-

@@ -1,13 +1,21 @@
 import { renderHook, screen, waitFor } from "@testing-library/react";
 import { act } from "react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { ToastProvider } from "../../../src/providers/ToastProvider";
 import { useToast } from "../../../src/hooks/useToast";
 
 describe("useToast", () => {
   it("throws when used outside ToastProvider", () => {
-    expect(() => renderHook(() => useToast())).toThrow("useToast must be used within a ToastProvider");
+    const stderrWrite = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    try {
+      expect(() => renderHook(() => useToast())).toThrow("useToast must be used within a ToastProvider");
+    } finally {
+      stderrWrite.mockRestore();
+      consoleError.mockRestore();
+    }
   });
 
   it("shows and auto-dismisses a toast", async () => {

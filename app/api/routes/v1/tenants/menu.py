@@ -16,8 +16,11 @@ from core.dto.v1.tenants.mobile_config import (
     MenuImagePresignRequestDTO,
     MenuImagePresignResponseDTO,
 )
-from core.foundation.dependencies import AuthorizedTenantId, MongoDB
-from core.foundation.dependencies import TenantMenuImageStorageServiceDep
+from core.foundation.dependencies import (
+    AuthorizedTenantId,
+    MongoDB,
+    TenantMenuImageStorageServiceDep,
+)
 from core.foundation.http.responses import (
     SuccessResponse,
     UpdatedResponse,

@@ -92,11 +92,7 @@ describe("useTransactions", () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    expect(mockListTransactions).toHaveBeenCalledWith(
-      "tenant-1",
-      { page: 1, pagination: 20 },
-      expect.any(AbortSignal),
-    );
+    expect(mockListTransactions).toHaveBeenCalledWith("tenant-1", { page: 1, pagination: 20 }, expect.any(AbortSignal));
     expect(result.current.transactions).toEqual(data.items);
     expect(result.current.total).toBe(1);
     expect(result.current.totalPages).toBe(1);

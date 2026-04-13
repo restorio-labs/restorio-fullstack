@@ -590,6 +590,7 @@ describe("ThemeProvider", () => {
   it("should throw error when useTheme is used outside ThemeProvider", () => {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const stderrWrite = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
 
     const originalOnError = window.onerror;
 
@@ -622,6 +623,7 @@ describe("ThemeProvider", () => {
         renderHook(() => useTheme());
       }).toThrow("useTheme must be used within a ThemeProvider");
     } finally {
+      stderrWrite.mockRestore();
       consoleSpy.mockRestore();
       window.onerror = originalOnError;
       window.removeEventListener("error", errorHandler);

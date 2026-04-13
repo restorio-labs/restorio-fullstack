@@ -13,11 +13,7 @@ export default defineConfig({
     environment: "jsdom",
     testTimeout: isCI ? 15_000 : 10_000,
     pool: "forks",
-    poolOptions: {
-      forks: {
-        maxForks: isCI ? 4 : undefined,
-      },
-    },
+    ...(isCI ? { maxWorkers: 4 } : {}),
     include: ["app/packages/*/tests/unit/**/*.{test,spec}.{ts,tsx}", "app/apps/*/tests/unit/**/*.{test,spec}.{ts,tsx}"],
 
     exclude: ["/node_modules/", "/dist/", "/\.turbo/", "/\.next/"],

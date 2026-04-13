@@ -633,12 +633,8 @@ export const MenuCreatorPage = (): ReactElement => {
                     <div className="mt-3 rounded-lg border border-border-default bg-surface-secondary/80 p-4">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs font-medium text-text-secondary">
-                            {t("menuCreator.fields.itemImage")}
-                          </p>
-                          <p className="mt-2 text-xs text-text-tertiary">
-                            {t("menuCreator.fields.itemImageHint")}
-                          </p>
+                          <p className="text-xs font-medium text-text-secondary">{t("menuCreator.fields.itemImage")}</p>
+                          <p className="mt-2 text-xs text-text-tertiary">{t("menuCreator.fields.itemImageHint")}</p>
                         </div>
                         <div className="flex shrink-0 flex-row flex-wrap items-center gap-2">
                           <FilePickerButton

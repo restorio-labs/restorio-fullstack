@@ -31,11 +31,7 @@ export const useTransactions = (): UseTransactionsResult => {
   const { data, isPending, isFetching, isError } = useQuery<TransactionListData>({
     queryKey: ["transactions", selectedTenantId ?? "", page],
     queryFn: ({ signal }) =>
-      api.payments.listTransactions(
-        selectedTenantId!,
-        { page, pagination: TRANSACTIONS_PAGE_SIZE },
-        signal,
-      ),
+      api.payments.listTransactions(selectedTenantId!, { page, pagination: TRANSACTIONS_PAGE_SIZE }, signal),
     enabled: selectedTenantId !== null,
   });
 

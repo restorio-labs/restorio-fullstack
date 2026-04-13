@@ -71,17 +71,8 @@ const TransactionListItemRow = ({ transaction }: { transaction: TransactionListI
 
 export const TransactionListContent = (): ReactElement => {
   const { t } = useI18n();
-  const {
-    selectedTenantId,
-    transactions,
-    isLoading,
-    isFetching,
-    isError,
-    page,
-    setPage,
-    total,
-    totalPages,
-  } = useTransactions();
+  const { selectedTenantId, transactions, isLoading, isFetching, isError, page, setPage, total, totalPages } =
+    useTransactions();
 
   const effectiveTotalPages = totalPages > 0 ? totalPages : 1;
 

@@ -58,6 +58,14 @@ describe("I18nProvider", () => {
   });
 
   it("useI18n throws outside provider", () => {
-    expect(() => renderHook(() => useI18n())).toThrow("I18nProvider is missing");
+    const stderrWrite = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    try {
+      expect(() => renderHook(() => useI18n())).toThrow("I18nProvider is missing");
+    } finally {
+      stderrWrite.mockRestore();
+      consoleError.mockRestore();
+    }
   });
 });

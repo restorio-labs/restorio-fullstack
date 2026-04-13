@@ -1,7 +1,7 @@
 import { cn, Tooltip } from "@restorio/ui";
-import { BsQuestion } from "react-icons/bs";
 import type { ChangeEventHandler, ComponentType, ReactElement, SVGProps } from "react";
 import { useId } from "react";
+import { BsQuestion } from "react-icons/bs";
 
 import { FilePickerButton } from "./FilePickerButton";
 

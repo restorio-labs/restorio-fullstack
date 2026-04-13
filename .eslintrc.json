@@ -7,7 +7,7 @@
     "ecmaFeatures": {
       "jsx": true
     },
-    "project": "./tsconfig.json"
+    "project": ["./tsconfig.json", "./tsconfig.eslint.json"]
   },
   "plugins": ["@typescript-eslint", "import", "unused-imports", "prettier"],
   "extends": [
@@ -184,7 +184,7 @@
     "import/resolver": {
       "typescript": {
         "alwaysTryTypes": true,
-        "project": "./tsconfig.json"
+        "project": ["./tsconfig.json", "./tsconfig.eslint.json"]
       }
     }
   },
