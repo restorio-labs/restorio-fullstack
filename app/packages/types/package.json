@@ -19,6 +19,7 @@
   "scripts": {
     "dev": "tsup --watch",
     "build": "tsup",
+    "test:unit": "bun -e \"process.exit(0)\"",
     "clean": "rm -rf dist",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" && eslint . --fix",
     "check": "prettier --check \"**/*.{ts,tsx,json,md}\" && eslint . --ext ts,tsx"

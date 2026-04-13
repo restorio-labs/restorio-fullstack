@@ -22,7 +22,7 @@ def round_pct(pct: float) -> float:
 
 def read_coverage() -> dict[str, Any]:
     if not COVERAGE_PATH.exists():
-        raise FileNotFoundResponse(f"Coverage file not found: {COVERAGE_PATH}")
+        raise FileNotFoundError(f"Coverage file not found: {COVERAGE_PATH}")
 
     print(f"📄 Using coverage file: {COVERAGE_PATH}")
 
@@ -31,26 +31,48 @@ def read_coverage() -> dict[str, Any]:
 
 
 def extract_module_name(file_path: str) -> str | None:
-    normalized_path = file_path.replace("\\", "/")
+    normalized = file_path.replace("\\", "/")
+    if "/tests/" in normalized or normalized.startswith("tests/"):
+        return None
+    if normalized.endswith(".py") is False:
+        return None
 
-    if "app/api/" in normalized_path:
-        parts = normalized_path.split("app/api/")[1].split("/")
-    elif normalized_path.startswith("/"):
-        parts = normalized_path.lstrip("/").split("/")
+    if "app/api/" in normalized:
+        rest = normalized.split("app/api/", 1)[1]
     else:
-        parts = normalized_path.split("/")
+        rest = normalized.lstrip("/")
 
+    parts = [p for p in rest.split("/") if p]
     if not parts:
         return None
 
-    module = parts[0]
-    if module in ("core", "api", "modules", "routes"):
-        if len(parts) >= 2 and parts[1] != "__init__.py":
-            if module == "core":
-                return parts[1]
-            return f"{module}/{parts[1]}"
-        return module
-    return None
+    top = parts[0]
+    if top == "main.py":
+        return "main"
+    if top == "alembic":
+        return "alembic"
+    if top == "__pycache__":
+        return None
+    if top == "core":
+        if len(parts) < 2:
+            return "core"
+        sub = parts[1]
+        if sub == "__init__.py" or sub.endswith(".py"):
+            return "core"
+        return sub
+    if top == "services":
+        return "services"
+    if top == "routes":
+        if len(parts) >= 2 and parts[1] == "__init__.py":
+            return "routes"
+        if len(parts) >= 2:
+            return f"routes/{parts[1]}"
+        return "routes"
+    if top in ("api", "modules"):
+        if len(parts) >= 2:
+            return f"{top}/{parts[1]}"
+        return top
+    return top
 
 
 def aggregate_by_module(
@@ -61,7 +83,7 @@ def aggregate_by_module(
     files = coverage_data.get("files", {})
 
     for file_path, file_data in files.items():
-        if file_path == "__init__.py" or not file_path.endswith(".py"):
+        if file_path == "__init__.py":
             continue
 
         module = extract_module_name(file_path)
@@ -80,19 +102,31 @@ def aggregate_by_module(
     return modules
 
 
-def calculate_avg_metrics(summaries: list[dict[str, Any]]) -> dict[str, float]:
+def calculate_metrics(summaries: list[dict[str, Any]]) -> dict[str, float]:
     if not summaries:
         return {"lines": 0.0, "statements": 0.0}
 
-    statements_with_data = [s for s in summaries if s.get("num_statements", 0) > 0]
+    total_lines = 0
+    covered_lines = 0
+    total_st = 0
+    covered_st = 0.0
 
-    lines_pct = sum(s.get("percent_covered", 0) for s in summaries) / len(summaries)
-    statements_pct = (
-        sum(s.get("percent_covered", 0) for s in statements_with_data)
-        / len(statements_with_data)
-        if statements_with_data
-        else 0.0
-    )
+    for s in summaries:
+        cl = int(s.get("covered_lines", 0))
+        ml = int(s.get("missing_lines", 0))
+        line_total = cl + ml
+        if line_total > 0:
+            total_lines += line_total
+            covered_lines += cl
+
+        nst = int(s.get("num_statements", 0))
+        if nst > 0:
+            total_st += nst
+            pct = float(s.get("percent_statements_covered", s.get("percent_covered", 0)))
+            covered_st += nst * pct / 100.0
+
+    lines_pct = (covered_lines / total_lines * 100.0) if total_lines else 0.0
+    statements_pct = (covered_st / total_st * 100.0) if total_st else 0.0
 
     return {
         "lines": round_pct(lines_pct),
@@ -122,7 +156,7 @@ def main() -> None:
 
     rows = []
     for module_name, summaries in sorted(modules_data.items()):
-        metrics = calculate_avg_metrics(summaries)
+        metrics = calculate_metrics(summaries)
         rows.append(
             {
                 "name": module_name,
@@ -131,9 +165,7 @@ def main() -> None:
             }
         )
 
-    markdown = (
-        f"## 🧪 API Unit Test Coverage{render_table('API Modules', rows)}\n".strip()
-    )
+    markdown = f"## 🧪 API Unit Test Coverage{render_table('API Modules', rows)}\n".strip()
 
     output_path = Path("coverage-summary.md")
     output_path.write_text(markdown, encoding="utf-8")
