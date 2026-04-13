@@ -30,14 +30,10 @@ async def test_get_kitchen_config_returns_success_response(
 async def test_update_rejection_labels_returns_updated_response(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    async def fake_update(
-        _db: object, restaurant_id: str, labels: list[str]
-    ) -> dict[str, object]:
+    async def fake_update(_db: object, restaurant_id: str, labels: list[str]) -> dict[str, object]:
         return {"restaurantId": restaurant_id, "rejectionLabels": labels}
 
-    monkeypatch.setattr(
-        kitchen_config_routes._service, "update_rejection_labels", fake_update
-    )
+    monkeypatch.setattr(kitchen_config_routes._service, "update_rejection_labels", fake_update)
     payload = kitchen_config_routes.UpdateRejectionLabelsDTO(rejectionLabels=["A", "B"])
 
     response = await kitchen_config_routes.update_rejection_labels(
