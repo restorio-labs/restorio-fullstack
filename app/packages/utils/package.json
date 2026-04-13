@@ -21,7 +21,7 @@
     "build": "tsup",
     "clean": "rm -rf dist",
     "test": "vitest run",
-    "test:unit": "vitest run --coverage",
+    "test:unit": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" && eslint . --fix",
     "check": "prettier --check \"**/*.{ts,tsx,json,md}\" && eslint . --ext ts,tsx"

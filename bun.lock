@@ -272,19 +272,6 @@
         "vite": "^7.3.2",
       },
     },
-    "app/packages/hooks": {
-      "name": "@restorio/hooks",
-      "version": "1.0.0",
-      "dependencies": {
-        "@restorio/types": "workspace:*",
-      },
-      "devDependencies": {
-        "@vitest/coverage-v8": "^4.0.16",
-        "tsup": "^8.5.1",
-        "typescript": "^5.9.0",
-        "vitest": "^4.0.16",
-      },
-    },
     "app/packages/types": {
       "name": "@restorio/types",
       "version": "1.0.0",
@@ -631,8 +618,6 @@
     "@restorio/api-client": ["@restorio/api-client@workspace:app/packages/api-client"],
 
     "@restorio/auth": ["@restorio/auth@workspace:app/packages/auth"],
-
-    "@restorio/hooks": ["@restorio/hooks@workspace:app/packages/hooks"],
 
     "@restorio/kitchen-panel": ["@restorio/kitchen-panel@workspace:app/apps/kitchen-panel"],
 
