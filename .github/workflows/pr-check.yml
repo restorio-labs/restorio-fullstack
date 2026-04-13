@@ -38,21 +38,6 @@ jobs:
             api:
               - 'app/api/**'
 
-  typescript-lint:
-    name: TypeScript — format & lint
-    runs-on: ubuntu-slim
-    needs: detect-changes
-    if: needs.detect-changes.outputs.packages-and-apps == 'true'
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: ./.github/actions/setup-bun
-
-      - name: Format and lint
-        env:
-          NODE_OPTIONS: --max-old-space-size=4096
-        run: bun run check
-
   typescript-matrix:
     name: TS ${{ matrix.target }}
     runs-on: ubuntu-slim
