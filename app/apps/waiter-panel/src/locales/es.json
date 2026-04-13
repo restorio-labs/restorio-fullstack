@@ -59,8 +59,15 @@
       "preparing": "En preparación",
       "ready_to_serve": "Listo para servir",
       "served": "Servido",
-      "bill_requested": "Cuenta solicitada"
-    }
+      "bill_requested": "Cuenta solicitada",
+      "rejected": "Rechazado - acción requerida"
+    },
+    "tableRejected": "Pedido rechazado por cocina",
+    "reopenOrder": "Reabrir pedido",
+    "rejectOrder": "Rechazar",
+    "handleRejectionModalTitle": "Gestionar pedido rechazado",
+    "handleRejectionModalDescription": "Este pedido fue rechazado por la cocina. Confirmar eliminará el pedido y liberará la mesa.",
+    "markServed": "Marcar como servido"
   },
   "floorRuntime": {
     "noLayout": "No hay plano de sala para este local."

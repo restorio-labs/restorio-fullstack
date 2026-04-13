@@ -24,6 +24,7 @@ _ACTIVE_WAITER_STATUSES = {
     "preparing",
     "ready",
     "ready_to_serve",
+    "delivered",
 }
 
 

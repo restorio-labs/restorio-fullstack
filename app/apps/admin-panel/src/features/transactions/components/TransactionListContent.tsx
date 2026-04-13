@@ -1,5 +1,5 @@
 import type { TransactionListItem } from "@restorio/types";
-import { useI18n, Loader } from "@restorio/ui";
+import { Button, Loader, Text, useI18n } from "@restorio/ui";
 import type { ReactElement } from "react";
 
 import { useTransactions } from "../hooks/useTransactions";
@@ -71,7 +71,19 @@ const TransactionListItemRow = ({ transaction }: { transaction: TransactionListI
 
 export const TransactionListContent = (): ReactElement => {
   const { t } = useI18n();
-  const { selectedTenantId, transactions, isLoading, isError } = useTransactions();
+  const {
+    selectedTenantId,
+    transactions,
+    isLoading,
+    isFetching,
+    isError,
+    page,
+    setPage,
+    total,
+    totalPages,
+  } = useTransactions();
+
+  const effectiveTotalPages = totalPages > 0 ? totalPages : 1;
 
   return (
     <div className="w-full p-6">
@@ -99,6 +111,35 @@ export const TransactionListContent = (): ReactElement => {
                 <TransactionListItemRow key={transaction.session_id} transaction={transaction} />
               ))}
             </ul>
+          )}
+          {!isLoading && !isError && selectedTenantId !== null && total > 0 && (
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border-default pt-4">
+              <Text as="p" variant="body-sm" className="text-text-secondary">
+                {t("transactions.list.paginationSummary", {
+                  page,
+                  pages: effectiveTotalPages,
+                  total,
+                })}
+              </Text>
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1 || isFetching}
+                >
+                  {t("transactions.list.previous")}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={isFetching || page >= effectiveTotalPages}
+                >
+                  {t("transactions.list.next")}
+                </Button>
+              </div>
+            </div>
           )}
         </div>
       </div>

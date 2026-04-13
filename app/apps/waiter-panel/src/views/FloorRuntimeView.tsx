@@ -1,12 +1,13 @@
 import { getOrderStatusUpdateErrorToastTitle, type OrderStatusErrorTranslateFn } from "@restorio/api-client";
-import type {
-  FloorCanvas as FloorCanvasType,
-  OrderStatusDisplay,
-  TableDisplayInfo,
-  TableSession,
-  TableRuntimeState,
-  Tenant,
-  TenantMenu,
+import {
+  OrderStatus,
+  type FloorCanvas as FloorCanvasType,
+  type OrderStatusDisplay,
+  type TableDisplayInfo,
+  type TableSession,
+  type TableRuntimeState,
+  type Tenant,
+  type TenantMenu,
 } from "@restorio/types";
 import { Button, FloorCanvas, Modal, useI18n, useMediaQuery, useToast, cn } from "@restorio/ui";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -35,6 +36,7 @@ interface KitchenOrder {
   status: string;
   items: KitchenOrderItem[];
   notes?: string;
+  rejectionReason?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -104,8 +106,11 @@ const mapRemoteStatusToDisplayStatus = (status: string): OrderStatusDisplay => {
       return "preparing";
     case "ready_to_serve":
       return "ready_to_serve";
+    case "delivered":
     case "ready":
       return "served";
+    case "rejected":
+      return "rejected";
     default:
       return "browsing";
   }
@@ -259,6 +264,7 @@ export const FloorRuntimeView = ({
               totalPrice: item.totalPrice,
             })),
             notes: order.notes,
+            rejectionReason: order.rejectionReason,
             createdAt: String(order.createdAt),
             updatedAt: String(order.updatedAt),
           }),
@@ -451,6 +457,19 @@ export const FloorRuntimeView = ({
 
     return order?.status;
   }, [remoteOrders, selectedTableElement]);
+
+  const selectedTableRejectionReason = useMemo(() => {
+    if (!selectedTableElement) {
+      return undefined;
+    }
+
+    const order = remoteOrders.find((o) => o.tableId === selectedTableElement.id);
+
+    return order?.rejectionReason;
+  }, [remoteOrders, selectedTableElement]);
+
+  const isSelectedTableRejected = selectedTableOrderStatus === "rejected";
+
   const selectedTableSession = useMemo(() => {
     if (!selectedTableElement) {
       return undefined;
@@ -719,8 +738,12 @@ export const FloorRuntimeView = ({
 
     try {
       if (selectedTableOrderId) {
-        await ordersApi.updateStatus(venue.id, selectedTableOrderId, "paid" as never);
-        await ordersApi.archive(venue.id, selectedTableOrderId);
+        if (isSelectedTableRejected) {
+          await ordersApi.delete(venue.id, selectedTableOrderId);
+        } else {
+          await ordersApi.updateStatus(venue.id, selectedTableOrderId, OrderStatus.PAID);
+          await ordersApi.archive(venue.id, selectedTableOrderId);
+        }
       } else if (selectedTableSession) {
         await ordersApi.unlockTableSession(venue.id, selectedTableSession.tableRef);
       } else {
@@ -763,6 +786,7 @@ export const FloorRuntimeView = ({
     }
   }, [
     isSelectedTableAvailable,
+    isSelectedTableRejected,
     queryClient,
     selectedTableElement,
     selectedTableOrderId,
@@ -778,7 +802,7 @@ export const FloorRuntimeView = ({
     }
 
     try {
-      await ordersApi.updateStatus(venue.id, selectedTableOrderId, "preparing" as never);
+      await ordersApi.updateStatus(venue.id, selectedTableOrderId, OrderStatus.PREPARING);
       void queryClient.invalidateQueries({ queryKey: ["waiter-panel", "kitchen-orders", venue.id] });
     } catch (err: unknown) {
       showErrorToast(getOrderStatusUpdateErrorToastTitle(err, translate));
@@ -788,6 +812,48 @@ export const FloorRuntimeView = ({
     queryClient,
     selectedTableOrderId,
     selectedTableOrderStatus,
+    showErrorToast,
+    translate,
+    venue.id,
+  ]);
+
+  const handleMarkServed = useCallback(async (): Promise<void> => {
+    if (!selectedTableOrderId || isSelectedTableAvailable || selectedTableOrderStatus !== "ready_to_serve") {
+      return;
+    }
+
+    try {
+      await ordersApi.updateStatus(venue.id, selectedTableOrderId, OrderStatus.DELIVERED);
+      void queryClient.invalidateQueries({ queryKey: ["waiter-panel", "kitchen-orders", venue.id] });
+    } catch (err: unknown) {
+      showErrorToast(getOrderStatusUpdateErrorToastTitle(err, translate));
+    }
+  }, [
+    isSelectedTableAvailable,
+    queryClient,
+    selectedTableOrderId,
+    selectedTableOrderStatus,
+    showErrorToast,
+    translate,
+    venue.id,
+  ]);
+
+  const handleReopenOrder = useCallback(async (): Promise<void> => {
+    if (!selectedTableOrderId || isSelectedTableAvailable || !isSelectedTableRejected) {
+      return;
+    }
+
+    try {
+      await ordersApi.updateStatus(venue.id, selectedTableOrderId, OrderStatus.NEW);
+      void queryClient.invalidateQueries({ queryKey: ["waiter-panel", "kitchen-orders", venue.id] });
+    } catch (err: unknown) {
+      showErrorToast(getOrderStatusUpdateErrorToastTitle(err, translate));
+    }
+  }, [
+    isSelectedTableAvailable,
+    isSelectedTableRejected,
+    queryClient,
+    selectedTableOrderId,
     showErrorToast,
     translate,
     venue.id,
@@ -875,6 +941,10 @@ export const FloorRuntimeView = ({
       return t("waiterDashboard.tableAvailable");
     }
 
+    if (isSelectedTableRejected) {
+      return t("waiterDashboard.tableRejected");
+    }
+
     const waiterFullName = [selectedTableDisplayInfo?.servedByName, selectedTableDisplayInfo?.servedBySurname]
       .filter((part): part is string => typeof part === "string" && part.trim() !== "")
       .join(" ")
@@ -891,11 +961,41 @@ export const FloorRuntimeView = ({
     return t("waiterDashboard.tableOccupied");
   }, [
     isSelectedTableAvailable,
+    isSelectedTableRejected,
     selectedTableDisplayInfo?.servedByName,
     selectedTableDisplayInfo?.servedBySurname,
     selectedTableSession?.origin,
     t,
   ]);
+
+  const occupiedTableStatusStyle = useMemo(() => {
+    if (isSelectedTableAvailable) {
+      return "bg-status-success-background text-status-success-text";
+    }
+
+    if (isSelectedTableRejected) {
+      return "bg-status-error-background text-status-error-text";
+    }
+
+    const orderStatus = selectedTableDisplayInfo?.orderStatus;
+
+    switch (orderStatus) {
+      case "ordering":
+        return "bg-status-info-background text-status-info-text";
+      case "ordered":
+        return "bg-status-warning-background text-status-warning-text";
+      case "preparing":
+        return "bg-orange-500/20 text-orange-700 dark:text-orange-300";
+      case "ready_to_serve":
+        return "bg-cyan-500/20 text-cyan-700 dark:text-cyan-300";
+      case "served":
+        return "bg-status-success-background text-status-success-text";
+      case "bill_requested":
+        return "bg-purple-500/20 text-purple-700 dark:text-purple-300";
+      default:
+        return "bg-status-error-background text-status-error-text";
+    }
+  }, [isSelectedTableAvailable, isSelectedTableRejected, selectedTableDisplayInfo?.orderStatus]);
 
   if (!activeCanvas) {
     return (
@@ -985,14 +1085,11 @@ export const FloorRuntimeView = ({
               </div>
             </div>
             <div className="mt-3 flex flex-col gap-3">
-              <div
-                className={`rounded-md px-3 py-2 text-sm font-medium ${
-                  isSelectedTableAvailable
-                    ? "bg-status-success-background text-status-success-text"
-                    : "bg-status-error-background text-status-error-text"
-                }`}
-              >
+              <div className={cn("rounded-md px-3 py-2 text-sm font-medium", occupiedTableStatusStyle)}>
                 {occupiedTableMessage}
+                {isSelectedTableRejected && selectedTableRejectionReason && (
+                  <span className="block mt-1 font-normal text-xs opacity-90">{selectedTableRejectionReason}</span>
+                )}
               </div>
               {isSelectedTableAvailable ? (
                 <Button
@@ -1105,17 +1202,45 @@ export const FloorRuntimeView = ({
                         )}
                       </div>
                     )}
+                    {!selectedTableLockedByMobile &&
+                      selectedTableOrderId &&
+                      selectedTableOrderStatus === "ready_to_serve" && (
+                        <Button
+                          type="button"
+                          variant="primary"
+                          className="w-full"
+                          onClick={() => {
+                            void handleMarkServed();
+                          }}
+                        >
+                          {t("waiterDashboard.markServed")}
+                        </Button>
+                      )}
+                    {isSelectedTableRejected && (
+                      <Button
+                        type="button"
+                        variant="primary"
+                        className="flex-1"
+                        onClick={() => {
+                          void handleReopenOrder();
+                        }}
+                      >
+                        {t("waiterDashboard.reopenOrder")}
+                      </Button>
+                    )}
                     <Button
                       type="button"
-                      variant="primary"
+                      variant={isSelectedTableRejected ? "danger" : "primary"}
                       className="flex-1"
                       onClick={() => {
                         setIsUnlockModalOpen(true);
                       }}
                     >
-                      {selectedTableLockedByMobile
-                        ? t("waiterDashboard.unlockMobileTable")
-                        : t("waiterDashboard.confirmPayment")}
+                      {isSelectedTableRejected
+                        ? t("waiterDashboard.rejectOrder")
+                        : selectedTableLockedByMobile
+                          ? t("waiterDashboard.unlockMobileTable")
+                          : t("waiterDashboard.confirmPayment")}
                     </Button>
                   </div>
                 </>
@@ -1146,14 +1271,20 @@ export const FloorRuntimeView = ({
         onClose={() => {
           setIsUnlockModalOpen(false);
         }}
-        title={t("waiterDashboard.confirmPaymentModalTitle")}
+        title={
+          isSelectedTableRejected
+            ? t("waiterDashboard.handleRejectionModalTitle")
+            : t("waiterDashboard.confirmPaymentModalTitle")
+        }
         size="sm"
       >
         <div className="flex flex-col gap-6">
           <p className="text-sm text-text-secondary">
-            {selectedTableLockedByMobile
-              ? t("waiterDashboard.unlockMobileTableDescription")
-              : t("waiterDashboard.confirmPaymentModalDescription")}
+            {isSelectedTableRejected
+              ? t("waiterDashboard.handleRejectionModalDescription")
+              : selectedTableLockedByMobile
+                ? t("waiterDashboard.unlockMobileTableDescription")
+                : t("waiterDashboard.confirmPaymentModalDescription")}
           </p>
           <div className="flex justify-end gap-3">
             <Button
@@ -1167,7 +1298,7 @@ export const FloorRuntimeView = ({
             </Button>
             <Button
               type="button"
-              variant="primary"
+              variant={isSelectedTableRejected ? "danger" : "primary"}
               onClick={() => {
                 void handleConfirmPayment();
                 setIsUnlockModalOpen(false);

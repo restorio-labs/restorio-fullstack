@@ -33,6 +33,7 @@ const orderStatusStyles: Record<OrderStatusDisplay, string> = {
   ready_to_serve: "bg-cyan-500/20 border-cyan-600/50",
   served: "bg-status-success-background border-status-success-border",
   bill_requested: "bg-purple-500/20 border-purple-500/50",
+  rejected: "bg-status-error-background border-status-error-border",
 };
 
 export const FloorTable = ({
@@ -50,6 +51,7 @@ export const FloorTable = ({
   const needHelp = displayInfo?.needHelp;
   const orderStatus = displayInfo?.orderStatus;
   const hasActiveOrder = orderStatus !== undefined && orderStatus !== "browsing";
+  const isRejected = orderStatus === "rejected";
   const statusLine =
     hasActiveOrder && displayInfo !== undefined ? (displayInfo.orderStatusLabel ?? displayInfo.orderStatus) : undefined;
   const resolvedState: TableRuntimeState | "neutral" = hasActiveOrder ? "occupied" : (state ?? "neutral");
@@ -70,6 +72,7 @@ export const FloorTable = ({
             "focus-within:outline focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-border-focus",
           tableStyle,
           isSelected && "ring-2 ring-interactive-primary ring-offset-1",
+          isRejected && "animate-pulse",
         )}
       >
         {needHelp && (

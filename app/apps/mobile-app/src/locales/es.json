@@ -3,7 +3,9 @@
     "skipToContent": "Ir al contenido principal",
     "loading": "Cargando...",
     "error": "Error",
-    "currency": "PLN"
+    "currency": "PLN",
+    "tryAgain": "Intentar de nuevo",
+    "checkAgain": "Comprobar de nuevo"
   },
   "app": {
     "title": "Pedido"
@@ -14,6 +16,10 @@
   "deviceGate": {
     "title": "Usa un teléfono o tableta",
     "description": "Esta página solo está disponible en móviles y tabletas."
+  },
+  "nav": {
+    "railAria": "Navegación principal",
+    "homeAria": "Inicio"
   },
   "order": {
     "invalidLinkTitle": "Enlace no válido",
@@ -53,8 +59,32 @@
     "removeAria": "Quitar {{name}}"
   },
   "paymentReturn": {
+    "noPaymentDataTitle": "Sin datos de pago",
+    "noPaymentSession": "No se pudo determinar la sesión de pago. Vuelve al menú desde el código QR e inténtalo de nuevo.",
+    "checkingStatus": "Comprobando el estado del pago…",
+    "errorTitle": "Error al comprobar",
+    "checkStatusErrorFallback": "No se pudo comprobar el estado del pago.",
     "title": "¡Gracias!",
     "description": "Tu pedido fue recibido. El pago se procesa con Przelewy24.",
-    "closeHint": "Puedes cerrar esta página."
+    "closeHint": "Puedes cerrar esta página.",
+    "statusChangeHint": "El estado puede actualizarse en breve: puedes actualizar o cerrar la página y volver más tarde.",
+    "status": {
+      "success": {
+        "title": "¡Gracias!",
+        "description": "El pago se ha registrado. Tu pedido está confirmado."
+      },
+      "pending": {
+        "title": "Tu pedido llegó a cocina. Pendiente de aceptación.",
+        "description": "El pedido espera ser aceptado por cocina."
+      },
+      "refunded": {
+        "title": "Reembolso",
+        "description": "Esta transacción fue reembolsada."
+      },
+      "unfinished": {
+        "title": "Pago incompleto",
+        "description": "No se pudo confirmar el pago. Si se cobró dinero, contacta con el soporte de Przelewy24."
+      }
+    }
   }
 }

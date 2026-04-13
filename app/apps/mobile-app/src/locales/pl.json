@@ -4,7 +4,8 @@
     "loading": "Ładowanie...",
     "error": "Błąd",
     "currency": "zł",
-    "tryAgain": "Spróbuj ponownie"
+    "tryAgain": "Spróbuj ponownie",
+    "checkAgain": "Sprawdź ponownie"
   },
   "app": {
     "title": "Zamówienie"
@@ -15,6 +16,10 @@
   "deviceGate": {
     "title": "Użyj telefonu lub tabletu",
     "description": "Ta strona jest dostępna tylko na telefonach i tabletach."
+  },
+  "nav": {
+    "railAria": "Nawigacja główna",
+    "homeAria": "Strona główna"
   },
   "order": {
     "invalidLinkTitle": "Nieprawidłowy link",

@@ -5,6 +5,7 @@ import type { ChangeEvent, ReactElement } from "react";
 import { useEffect, useMemo, useState } from "react";
 
 import { api } from "../api/client";
+import { FilePickerButton } from "../components/file-picker";
 import { useCurrentTenant } from "../context/TenantContext";
 import { moveItemById } from "../features/menu/moveItemById";
 import { PageLayout } from "../layouts/PageLayout";
@@ -629,28 +630,25 @@ export const MenuCreatorPage = (): ReactElement => {
                         maxLength={ITEM_DESCRIPTION_MAX_LENGTH}
                       />
                     </div>
-                    <div className="mt-3 rounded-lg border border-border-default bg-surface-secondary/80 p-3">
-                      <p className="mb-2 text-xs font-medium text-text-secondary">
-                        {t("menuCreator.fields.itemImage")}
-                      </p>
-                      <p className="mb-2 text-xs text-text-tertiary">{t("menuCreator.fields.itemImageHint")}</p>
-                      <div className="flex flex-wrap items-center gap-3">
-                        {item.imageUrl ? (
-                          <img src={item.imageUrl} alt="" className="h-20 w-20 shrink-0 rounded-md object-cover" />
-                        ) : null}
-                        <div className="flex flex-col gap-2">
-                          <label className="inline-flex cursor-pointer items-center justify-center rounded-md border border-border-default bg-surface-primary px-3 py-2 text-xs font-medium text-text-primary">
-                            <input
-                              type="file"
-                              accept="image/png,image/jpeg,image/webp"
-                              className="sr-only"
-                              disabled={tenantId === null || imageUploadItemId === item.id}
-                              onChange={(event) => void handleItemImageChange(category.id, item.id, event)}
-                            />
-                            {imageUploadItemId === item.id
-                              ? t("menuCreator.imageUpload.uploading")
-                              : t("menuCreator.imageUpload.upload")}
-                          </label>
+                    <div className="mt-3 rounded-lg border border-border-default bg-surface-secondary/80 p-4">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-medium text-text-secondary">
+                            {t("menuCreator.fields.itemImage")}
+                          </p>
+                          <p className="mt-2 text-xs text-text-tertiary">
+                            {t("menuCreator.fields.itemImageHint")}
+                          </p>
+                        </div>
+                        <div className="flex shrink-0 flex-row flex-wrap items-center gap-2">
+                          <FilePickerButton
+                            accept="image/png,image/jpeg,image/webp"
+                            onChange={(event) => void handleItemImageChange(category.id, item.id, event)}
+                            disabled={tenantId === null}
+                            busy={imageUploadItemId === item.id}
+                            idleLabel={t("menuCreator.imageUpload.upload")}
+                            busyLabel={t("menuCreator.imageUpload.uploading")}
+                          />
                           {item.imageUrl ? (
                             <Button
                               type="button"
@@ -662,6 +660,11 @@ export const MenuCreatorPage = (): ReactElement => {
                           ) : null}
                         </div>
                       </div>
+                      {item.imageUrl ? (
+                        <div className="mt-3">
+                          <img src={item.imageUrl} alt="" className="h-20 w-20 rounded-md object-cover" />
+                        </div>
+                      ) : null}
                     </div>
                     {item.tags.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-2">

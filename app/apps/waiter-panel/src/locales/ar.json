@@ -59,8 +59,15 @@
       "preparing": "قيد التحضير",
       "ready_to_serve": "جاهز للتقديم",
       "served": "مُقدَّم",
-      "bill_requested": "طلب الحساب"
-    }
+      "bill_requested": "طلب الحساب",
+      "rejected": "مرفوض - يتطلب إجراء"
+    },
+    "tableRejected": "تم رفض الطلب من المطبخ",
+    "reopenOrder": "إعادة فتح الطلب",
+    "rejectOrder": "رفض",
+    "handleRejectionModalTitle": "معالجة الطلب المرفوض",
+    "handleRejectionModalDescription": "تم رفض هذا الطلب من المطبخ. التأكيد سيحذف الطلب ويحرر الطاولة.",
+    "markServed": "تعيين كمُقدَّم"
   },
   "floorRuntime": {
     "noLayout": "لا يوجد مخطط قاعة لهذا المكان."
