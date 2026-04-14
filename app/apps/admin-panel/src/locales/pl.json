@@ -229,7 +229,8 @@
     "actions": {
       "save": "Zapisz",
       "saving": "Zapisywanie…",
-      "clear": "Wyczyść"
+      "clear": "Wyczyść",
+      "chooseFile": "Wybierz plik"
     },
     "fields": {
       "pageTitle": "Tytuł w przeglądarce",
@@ -336,7 +337,10 @@
       "loading": "Ładowanie transakcji...",
       "selectTenant": "Wybierz restaurację, aby wyświetlić transakcje.",
       "error": "Nie udało się pobrać transakcji. Spróbuj ponownie.",
-      "empty": "Brak transakcji dla wybranej restauracji."
+      "empty": "Brak transakcji dla wybranej restauracji.",
+      "paginationSummary": "Strona {{page}} z {{pages}} · {{total}} transakcji",
+      "previous": "Poprzednia",
+      "next": "Następna"
     },
     "fields": {
       "status": "Status",
@@ -553,6 +557,7 @@
       },
       "logo": {
         "label": "Logo",
+        "browse": "Wybierz plik",
         "placeholder": "https://example.com/logo.png",
         "helper": "Prześlij logo PNG, JPEG lub WEBP o rozmiarze do 5 MB.",
         "uploading": "Przesyłanie logo...",

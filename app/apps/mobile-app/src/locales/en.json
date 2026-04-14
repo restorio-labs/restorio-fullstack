@@ -3,7 +3,9 @@
     "skipToContent": "Skip to main content",
     "loading": "Loading...",
     "error": "Error",
-    "currency": "PLN"
+    "currency": "PLN",
+    "tryAgain": "Try again",
+    "checkAgain": "Check again"
   },
   "app": {
     "title": "Order"
@@ -14,6 +16,10 @@
   "deviceGate": {
     "title": "Use a phone or tablet",
     "description": "This page is only available on mobile devices and tablets."
+  },
+  "nav": {
+    "railAria": "Main navigation",
+    "homeAria": "Home"
   },
   "order": {
     "invalidLinkTitle": "Invalid link",
@@ -53,8 +59,32 @@
     "removeAria": "Remove {{name}}"
   },
   "paymentReturn": {
+    "noPaymentDataTitle": "No payment data",
+    "noPaymentSession": "Could not determine the payment session. Return to the menu from the QR code and try again.",
+    "checkingStatus": "Checking payment status…",
+    "errorTitle": "Status check failed",
+    "checkStatusErrorFallback": "Could not check payment status.",
     "title": "Thank you!",
     "description": "Your order was received. Payment is being processed by Przelewy24.",
-    "closeHint": "You can close this page."
+    "closeHint": "You can close this page.",
+    "statusChangeHint": "The status may update shortly — you can refresh or close the page and come back later.",
+    "status": {
+      "success": {
+        "title": "Thank you!",
+        "description": "Payment was received. Your order is confirmed."
+      },
+      "pending": {
+        "title": "Your order reached the kitchen. Awaiting acceptance.",
+        "description": "The order is waiting to be accepted by the kitchen."
+      },
+      "refunded": {
+        "title": "Payment refunded",
+        "description": "This transaction was refunded."
+      },
+      "unfinished": {
+        "title": "Payment incomplete",
+        "description": "Payment could not be confirmed. If money was taken, contact Przelewy24 support."
+      }
+    }
   }
 }

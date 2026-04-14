@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 
+import { ROUTER_FUTURE_FLAGS } from "../routerFutureFlags";
+
 vi.mock("../../../src/api/client", () => ({
   api: {
     payments: {
@@ -32,7 +34,7 @@ const renderPage = (): RenderResult =>
   render(
     <QueryClientProvider client={new QueryClient()}>
       <I18nProvider locale="en" messages={getMessages("en")} fallbackMessages={fallbackMessages}>
-        <MemoryRouter>
+        <MemoryRouter future={ROUTER_FUTURE_FLAGS}>
           <PaymentConfigPage />
         </MemoryRouter>
       </I18nProvider>

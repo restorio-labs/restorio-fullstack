@@ -1,10 +1,11 @@
-import { Button, FormActions, Loader, Tooltip, useI18n, useToast } from "@restorio/ui";
+import { Button, Dropdown, FormActions, Loader, Tooltip, useI18n, useToast } from "@restorio/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ChangeEvent, FormEvent, ReactElement } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { TbHelpCircle } from "react-icons/tb";
+import { TbChevronDown, TbHelpCircle } from "react-icons/tb";
 
 import { api } from "../api/client";
+import { FilePickerField } from "../components/file-picker";
 import { useCurrentTenant } from "../context/TenantContext";
 import { PageLayout } from "../layouts/PageLayout";
 
@@ -249,6 +250,10 @@ export const MobileConfigurationPage = (): ReactElement => {
     copyMutation.mutate();
   }, [copyMutation, copySourceId]);
 
+  const copyThemeTriggerLabel = copySourceId
+    ? (otherTenants.find((x) => x.id === copySourceId)?.name ?? t("mobileConfiguration.copySection.placeholder"))
+    : t("mobileConfiguration.copySection.placeholder");
+
   const canSave = tenantId !== null && !saveMutation.isPending;
 
   return (
@@ -293,22 +298,18 @@ export const MobileConfigurationPage = (): ReactElement => {
           </div>
 
           <div>
-            <div className="mb-1 flex items-center gap-1">
-              <label className="block text-xs font-medium text-text-secondary" htmlFor="mobile-favicon">
-                {t("mobileConfiguration.fields.favicon")}
-              </label>
-              <Tooltip content={t("mobileConfiguration.hints.favicon")} placement="right">
-                <button type="button" className="text-text-tertiary hover:text-text-secondary">
-                  <TbHelpCircle className="h-4 w-4" />
-                </button>
-              </Tooltip>
-            </div>
-            <input
-              id="mobile-favicon"
-              type="file"
+            <FilePickerField
+              label={t("mobileConfiguration.fields.favicon")}
+              labelTooltip={t("mobileConfiguration.hints.favicon")}
               accept=".ico,image/x-icon,image/vnd.microsoft.icon"
               onChange={handleFaviconChange}
-              className="block w-full text-sm text-text-secondary"
+              disabled={saveMutation.isPending}
+              busy={saveMutation.isPending}
+              idleLabel={t("mobileConfiguration.actions.chooseFile")}
+              busyLabel={t("mobileConfiguration.actions.saving")}
+              error={faviconError || undefined}
+              labelClassName="text-xs text-text-secondary"
+              buttonClassName="text-sm"
             />
             {faviconFile && (
               <p className="mt-1 text-xs text-text-tertiary">
@@ -318,7 +319,6 @@ export const MobileConfigurationPage = (): ReactElement => {
             {config?.hasFavicon && !faviconFile && (
               <p className="mt-1 text-xs text-text-tertiary">{t("mobileConfiguration.hints.faviconCurrent")}</p>
             )}
-            {faviconError && <p className="mt-1 text-xs text-status-error-text">{faviconError}</p>}
           </div>
 
           <div className="rounded-lg border border-border-default bg-surface-secondary/40 p-4">
@@ -389,22 +389,58 @@ export const MobileConfigurationPage = (): ReactElement => {
             <p className="mb-2 text-sm font-medium text-text-primary">{t("mobileConfiguration.copySection.title")}</p>
             <div className="flex flex-wrap items-end gap-2">
               <div className="min-w-[200px] flex-1">
-                <label className="mb-1 block text-xs font-medium text-text-secondary" htmlFor="copy-theme-source">
+                <label className="mb-1 block text-xs font-medium text-text-secondary" htmlFor="copy-theme-trigger">
                   {t("mobileConfiguration.copySection.source")}
                 </label>
-                <select
-                  id="copy-theme-source"
-                  value={copySourceId}
-                  onChange={(e) => setCopySourceId(e.target.value)}
-                  className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
-                >
-                  <option value="">{t("mobileConfiguration.copySection.placeholder")}</option>
-                  {otherTenants.map((tenant) => (
-                    <option key={tenant.id} value={tenant.id}>
-                      {tenant.name}
-                    </option>
-                  ))}
-                </select>
+                {otherTenants.length === 0 ? (
+                  <Button
+                    id="copy-theme-trigger"
+                    type="button"
+                    variant="outline"
+                    disabled
+                    className="w-full justify-between gap-2 font-normal"
+                  >
+                    <span className="min-w-0 truncate text-left">{copyThemeTriggerLabel}</span>
+                    <TbChevronDown className="size-4 shrink-0 text-text-secondary" aria-hidden />
+                  </Button>
+                ) : (
+                  <div className="w-full [&>div]:block [&>div]:w-full">
+                    <Dropdown
+                      trigger={
+                        <Button
+                          id="copy-theme-trigger"
+                          type="button"
+                          variant="outline"
+                          className="w-full justify-between gap-2 font-normal"
+                        >
+                          <span className="min-w-0 truncate text-left">{copyThemeTriggerLabel}</span>
+                          <TbChevronDown className="size-4 shrink-0 text-text-secondary" aria-hidden />
+                        </Button>
+                      }
+                      placement="bottom-start"
+                      className="max-h-60 w-full min-w-full overflow-y-auto p-1"
+                      closeOnSelect
+                    >
+                      <button
+                        type="button"
+                        className="w-full rounded-sm px-2 py-1.5 text-left text-sm text-text-tertiary hover:bg-surface-secondary"
+                        onClick={() => setCopySourceId("")}
+                      >
+                        {t("mobileConfiguration.copySection.placeholder")}
+                      </button>
+                      {otherTenants.map((tenant) => (
+                        <button
+                          key={tenant.id}
+                          type="button"
+                          className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-surface-secondary"
+                          onClick={() => setCopySourceId(tenant.id)}
+                        >
+                          {tenant.name}
+                        </button>
+                      ))}
+                    </Dropdown>
+                  </div>
+                )}
               </div>
               <Button
                 type="button"

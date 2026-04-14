@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 import { AuthRouteProvider, useAuthRoute, type AuthCheckContext } from "../../../src/providers/AuthRouteProvider";
 
 describe("AuthRouteProvider", () => {
-  it("renders children", () => {
+  it("renders children", async () => {
     const checkAuth = vi.fn().mockResolvedValue("anonymous");
 
     render(
@@ -18,6 +18,11 @@ describe("AuthRouteProvider", () => {
     expect(screen.getByTestId("child")).toBeInTheDocument();
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- testing-library screen methods
     expect(screen.getByText("content")).toBeInTheDocument();
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
   });
 
   it("starts with loading then sets anonymous when checkAuth returns anonymous", async () => {
@@ -83,7 +88,15 @@ describe("AuthRouteProvider", () => {
   });
 
   it("useAuthRoute throws when used outside provider", () => {
-    expect(() => renderHook(() => useAuthRoute())).toThrow("useAuthRoute must be used within AuthRouteProvider");
+    const stderrWrite = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    try {
+      expect(() => renderHook(() => useAuthRoute())).toThrow("useAuthRoute must be used within AuthRouteProvider");
+    } finally {
+      stderrWrite.mockRestore();
+      consoleError.mockRestore();
+    }
   });
 
   it("does not update auth status after unmount", async () => {

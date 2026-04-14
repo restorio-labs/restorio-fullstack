@@ -1,21 +1,37 @@
 import type { TransactionListData, TransactionListItem } from "@restorio/types";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 
 import { api } from "../../../api/client";
 import { useCurrentTenant } from "../../../context/TenantContext";
+
+const TRANSACTIONS_PAGE_SIZE = 20;
 
 interface UseTransactionsResult {
   selectedTenantId: string | null;
   transactions: TransactionListItem[];
   isLoading: boolean;
+  isFetching: boolean;
   isError: boolean;
+  page: number;
+  setPage: Dispatch<SetStateAction<number>>;
+  total: number;
+  totalPages: number;
+  pageSize: number;
 }
 
 export const useTransactions = (): UseTransactionsResult => {
   const { selectedTenantId } = useCurrentTenant();
-  const { data, isPending, isError } = useQuery<TransactionListData>({
-    queryKey: ["transactions", selectedTenantId ?? ""],
-    queryFn: ({ signal }) => api.payments.listTransactions(selectedTenantId!, signal),
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    setPage(1);
+  }, [selectedTenantId]);
+
+  const { data, isPending, isFetching, isError } = useQuery<TransactionListData>({
+    queryKey: ["transactions", selectedTenantId ?? "", page],
+    queryFn: ({ signal }) =>
+      api.payments.listTransactions(selectedTenantId!, { page, pagination: TRANSACTIONS_PAGE_SIZE }, signal),
     enabled: selectedTenantId !== null,
   });
 
@@ -23,6 +39,12 @@ export const useTransactions = (): UseTransactionsResult => {
     selectedTenantId,
     transactions: data?.items ?? [],
     isLoading: isPending,
+    isFetching,
     isError,
+    page,
+    setPage,
+    total: data?.total ?? 0,
+    totalPages: data?.total_pages ?? 0,
+    pageSize: data?.page_size ?? TRANSACTIONS_PAGE_SIZE,
   };
 };

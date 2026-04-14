@@ -3,6 +3,8 @@ import { Input } from "@restorio/ui";
 import type { ChangeEventHandler, ReactNode, ReactElement } from "react";
 import type { UseFormRegister } from "react-hook-form";
 
+import { FilePickerField } from "../../components/file-picker";
+
 interface BaseFieldsetProps {
   children: ReactNode;
   title: string;
@@ -64,14 +66,16 @@ export const CompanyFieldset = ({
       />
       {showLogoField ? (
         <>
-          <Input
+          <FilePickerField
             label={t("tenantProfile.fields.logo.label")}
-            type="file"
-            accept="image/png,image/jpeg,image/webp"
             labelTooltip={t("tenantProfile.fields.logo.helper")}
-            helperText={isSaving ? t("tenantProfile.fields.logo.uploading") : undefined}
-            error={logoFieldError}
+            accept="image/png,image/jpeg,image/webp"
             onChange={handleLogoChangeSafe}
+            disabled={isSaving}
+            busy={isSaving}
+            idleLabel={t("tenantProfile.fields.logo.browse")}
+            busyLabel={t("tenantProfile.fields.logo.uploading")}
+            error={logoFieldError}
           />
           {effectiveLogo ? (
             <div className="space-y-2 rounded-lg border border-border-default bg-surface-primary p-3">

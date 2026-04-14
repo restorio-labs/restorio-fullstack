@@ -220,7 +220,8 @@
     "actions": {
       "save": "Save",
       "saving": "Saving…",
-      "clear": "Clear"
+      "clear": "Clear",
+      "chooseFile": "Choose file"
     },
     "fields": {
       "pageTitle": "Browser title",
@@ -331,7 +332,10 @@
       "loading": "Loading transactions...",
       "selectTenant": "Select a restaurant to view transactions.",
       "error": "Failed to load transactions. Please try again.",
-      "empty": "No transactions found for the selected venue."
+      "empty": "No transactions found for the selected venue.",
+      "paginationSummary": "Page {{page}} of {{pages}} · {{total}} transactions",
+      "previous": "Previous",
+      "next": "Next"
     },
     "fields": {
       "status": "Status",
@@ -548,6 +552,7 @@
       },
       "logo": {
         "label": "Logo",
+        "browse": "Choose file",
         "placeholder": "https://example.com/logo.png",
         "helper": "Upload a PNG, JPEG, or WEBP logo up to 5 MB.",
         "uploading": "Uploading logo...",

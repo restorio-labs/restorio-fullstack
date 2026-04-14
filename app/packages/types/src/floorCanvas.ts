@@ -7,7 +7,8 @@ export type OrderStatusDisplay =
   | "preparing"
   | "ready_to_serve"
   | "served"
-  | "bill_requested";
+  | "bill_requested"
+  | "rejected";
 
 export interface TableDisplayInfo {
   guestCount?: number;

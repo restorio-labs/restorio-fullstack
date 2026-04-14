@@ -12,7 +12,7 @@ export interface TenantMobileFaviconPresignResponse {
   objectKey: string;
 }
 
-export interface MenuImageFinalizeResponse {
+export interface TenantMobileMenuImageFinalizeResponse {
   imageUrl: string;
 }
 
@@ -95,8 +95,8 @@ export class TenantMobileConfigResource extends BaseResource {
     tenantId: string,
     objectKey: string,
     signal?: AbortSignal,
-  ): Promise<MenuImageFinalizeResponse> {
-    const body = await this.client.post<SuccessResponse<MenuImageFinalizeResponse>, { objectKey: string }>(
+  ): Promise<TenantMobileMenuImageFinalizeResponse> {
+    const body = await this.client.post<SuccessResponse<TenantMobileMenuImageFinalizeResponse>, { objectKey: string }>(
       `/tenants/${tenantId}/menu/images/finalize`,
       { objectKey },
       { signal },

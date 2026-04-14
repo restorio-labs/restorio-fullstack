@@ -15,6 +15,13 @@ export interface TransactionListItem {
 
 export type TransactionListData = PaginatedResponse<TransactionListItem>;
 
+export interface TransactionListParams {
+  page?: number;
+  pagination?: number;
+  date_from?: string;
+  date_to?: string;
+}
+
 export interface UpdateP24ConfigRequest {
   p24_merchantid: number;
   p24_api: string;

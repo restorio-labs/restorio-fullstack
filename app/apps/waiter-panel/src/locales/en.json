@@ -51,6 +51,7 @@
     "sendToKitchen": "Send to kitchen",
     "updateOrder": "Update order",
     "forcePreparing": "Force preparing",
+    "markServed": "Mark as served",
     "confirmPaymentModalTitle": "Unlock table",
     "confirmPaymentModalDescription": "Are you sure you want to unlock this table? This will clear the current order.",
     "confirmPaymentModalConfirm": "Unlock",
@@ -68,8 +69,14 @@
       "preparing": "Preparing",
       "ready_to_serve": "Ready to serve",
       "served": "Served",
-      "bill_requested": "Bill requested"
-    }
+      "bill_requested": "Bill requested",
+      "rejected": "Rejected - action needed"
+    },
+    "tableRejected": "Order rejected by kitchen",
+    "reopenOrder": "Reopen order",
+    "rejectOrder": "Reject",
+    "handleRejectionModalTitle": "Handle rejected order",
+    "handleRejectionModalDescription": "This order was rejected by the kitchen. Confirming will remove the order and release the table."
   },
   "floorRuntime": {
     "noLayout": "No floor layout for this venue."

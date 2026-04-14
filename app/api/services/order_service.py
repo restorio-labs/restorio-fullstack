@@ -14,9 +14,10 @@ INVALID_ORDER_STATUS_TRANSITION_CODE = "INVALID_ORDER_STATUS_TRANSITION"
 _VALID_TRANSITIONS: dict[str, set[str]] = {
     "new": {"preparing", "rejected"},
     "preparing": {"ready_to_serve", "rejected"},
-    "ready_to_serve": {"paid"},
+    "ready_to_serve": {"delivered", "paid"},
+    "delivered": {"paid"},
     "ready": set(),
-    "rejected": {"refunded"},
+    "rejected": {"refunded", "new"},
     "refunded": set(),
     "paid": set(),
 }
@@ -217,8 +218,18 @@ class OrderService:
             msg = "Order"
             raise NotFoundResponse(msg, order_id)
 
-        if doc["status"] not in ("ready", "ready_to_serve", "paid", "refunded"):
-            msg = "Only orders with status 'ready', 'ready_to_serve', 'paid' or 'refunded' can be archived"
+        if doc["status"] not in (
+            "ready",
+            "ready_to_serve",
+            "delivered",
+            "paid",
+            "refunded",
+            "rejected",
+        ):
+            msg = (
+                "Only orders with status 'ready', 'ready_to_serve', 'delivered', 'paid', 'refunded' or 'rejected' "
+                "can be archived"
+            )
             raise BadRequestError(msg)
         return doc
 

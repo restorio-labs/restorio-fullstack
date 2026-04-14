@@ -1,4 +1,4 @@
-import { Icon, NavIcon, NavItem, NavRail } from "@restorio/ui";
+import { Icon, NavIcon, NavItem, NavRail, useI18n } from "@restorio/ui";
 import type { ReactElement } from "react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -11,18 +11,19 @@ const homeIcon = (
 );
 
 export const MobileRail = (): ReactElement => {
+  const { t } = useI18n();
   const location = useLocation();
   const { pathname } = location;
 
   return (
-    <NavRail aria-label="Mobile navigation" orientation="horizontal">
+    <NavRail aria-label={t("nav.railAria")} orientation="horizontal">
       <NavItem
         as={Link}
         to="/"
         href="/"
         active={pathname === "/"}
         touchTarget
-        aria-label="Home"
+        aria-label={t("nav.homeAria")}
         role="menuitem"
         icon={
           <NavIcon>

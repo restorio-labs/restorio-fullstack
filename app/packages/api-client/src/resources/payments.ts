@@ -1,5 +1,6 @@
 import type {
   TransactionListData,
+  TransactionListParams,
   UpdateP24ConfigData,
   UpdateP24ConfigRequest,
   UpdatedResponse,
@@ -35,11 +36,16 @@ export class PaymentsResource extends BaseResource {
   //   return response.data;
   // }
 
-  listTransactions(tenantId: string, signal?: AbortSignal): Promise<TransactionListData> {
+  listTransactions(
+    tenantId: string,
+    params?: TransactionListParams,
+    signal?: AbortSignal,
+  ): Promise<TransactionListData> {
     return this.client.get<TransactionListData>("/payments/transactions", {
       signal,
       params: {
         tenant_public_id: tenantId,
+        ...(params ?? {}),
       },
     });
   }

@@ -3,7 +3,9 @@
     "skipToContent": "تخطي إلى المحتوى الرئيسي",
     "loading": "جارٍ التحميل...",
     "error": "خطأ",
-    "currency": "PLN"
+    "currency": "PLN",
+    "tryAgain": "حاول مرة أخرى",
+    "checkAgain": "تحقق مرة أخرى"
   },
   "app": {
     "title": "طلب"
@@ -14,6 +16,10 @@
   "deviceGate": {
     "title": "استخدم الهاتف أو الجهاز اللوحي",
     "description": "هذه الصفحة متاحة فقط على الهواتف والأجهزة اللوحية."
+  },
+  "nav": {
+    "railAria": "التنقل الرئيسي",
+    "homeAria": "الرئيسية"
   },
   "order": {
     "invalidLinkTitle": "رابط غير صالح",
@@ -53,8 +59,32 @@
     "removeAria": "إزالة {{name}}"
   },
   "paymentReturn": {
+    "noPaymentDataTitle": "لا توجد بيانات دفع",
+    "noPaymentSession": "تعذّر تحديد جلسة الدفع. ارجع إلى القائمة من رمز الاستجابة السريعة وحاول مرة أخرى.",
+    "checkingStatus": "جارٍ التحقق من حالة الدفع…",
+    "errorTitle": "فشل التحقق",
+    "checkStatusErrorFallback": "تعذّر التحقق من حالة الدفع.",
     "title": "شكراً لك!",
     "description": "تم استلام طلبك. جارٍ معالجة الدفع عبر Przelewy24.",
-    "closeHint": "يمكنك إغلاق هذه الصفحة."
+    "closeHint": "يمكنك إغلاق هذه الصفحة.",
+    "statusChangeHint": "قد يتغيّر الوضع قريباً — يمكنك التحديث أو إغلاق الصفحة والعودة لاحقاً.",
+    "status": {
+      "success": {
+        "title": "شكراً لك!",
+        "description": "تم استلام الدفع. تم تأكيد طلبك."
+      },
+      "pending": {
+        "title": "وصل طلبك إلى المطبخ. في انتظار القبول.",
+        "description": "الطلب في انتظار قبول المطبخ."
+      },
+      "refunded": {
+        "title": "استرداد الدفع",
+        "description": "تم استرداد هذه المعاملة."
+      },
+      "unfinished": {
+        "title": "دفع غير مكتمل",
+        "description": "تعذّر تأكيد الدفع. إذا تم خصم المبلغ، تواصل مع دعم Przelewy24."
+      }
+    }
   }
 }

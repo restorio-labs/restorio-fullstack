@@ -146,4 +146,8 @@ export class OrdersResource extends BaseResource {
   ): Promise<SuccessResponse<{ orderId: string; status: string }>> {
     return this.client.post(`/restaurants/${restaurantId}/orders/${orderId}/refund`, {}, { signal });
   }
+
+  delete(restaurantId: string, orderId: string, signal?: AbortSignal): Promise<SuccessResponse<{ message: string }>> {
+    return this.client.delete(`/restaurants/${restaurantId}/orders/${orderId}`, { signal });
+  }
 }
