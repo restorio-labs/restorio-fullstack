@@ -59,6 +59,12 @@ async def update_tenant_mobile_config(
         kwargs["page_title"] = body.page_title
     if "theme_override" in body.model_fields_set:
         kwargs["theme_override"] = body.theme_override
+    if "landing_content" in body.model_fields_set:
+        kwargs["landing_content"] = (
+            body.landing_content.model_dump(by_alias=True, exclude_none=True)
+            if body.landing_content is not None
+            else None
+        )
 
     if not kwargs:
         row = await service.get_by_tenant_id(session, tenant_id)

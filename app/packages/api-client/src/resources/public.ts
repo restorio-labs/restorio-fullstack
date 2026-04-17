@@ -7,6 +7,7 @@ import type {
   PublicTableSessionRefreshRequest,
   PublicTableSessionReleaseRequest,
   PublicTableSessionRequest,
+  PublicTablesOverview,
   PublicTenantInfo,
   SuccessResponse,
   TenantMenu,
@@ -23,6 +24,15 @@ export class PublicResource extends BaseResource {
 
   async getTenantMenu(tenantSlug: string, signal?: AbortSignal): Promise<TenantMenu> {
     const body = await this.client.get<SuccessResponse<TenantMenu>>(`/public/${tenantSlug}/menu`, { signal });
+
+    return body.data;
+  }
+
+  async getTenantTablesOverview(tenantSlug: string, signal?: AbortSignal): Promise<PublicTablesOverview> {
+    const body = await this.client.get<SuccessResponse<PublicTablesOverview>>(
+      `/public/${tenantSlug}/tables-overview`,
+      { signal },
+    );
 
     return body.data;
   }

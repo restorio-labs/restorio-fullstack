@@ -1,0 +1,130 @@
+import type { PublicTenantInfo, TenantMenu } from "@restorio/types";
+import { Button, EmptyState, Loader, Text, useI18n } from "@restorio/ui";
+import { useQuery } from "@tanstack/react-query";
+import type { ReactElement } from "react";
+import { useCallback, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+
+import { publicApi } from "../api/client";
+import { MenuCategorySection } from "../features/order/components/MenuCategorySection";
+import { useApplyPublicTenantPresentation } from "../hooks/useApplyPublicTenantPresentation";
+import { persistLastVisitedTenantPath } from "../lib/lastVisitedTenant";
+
+export const TenantMenuPage = (): ReactElement => {
+  const { t } = useI18n();
+  const navigate = useNavigate();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
+  const noopAdd = useCallback((_name: string, _unitPrice: number) => {}, []);
+  const noopRemove = useCallback((_name: string) => {}, []);
+
+  useEffect(() => {
+    if (tenantSlug) {
+      persistLastVisitedTenantPath(`/${tenantSlug}`);
+    }
+  }, [tenantSlug]);
+
+  const tenantQuery = useQuery<PublicTenantInfo>({
+    queryKey: ["public-tenant-info", tenantSlug],
+    queryFn: ({ signal }) => publicApi.getTenantInfo(tenantSlug!, signal),
+    enabled: !!tenantSlug,
+  });
+
+  const menuQuery = useQuery<TenantMenu>({
+    queryKey: ["public-tenant-menu", tenantSlug],
+    queryFn: ({ signal }) => publicApi.getTenantMenu(tenantSlug!, signal),
+    enabled: !!tenantSlug,
+  });
+
+  useApplyPublicTenantPresentation(tenantQuery.data);
+
+  if (!tenantSlug) {
+    return (
+      <div className="flex min-h-[100dvh] items-center justify-center p-4">
+        <EmptyState title={t("order.invalidLinkTitle")} description={t("order.invalidLinkDescription")} />
+      </div>
+    );
+  }
+
+  const isLoading = tenantQuery.isLoading || menuQuery.isLoading;
+  const isError = tenantQuery.isError || menuQuery.isError;
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[100dvh] items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <Loader size="lg" />
+          <Text as="p" variant="body-sm" className="text-text-secondary">
+            {t("order.loadingMenu")}
+          </Text>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || !tenantQuery.data) {
+    return (
+      <div className="flex min-h-[100dvh] items-center justify-center p-4">
+        <EmptyState
+          title={t("order.loadErrorTitle")}
+          description={t("order.loadErrorDescription")}
+          action={
+            <Button variant="primary" onClick={() => window.location.reload()}>
+              {t("order.reload")}
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
+
+  const categories = menuQuery.data?.categories ?? [];
+  const displayName = tenantQuery.data.pageTitle?.trim()
+    ? tenantQuery.data.pageTitle
+    : tenantQuery.data.name;
+
+  return (
+    <div className="min-h-[100dvh] bg-background-primary pb-24">
+      <header className="sticky top-0 z-10 border-b border-border-default bg-surface-primary px-4 py-3">
+        <div className="mx-auto flex max-w-lg items-center justify-between gap-2">
+          <Button variant="ghost" size="sm" type="button" onClick={() => navigate(`/${tenantSlug}`)}>
+            {t("menuBrowse.back")}
+          </Button>
+        </div>
+        <Text as="h1" variant="h4" weight="bold" className="mt-1 text-center">
+          {displayName}
+        </Text>
+        <Text as="p" variant="body-sm" className="text-center text-text-secondary">
+          {t("menuBrowse.subtitle")}
+        </Text>
+      </header>
+
+      <main className="mx-auto max-w-lg px-4 py-4">
+        {categories.length === 0 ? (
+          <EmptyState title={t("order.emptyMenuTitle")} description={t("order.emptyMenuDescription")} />
+        ) : (
+          categories.map((category) => (
+            <MenuCategorySection
+              key={category.name}
+              category={category}
+              cartItems={[]}
+              onAdd={noopAdd}
+              onRemove={noopRemove}
+              browseOnly
+            />
+          ))
+        )}
+      </main>
+
+      <nav className="fixed bottom-0 left-0 right-0 border-t border-border-default bg-surface-primary/95 px-4 py-3 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-lg justify-center gap-2">
+          <Button variant="ghost" size="sm" type="button" onClick={() => navigate(`/${tenantSlug}`)}>
+            {t("landing.navHome")}
+          </Button>
+          <Button variant="ghost" size="sm" type="button" onClick={() => navigate(`/${tenantSlug}/tables`)}>
+            {t("landing.navTables")}
+          </Button>
+        </div>
+      </nav>
+    </div>
+  );
+};

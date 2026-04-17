@@ -11,6 +11,7 @@ interface MenuCategorySectionProps {
   cartItems: CartItem[];
   onAdd: (name: string, unitPrice: number) => void;
   onRemove: (name: string) => void;
+  browseOnly?: boolean;
 }
 
 export const MenuCategorySection = ({
@@ -18,6 +19,7 @@ export const MenuCategorySection = ({
   cartItems,
   onAdd,
   onRemove,
+  browseOnly = false,
 }: MenuCategorySectionProps): ReactElement => {
   return (
     <section className="mb-6">
@@ -35,6 +37,7 @@ export const MenuCategorySection = ({
               quantity={cartItem?.quantity ?? 0}
               onAdd={() => onAdd(item.name, item.price)}
               onRemove={() => onRemove(item.name)}
+              browseOnly={browseOnly}
             />
           );
         })}

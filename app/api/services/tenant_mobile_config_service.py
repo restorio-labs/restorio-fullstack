@@ -28,34 +28,42 @@ class TenantMobileConfigService:
         *,
         page_title: str | None | object = _MISSING,
         theme_override: dict[str, Any] | None | object = _MISSING,
+        landing_content: dict[str, Any] | None | object = _MISSING,
     ) -> TenantMobileConfig:
         existing = await self.get_by_tenant_id(session, tenant_id)
 
         next_page: str | None
         next_theme: dict[str, Any] | None
+        next_landing: dict[str, Any] | None
 
         if existing:
             next_page = existing.page_title
             next_theme = existing.theme_override
+            next_landing = existing.landing_content
 
             if page_title is not _MISSING:
                 next_page = page_title  # type: ignore[assignment]
             if theme_override is not _MISSING:
                 next_theme = theme_override  # type: ignore[assignment]
+            if landing_content is not _MISSING:
+                next_landing = landing_content  # type: ignore[assignment]
 
             existing.page_title = next_page
             existing.theme_override = next_theme
+            existing.landing_content = next_landing
             await session.flush()
 
             return existing
 
         next_page = None if page_title is _MISSING else page_title  # type: ignore[assignment]
         next_theme = None if theme_override is _MISSING else theme_override  # type: ignore[assignment]
+        next_landing = None if landing_content is _MISSING else landing_content  # type: ignore[assignment]
 
         row = TenantMobileConfig(
             tenant_id=tenant_id,
             page_title=next_page,
             theme_override=next_theme,
+            landing_content=next_landing,
         )
         session.add(row)
         await session.flush()

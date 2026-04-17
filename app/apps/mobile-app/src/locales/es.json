@@ -58,6 +58,34 @@
     "addAria": "Añadir {{name}}",
     "removeAria": "Quitar {{name}}"
   },
+  "root": {
+    "noRestaurantTitle": "Sin restaurante guardado",
+    "noRestaurantDescription": "Abre la app desde el QR del restaurante o usa un enlace que hayas usado antes.",
+    "scanHint": "Recordamos el último sitio que abriste; la próxima vez te redirigiremos automáticamente."
+  },
+  "landing": {
+    "defaultSubtitle": "Consulta la carta o la disponibilidad de mesas antes de sentarte.",
+    "ctaTables": "Disponibilidad y plano",
+    "ctaMenu": "Ver carta",
+    "navTables": "Mesas",
+    "navMenu": "Carta",
+    "navHome": "Inicio",
+    "quickNavAria": "Navegación rápida"
+  },
+  "tables": {
+    "loading": "Cargando plano…",
+    "subtitle": "Disponibilidad en vivo según el plano",
+    "back": "Atrás",
+    "statusOpen": "Libre",
+    "statusClosed": "Ocupada",
+    "noLayoutTitle": "Sin plano",
+    "noLayoutDescription": "Este restaurante aún no ha publicado un plano de mesas.",
+    "listTitle": "Todas las mesas"
+  },
+  "menuBrowse": {
+    "back": "Atrás",
+    "subtitle": "Explora platos y precios"
+  },
   "paymentReturn": {
     "noPaymentDataTitle": "Sin datos de pago",
     "noPaymentSession": "No se pudo determinar la sesión de pago. Vuelve al menú desde el código QR e inténtalo de nuevo.",

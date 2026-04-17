@@ -215,7 +215,7 @@
   },
   "mobileConfiguration": {
     "title": "Mobile configuration",
-    "description": "Title, favicon, and theme for the customer mobile ordering app",
+    "description": "Title, favicon, theme, and landing copy for the customer mobile app",
     "loading": "Loading…",
     "actions": {
       "save": "Save",
@@ -227,7 +227,13 @@
       "pageTitle": "Browser title",
       "favicon": "Favicon (.ico)",
       "backgroundColor": "Background color",
-      "googleFontUrl": "Google Font URL"
+      "googleFontUrl": "Google Font URL",
+      "landingHeadline": "Landing headline",
+      "landingSubtitle": "Landing subtitle",
+      "tablesCtaLabel": "Tables button label",
+      "menuCtaLabel": "Menu button label",
+      "openStatusLabel": "“Open” table label",
+      "closedStatusLabel": "“Closed” table label"
     },
     "placeholders": {
       "pageTitle": "Leave empty to use restaurant name"
@@ -240,6 +246,10 @@
       "backgroundColor": "Primary background color for the mobile app.",
       "googleFontUrl": "Paste the full URL from Google Fonts.",
       "googleFontUrlTooltip": "Go to fonts.google.com, select a font, and copy the embed URL."
+    },
+    "landingSection": {
+      "title": "Landing & guest pages",
+      "hint": "Shown on the restaurant home link before guests scan a table QR. Leave fields empty to use app defaults."
     },
     "themeSection": {
       "title": "Theme customization"
