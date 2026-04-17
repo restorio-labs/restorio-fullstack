@@ -224,7 +224,7 @@
   },
   "mobileConfiguration": {
     "title": "Konfiguracja mobilna",
-    "description": "Tytuł, favicon i motyw aplikacji mobilnej dla gości",
+    "description": "Tytuł, favicon, motyw i teksty strony startowej aplikacji mobilnej dla gości",
     "loading": "Wczytywanie…",
     "actions": {
       "save": "Zapisz",
@@ -236,7 +236,13 @@
       "pageTitle": "Tytuł w przeglądarce",
       "favicon": "Favicon (.ico)",
       "backgroundColor": "Kolor tła",
-      "googleFontUrl": "URL czcionki Google"
+      "googleFontUrl": "URL czcionki Google",
+      "landingHeadline": "Nagłówek strony startowej",
+      "landingSubtitle": "Podtytuł strony startowej",
+      "tablesCtaLabel": "Etykieta przycisku „Stoliki”",
+      "menuCtaLabel": "Etykieta przycisku „Menu”",
+      "openStatusLabel": "Etykieta wolnego stolika",
+      "closedStatusLabel": "Etykieta zajętego stolika"
     },
     "placeholders": {
       "pageTitle": "Puste = nazwa restauracji"
@@ -249,6 +255,10 @@
       "backgroundColor": "Główny kolor tła aplikacji mobilnej.",
       "googleFontUrl": "Wklej pełny URL z Google Fonts.",
       "googleFontUrlTooltip": "Wejdź na fonts.google.com, wybierz czcionkę i skopiuj URL do osadzenia."
+    },
+    "landingSection": {
+      "title": "Strona startowa i widoki gościa",
+      "hint": "Widoczne pod linkiem do lokalu zanim gość zeskanuje QR przy stoliku. Puste pola = domyślne teksty aplikacji."
     },
     "themeSection": {
       "title": "Personalizacja motywu"

@@ -91,12 +91,46 @@ export interface PublicTableSessionData {
   message?: string | null;
 }
 
+export interface TenantMobileLandingContent {
+  headline?: string | null;
+  subtitle?: string | null;
+  tablesCtaLabel?: string | null;
+  menuCtaLabel?: string | null;
+  openStatusLabel?: string | null;
+  closedStatusLabel?: string | null;
+}
+
 export interface PublicTenantInfo {
   name: string;
   slug: string;
   pageTitle?: string | null;
   faviconPath?: string | null;
   themeOverride?: Record<string, unknown> | null;
+  landingContent?: TenantMobileLandingContent | null;
+}
+
+export interface PublicFloorTableStatus {
+  id: string;
+  tableNumber?: number | null;
+  label?: string | null;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  rotation?: number | null;
+  seats?: number | null;
+  status: "open" | "closed";
+}
+
+export interface PublicFloorCanvasOverview {
+  name: string;
+  width: number;
+  height: number;
+  tables: PublicFloorTableStatus[];
+}
+
+export interface PublicTablesOverview {
+  canvases: PublicFloorCanvasOverview[];
 }
 
 export interface PublicP24TransactionSyncData {

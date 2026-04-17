@@ -28,6 +28,7 @@ class TenantMobileConfig(Base):
     page_title: Mapped[str | None] = mapped_column(String(255), nullable=True)
     favicon_object_key: Mapped[str | None] = mapped_column(String(512), nullable=True)
     theme_override: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    landing_content: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()

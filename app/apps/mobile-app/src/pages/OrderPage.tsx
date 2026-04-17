@@ -1,18 +1,17 @@
 import type { PublicTenantInfo, TenantMenu } from "@restorio/types";
-import { Button, EmptyState, Loader, Text, useI18n, useTheme } from "@restorio/ui";
-import type { ThemeOverride } from "@restorio/ui";
+import { Button, EmptyState, Loader, Text, useI18n } from "@restorio/ui";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { type ReactElement, useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { publicApi } from "../api/client";
-import { API_BASE_URL } from "../config";
+import { useApplyPublicTenantPresentation } from "../hooks/useApplyPublicTenantPresentation";
+import { persistLastVisitedTenantPath } from "../lib/lastVisitedTenant";
 import { CartSummary } from "../features/order/components/CartSummary";
 import { CheckoutForm } from "../features/order/components/CheckoutForm";
 import { MenuCategorySection } from "../features/order/components/MenuCategorySection";
 import { useCart } from "../features/order/hooks/useCart";
 
-const FAVICON_LINK_ID = "tenant-favicon";
 const extractApiErrorMessage = (error: unknown, fallback: string): string => {
   if (typeof error === "object" && error !== null && "response" in error) {
     const response = error as { response?: { data?: { detail?: unknown } } };
@@ -28,7 +27,6 @@ const extractApiErrorMessage = (error: unknown, fallback: string): string => {
 
 export const OrderPage = (): ReactElement => {
   const { t } = useI18n();
-  const { setOverride } = useTheme();
   const { tenantSlug, tableNumber } = useParams<{ tenantSlug: string; tableNumber: string }>();
   const tableNum = Number(tableNumber);
   const [submitError, setSubmitError] = useState("");
@@ -49,49 +47,13 @@ export const OrderPage = (): ReactElement => {
   });
   const tenantData = tenantQuery.data;
 
-  useEffect(() => {
-    const data = tenantData;
-
-    if (!data) {
-      return;
-    }
-
-    const title = data.pageTitle?.trim() ? data.pageTitle : data.name;
-
-    document.title = title;
-
-    const path = data.faviconPath;
-
-    if (path) {
-      const href = `${API_BASE_URL.replace(/\/$/, "")}${path.startsWith("/") ? path : `/${path}`}`;
-      let link = document.querySelector<HTMLLinkElement>(`link#${FAVICON_LINK_ID}`);
-
-      if (!link) {
-        link = document.createElement("link");
-        link.id = FAVICON_LINK_ID;
-        link.rel = "icon";
-        document.head.appendChild(link);
-      }
-
-      link.href = href;
-    } else {
-      document.querySelector(`link#${FAVICON_LINK_ID}`)?.remove();
-    }
-  }, [tenantData]);
+  useApplyPublicTenantPresentation(tenantData);
 
   useEffect(() => {
-    const raw = tenantQuery.data?.themeOverride;
-
-    if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
-      setOverride(null);
-    } else {
-      setOverride(raw as ThemeOverride);
+    if (tenantSlug) {
+      persistLastVisitedTenantPath(`/${tenantSlug}`);
     }
-
-    return (): void => {
-      setOverride(null);
-    };
-  }, [tenantQuery.data?.themeOverride, setOverride]);
+  }, [tenantSlug]);
 
   const paymentMutation = useMutation({
     mutationFn: (data: { email: string; note: string }) =>

@@ -58,6 +58,34 @@
     "addAria": "إضافة {{name}}",
     "removeAria": "إزالة {{name}}"
   },
+  "root": {
+    "noRestaurantTitle": "لا يوجد مطعم محفوظ",
+    "noRestaurantDescription": "افتح التطبيق من رمز QR للمطعم أو استخدم رابطًا زرتَه سابقًا.",
+    "scanHint": "نحتفظ بآخر مطعم فتحته — في المرة القادمة سيتم تحويلك تلقائيًا."
+  },
+  "landing": {
+    "defaultSubtitle": "تصفح القائمة أو توفر الطاولات قبل الجلوس.",
+    "ctaTables": "توفر الطاولات والمخطط",
+    "ctaMenu": "عرض القائمة",
+    "navTables": "طاولات",
+    "navMenu": "قائمة",
+    "navHome": "الرئيسية",
+    "quickNavAria": "تنقل سريع"
+  },
+  "tables": {
+    "loading": "جارٍ تحميل المخطط…",
+    "subtitle": "حالة مباشرة من مخطط القاعة",
+    "back": "رجوع",
+    "statusOpen": "متاح",
+    "statusClosed": "مشغول",
+    "noLayoutTitle": "لا يوجد مخطط",
+    "noLayoutDescription": "لم ينشر هذا المطعم مخطط طاولات بعد.",
+    "listTitle": "كل الطاولات"
+  },
+  "menuBrowse": {
+    "back": "رجوع",
+    "subtitle": "تصفح الأطباق والأسعار"
+  },
   "paymentReturn": {
     "noPaymentDataTitle": "لا توجد بيانات دفع",
     "noPaymentSession": "تعذّر تحديد جلسة الدفع. ارجع إلى القائمة من رمز الاستجابة السريعة وحاول مرة أخرى.",

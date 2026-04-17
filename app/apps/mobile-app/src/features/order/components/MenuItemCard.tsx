@@ -7,9 +7,16 @@ interface MenuItemCardProps {
   quantity: number;
   onAdd: () => void;
   onRemove: () => void;
+  browseOnly?: boolean;
 }
 
-export const MenuItemCard = ({ item, quantity, onAdd, onRemove }: MenuItemCardProps): ReactElement => {
+export const MenuItemCard = ({
+  item,
+  quantity,
+  onAdd,
+  onRemove,
+  browseOnly = false,
+}: MenuItemCardProps): ReactElement => {
   const { t } = useI18n();
 
   return (
@@ -36,31 +43,33 @@ export const MenuItemCard = ({ item, quantity, onAdd, onRemove }: MenuItemCardPr
         </Text>
       </div>
 
-      <div className="flex shrink-0 items-center gap-1.5">
-        {quantity > 0 && (
-          <>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={onRemove}
-              aria-label={t("menuItem.removeAria", { name: item.name })}
-              className="h-8 w-8 !p-0"
-            >
-              −
-            </Button>
-            <span className="w-6 text-center text-sm font-semibold tabular-nums">{quantity}</span>
-          </>
-        )}
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={onAdd}
-          aria-label={t("menuItem.addAria", { name: item.name })}
-          className="h-8 w-8 !p-0"
-        >
-          +
-        </Button>
-      </div>
+      {!browseOnly ? (
+        <div className="flex shrink-0 items-center gap-1.5">
+          {quantity > 0 && (
+            <>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={onRemove}
+                aria-label={t("menuItem.removeAria", { name: item.name })}
+                className="h-8 w-8 !p-0"
+              >
+                −
+              </Button>
+              <span className="w-6 text-center text-sm font-semibold tabular-nums">{quantity}</span>
+            </>
+          )}
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={onAdd}
+            aria-label={t("menuItem.addAria", { name: item.name })}
+            className="h-8 w-8 !p-0"
+          >
+            +
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 };

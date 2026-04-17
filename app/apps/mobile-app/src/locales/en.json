@@ -58,6 +58,34 @@
     "addAria": "Add {{name}}",
     "removeAria": "Remove {{name}}"
   },
+  "root": {
+    "noRestaurantTitle": "No restaurant yet",
+    "noRestaurantDescription": "Open this app from a restaurant QR code, or visit a restaurant link you used before.",
+    "scanHint": "We remember the last place you opened — next time you land here you will be redirected automatically."
+  },
+  "landing": {
+    "defaultSubtitle": "Browse the menu or check table availability before you sit down.",
+    "ctaTables": "Table availability & layout",
+    "ctaMenu": "View menu",
+    "navTables": "Tables",
+    "navMenu": "Menu",
+    "navHome": "Home",
+    "quickNavAria": "Quick navigation"
+  },
+  "tables": {
+    "loading": "Loading table layout…",
+    "subtitle": "Live availability from the floor plan",
+    "back": "Back",
+    "statusOpen": "Open",
+    "statusClosed": "Closed",
+    "noLayoutTitle": "No floor layout",
+    "noLayoutDescription": "This restaurant has not published a table layout yet.",
+    "listTitle": "All tables"
+  },
+  "menuBrowse": {
+    "back": "Back",
+    "subtitle": "Browse dishes and prices"
+  },
   "paymentReturn": {
     "noPaymentDataTitle": "No payment data",
     "noPaymentSession": "Could not determine the payment session. Return to the menu from the QR code and try again.",

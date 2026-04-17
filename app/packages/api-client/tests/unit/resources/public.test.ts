@@ -39,6 +39,13 @@ describe("PublicResource", () => {
     expect(client.get).toHaveBeenCalledWith("/public/acme/menu", { signal: undefined });
   });
 
+  it("getTenantTablesOverview calls GET /public/:slug/tables-overview", async () => {
+    client.get = vi.fn().mockResolvedValue({ data: { canvases: [] } });
+    const r = await resource.getTenantTablesOverview("acme");
+    expect(r).toEqual({ canvases: [] });
+    expect(client.get).toHaveBeenCalledWith("/public/acme/tables-overview", { signal: undefined });
+  });
+
   it("createOrderPayment calls POST /public/payments/create", async () => {
     const payload: PublicCreateOrderPaymentRequest = {
       tenantSlug: "acme",

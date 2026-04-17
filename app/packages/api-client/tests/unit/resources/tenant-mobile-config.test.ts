@@ -34,6 +34,22 @@ describe("TenantMobileConfigResource", () => {
     expect(client.put).toHaveBeenCalledWith("/tenants/tenant-1/mobile-config", payload, { signal: undefined });
   });
 
+  it("update sends landingContent when provided", async () => {
+    const payload = {
+      landingContent: {
+        headline: "Hi",
+        subtitle: "There",
+        tablesCtaLabel: "T",
+        menuCtaLabel: "M",
+        openStatusLabel: "O",
+        closedStatusLabel: "C",
+      },
+    };
+    client.put = vi.fn().mockResolvedValue({ data: { ok: true } });
+    await resource.update("tenant-1", payload);
+    expect(client.put).toHaveBeenCalledWith("/tenants/tenant-1/mobile-config", payload, { signal: undefined });
+  });
+
   it("presignFavicon calls POST favicon presign", async () => {
     client.post = vi.fn().mockResolvedValue({ data: { uploadUrl: "u", objectKey: "k" } });
     const r = await resource.presignFavicon("tenant-1", "image/png");

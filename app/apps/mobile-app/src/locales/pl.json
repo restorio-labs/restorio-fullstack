@@ -58,6 +58,34 @@
     "addAria": "Dodaj {{name}}",
     "removeAria": "Usuń {{name}}"
   },
+  "root": {
+    "noRestaurantTitle": "Brak zapisanego lokalu",
+    "noRestaurantDescription": "Otwórz aplikację z kodu QR restauracji albo użyj wcześniej zapisanego linku.",
+    "scanHint": "Pamiętamy ostatni odwiedzony lokal — następnym razem przekierujemy Cię automatycznie."
+  },
+  "landing": {
+    "defaultSubtitle": "Zobacz menu lub dostępność stolików zanim usiądziesz.",
+    "ctaTables": "Dostępność stolików i układ sali",
+    "ctaMenu": "Zobacz menu",
+    "navTables": "Stoliki",
+    "navMenu": "Menu",
+    "navHome": "Start",
+    "quickNavAria": "Szybka nawigacja"
+  },
+  "tables": {
+    "loading": "Ładowanie planu sali…",
+    "subtitle": "Status na żywo z planu lokalu",
+    "back": "Wstecz",
+    "statusOpen": "Wolny",
+    "statusClosed": "Zajęty",
+    "noLayoutTitle": "Brak planu sali",
+    "noLayoutDescription": "Ta restauracja nie opublikowała jeszcze układu stolików.",
+    "listTitle": "Wszystkie stoliki"
+  },
+  "menuBrowse": {
+    "back": "Wstecz",
+    "subtitle": "Przeglądaj dania i ceny"
+  },
   "paymentReturn": {
     "noPaymentDataTitle": "Brak danych płatności",
     "noPaymentSession": "Nie można ustalić sesji płatności. Wróć do menu z kodu QR i spróbuj ponownie.",

@@ -26,6 +26,12 @@ export const MobileConfigurationPage = (): ReactElement => {
   const [faviconError, setFaviconError] = useState("");
   const [faviconFile, setFaviconFile] = useState<File | null>(null);
   const [copySourceId, setCopySourceId] = useState("");
+  const [landingHeadline, setLandingHeadline] = useState("");
+  const [landingSubtitle, setLandingSubtitle] = useState("");
+  const [landingTablesCta, setLandingTablesCta] = useState("");
+  const [landingMenuCta, setLandingMenuCta] = useState("");
+  const [landingOpenLabel, setLandingOpenLabel] = useState("");
+  const [landingClosedLabel, setLandingClosedLabel] = useState("");
 
   const tenantId = selectedTenantId;
 
@@ -41,11 +47,35 @@ export const MobileConfigurationPage = (): ReactElement => {
       setBackgroundColor("");
       setGoogleFontUrl("");
       setFontError("");
+      setLandingHeadline("");
+      setLandingSubtitle("");
+      setLandingTablesCta("");
+      setLandingMenuCta("");
+      setLandingOpenLabel("");
+      setLandingClosedLabel("");
 
       return;
     }
 
     setPageTitle(config.pageTitle ?? "");
+
+    const lc = config.landingContent;
+
+    if (lc && typeof lc === "object") {
+      setLandingHeadline(typeof lc.headline === "string" ? lc.headline : "");
+      setLandingSubtitle(typeof lc.subtitle === "string" ? lc.subtitle : "");
+      setLandingTablesCta(typeof lc.tablesCtaLabel === "string" ? lc.tablesCtaLabel : "");
+      setLandingMenuCta(typeof lc.menuCtaLabel === "string" ? lc.menuCtaLabel : "");
+      setLandingOpenLabel(typeof lc.openStatusLabel === "string" ? lc.openStatusLabel : "");
+      setLandingClosedLabel(typeof lc.closedStatusLabel === "string" ? lc.closedStatusLabel : "");
+    } else {
+      setLandingHeadline("");
+      setLandingSubtitle("");
+      setLandingTablesCta("");
+      setLandingMenuCta("");
+      setLandingOpenLabel("");
+      setLandingClosedLabel("");
+    }
 
     const override = config.themeOverride;
 
@@ -126,9 +156,20 @@ export const MobileConfigurationPage = (): ReactElement => {
         }
       }
 
+      const landingContentPayload = {
+        headline: landingHeadline.trim() || null,
+        subtitle: landingSubtitle.trim() || null,
+        tablesCtaLabel: landingTablesCta.trim() || null,
+        menuCtaLabel: landingMenuCta.trim() || null,
+        openStatusLabel: landingOpenLabel.trim() || null,
+        closedStatusLabel: landingClosedLabel.trim() || null,
+      };
+      const hasLandingContent = Object.values(landingContentPayload).some((v) => v != null);
+
       let afterSave = await api.tenantMobileConfig.update(tenantId, {
         pageTitle: pageTitle.trim() === "" ? null : pageTitle.trim(),
         themeOverride,
+        landingContent: hasLandingContent ? landingContentPayload : null,
       });
 
       if (faviconFile) {
@@ -295,6 +336,84 @@ export const MobileConfigurationPage = (): ReactElement => {
               placeholder={t("mobileConfiguration.placeholders.pageTitle")}
             />
             <p className="mt-1 text-xs text-text-tertiary">{t("mobileConfiguration.hints.pageTitle")}</p>
+          </div>
+
+          <div className="rounded-lg border border-border-default bg-surface-secondary/40 p-4">
+            <p className="mb-3 text-sm font-medium text-text-primary">{t("mobileConfiguration.landingSection.title")}</p>
+            <p className="mb-4 text-xs text-text-tertiary">{t("mobileConfiguration.landingSection.hint")}</p>
+            <div className="space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-medium text-text-secondary" htmlFor="mobile-landing-headline">
+                  {t("mobileConfiguration.fields.landingHeadline")}
+                </label>
+                <input
+                  id="mobile-landing-headline"
+                  value={landingHeadline}
+                  onChange={(e) => setLandingHeadline(e.target.value)}
+                  className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-text-secondary" htmlFor="mobile-landing-subtitle">
+                  {t("mobileConfiguration.fields.landingSubtitle")}
+                </label>
+                <textarea
+                  id="mobile-landing-subtitle"
+                  value={landingSubtitle}
+                  onChange={(e) => setLandingSubtitle(e.target.value)}
+                  rows={3}
+                  className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
+                />
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-text-secondary" htmlFor="mobile-landing-tables-cta">
+                    {t("mobileConfiguration.fields.tablesCtaLabel")}
+                  </label>
+                  <input
+                    id="mobile-landing-tables-cta"
+                    value={landingTablesCta}
+                    onChange={(e) => setLandingTablesCta(e.target.value)}
+                    className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-text-secondary" htmlFor="mobile-landing-menu-cta">
+                    {t("mobileConfiguration.fields.menuCtaLabel")}
+                  </label>
+                  <input
+                    id="mobile-landing-menu-cta"
+                    value={landingMenuCta}
+                    onChange={(e) => setLandingMenuCta(e.target.value)}
+                    className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
+                  />
+                </div>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-text-secondary" htmlFor="mobile-landing-open">
+                    {t("mobileConfiguration.fields.openStatusLabel")}
+                  </label>
+                  <input
+                    id="mobile-landing-open"
+                    value={landingOpenLabel}
+                    onChange={(e) => setLandingOpenLabel(e.target.value)}
+                    className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-text-secondary" htmlFor="mobile-landing-closed">
+                    {t("mobileConfiguration.fields.closedStatusLabel")}
+                  </label>
+                  <input
+                    id="mobile-landing-closed"
+                    value={landingClosedLabel}
+                    onChange={(e) => setLandingClosedLabel(e.target.value)}
+                    className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           <div>

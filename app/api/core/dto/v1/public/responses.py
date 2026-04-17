@@ -3,6 +3,7 @@ from typing import Any
 from pydantic import Field
 
 from core.dto.v1.common import BaseDTO
+from core.dto.v1.tenants.mobile_config import MobileLandingContentDTO
 
 
 class PublicTenantInfoResponseDTO(BaseDTO):
@@ -19,6 +20,11 @@ class PublicTenantInfoResponseDTO(BaseDTO):
     theme_override: dict[str, Any] | None = Field(
         None, alias="themeOverride", description="Theme CSS variable overrides for mobile"
     )
+    landing_content: MobileLandingContentDTO | None = Field(
+        None,
+        alias="landingContent",
+        description="Optional mobile landing copy overrides",
+    )
 
 
 class PublicCreateOrderPaymentResponseDTO(BaseDTO):
@@ -28,6 +34,33 @@ class PublicCreateOrderPaymentResponseDTO(BaseDTO):
     expires_at: str = Field(..., alias="expiresAt", description="Lease expiration ISO datetime")
     table_status: str = Field(..., alias="tableStatus", description="Current table session status")
     owner_type: str = Field(..., alias="ownerType", description="Current lock owner type")
+
+
+class PublicFloorTableStatusDTO(BaseDTO):
+    id: str = Field(..., description="Stable table element id (table ref)")
+    table_number: int | None = Field(None, alias="tableNumber")
+    label: str | None = None
+    x: float = 0
+    y: float = 0
+    w: float
+    h: float
+    rotation: float | None = None
+    seats: int | None = None
+    status: str = Field(
+        ...,
+        description="open = wolny / available, closed = zajęty / in use",
+    )
+
+
+class PublicFloorCanvasOverviewDTO(BaseDTO):
+    name: str
+    width: int
+    height: int
+    tables: list[PublicFloorTableStatusDTO]
+
+
+class PublicTablesOverviewResponseDTO(BaseDTO):
+    canvases: list[PublicFloorCanvasOverviewDTO]
 
 
 class PublicTableSessionResponseDTO(BaseDTO):

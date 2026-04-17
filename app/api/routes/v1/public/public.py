@@ -6,14 +6,18 @@ from fastapi import APIRouter, Request, Response, status
 from sqlalchemy import select
 
 from core.dto.v1.menus import TenantMenuResponseDTO
+from core.dto.v1.tenants.mobile_config import MobileLandingContentDTO
 from core.dto.v1.public import (
     PublicAcquireTableSessionDTO,
     PublicCreateOrderPaymentDTO,
     PublicCreateOrderPaymentResponseDTO,
+    PublicFloorCanvasOverviewDTO,
+    PublicFloorTableStatusDTO,
     PublicP24TransactionSyncResponseDTO,
     PublicRefreshTableSessionDTO,
     PublicReleaseTableSessionDTO,
     PublicTableSessionResponseDTO,
+    PublicTablesOverviewResponseDTO,
     PublicTenantInfoResponseDTO,
 )
 from core.exceptions import BadRequestError, NotFoundResponse
@@ -27,6 +31,7 @@ from core.foundation.dependencies import (
     TenantMobileFaviconStorageServiceDep,
     TenantServiceDep,
 )
+from core.models import FloorCanvas
 from core.foundation.http.responses import CreatedResponse, SuccessResponse
 from core.foundation.infra.config import settings
 from core.models.transaction import Transaction
@@ -48,6 +53,20 @@ _TX_STATUS_ACCEPTED = 2
 _TX_STATUS_REFUNDED = 3
 
 _RESOURCE_TRANSACTION = "Transaction"
+
+
+def _coerce_float(value: object) -> float:
+    if isinstance(value, (int, float)):
+        return float(value)
+    return 0.0
+
+
+def _coerce_optional_int(value: object) -> int | None:
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str) and value.strip().isdigit():
+        return int(value.strip())
+    return None
 
 
 def _extract_client_fingerprint(request: Request) -> str | None:
@@ -103,6 +122,9 @@ async def get_public_tenant_info(
     tenant = await tenant_service.get_tenant_by_slug(session, tenant_slug)
     mc = await tenant_mobile_config_service.get_by_tenant_id(session, tenant.id)
     favicon_path = f"/public/{tenant.slug}/favicon.ico" if mc and mc.favicon_object_key else None
+    landing: MobileLandingContentDTO | None = None
+    if mc and mc.landing_content and isinstance(mc.landing_content, dict):
+        landing = MobileLandingContentDTO.model_validate(mc.landing_content)
 
     return SuccessResponse(
         message="Restaurant info retrieved",
@@ -112,6 +134,7 @@ async def get_public_tenant_info(
             pageTitle=mc.page_title if mc else None,
             faviconPath=favicon_path,
             themeOverride=mc.theme_override if mc else None,
+            landingContent=landing,
         ),
     )
 
@@ -179,6 +202,73 @@ async def get_public_tenant_menu(
             categories=categories,
             updatedAt=document.get("updatedAt"),
         ),
+    )
+
+
+@router.get(
+    "/{tenant_slug}/tables-overview",
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessResponse[PublicTablesOverviewResponseDTO],
+)
+async def get_public_tables_overview(
+    tenant_slug: str,
+    session: PostgresSession,
+    tenant_service: TenantServiceDep,
+    table_session_service: TableSessionServiceDep,
+) -> SuccessResponse[PublicTablesOverviewResponseDTO]:
+    tenant = await tenant_service.get_tenant_by_slug(session, tenant_slug)
+    active_sessions = await table_session_service.list_active_sessions(session, tenant.id)
+    locked_refs = {s.table_ref for s in active_sessions}
+
+    canvas_result = await session.execute(select(FloorCanvas).where(FloorCanvas.tenant_id == tenant.id))
+    canvases = list(canvas_result.scalars().all())
+
+    overview_canvases: list[PublicFloorCanvasOverviewDTO] = []
+    for fc in canvases:
+        tables: list[PublicFloorTableStatusDTO] = []
+        raw_elements = fc.elements if isinstance(fc.elements, list) else []
+        for raw in raw_elements:
+            if not isinstance(raw, dict):
+                continue
+            if raw.get("type") != "table":
+                continue
+            tid = raw.get("id")
+            if not isinstance(tid, str) or tid.strip() == "":
+                continue
+            tn = _coerce_optional_int(raw.get("tableNumber"))
+            label_raw = raw.get("label")
+            label = label_raw.strip() if isinstance(label_raw, str) and label_raw.strip() else None
+            seats_raw = raw.get("seats")
+            seats = seats_raw if isinstance(seats_raw, int) else None
+            rotation = _coerce_float(raw["rotation"]) if "rotation" in raw else None
+
+            tables.append(
+                PublicFloorTableStatusDTO(
+                    id=tid,
+                    tableNumber=tn,
+                    label=label,
+                    x=_coerce_float(raw.get("x")),
+                    y=_coerce_float(raw.get("y")),
+                    w=_coerce_float(raw.get("w")) or 1.0,
+                    h=_coerce_float(raw.get("h")) or 1.0,
+                    rotation=rotation,
+                    seats=seats,
+                    status="closed" if tid in locked_refs else "open",
+                )
+            )
+
+        overview_canvases.append(
+            PublicFloorCanvasOverviewDTO(
+                name=fc.name,
+                width=fc.width,
+                height=fc.height,
+                tables=tables,
+            )
+        )
+
+    return SuccessResponse(
+        message="Tables overview retrieved",
+        data=PublicTablesOverviewResponseDTO(canvases=overview_canvases),
     )
 
 
