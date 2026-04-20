@@ -51,7 +51,27 @@
     "notePlaceholder": "e.g. no onions, extra sauce…",
     "payProcessing": "Processing...",
     "payButton": "Pay {{amount}} {{currency}}",
-    "paymentFailed": "Payment could not be processed. Please try again."
+    "paymentFailed": "Payment could not be processed. Please try again.",
+    "invoice": {
+      "wantInvoice": "I need a VAT invoice (Faktura)",
+      "companyNameLabel": "Company name",
+      "companyNamePlaceholder": "Company Ltd.",
+      "companyNameRequired": "Company name is required",
+      "nipLabel": "NIP (Tax ID)",
+      "nipPlaceholder": "1234567890",
+      "nipRequired": "NIP is required",
+      "nipInvalid": "Enter a valid NIP number",
+      "streetLabel": "Street address",
+      "streetPlaceholder": "ul. Example 123/4",
+      "streetRequired": "Street address is required",
+      "cityLabel": "City",
+      "cityPlaceholder": "Warsaw",
+      "cityRequired": "City is required",
+      "postalCodeLabel": "Postal code",
+      "postalCodePlaceholder": "00-000",
+      "postalCodeRequired": "Postal code is required",
+      "postalCodeInvalid": "Enter a valid postal code (XX-XXX)"
+    }
   },
   "cart": {
     "empty": "Your cart is empty. Add items from the menu.",

@@ -51,7 +51,27 @@
     "notePlaceholder": "np. bez cebuli, dodatkowy sos...",
     "payProcessing": "Przetwarzanie...",
     "payButton": "Zapłać {{amount}} {{currency}}",
-    "paymentFailed": "Nie udało się przetworzyć płatności. Spróbuj ponownie."
+    "paymentFailed": "Nie udało się przetworzyć płatności. Spróbuj ponownie.",
+    "invoice": {
+      "wantInvoice": "Chcę fakturę VAT",
+      "companyNameLabel": "Nazwa firmy",
+      "companyNamePlaceholder": "Firma Sp. z o.o.",
+      "companyNameRequired": "Nazwa firmy jest wymagana",
+      "nipLabel": "NIP",
+      "nipPlaceholder": "1234567890",
+      "nipRequired": "NIP jest wymagany",
+      "nipInvalid": "Podaj poprawny numer NIP",
+      "streetLabel": "Ulica i numer",
+      "streetPlaceholder": "ul. Przykładowa 123/4",
+      "streetRequired": "Adres jest wymagany",
+      "cityLabel": "Miasto",
+      "cityPlaceholder": "Warszawa",
+      "cityRequired": "Miasto jest wymagane",
+      "postalCodeLabel": "Kod pocztowy",
+      "postalCodePlaceholder": "00-000",
+      "postalCodeRequired": "Kod pocztowy jest wymagany",
+      "postalCodeInvalid": "Podaj poprawny kod pocztowy (XX-XXX)"
+    }
   },
   "cart": {
     "empty": "Koszyk jest pusty. Dodaj pozycje z menu.",

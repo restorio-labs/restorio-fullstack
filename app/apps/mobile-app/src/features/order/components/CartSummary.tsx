@@ -73,7 +73,7 @@ export const CartSummary = ({ items, totalAmount, onRemove, onUpdateQuantity }: 
           ))}
         </div>
       </div>
-      <div className="flex items-center justify-between border-t border-border-default px-3 py-2">
+      <div className="flex items-center justify-between border-t border-border-default px-6 py-2">
         <Text as="span" variant="body-md" weight="semibold">
           {t("cart.total")}
         </Text>

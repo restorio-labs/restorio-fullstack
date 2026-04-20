@@ -44,8 +44,7 @@ export const MenuItemCard = ({
               <img src={item.imageUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
             ) : null}
           </div>
-          <div className="min-w-2 flex-1 shrink" aria-hidden />
-          <div className="flex max-w-[min(15rem,46vw)] shrink-0 flex-col items-stretch justify-center gap-2 py-0.5 sm:max-w-[17.5rem]">
+          <div className="flex max-w-[min(15rem,46vw)] ml-2 w-full shrink-0 flex-col items-stretch justify-center gap-2 py-0.5 sm:max-w-[17.5rem]">
             {item.promoted ? (
               <div className="flex w-full justify-end">
                 <span className="inline-flex w-fit max-w-full shrink-0 items-center rounded-md border-2 border-status-promoted-border bg-status-promoted-background px-3 py-1.5 text-base font-semibold leading-tight text-status-promoted-text shadow-sm">
@@ -60,7 +59,7 @@ export const MenuItemCard = ({
               {priceLabel}
             </Text>
             {item.desc?.trim() ? (
-              <Text as="span" variant="body-md" className="line-clamp-1 text-start text-text-tertiary">
+              <Text as="span" variant="body-md" className="line-clamp-1 text-text-tertiary">
                 {t("menuItem.tapForDescription")}
               </Text>
             ) : null}

@@ -1,6 +1,6 @@
 from pydantic import Field
 
-from core.dto.v1.common import BaseDTO
+from core.dto.v1.common import BaseDTO, InvoiceDataDTO
 
 
 class PublicOrderItemDTO(BaseDTO):
@@ -17,6 +17,7 @@ class PublicCreateOrderPaymentDTO(BaseDTO):
     email: str = Field(..., min_length=1, max_length=255)
     items: list[PublicOrderItemDTO] = Field(..., min_length=1)
     note: str | None = Field(default=None, max_length=1024)
+    invoice_data: InvoiceDataDTO | None = Field(default=None, alias="invoiceData")
 
 
 class PublicAcquireTableSessionDTO(BaseDTO):

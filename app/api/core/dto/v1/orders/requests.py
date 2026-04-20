@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from pydantic import AliasChoices, Field
 
-from core.dto.v1.common import BaseDTO
+from core.dto.v1.common import BaseDTO, InvoiceDataDTO
 
 
 class CreateOrderItemDTO(BaseDTO):
@@ -62,6 +62,9 @@ class CreateOrderDTO(BaseDTO):
     notes: str | None = Field(None, description="Order notes")
     payment_status: str = Field(
         default="pending", alias="paymentStatus", description="Payment status"
+    )
+    invoice_data: InvoiceDataDTO | None = Field(
+        default=None, alias="invoiceData", description="VAT invoice data (Faktura)"
     )
 
 

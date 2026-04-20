@@ -422,6 +422,17 @@ async def create_public_order_payment(
         client_fingerprint=_extract_client_fingerprint(http_request),
     )
 
+    invoice_dict: dict[str, Any] | None = None
+    if request.invoice_data:
+        invoice_dict = {
+            "companyName": request.invoice_data.company_name,
+            "nip": request.invoice_data.nip,
+            "street": request.invoice_data.street,
+            "city": request.invoice_data.city,
+            "postalCode": request.invoice_data.postal_code,
+            "country": request.invoice_data.country,
+        }
+
     order_dict: dict[str, Any] = {
         "tableNumber": request.table_number,
         "tableRef": table_session.table_ref,
@@ -435,6 +446,7 @@ async def create_public_order_payment(
             for item in request.items
         ],
         "note": request.note,
+        "invoiceData": invoice_dict,
     }
 
     description = f"Zamówienie - stolik {request.table_number} - {tenant.name}"
@@ -481,7 +493,7 @@ async def create_public_order_payment(
         raise BadRequestError(message="Payment registration failed - no token received")
 
     now = datetime.now(UTC)
-    mongo_order = {
+    mongo_order: dict[str, Any] = {
         "tenantPublicId": tenant.public_id,
         "tenantSlug": tenant.slug,
         "tableNumber": request.table_number,
@@ -495,6 +507,8 @@ async def create_public_order_payment(
         "note": request.note,
         "createdAt": now,
     }
+    if invoice_dict:
+        mongo_order["invoiceData"] = invoice_dict
     await db[_ORDERS_COLLECTION].insert_one(mongo_order)
 
     base_url = settings.PRZELEWY24_API_URL.replace("/api/v1", "")

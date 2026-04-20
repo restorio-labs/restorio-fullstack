@@ -47,6 +47,15 @@ export interface PublicOrderItemRequest {
   unitPrice: number;
 }
 
+export interface InvoiceData {
+  companyName: string;
+  nip: string;
+  street: string;
+  city: string;
+  postalCode: string;
+  country?: string;
+}
+
 export interface PublicCreateOrderPaymentRequest {
   tenantSlug: string;
   tableNumber: number;
@@ -55,6 +64,7 @@ export interface PublicCreateOrderPaymentRequest {
   email: string;
   items: PublicOrderItemRequest[];
   note?: string;
+  invoiceData?: InvoiceData;
 }
 
 export interface PublicCreateOrderPaymentData {

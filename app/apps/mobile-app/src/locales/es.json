@@ -51,7 +51,27 @@
     "notePlaceholder": "p. ej. sin cebolla, salsa extra…",
     "payProcessing": "Procesando...",
     "payButton": "Pagar {{amount}} {{currency}}",
-    "paymentFailed": "No se pudo procesar el pago. Inténtalo de nuevo."
+    "paymentFailed": "No se pudo procesar el pago. Inténtalo de nuevo.",
+    "invoice": {
+      "wantInvoice": "Necesito factura con IVA",
+      "companyNameLabel": "Nombre de la empresa",
+      "companyNamePlaceholder": "Empresa S.L.",
+      "companyNameRequired": "El nombre de la empresa es obligatorio",
+      "nipLabel": "NIP (CIF)",
+      "nipPlaceholder": "1234567890",
+      "nipRequired": "El NIP es obligatorio",
+      "nipInvalid": "Introduce un NIP válido",
+      "streetLabel": "Dirección",
+      "streetPlaceholder": "Calle Ejemplo 123/4",
+      "streetRequired": "La dirección es obligatoria",
+      "cityLabel": "Ciudad",
+      "cityPlaceholder": "Madrid",
+      "cityRequired": "La ciudad es obligatoria",
+      "postalCodeLabel": "Código postal",
+      "postalCodePlaceholder": "00-000",
+      "postalCodeRequired": "El código postal es obligatorio",
+      "postalCodeInvalid": "Introduce un código postal válido (XX-XXX)"
+    }
   },
   "cart": {
     "empty": "Tu carrito está vacío. Añade platos del menú.",

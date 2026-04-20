@@ -1,4 +1,4 @@
-import type { PublicTenantInfo, TenantMenu } from "@restorio/types";
+import type { InvoiceData, PublicTenantInfo, TenantMenu } from "@restorio/types";
 import { Button, EmptyState, Loader, Text, useI18n } from "@restorio/ui";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { type ReactElement, useCallback, useEffect, useRef, useState } from "react";
@@ -56,7 +56,7 @@ export const OrderPage = (): ReactElement => {
   }, [tenantSlug]);
 
   const paymentMutation = useMutation({
-    mutationFn: (data: { email: string; note: string }) =>
+    mutationFn: (data: { email: string; note: string; invoiceData?: InvoiceData }) =>
       publicApi.createOrderPayment({
         tenantSlug: tenantSlug!,
         tableNumber: tableNum,
@@ -68,6 +68,7 @@ export const OrderPage = (): ReactElement => {
           unitPrice: item.unitPrice,
         })),
         note: data.note || undefined,
+        invoiceData: data.invoiceData,
       }),
     onSuccess: (data) => {
       if (lockStorageKey) {
@@ -81,9 +82,9 @@ export const OrderPage = (): ReactElement => {
   });
 
   const handleCheckout = useCallback(
-    (email: string, note: string) => {
+    (email: string, note: string, invoiceData?: InvoiceData) => {
       setSubmitError("");
-      paymentMutation.mutate({ email, note });
+      paymentMutation.mutate({ email, note, invoiceData });
     },
     [paymentMutation],
   );

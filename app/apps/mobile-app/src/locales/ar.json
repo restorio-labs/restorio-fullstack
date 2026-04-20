@@ -51,7 +51,27 @@
     "notePlaceholder": "مثلاً: بدون بصل، صلصة إضافية…",
     "payProcessing": "جارٍ المعالجة...",
     "payButton": "ادفع {{amount}} {{currency}}",
-    "paymentFailed": "تعذّرت معالجة الدفع. حاول مرة أخرى."
+    "paymentFailed": "تعذّرت معالجة الدفع. حاول مرة أخرى.",
+    "invoice": {
+      "wantInvoice": "أحتاج فاتورة ضريبية",
+      "companyNameLabel": "اسم الشركة",
+      "companyNamePlaceholder": "شركة مثال",
+      "companyNameRequired": "اسم الشركة مطلوب",
+      "nipLabel": "الرقم الضريبي (NIP)",
+      "nipPlaceholder": "1234567890",
+      "nipRequired": "الرقم الضريبي مطلوب",
+      "nipInvalid": "أدخل رقماً ضريبياً صالحاً",
+      "streetLabel": "العنوان",
+      "streetPlaceholder": "شارع مثال 123/4",
+      "streetRequired": "العنوان مطلوب",
+      "cityLabel": "المدينة",
+      "cityPlaceholder": "وارسو",
+      "cityRequired": "المدينة مطلوبة",
+      "postalCodeLabel": "الرمز البريدي",
+      "postalCodePlaceholder": "00-000",
+      "postalCodeRequired": "الرمز البريدي مطلوب",
+      "postalCodeInvalid": "أدخل رمزاً بريدياً صالحاً (XX-XXX)"
+    }
   },
   "cart": {
     "empty": "سلتك فارغة. أضف عناصر من القائمة.",
