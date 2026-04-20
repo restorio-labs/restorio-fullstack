@@ -50,7 +50,7 @@ export const FilePickerField = ({
 
   return (
     <div className={cn("mt-0 w-full", className)}>
-      <div className="mb-1 flex w-full items-center justify-between gap-2">
+      <div className="mb-1 flex w-full items-center gap-2">
         <label
           htmlFor={fieldId}
           className={cn("min-w-0 text-sm font-medium leading-5 text-text-primary", labelClassName)}
@@ -58,7 +58,7 @@ export const FilePickerField = ({
           {label}
         </label>
         {labelTooltip ? (
-          <span className="inline-flex shrink-0 pr-3">
+          <span className="inline-flex shrink-0">
             <Tooltip
               content={labelTooltip}
               className="w-max min-w-0 max-w-[min(100vw-2rem,22rem)] whitespace-normal px-3 py-2 text-left text-sm leading-relaxed"

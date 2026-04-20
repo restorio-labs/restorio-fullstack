@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any
 
 from pydantic import Field
@@ -49,6 +50,11 @@ class PublicFloorTableStatusDTO(BaseDTO):
     status: str = Field(
         ...,
         description="open = wolny / available, closed = zajęty / in use",
+    )
+    reserved_until: datetime | None = Field(
+        None,
+        alias="reservedUntil",
+        description="When status is closed, approximate time to recheck availability (session lock expiry or fallback)",
     )
 
 

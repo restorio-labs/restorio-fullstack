@@ -9,10 +9,14 @@ export type ThemeMode = "light" | "dark" | "system";
 
 export type Direction = "ltr" | "rtl" | "auto";
 
+export type ThemeColorOverrideSlice = Partial<{
+  [K in keyof typeof colorTokens.light]: Partial<(typeof colorTokens.light)[K]>;
+}>;
+
 export interface ThemeOverride {
-  colors?: Partial<{
-    [K in keyof typeof colorTokens.light]: Partial<(typeof colorTokens.light)[K]>;
-  }>;
+  colors?: ThemeColorOverrideSlice;
+  colorsLight?: ThemeColorOverrideSlice;
+  colorsDark?: ThemeColorOverrideSlice;
   spacing?: Partial<typeof spacingTokens>;
   radius?: Partial<typeof radiusTokens>;
   typography?: Partial<{

@@ -98,6 +98,7 @@ export interface TenantMobileLandingContent {
   menuCtaLabel?: string | null;
   openStatusLabel?: string | null;
   closedStatusLabel?: string | null;
+  uiLocale?: string | null;
 }
 
 export interface PublicTenantInfo {
@@ -120,6 +121,7 @@ export interface PublicFloorTableStatus {
   rotation?: number | null;
   seats?: number | null;
   status: "open" | "closed";
+  reservedUntil?: string | null;
 }
 
 export interface PublicFloorCanvasOverview {

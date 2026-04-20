@@ -280,7 +280,7 @@
       }
     },
     "openSource": {
-      "title": "Open Source",
+      "title": " Source",
       "description": "This project is built as an academic engineer-degree project at NTNU. The codebase is open-source, and we encourage contributions from the community. By making restaurant technology accessible, we aim to support small businesses in their digital transformation."
     },
     "problem": {
@@ -334,6 +334,6 @@
       "privacy": "Privacy",
       "terms": "Terms"
     },
-    "copyright": "© {year} Restorio Platform. Open Source Academic Project."
+    "copyright": "© {year} Restorio Platform.  Source Academic Project."
   }
 }

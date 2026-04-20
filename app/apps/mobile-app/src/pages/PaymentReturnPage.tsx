@@ -109,7 +109,7 @@ export const PaymentReturnPage = (): ReactElement => {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-background-primary p-6">
         <Loader size="lg" />
-        <Text as="p" variant="body-md" className="text-text-secondary">
+        <Text as="p" variant="body-md" className="text-center text-text-secondary">
           {t("paymentReturn.checkingStatus")}
         </Text>
       </div>

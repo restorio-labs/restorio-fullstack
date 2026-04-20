@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState, useMemo } from "react";
 import { colorTokens } from "../tokens/colors";
 import type { ThemeMode, ThemeOverride, Direction } from "../tokens/types";
 
-import { generateCSSVariables } from "./cssVariables";
+import { generateCSSVariables, resolveThemeOverrideForMode } from "./cssVariables";
 
 interface ThemeContextValue {
   mode: ThemeMode;
@@ -156,8 +156,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
       root.classList.toggle("dark", resolvedMode === "dark");
       root.setAttribute("dir", direction);
 
-      if (override) {
-        const cssVars = generateCSSVariables(override);
+      const applied = resolveThemeOverrideForMode(override, resolvedMode);
+
+      if (applied) {
+        const cssVars = generateCSSVariables(applied);
 
         for (const [key, value] of Object.entries(cssVars)) {
           root.style.setProperty(key, value);
@@ -186,8 +188,9 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
 
   const colors = useMemo(() => {
     const baseColors = resolvedMode === "dark" ? colorTokens.dark : colorTokens.light;
+    const applied = resolveThemeOverrideForMode(override, resolvedMode);
 
-    if (!override?.colors) {
+    if (!applied?.colors) {
       return baseColors;
     }
 
@@ -200,28 +203,36 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
       status: { ...baseColors.status },
     } as typeof baseColors;
 
-    if (override.colors.background) {
-      Object.assign(merged.background, override.colors.background);
+    if (applied.colors.background) {
+      Object.assign(merged.background, applied.colors.background);
     }
 
-    if (override.colors.surface) {
-      Object.assign(merged.surface, override.colors.surface);
+    if (applied.colors.surface) {
+      Object.assign(merged.surface, applied.colors.surface);
     }
 
-    if (override.colors.border) {
-      Object.assign(merged.border, override.colors.border);
+    if (applied.colors.border) {
+      Object.assign(merged.border, applied.colors.border);
     }
 
-    if (override.colors.text) {
-      Object.assign(merged.text, override.colors.text);
+    if (applied.colors.text) {
+      Object.assign(merged.text, applied.colors.text);
     }
 
-    if (override.colors.interactive) {
-      Object.assign(merged.interactive, override.colors.interactive);
+    if (applied.colors.interactive) {
+      Object.assign(merged.interactive, applied.colors.interactive);
     }
 
-    if (override.colors.status) {
-      Object.assign(merged.status, override.colors.status);
+    if (applied.colors.status) {
+      const patch = applied.colors.status;
+
+      for (const sub of ["error", "success", "warning", "info", "promoted"] as const) {
+        const partial = patch[sub];
+
+        if (partial && typeof partial === "object") {
+          merged.status[sub] = { ...merged.status[sub], ...partial };
+        }
+      }
     }
 
     return merged;

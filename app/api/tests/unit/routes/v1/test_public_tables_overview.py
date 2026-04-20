@@ -23,17 +23,21 @@ async def test_tables_overview_returns_empty_canvases_when_no_floor_data() -> No
 
     table_session_service = MagicMock()
     table_session_service.list_active_sessions = AsyncMock(return_value=[])
+    table_session_service.list_table_refs_with_active_kitchen_orders = AsyncMock(return_value=set())
 
     result_mock = MagicMock()
     result_mock.scalars.return_value.all.return_value = []
     session = AsyncMock()
     session.execute = AsyncMock(return_value=result_mock)
 
+    db = MagicMock()
+
     response = await get_public_tables_overview(
         "cafe",
         session,
         tenant_service,
         table_session_service,
+        db,
     )
 
     assert response.message == "Tables overview retrieved"
@@ -46,6 +50,7 @@ async def test_tables_overview_marks_locked_tables_closed() -> None:
     tenant = MagicMock()
     tenant.id = tenant_id
     tenant.slug = "bistro"
+    tenant.public_id = "pub-bistro"
 
     tenant_service = MagicMock()
     tenant_service.get_tenant_by_slug = AsyncMock(return_value=tenant)
@@ -54,6 +59,7 @@ async def test_tables_overview_marks_locked_tables_closed() -> None:
     locked.table_ref = "table-ref-1"
     table_session_service = MagicMock()
     table_session_service.list_active_sessions = AsyncMock(return_value=[locked])
+    table_session_service.list_table_refs_with_active_kitchen_orders = AsyncMock(return_value=set())
 
     floor = MagicMock()
     floor.name = "Main"
@@ -88,11 +94,14 @@ async def test_tables_overview_marks_locked_tables_closed() -> None:
     session = AsyncMock()
     session.execute = AsyncMock(return_value=result_mock)
 
+    db = MagicMock()
+
     response = await get_public_tables_overview(
         "bistro",
         session,
         tenant_service,
         table_session_service,
+        db,
     )
 
     assert len(response.data.canvases) == 1
@@ -108,3 +117,65 @@ async def test_tables_overview_marks_locked_tables_closed() -> None:
     assert by_id["table-ref-1"].label == "Window"
     assert by_id["table-ref-2"].status == "open"
     assert by_id["table-ref-2"].table_number == _TABLE_TWO
+
+
+@pytest.mark.asyncio
+async def test_tables_overview_marks_kitchen_order_tables_closed_without_postgres_session() -> None:
+    tenant_id = uuid4()
+    tenant = MagicMock()
+    tenant.id = tenant_id
+    tenant.slug = "bistro"
+    tenant.public_id = "pub-x"
+
+    tenant_service = MagicMock()
+    tenant_service.get_tenant_by_slug = AsyncMock(return_value=tenant)
+
+    table_session_service = MagicMock()
+    table_session_service.list_active_sessions = AsyncMock(return_value=[])
+    table_session_service.list_table_refs_with_active_kitchen_orders = AsyncMock(
+        return_value={"table-ref-1"}
+    )
+
+    floor = MagicMock()
+    floor.name = "Main"
+    floor.width = _CANVAS_W
+    floor.height = _CANVAS_H
+    floor.elements = [
+        {
+            "type": "table",
+            "id": "table-ref-1",
+            "tableNumber": 1,
+            "x": 10,
+            "y": 20,
+            "w": 60,
+            "h": 50,
+        },
+        {
+            "type": "table",
+            "id": "table-ref-2",
+            "tableNumber": 2,
+            "x": 100,
+            "y": 20,
+            "w": 60,
+            "h": 50,
+        },
+    ]
+
+    result_mock = MagicMock()
+    result_mock.scalars.return_value.all.return_value = [floor]
+    session = AsyncMock()
+    session.execute = AsyncMock(return_value=result_mock)
+
+    db = MagicMock()
+
+    response = await get_public_tables_overview(
+        "bistro",
+        session,
+        tenant_service,
+        table_session_service,
+        db,
+    )
+
+    by_id = {t.id: t for t in response.data.canvases[0].tables}
+    assert by_id["table-ref-1"].status == "closed"
+    assert by_id["table-ref-2"].status == "open"

@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { publicApi } from "../api/client";
+import { GuestBottomNav } from "../components/GuestBottomNav";
 import { useApplyPublicTenantPresentation } from "../hooks/useApplyPublicTenantPresentation";
 import { persistLastVisitedTenantPath } from "../lib/lastVisitedTenant";
 
@@ -31,7 +32,9 @@ export const TenantLandingPage = (): ReactElement => {
   if (!tenantSlug) {
     return (
       <div className="flex min-h-[100dvh] items-center justify-center p-4">
-        <EmptyState title={t("order.invalidLinkTitle")} description={t("order.invalidLinkDescription")} />
+        <div className="w-full max-w-md text-center">
+          <EmptyState title={t("order.invalidLinkTitle")} description={t("order.invalidLinkDescription")} />
+        </div>
       </div>
     );
   }
@@ -47,15 +50,17 @@ export const TenantLandingPage = (): ReactElement => {
   if (tenantQuery.isError || !tenantQuery.data) {
     return (
       <div className="flex min-h-[100dvh] items-center justify-center p-4">
-        <EmptyState
-          title={t("order.loadErrorTitle")}
-          description={t("order.loadErrorDescription")}
-          action={
-            <Button variant="primary" onClick={() => window.location.reload()}>
-              {t("order.reload")}
-            </Button>
-          }
-        />
+        <div className="w-full max-w-md text-center">
+          <EmptyState
+            title={t("order.loadErrorTitle")}
+            description={t("order.loadErrorDescription")}
+            action={
+              <Button variant="primary" onClick={() => window.location.reload()}>
+                {t("order.reload")}
+              </Button>
+            }
+          />
+        </div>
       </div>
     );
   }
@@ -67,12 +72,12 @@ export const TenantLandingPage = (): ReactElement => {
   const subtitle = lc?.subtitle?.trim() ? lc.subtitle : t("landing.defaultSubtitle");
 
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-background-primary px-4 pb-28 pt-8">
+    <div className="flex min-h-[100dvh] flex-col items-center bg-background-primary px-4 pb-28 pt-8">
       <header className="mx-auto w-full max-w-md text-center">
-        <Text as="h1" variant="h3" weight="bold" className="text-balance">
+        <Text as="h1" variant="h3" weight="bold" className="text-balance text-center">
           {headline}
         </Text>
-        <Text as="p" variant="body-md" className="mt-3 text-pretty text-text-secondary">
+        <Text as="p" variant="body-md" className="mt-3 text-pretty text-text-secondary text-center">
           {subtitle}
         </Text>
       </header>
@@ -86,19 +91,14 @@ export const TenantLandingPage = (): ReactElement => {
         </Button>
       </div>
 
-      <nav
-        className="fixed bottom-0 left-0 right-0 border-t border-border-default bg-surface-primary/95 px-4 py-3 backdrop-blur-sm"
-        aria-label={t("landing.quickNavAria")}
-      >
-        <div className="mx-auto flex max-w-md justify-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => navigate(`/${tenantSlug}/tables`)}>
-            {t("landing.navTables")}
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => navigate(`/${tenantSlug}/menu`)}>
-            {t("landing.navMenu")}
-          </Button>
-        </div>
-      </nav>
+      <GuestBottomNav ariaLabel={t("landing.quickNavAria")}>
+        <Button variant="ghost" size="sm" onClick={() => navigate(`/${tenantSlug}/tables`)}>
+          {t("landing.navTables")}
+        </Button>
+        <Button variant="ghost" size="sm" onClick={() => navigate(`/${tenantSlug}/menu`)}>
+          {t("landing.navMenu")}
+        </Button>
+      </GuestBottomNav>
     </div>
   );
 };

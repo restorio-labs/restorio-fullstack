@@ -5,7 +5,14 @@ import { renderHook } from "@testing-library/react";
 import React from "react";
 import { describe, expect, it } from "vitest";
 
-import { generateCSSVariables, flattenToCSSVariables } from "../../../src/theme/cssVariables";
+import {
+  buildScopedThemeStyle,
+  flattenToCSSVariables,
+  generateCSSVariables,
+  mergeColorOverrideSlices,
+  resolveThemeOverrideForMode,
+} from "../../../src/theme/cssVariables";
+import { colorTokens } from "../../../src/tokens/colors";
 import { ThemeProvider, useTheme } from "../../../src/theme/ThemeProvider";
 import type { ThemeOverride } from "../../../src/tokens/types";
 
@@ -367,6 +374,93 @@ describe("generateCSSVariables", () => {
       "--color-primary": "#ffffff",
       "--color-nested-deep-value": "#000000",
     });
+  });
+});
+
+describe("buildScopedThemeStyle", () => {
+  it("merges base light tokens with color override", () => {
+    const result = buildScopedThemeStyle("light", {
+      colors: { background: { primary: "#aabbcc" } },
+    });
+
+    expect(result["--color-background-primary"]).toBe("#aabbcc");
+    expect(result["--color-text-primary"]).toBe(colorTokens.light.text.primary);
+  });
+
+  it("returns base dark tokens when override is null", () => {
+    const result = buildScopedThemeStyle("dark", null);
+
+    expect(result["--color-background-primary"]).toBe(colorTokens.dark.background.primary);
+  });
+
+  it("uses colorsDark in dark mode when resolving scoped style", () => {
+    const result = buildScopedThemeStyle("dark", {
+      colorsLight: { background: { primary: "#ffffff" } },
+      colorsDark: { background: { primary: "#112233" } },
+    });
+
+    expect(result["--color-background-primary"]).toBe("#112233");
+  });
+
+  it("uses colorsLight in light mode when resolving scoped style", () => {
+    const result = buildScopedThemeStyle("light", {
+      colorsDark: { background: { primary: "#112233" } },
+      colorsLight: { background: { primary: "#eef0ff" } },
+    });
+
+    expect(result["--color-background-primary"]).toBe("#eef0ff");
+  });
+});
+
+describe("mergeColorOverrideSlices", () => {
+  it("merges legacy and mode-specific shallow category maps", () => {
+    const result = mergeColorOverrideSlices(
+      { background: { primary: "#aaa", secondary: "#bbb" } },
+      { background: { primary: "#ccc" } },
+    );
+
+    expect(result?.background?.primary).toBe("#ccc");
+    expect(result?.background?.secondary).toBe("#bbb");
+  });
+
+  it("deep-merges status groups such as promoted", () => {
+    const result = mergeColorOverrideSlices(
+      { status: { promoted: { background: "#aaa", text: "#bbb" } } },
+      { status: { promoted: { text: "#ccc" } } },
+    );
+
+    expect(result?.status?.promoted?.background).toBe("#aaa");
+    expect(result?.status?.promoted?.text).toBe("#ccc");
+  });
+});
+
+describe("resolveThemeOverrideForMode", () => {
+  it("combines legacy colors with mode slice for light", () => {
+    const result = resolveThemeOverrideForMode(
+      {
+        colors: { interactive: { primary: "#111" } },
+        colorsLight: { background: { primary: "#fff" } },
+        colorsDark: { background: { primary: "#000" } },
+      },
+      "light",
+    );
+
+    expect(result?.colors?.background?.primary).toBe("#fff");
+    expect(result?.colors?.interactive?.primary).toBe("#111");
+  });
+
+  it("combines legacy colors with mode slice for dark", () => {
+    const result = resolveThemeOverrideForMode(
+      {
+        colors: { interactive: { primary: "#111" } },
+        colorsLight: { background: { primary: "#fff" } },
+        colorsDark: { background: { primary: "#000" } },
+      },
+      "dark",
+    );
+
+    expect(result?.colors?.background?.primary).toBe("#000");
+    expect(result?.colors?.interactive?.primary).toBe("#111");
   });
 });
 

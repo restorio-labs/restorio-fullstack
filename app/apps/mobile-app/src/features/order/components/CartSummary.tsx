@@ -27,7 +27,7 @@ export const CartSummary = ({ items, totalAmount, onRemove, onUpdateQuantity }: 
   return (
     <div className="rounded-lg border border-border-default bg-surface-primary">
       <div className="p-3">
-        <Text as="h3" variant="body-md" weight="semibold" className="mb-2">
+        <Text as="h3" variant="body-md" weight="semibold" className="mb-2 text-center">
           {t("cart.title")}
         </Text>
         <div className="flex flex-col gap-2">

@@ -87,8 +87,7 @@ export const Modal = ({
   return (
     <div
       className={cn(
-        "fixed inset-0 z-[1000] flex items-center justify-center bg-surface-overlay p-4",
-        "animate-in fade-in duration-200",
+        "modal-overlay-animate fixed inset-0 z-[1000] flex items-center justify-center bg-surface-overlay p-4",
       )}
       onClick={handleOverlayClick}
       role="dialog"
@@ -98,17 +97,17 @@ export const Modal = ({
       <div
         ref={modalRef}
         className={cn(
-          "relative z-[1001] w-full rounded-lg bg-surface-primary shadow-lg",
+          "modal-panel-animate relative z-[1001] w-full rounded-lg bg-surface-primary shadow-lg",
           "focus:outline-none",
-          "animate-in zoom-in-95 duration-200",
           sizeStyles[size],
           variant === "cookie" && "border border-border-default",
           className,
         )}
         role="document"
+        onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-6 border-b border-border-default">
-          <h2 id="modal-title" className="text-xl font-semibold text-text-primary">
+        <div className="relative flex min-h-[3.25rem] items-center justify-center border-b border-border-default px-12 py-4">
+          <h2 id="modal-title" className="text-center text-xl font-semibold text-text-primary">
             {title}
           </h2>
           {!hideCloseButton && (
@@ -116,16 +115,16 @@ export const Modal = ({
               ref={closeButtonRef}
               type="button"
               onClick={onClose}
-              className="p-1 text-text-secondary hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus rounded-sm"
+              className="absolute end-3 top-1/2 -translate-y-1/2 rounded-sm p-1 text-text-secondary hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus"
               aria-label={closeButtonAriaLabel}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           )}
         </div>
-        <div className="p-6">{children}</div>
+        <div className="flex w-full flex-col items-center gap-4 p-6 text-center">{children}</div>
       </div>
     </div>
   );

@@ -644,11 +644,13 @@ export const MenuCreatorPage = (): ReactElement => {
                             busy={imageUploadItemId === item.id}
                             idleLabel={t("menuCreator.imageUpload.upload")}
                             busyLabel={t("menuCreator.imageUpload.uploading")}
+                            className="py-1.5 text-sm"
                           />
                           {item.imageUrl ? (
                             <Button
                               type="button"
                               variant="secondary"
+                              size="sm"
                               onClick={() => updateItem(category.id, item.id, { imageUrl: null })}
                             >
                               {t("menuCreator.imageUpload.remove")}

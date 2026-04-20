@@ -236,13 +236,28 @@
       "pageTitle": "Tytuł w przeglądarce",
       "favicon": "Favicon (.ico)",
       "backgroundColor": "Kolor tła",
+      "primaryButtonBackground": "Przycisk główny — tło",
+      "primaryButtonText": "Przycisk główny — kolor tekstu",
+      "secondaryButtonBackground": "Przycisk drugorzędny — tło",
+      "secondaryButtonText": "Przycisk drugorzędny — kolor tekstu",
+      "textPrimary": "Tekst — główny",
+      "textSecondary": "Tekst — drugorzędny",
+      "textTertiary": "Tekst — trzeci / przygaszony",
+      "borderDefault": "Obramowania — domyślne",
+      "surfacePrimary": "Powierzchnie — główne (karty, pola)",
+      "surfaceSecondary": "Powierzchnie — drugorzędne (sekcje)",
+      "promotedBadgeBackground": "Odznaka promocji — tło",
+      "promotedBadgeText": "Odznaka promocji — tekst",
+      "promotedBadgeBorder": "Odznaka promocji — obrys",
       "googleFontUrl": "URL czcionki Google",
       "landingHeadline": "Nagłówek strony startowej",
       "landingSubtitle": "Podtytuł strony startowej",
       "tablesCtaLabel": "Etykieta przycisku „Stoliki”",
       "menuCtaLabel": "Etykieta przycisku „Menu”",
       "openStatusLabel": "Etykieta wolnego stolika",
-      "closedStatusLabel": "Etykieta zajętego stolika"
+      "closedStatusLabel": "Etykieta zajętego stolika",
+      "uiLocale": "Język aplikacji dla gościa",
+      "uiLocaleBrowserDefault": "Jak w przeglądarce gościa"
     },
     "placeholders": {
       "pageTitle": "Puste = nazwa restauracji"
@@ -250,18 +265,103 @@
     "hints": {
       "pageTitle": "Widoczna w karcie przeglądarki i nagłówku.",
       "favicon": "Tylko ICO. Dokładnie 16×16, 32×32, 64×64 lub 128×128 px.",
+      "faviconPreviewAlt": "Podgląd faviconu",
       "faviconCurrent": "Favicon jest już ustawiony. Wyślij nowy plik, aby go zmienić.",
       "faviconSelected": "Wybrano: {{name}}",
-      "backgroundColor": "Główny kolor tła aplikacji mobilnej.",
+      "backgroundColor": "Tło aplikacji gościa dla wybranego wyglądu (jasny lub ciemny).",
+      "themePersonalizationMode": "Zmiana przełącza podgląd na ten sam tryb, żeby od razu widzieć efekt. Goście nadal podążają za motywem urządzenia, o ile aplikacja nie wymusza trybu.",
+      "primaryButtonBackground": "Styl wypełniony dla głównych akcji w aplikacji gościa.",
+      "primaryButtonText": "Kolor tekstu i ikon na głównych przyciskach (wypełnionych).",
+      "secondaryButtonBackground": "Styl wypełniony dla akcji drugorzędnych.",
+      "secondaryButtonText": "Kolor tekstu na drugorzędnych przyciskach wypełnionych.",
+      "textPrimary": "Główny tekst treści i nagłówków.",
+      "textSecondary": "Tekst pomocniczy i opisy.",
+      "textTertiary": "Podpowiedzi, etykiety i elementy najsłabiej akcentowane.",
+      "borderDefault": "Domyślne obramowania i separatory między blokami.",
+      "surfacePrimary": "Panele, karty i główne obszary treści.",
+      "surfaceSecondary": "Sekcje i delikatne tła grupujące treść.",
+      "promotedBadgeBackground": "Tło etykiety przy promowanych pozycjach menu i zamówienia.",
+      "promotedBadgeText": "Kolor tekstu na odznace promocji.",
+      "promotedBadgeBorder": "Obramowanie odznaki dla lepszego kontrastu.",
       "googleFontUrl": "Wklej pełny URL z Google Fonts.",
-      "googleFontUrlTooltip": "Wejdź na fonts.google.com, wybierz czcionkę i skopiuj URL do osadzenia."
+      "googleFontUrlTooltip": "Wejdź na fonts.google.com, wybierz czcionkę i skopiuj URL do osadzenia.",
+      "uiLocale": "Po ustawieniu aplikacja gościa użyje tego języka dla wbudowanych tekstów (stoliki, nawigacja, etykiety systemowe). Zostaw „Jak w przeglądarce gościa”, aby podążać za językiem urządzenia."
     },
     "landingSection": {
       "title": "Strona startowa i widoki gościa",
       "hint": "Widoczne pod linkiem do lokalu zanim gość zeskanuje QR przy stoliku. Puste pola = domyślne teksty aplikacji."
     },
     "themeSection": {
-      "title": "Personalizacja motywu"
+      "title": "Personalizacja motywu",
+      "editTargetLabel": "Dostosuj kolory dla",
+      "editLight": "Wersja jasna",
+      "editDark": "Wersja ciemna",
+      "primaryButton": "Przycisk główny",
+      "secondaryButton": "Przycisk drugorzędny",
+      "surfacesTextAndBorders": "Powierzchnie, tekst i obramowania",
+      "promotedBadge": "Odznaka promowanej pozycji"
+    },
+    "preview": {
+      "title": "Podgląd aplikacji gościa",
+      "hint": "Przykładowe ekrany; elementy są nieaktywne. Widoki stolików i zamówienia mają przykładową treść.",
+      "screenLabel": "Ekran",
+      "appearanceFollowsEditor": "Wygląd podglądu odpowiada „Dostosuj kolory dla” powyżej (jasna lub ciemna wersja).",
+      "themeLabel": "Wygląd",
+      "screens": {
+        "landing": "Start",
+        "tables": "Stoliki i układ",
+        "menu": "Menu",
+        "order": "Zamówienie przy stoliku"
+      },
+      "theme": {
+        "light": "Jasny",
+        "dark": "Ciemny",
+        "system": "Jak w przeglądarce"
+      },
+      "defaultSubtitle": "Przejrzyj menu lub dostępność stolików zanim usiądziesz.",
+      "ctaTables": "Dostępność i układ stolików",
+      "ctaMenu": "Zobacz menu",
+      "navHome": "Start",
+      "navTables": "Stoliki",
+      "navMenu": "Menu",
+      "quickNavAria": "Szybka nawigacja",
+      "openStatusFallback": "Wolny",
+      "closedStatusFallback": "Zajęty",
+      "tables": {
+        "back": "Wstecz",
+        "subtitle": "Na żywo z planu sali",
+        "floorTitle": "Główna sala",
+        "listTitle": "Wszystkie stoliki",
+        "sampleOpen": "Stolik 4",
+        "sampleClosed": "Stolik 8"
+      },
+      "menu": {
+        "back": "Wstecz",
+        "subtitle": "Dania i ceny",
+        "category": "Polecane",
+        "promotedBadge": "Wybór szefa",
+        "item1Name": "Zupa dnia",
+        "item1Desc": "Warzywa sezonowe, pieczywo",
+        "item1Price": "18,00 PLN",
+        "item2Name": "Pstrąg z grilla",
+        "item2Price": "42,00 PLN"
+      },
+      "order": {
+        "tableCaption": "Stolik 3",
+        "cartButton": "Do kasy · 2 poz. · 60,00 PLN",
+        "summaryTitle": "Podsumowanie",
+        "category": "Polecane",
+        "item1Name": "Zupa dnia",
+        "item1Price": "18,00 PLN",
+        "item2Name": "Pstrąg z grilla",
+        "item2Price": "42,00 PLN",
+        "subtotalLabel": "Suma częściowa",
+        "subtotalPrice": "60,00 PLN",
+        "serviceLabel": "Opłata serwisowa",
+        "servicePrice": "3,00 PLN",
+        "totalLabel": "Razem",
+        "totalPrice": "63,00 PLN"
+      }
     },
     "copySection": {
       "title": "Skopiuj motyw z innej restauracji",

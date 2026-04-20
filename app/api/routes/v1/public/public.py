@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -39,6 +39,8 @@ from services.mongo_menu_service import MENU_COLLECTION, normalize_mongo_menu_ca
 from services.tenant_mobile_config_service import tenant_mobile_config_service
 
 router = APIRouter()
+
+_KITCHEN_RESERVE_FALLBACK = timedelta(seconds=90)
 
 _ORDERS_COLLECTION = "orders"
 
@@ -215,10 +217,21 @@ async def get_public_tables_overview(
     session: PostgresSession,
     tenant_service: TenantServiceDep,
     table_session_service: TableSessionServiceDep,
+    db: MongoDB,
 ) -> SuccessResponse[PublicTablesOverviewResponseDTO]:
     tenant = await tenant_service.get_tenant_by_slug(session, tenant_slug)
     active_sessions = await table_session_service.list_active_sessions(session, tenant.id)
-    locked_refs = {s.table_ref for s in active_sessions}
+    busy_kitchen_refs = await table_session_service.list_table_refs_with_active_kitchen_orders(
+        db,
+        tenant_public_id=tenant.public_id,
+    )
+    locked_refs = {s.table_ref for s in active_sessions} | busy_kitchen_refs
+
+    session_expires_by_ref: dict[str, datetime] = {}
+    for s in active_sessions:
+        prev = session_expires_by_ref.get(s.table_ref)
+        if prev is None or s.expires_at > prev:
+            session_expires_by_ref[s.table_ref] = s.expires_at
 
     canvas_result = await session.execute(select(FloorCanvas).where(FloorCanvas.tenant_id == tenant.id))
     canvases = list(canvas_result.scalars().all())
@@ -242,6 +255,13 @@ async def get_public_tables_overview(
             seats = seats_raw if isinstance(seats_raw, int) else None
             rotation = _coerce_float(raw["rotation"]) if "rotation" in raw else None
 
+            is_closed = tid in locked_refs
+            reserved_until: datetime | None = None
+            if is_closed:
+                reserved_until = session_expires_by_ref.get(tid)
+                if reserved_until is None:
+                    reserved_until = datetime.now(UTC) + _KITCHEN_RESERVE_FALLBACK
+
             tables.append(
                 PublicFloorTableStatusDTO(
                     id=tid,
@@ -253,7 +273,8 @@ async def get_public_tables_overview(
                     h=_coerce_float(raw.get("h")) or 1.0,
                     rotation=rotation,
                     seats=seats,
-                    status="closed" if tid in locked_refs else "open",
+                    status="closed" if is_closed else "open",
+                    reserved_until=reserved_until,
                 )
             )
 

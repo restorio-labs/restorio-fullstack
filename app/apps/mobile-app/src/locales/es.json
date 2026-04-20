@@ -21,6 +21,13 @@
     "railAria": "Navegación principal",
     "homeAria": "Inicio"
   },
+  "language": {
+    "switcherAria": "Idioma",
+    "optionEn": "English",
+    "optionPl": "Polski",
+    "optionEs": "Español",
+    "optionAr": "العربية"
+  },
   "order": {
     "invalidLinkTitle": "Enlace no válido",
     "invalidLinkDescription": "Vuelve a escanear el código QR.",
@@ -56,7 +63,11 @@
   },
   "menuItem": {
     "addAria": "Añadir {{name}}",
-    "removeAria": "Quitar {{name}}"
+    "removeAria": "Quitar {{name}}",
+    "openDetailsAria": "Ver detalles: {{name}}",
+    "closeDetailsModal": "Cerrar",
+    "tapForDescription": "Toca para ver la descripción",
+    "noDescription": "No hay descripción para este plato."
   },
   "root": {
     "noRestaurantTitle": "Sin restaurante guardado",
@@ -80,7 +91,10 @@
     "statusClosed": "Ocupada",
     "noLayoutTitle": "Sin plano",
     "noLayoutDescription": "Este restaurante aún no ha publicado un plano de mesas.",
-    "listTitle": "Todas las mesas"
+    "listTitle": "Todas las mesas",
+    "reservedModalTitle": "Mesa ocupada",
+    "reservedModalBody": "Esta mesa no está disponible ahora. Actualizaremos el plano cuando termine la cuenta atrás.",
+    "reservedCountdown": "Queda {{time}}"
   },
   "menuBrowse": {
     "back": "Atrás",

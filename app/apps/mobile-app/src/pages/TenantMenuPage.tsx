@@ -6,6 +6,7 @@ import { useCallback, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { publicApi } from "../api/client";
+import { GuestBottomNav } from "../components/GuestBottomNav";
 import { MenuCategorySection } from "../features/order/components/MenuCategorySection";
 import { useApplyPublicTenantPresentation } from "../hooks/useApplyPublicTenantPresentation";
 import { persistLastVisitedTenantPath } from "../lib/lastVisitedTenant";
@@ -40,7 +41,9 @@ export const TenantMenuPage = (): ReactElement => {
   if (!tenantSlug) {
     return (
       <div className="flex min-h-[100dvh] items-center justify-center p-4">
-        <EmptyState title={t("order.invalidLinkTitle")} description={t("order.invalidLinkDescription")} />
+        <div className="w-full max-w-md text-center">
+          <EmptyState title={t("order.invalidLinkTitle")} description={t("order.invalidLinkDescription")} />
+        </div>
       </div>
     );
   }
@@ -53,7 +56,7 @@ export const TenantMenuPage = (): ReactElement => {
       <div className="flex min-h-[100dvh] items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <Loader size="lg" />
-          <Text as="p" variant="body-sm" className="text-text-secondary">
+          <Text as="p" variant="body-sm" className="text-center text-text-secondary">
             {t("order.loadingMenu")}
           </Text>
         </div>
@@ -64,15 +67,17 @@ export const TenantMenuPage = (): ReactElement => {
   if (isError || !tenantQuery.data) {
     return (
       <div className="flex min-h-[100dvh] items-center justify-center p-4">
-        <EmptyState
-          title={t("order.loadErrorTitle")}
-          description={t("order.loadErrorDescription")}
-          action={
-            <Button variant="primary" onClick={() => window.location.reload()}>
-              {t("order.reload")}
-            </Button>
-          }
-        />
+        <div className="w-full max-w-md text-center">
+          <EmptyState
+            title={t("order.loadErrorTitle")}
+            description={t("order.loadErrorDescription")}
+            action={
+              <Button variant="primary" onClick={() => window.location.reload()}>
+                {t("order.reload")}
+              </Button>
+            }
+          />
+        </div>
       </div>
     );
   }
@@ -84,23 +89,25 @@ export const TenantMenuPage = (): ReactElement => {
 
   return (
     <div className="min-h-[100dvh] bg-background-primary pb-24">
-      <header className="sticky top-0 z-10 border-b border-border-default bg-surface-primary px-4 py-3">
-        <div className="mx-auto flex max-w-lg items-center justify-between gap-2">
+      <header className="sticky top-0 z-10 border-b border-border-default bg-surface-primary px-4 py-3 text-center">
+        <div className="mx-auto flex max-w-2xl flex-col items-center gap-1">
           <Button variant="ghost" size="sm" type="button" onClick={() => navigate(`/${tenantSlug}`)}>
             {t("menuBrowse.back")}
           </Button>
+          <Text as="h1" variant="h4" weight="bold" className="w-full text-balance text-center">
+            {displayName}
+          </Text>
+          <Text as="h2" variant="body-sm" className="text-pretty text-text-secondary">
+            {t("menuBrowse.subtitle")}
+          </Text>
         </div>
-        <Text as="h1" variant="h4" weight="bold" className="mt-1 text-center">
-          {displayName}
-        </Text>
-        <Text as="p" variant="body-sm" className="text-center text-text-secondary">
-          {t("menuBrowse.subtitle")}
-        </Text>
       </header>
 
-      <main className="mx-auto max-w-lg px-4 py-4">
+      <main className="mx-auto w-full max-w-2xl px-4 py-4">
         {categories.length === 0 ? (
-          <EmptyState title={t("order.emptyMenuTitle")} description={t("order.emptyMenuDescription")} />
+          <div className="mx-auto max-w-md text-center">
+            <EmptyState title={t("order.emptyMenuTitle")} description={t("order.emptyMenuDescription")} />
+          </div>
         ) : (
           categories.map((category) => (
             <MenuCategorySection
@@ -115,16 +122,14 @@ export const TenantMenuPage = (): ReactElement => {
         )}
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 border-t border-border-default bg-surface-primary/95 px-4 py-3 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-lg justify-center gap-2">
-          <Button variant="ghost" size="sm" type="button" onClick={() => navigate(`/${tenantSlug}`)}>
-            {t("landing.navHome")}
-          </Button>
-          <Button variant="ghost" size="sm" type="button" onClick={() => navigate(`/${tenantSlug}/tables`)}>
-            {t("landing.navTables")}
-          </Button>
-        </div>
-      </nav>
+      <GuestBottomNav ariaLabel={t("landing.quickNavAria")}>
+        <Button variant="ghost" size="sm" type="button" onClick={() => navigate(`/${tenantSlug}`)}>
+          {t("landing.navHome")}
+        </Button>
+        <Button variant="ghost" size="sm" type="button" onClick={() => navigate(`/${tenantSlug}/tables`)}>
+          {t("landing.navTables")}
+        </Button>
+      </GuestBottomNav>
     </div>
   );
 };

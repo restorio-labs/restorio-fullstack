@@ -21,6 +21,13 @@
     "railAria": "Main navigation",
     "homeAria": "Home"
   },
+  "language": {
+    "switcherAria": "Language",
+    "optionEn": "English",
+    "optionPl": "Polski",
+    "optionEs": "Español",
+    "optionAr": "العربية"
+  },
   "order": {
     "invalidLinkTitle": "Invalid link",
     "invalidLinkDescription": "Scan the QR code again.",
@@ -56,7 +63,11 @@
   },
   "menuItem": {
     "addAria": "Add {{name}}",
-    "removeAria": "Remove {{name}}"
+    "removeAria": "Remove {{name}}",
+    "openDetailsAria": "View details: {{name}}",
+    "closeDetailsModal": "Close",
+    "tapForDescription": "Tap for full description",
+    "noDescription": "No description was added for this item."
   },
   "root": {
     "noRestaurantTitle": "No restaurant yet",
@@ -80,7 +91,10 @@
     "statusClosed": "Closed",
     "noLayoutTitle": "No floor layout",
     "noLayoutDescription": "This restaurant has not published a table layout yet.",
-    "listTitle": "All tables"
+    "listTitle": "All tables",
+    "reservedModalTitle": "Table in use",
+    "reservedModalBody": "This table is not available right now. We will refresh the layout when the countdown ends.",
+    "reservedCountdown": "{{time}} left"
   },
   "menuBrowse": {
     "back": "Back",
