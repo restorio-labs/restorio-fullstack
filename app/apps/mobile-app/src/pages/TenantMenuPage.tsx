@@ -15,8 +15,12 @@ export const TenantMenuPage = (): ReactElement => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
-  const noopAdd = useCallback((_name: string, _unitPrice: number) => {}, []);
-  const noopRemove = useCallback((_name: string) => {}, []);
+  const noopAdd = useCallback((_name: string, _unitPrice: number): void => {
+    return;
+  }, []);
+  const noopRemove = useCallback((_name: string): void => {
+    return;
+  }, []);
 
   useEffect(() => {
     if (tenantSlug) {

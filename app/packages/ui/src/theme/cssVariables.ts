@@ -88,7 +88,7 @@ export const resolveThemeOverrideForMode = (
 
   const modeSlice = mode === "light" ? override.colorsLight : override.colorsDark;
   const mergedColors = mergeColorOverrideSlices(override.colors, modeSlice);
-  const { colorsLight, colorsDark, colors: _legacyColors, ...rest } = override;
+  const { colorsLight: _colorsLight, colorsDark: _colorsDark, colors: _legacyColors, ...rest } = override;
   const next: ThemeOverride = { ...rest };
 
   if (mergedColors) {
@@ -96,7 +96,7 @@ export const resolveThemeOverrideForMode = (
   }
 
   const hasColors = !!(next.colors && Object.keys(next.colors).length > 0);
-  const hasRest = !!(next.typography || next.spacing || next.radius || next.shadows || next.zIndex);
+  const hasRest = [next.typography, next.spacing, next.radius, next.shadows, next.zIndex].some(Boolean);
 
   if (!hasColors && !hasRest) {
     return null;

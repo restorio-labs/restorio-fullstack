@@ -40,6 +40,16 @@ const formatTimeRemaining = (totalSeconds: number): string => {
   return `${m}:${r.toString().padStart(2, "0")}`;
 };
 
+const floorTableButtonLabel = (tbl: PublicFloorTableStatus): string => {
+  const trimmed = tbl.label?.trim();
+
+  if (trimmed) {
+    return trimmed;
+  }
+
+  return tbl.tableNumber != null ? String(tbl.tableNumber) : "—";
+};
+
 interface FloorPreviewProps {
   canvas: PublicFloorCanvasOverview;
   openLabel: string;
@@ -112,9 +122,7 @@ const FloorPreview = ({ canvas, openLabel, closedLabel, onTablePress }: FloorPre
               }}
               title={isOpen ? openLabel : closedLabel}
             >
-              <span className="line-clamp-2 pointer-events-none">
-                {tbl.label?.trim() || (tbl.tableNumber != null ? String(tbl.tableNumber) : "—")}
-              </span>
+              <span className="line-clamp-2 pointer-events-none">{floorTableButtonLabel(tbl)}</span>
             </button>
           );
         })}
@@ -188,7 +196,8 @@ export const TablesLookupPage = (): ReactElement => {
       return;
     }
 
-    const label = tbl.label?.trim() || t("order.tableLabel", { number: String(tbl.tableNumber ?? "?") });
+    const trimmed = tbl.label?.trim();
+    const label = trimmed ? trimmed : t("order.tableLabel", { number: String(tbl.tableNumber ?? "?") });
 
     setReservedModal({
       label,
@@ -242,8 +251,10 @@ export const TablesLookupPage = (): ReactElement => {
 
   const displayName = tenantQuery.data.pageTitle?.trim() ? tenantQuery.data.pageTitle : tenantQuery.data.name;
   const lc = tenantQuery.data.landingContent;
-  const openLabel = lc?.openStatusLabel?.trim() || t("tables.statusOpen");
-  const closedLabel = lc?.closedStatusLabel?.trim() || t("tables.statusClosed");
+  const openTrimmed = lc?.openStatusLabel?.trim();
+  const closedTrimmed = lc?.closedStatusLabel?.trim();
+  const openLabel = openTrimmed ? openTrimmed : t("tables.statusOpen");
+  const closedLabel = closedTrimmed ? closedTrimmed : t("tables.statusClosed");
 
   const canvases = tablesQuery.data.canvases.filter((c) => c.tables.length > 0);
   const flatTables = canvases.flatMap((c) => c.tables);
@@ -312,12 +323,13 @@ export const TablesLookupPage = (): ReactElement => {
               {t("tables.listTitle")}
             </Text>
             <ul className="flex flex-col gap-2">
-              {flatTables.map((tbl, index) => {
+              {flatTables.map((tbl) => {
                 const isOpen = tbl.status === "open";
-                const label = tbl.label?.trim() || t("order.tableLabel", { number: String(tbl.tableNumber ?? "?") });
+                const trimmed = tbl.label?.trim();
+                const label = trimmed ? trimmed : t("order.tableLabel", { number: String(tbl.tableNumber ?? "?") });
 
                 return (
-                  <li key={`${tbl.id}-${index}`}>
+                  <li key={tbl.id}>
                     <button
                       type="button"
                       onClick={() => handleTablePress(tbl)}

@@ -75,5 +75,5 @@ export const useApplyPublicTenantPresentation = (tenantData: PublicTenantInfo | 
     }
 
     setLocale(resolveInitialLocale());
-  }, [tenantData?.slug, tenantData?.landingContent?.uiLocale, setLocale]);
+  }, [tenantData, setLocale]);
 };

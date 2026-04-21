@@ -119,10 +119,7 @@ const sliceToMobileModeTheme = (slice: ThemeColorOverrideSlice | undefined): Mob
   };
 };
 
-type BuiltMobileColorSlice = Record<
-  string,
-  Record<string, string> | Record<string, Record<string, string>>
->;
+type BuiltMobileColorSlice = Record<string, Record<string, string> | Record<string, Record<string, string>>>;
 
 const buildColorSliceFromMobileMode = (m: MobileModeThemeFields): BuiltMobileColorSlice | null => {
   const trimmedBg = m.backgroundColor.trim();

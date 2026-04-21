@@ -70,6 +70,10 @@ export const TenantLandingPage = (): ReactElement => {
   const displayName = data.pageTitle?.trim() ? data.pageTitle : data.name;
   const headline = lc?.headline?.trim() ? lc.headline : displayName;
   const subtitle = lc?.subtitle?.trim() ? lc.subtitle : t("landing.defaultSubtitle");
+  const tablesCtaTrimmed = lc?.tablesCtaLabel?.trim();
+  const menuCtaTrimmed = lc?.menuCtaLabel?.trim();
+  const tablesCtaLabel = tablesCtaTrimmed ? tablesCtaTrimmed : t("landing.ctaTables");
+  const menuCtaLabel = menuCtaTrimmed ? menuCtaTrimmed : t("landing.ctaMenu");
 
   return (
     <div className="flex min-h-[100dvh] flex-col items-center bg-background-primary px-4 pb-28 pt-8">
@@ -84,10 +88,10 @@ export const TenantLandingPage = (): ReactElement => {
 
       <div className="mx-auto mt-10 flex w-full max-w-md flex-col gap-3">
         <Button variant="primary" size="lg" fullWidth onClick={() => navigate(`/${tenantSlug}/tables`)}>
-          {lc?.tablesCtaLabel?.trim() || t("landing.ctaTables")}
+          {tablesCtaLabel}
         </Button>
         <Button variant="secondary" size="lg" fullWidth onClick={() => navigate(`/${tenantSlug}/menu`)}>
-          {lc?.menuCtaLabel?.trim() || t("landing.ctaMenu")}
+          {menuCtaLabel}
         </Button>
       </div>
 
