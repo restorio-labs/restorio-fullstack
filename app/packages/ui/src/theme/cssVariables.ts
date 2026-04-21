@@ -96,13 +96,7 @@ export const resolveThemeOverrideForMode = (
   }
 
   const hasColors = !!(next.colors && Object.keys(next.colors).length > 0);
-  const hasRest = !!(
-    next.typography ||
-    next.spacing ||
-    next.radius ||
-    next.shadows ||
-    next.zIndex
-  );
+  const hasRest = !!(next.typography || next.spacing || next.radius || next.shadows || next.zIndex);
 
   if (!hasColors && !hasRest) {
     return null;

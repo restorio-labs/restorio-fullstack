@@ -56,7 +56,7 @@ const PICKER_FALLBACK_DARK_PROMOTED_BG = "#b45309";
 const PICKER_FALLBACK_DARK_PROMOTED_TEXT = "#fffbeb";
 const PICKER_FALLBACK_DARK_PROMOTED_BORDER = "#fbbf24";
 
-type MobileModeThemeFields = {
+interface MobileModeThemeFields {
   backgroundColor: string;
   primaryButtonBg: string;
   primaryButtonText: string;
@@ -71,7 +71,7 @@ type MobileModeThemeFields = {
   promotedBadgeBackground: string;
   promotedBadgeText: string;
   promotedBadgeBorder: string;
-};
+}
 
 const emptyMobileModeTheme = (): MobileModeThemeFields => ({
   backgroundColor: "",
@@ -119,7 +119,12 @@ const sliceToMobileModeTheme = (slice: ThemeColorOverrideSlice | undefined): Mob
   };
 };
 
-const buildColorSliceFromMobileMode = (m: MobileModeThemeFields): Record<string, Record<string, string>> | null => {
+type BuiltMobileColorSlice = Record<
+  string,
+  Record<string, string> | Record<string, Record<string, string>>
+>;
+
+const buildColorSliceFromMobileMode = (m: MobileModeThemeFields): BuiltMobileColorSlice | null => {
   const trimmedBg = m.backgroundColor.trim();
   const interactive: Record<string, string> = {};
   const pb = m.primaryButtonBg.trim();
@@ -179,7 +184,7 @@ const buildColorSliceFromMobileMode = (m: MobileModeThemeFields): Record<string,
     surface.secondary = ss;
   }
 
-  const colors: Record<string, Record<string, string>> = {};
+  const colors: BuiltMobileColorSlice = {};
 
   if (trimmedBg) {
     colors.background = { primary: trimmedBg };
@@ -260,7 +265,9 @@ const buildMobileThemeOverride = (
   return out;
 };
 
-const readThemeOverrideIntoModeFields = (override: unknown): {
+const readThemeOverrideIntoModeFields = (
+  override: unknown,
+): {
   light: MobileModeThemeFields;
   dark: MobileModeThemeFields;
 } => {
@@ -282,7 +289,7 @@ const readThemeOverrideIntoModeFields = (override: unknown): {
   };
 };
 
-type ThemeColorFieldProps = {
+interface ThemeColorFieldProps {
   id: string;
   label: string;
   hint?: string;
@@ -290,7 +297,7 @@ type ThemeColorFieldProps = {
   onChange: (next: string) => void;
   pickerFallback: string;
   clearLabel: string;
-};
+}
 
 const ThemeColorField = ({
   id,
@@ -321,7 +328,11 @@ const ThemeColorField = ({
         className="flex-1 rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary font-mono"
       />
       {value ? (
-        <button type="button" onClick={() => onChange("")} className="text-xs text-text-tertiary hover:text-text-secondary">
+        <button
+          type="button"
+          onClick={() => onChange("")}
+          className="text-xs text-text-tertiary hover:text-text-secondary"
+        >
           {clearLabel}
         </button>
       ) : null}
@@ -742,191 +753,563 @@ export const MobileConfigurationPage = (): ReactElement => {
         )}
 
         <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_min(100%,380px)] lg:items-start lg:gap-10">
-        <form id="mobile-config-form" onSubmit={handleSubmit} className="min-w-0 space-y-6">
-          <div>
-            <label className="mb-1 block text-xs font-medium text-text-secondary" htmlFor="mobile-page-title">
-              {t("mobileConfiguration.fields.pageTitle")}
-            </label>
-            <input
-              id="mobile-page-title"
-              value={pageTitle}
-              onChange={(e) => setPageTitle(e.target.value)}
-              className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
-              placeholder={t("mobileConfiguration.placeholders.pageTitle")}
-            />
-            <p className="mt-1 text-xs text-text-tertiary">{t("mobileConfiguration.hints.pageTitle")}</p>
-          </div>
+          <form id="mobile-config-form" onSubmit={handleSubmit} className="min-w-0 space-y-6">
+            <div>
+              <label className="mb-1 block text-xs font-medium text-text-secondary" htmlFor="mobile-page-title">
+                {t("mobileConfiguration.fields.pageTitle")}
+              </label>
+              <input
+                id="mobile-page-title"
+                value={pageTitle}
+                onChange={(e) => setPageTitle(e.target.value)}
+                className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
+                placeholder={t("mobileConfiguration.placeholders.pageTitle")}
+              />
+              <p className="mt-1 text-xs text-text-tertiary">{t("mobileConfiguration.hints.pageTitle")}</p>
+            </div>
 
-          <div className="rounded-lg border border-border-default bg-surface-secondary/40 p-4">
-            <p className="mb-3 text-sm font-medium text-text-primary">
-              {t("mobileConfiguration.landingSection.title")}
-            </p>
-            <p className="mb-4 text-xs text-text-tertiary">{t("mobileConfiguration.landingSection.hint")}</p>
-            <div className="space-y-3">
-              <div>
-                <label className="mb-1 block text-xs font-medium text-text-secondary" htmlFor="mobile-landing-headline">
-                  {t("mobileConfiguration.fields.landingHeadline")}
-                </label>
-                <input
-                  id="mobile-landing-headline"
-                  value={landingHeadline}
-                  onChange={(e) => setLandingHeadline(e.target.value)}
-                  className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium text-text-secondary" htmlFor="mobile-landing-subtitle">
-                  {t("mobileConfiguration.fields.landingSubtitle")}
-                </label>
-                <textarea
-                  id="mobile-landing-subtitle"
-                  value={landingSubtitle}
-                  onChange={(e) => setLandingSubtitle(e.target.value)}
-                  rows={3}
-                  className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
-                />
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-lg border border-border-default bg-surface-secondary/40 p-4">
+              <p className="mb-3 text-sm font-medium text-text-primary">
+                {t("mobileConfiguration.landingSection.title")}
+              </p>
+              <p className="mb-4 text-xs text-text-tertiary">{t("mobileConfiguration.landingSection.hint")}</p>
+              <div className="space-y-3">
                 <div>
                   <label
                     className="mb-1 block text-xs font-medium text-text-secondary"
-                    htmlFor="mobile-landing-tables-cta"
+                    htmlFor="mobile-landing-headline"
                   >
-                    {t("mobileConfiguration.fields.tablesCtaLabel")}
+                    {t("mobileConfiguration.fields.landingHeadline")}
                   </label>
                   <input
-                    id="mobile-landing-tables-cta"
-                    value={landingTablesCta}
-                    onChange={(e) => setLandingTablesCta(e.target.value)}
+                    id="mobile-landing-headline"
+                    value={landingHeadline}
+                    onChange={(e) => setLandingHeadline(e.target.value)}
                     className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
                   />
                 </div>
                 <div>
                   <label
                     className="mb-1 block text-xs font-medium text-text-secondary"
-                    htmlFor="mobile-landing-menu-cta"
+                    htmlFor="mobile-landing-subtitle"
                   >
-                    {t("mobileConfiguration.fields.menuCtaLabel")}
+                    {t("mobileConfiguration.fields.landingSubtitle")}
                   </label>
-                  <input
-                    id="mobile-landing-menu-cta"
-                    value={landingMenuCta}
-                    onChange={(e) => setLandingMenuCta(e.target.value)}
+                  <textarea
+                    id="mobile-landing-subtitle"
+                    value={landingSubtitle}
+                    onChange={(e) => setLandingSubtitle(e.target.value)}
+                    rows={3}
                     className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
                   />
                 </div>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1 block text-xs font-medium text-text-secondary" htmlFor="mobile-landing-open">
-                    {t("mobileConfiguration.fields.openStatusLabel")}
-                  </label>
-                  <input
-                    id="mobile-landing-open"
-                    value={landingOpenLabel}
-                    onChange={(e) => setLandingOpenLabel(e.target.value)}
-                    className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs font-medium text-text-secondary" htmlFor="mobile-landing-closed">
-                    {t("mobileConfiguration.fields.closedStatusLabel")}
-                  </label>
-                  <input
-                    id="mobile-landing-closed"
-                    value={landingClosedLabel}
-                    onChange={(e) => setLandingClosedLabel(e.target.value)}
-                    className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium text-text-secondary" htmlFor="mobile-landing-ui-locale">
-                  {t("mobileConfiguration.fields.uiLocale")}
-                </label>
-                <select
-                  id="mobile-landing-ui-locale"
-                  value={landingUiLocale}
-                  onChange={(e) => setLandingUiLocale(e.target.value)}
-                  className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
-                >
-                  <option value="">{t("mobileConfiguration.fields.uiLocaleBrowserDefault")}</option>
-                  <option value="en">{t("languageSwitcher.options.en")}</option>
-                  <option value="pl">{t("languageSwitcher.options.pl")}</option>
-                  <option value="es">{t("languageSwitcher.options.es")}</option>
-                  <option value="ar">{t("languageSwitcher.options.ar")}</option>
-                </select>
-                <p className="mt-1 text-xs text-text-tertiary">{t("mobileConfiguration.hints.uiLocale")}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-6">
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-end gap-3">
-                <div className="min-w-0 flex-1">
-                  <FilePickerField
-                    label={t("mobileConfiguration.fields.favicon")}
-                    labelTooltip={t("mobileConfiguration.hints.favicon")}
-                    accept=".ico,image/x-icon,image/vnd.microsoft.icon"
-                    onChange={handleFaviconChange}
-                    disabled={saveMutation.isPending}
-                    busy={saveMutation.isPending}
-                    idleLabel={t("mobileConfiguration.actions.chooseFile")}
-                    busyLabel={t("mobileConfiguration.actions.saving")}
-                    error={faviconError || undefined}
-                    labelClassName="text-xs text-text-secondary"
-                    buttonClassName="text-sm"
-                  />
-                </div>
-                {faviconPreviewSrc ? (
-                  <img
-                    src={faviconPreviewSrc}
-                    alt={t("mobileConfiguration.hints.faviconPreviewAlt")}
-                    className="size-14 shrink-0 p-1 border border-border-default bg-surface-primary object-contain"
-                  />
-                ) : null}
-              </div>
-              {faviconFile && (
-                <p className="mt-1 text-xs text-text-tertiary">
-                  {t("mobileConfiguration.hints.faviconSelected", { name: faviconFile.name })}
-                </p>
-              )}
-              {config?.hasFavicon && !faviconFile && (
-                <p className="mt-1 text-xs text-text-tertiary">{t("mobileConfiguration.hints.faviconCurrent")}</p>
-              )}
-            </div>
-            <div className="w-full shrink-0 rounded-lg border border-border-default bg-surface-secondary/60 p-4 lg:max-w-md">
-              <p className="mb-2 text-sm font-medium text-text-primary">{t("mobileConfiguration.copySection.title")}</p>
-              <div className="flex flex-wrap items-end gap-2">
-                <div className="min-w-[200px] flex-1">
-                  <label className="mb-1 block text-xs font-medium text-text-secondary" htmlFor="copy-theme-trigger">
-                    {t("mobileConfiguration.copySection.source")}
-                  </label>
-                  {otherTenants.length === 0 ? (
-                    <Button
-                      id="copy-theme-trigger"
-                      type="button"
-                      variant="outline"
-                      disabled
-                      className="w-full justify-between gap-2 font-normal"
-                      aria-label={copyThemeTriggerAriaLabel}
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label
+                      className="mb-1 block text-xs font-medium text-text-secondary"
+                      htmlFor="mobile-landing-tables-cta"
                     >
-                      <span className="min-w-0 truncate text-left">{copyThemeTriggerDisplay || "\u00a0"}</span>
-                      <TbChevronDown className="size-4 shrink-0 text-text-secondary" aria-hidden />
-                    </Button>
-                  ) : (
+                      {t("mobileConfiguration.fields.tablesCtaLabel")}
+                    </label>
+                    <input
+                      id="mobile-landing-tables-cta"
+                      value={landingTablesCta}
+                      onChange={(e) => setLandingTablesCta(e.target.value)}
+                      className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      className="mb-1 block text-xs font-medium text-text-secondary"
+                      htmlFor="mobile-landing-menu-cta"
+                    >
+                      {t("mobileConfiguration.fields.menuCtaLabel")}
+                    </label>
+                    <input
+                      id="mobile-landing-menu-cta"
+                      value={landingMenuCta}
+                      onChange={(e) => setLandingMenuCta(e.target.value)}
+                      className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-text-secondary" htmlFor="mobile-landing-open">
+                      {t("mobileConfiguration.fields.openStatusLabel")}
+                    </label>
+                    <input
+                      id="mobile-landing-open"
+                      value={landingOpenLabel}
+                      onChange={(e) => setLandingOpenLabel(e.target.value)}
+                      className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      className="mb-1 block text-xs font-medium text-text-secondary"
+                      htmlFor="mobile-landing-closed"
+                    >
+                      {t("mobileConfiguration.fields.closedStatusLabel")}
+                    </label>
+                    <input
+                      id="mobile-landing-closed"
+                      value={landingClosedLabel}
+                      onChange={(e) => setLandingClosedLabel(e.target.value)}
+                      className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label
+                    className="mb-1 block text-xs font-medium text-text-secondary"
+                    htmlFor="mobile-landing-ui-locale"
+                  >
+                    {t("mobileConfiguration.fields.uiLocale")}
+                  </label>
+                  <select
+                    id="mobile-landing-ui-locale"
+                    value={landingUiLocale}
+                    onChange={(e) => setLandingUiLocale(e.target.value)}
+                    className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
+                  >
+                    <option value="">{t("mobileConfiguration.fields.uiLocaleBrowserDefault")}</option>
+                    <option value="en">{t("languageSwitcher.options.en")}</option>
+                    <option value="pl">{t("languageSwitcher.options.pl")}</option>
+                    <option value="es">{t("languageSwitcher.options.es")}</option>
+                    <option value="ar">{t("languageSwitcher.options.ar")}</option>
+                  </select>
+                  <p className="mt-1 text-xs text-text-tertiary">{t("mobileConfiguration.hints.uiLocale")}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-6">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-end gap-3">
+                  <div className="min-w-0 flex-1">
+                    <FilePickerField
+                      label={t("mobileConfiguration.fields.favicon")}
+                      labelTooltip={t("mobileConfiguration.hints.favicon")}
+                      accept=".ico,image/x-icon,image/vnd.microsoft.icon"
+                      onChange={handleFaviconChange}
+                      disabled={saveMutation.isPending}
+                      busy={saveMutation.isPending}
+                      idleLabel={t("mobileConfiguration.actions.chooseFile")}
+                      busyLabel={t("mobileConfiguration.actions.saving")}
+                      error={faviconError || undefined}
+                      labelClassName="text-xs text-text-secondary"
+                      buttonClassName="text-sm"
+                    />
+                  </div>
+                  {faviconPreviewSrc ? (
+                    <img
+                      src={faviconPreviewSrc}
+                      alt={t("mobileConfiguration.hints.faviconPreviewAlt")}
+                      className="size-14 shrink-0 p-1 border border-border-default bg-surface-primary object-contain"
+                    />
+                  ) : null}
+                </div>
+                {faviconFile && (
+                  <p className="mt-1 text-xs text-text-tertiary">
+                    {t("mobileConfiguration.hints.faviconSelected", { name: faviconFile.name })}
+                  </p>
+                )}
+                {config?.hasFavicon && !faviconFile && (
+                  <p className="mt-1 text-xs text-text-tertiary">{t("mobileConfiguration.hints.faviconCurrent")}</p>
+                )}
+              </div>
+              <div className="w-full shrink-0 rounded-lg border border-border-default bg-surface-secondary/60 p-4 lg:max-w-md">
+                <p className="mb-2 text-sm font-medium text-text-primary">
+                  {t("mobileConfiguration.copySection.title")}
+                </p>
+                <div className="flex flex-wrap items-end gap-2">
+                  <div className="min-w-[200px] flex-1">
+                    <label className="mb-1 block text-xs font-medium text-text-secondary" htmlFor="copy-theme-trigger">
+                      {t("mobileConfiguration.copySection.source")}
+                    </label>
+                    {otherTenants.length === 0 ? (
+                      <Button
+                        id="copy-theme-trigger"
+                        type="button"
+                        variant="outline"
+                        disabled
+                        className="w-full justify-between gap-2 font-normal"
+                        aria-label={copyThemeTriggerAriaLabel}
+                      >
+                        <span className="min-w-0 truncate text-left">{copyThemeTriggerDisplay || "\u00a0"}</span>
+                        <TbChevronDown className="size-4 shrink-0 text-text-secondary" aria-hidden />
+                      </Button>
+                    ) : (
+                      <div className="w-full [&>div]:block [&>div]:w-full">
+                        <Dropdown
+                          trigger={
+                            <Button
+                              id="copy-theme-trigger"
+                              type="button"
+                              variant="outline"
+                              className="w-full justify-between gap-2 font-normal"
+                              aria-label={copyThemeTriggerAriaLabel}
+                            >
+                              <span className="min-w-0 truncate text-left">{copyThemeTriggerDisplay || "\u00a0"}</span>
+                              <TbChevronDown className="size-4 shrink-0 text-text-secondary" aria-hidden />
+                            </Button>
+                          }
+                          placement="bottom-start"
+                          className="max-h-60 w-full min-w-full overflow-y-auto p-1"
+                          closeOnSelect
+                        >
+                          <button
+                            type="button"
+                            className="w-full rounded-sm px-2 py-1.5 text-left text-sm text-text-tertiary hover:bg-surface-secondary"
+                            onClick={() => setCopySourceId("")}
+                          >
+                            {t("mobileConfiguration.copySection.placeholder")}
+                          </button>
+                          {otherTenants.map((tenant) => (
+                            <button
+                              key={tenant.id}
+                              type="button"
+                              className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-surface-secondary"
+                              onClick={() => setCopySourceId(tenant.id)}
+                            >
+                              {tenant.name}
+                            </button>
+                          ))}
+                        </Dropdown>
+                      </div>
+                    )}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={!copySourceId || copyMutation.isPending}
+                    onClick={handleCopyTheme}
+                  >
+                    {copyMutation.isPending
+                      ? t("mobileConfiguration.copySection.copying")
+                      : t("mobileConfiguration.copySection.copy")}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-border-default bg-surface-secondary/40 p-4">
+              <p className="mb-4 text-sm font-medium text-text-primary">
+                {t("mobileConfiguration.themeSection.title")}
+              </p>
+
+              <div className="mb-4">
+                <p className="mb-2 text-xs font-medium text-text-secondary">
+                  {t("mobileConfiguration.themeSection.editTargetLabel")}
+                </p>
+                <div className="flex max-w-md rounded-lg border border-border-default bg-surface-primary p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setThemePersonalizationMode("light")}
+                    className={cn(
+                      "flex-1 rounded-md px-3 py-2 text-xs font-medium transition-colors",
+                      themePersonalizationMode === "light"
+                        ? "bg-interactive-primary text-interactive-primaryForeground"
+                        : "text-text-secondary hover:bg-surface-secondary/80",
+                    )}
+                  >
+                    {t("mobileConfiguration.themeSection.editLight")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setThemePersonalizationMode("dark")}
+                    className={cn(
+                      "flex-1 rounded-md px-3 py-2 text-xs font-medium transition-colors",
+                      themePersonalizationMode === "dark"
+                        ? "bg-interactive-primary text-interactive-primaryForeground"
+                        : "text-text-secondary hover:bg-surface-secondary/80",
+                    )}
+                  >
+                    {t("mobileConfiguration.themeSection.editDark")}
+                  </button>
+                </div>
+                <p className="mt-2 text-xs text-text-tertiary">
+                  {t("mobileConfiguration.hints.themePersonalizationMode")}
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-text-secondary" htmlFor="mobile-bg-color">
+                    {t("mobileConfiguration.fields.backgroundColor")}
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      id="mobile-bg-color"
+                      type="color"
+                      value={
+                        activeMobileTheme.backgroundColor ||
+                        (themePersonalizationMode === "light" ? "#ffffff" : PICKER_FALLBACK_DARK_BG)
+                      }
+                      onChange={(e) => patchActiveMobileTheme({ backgroundColor: e.target.value })}
+                      className="h-10 w-14 cursor-pointer rounded-sm border border-border-default bg-surface-primary p-1"
+                    />
+                    <input
+                      type="text"
+                      value={activeMobileTheme.backgroundColor}
+                      onChange={(e) => patchActiveMobileTheme({ backgroundColor: e.target.value })}
+                      placeholder={themePersonalizationMode === "light" ? "#ffffff" : PICKER_FALLBACK_DARK_BG}
+                      className="flex-1 rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary font-mono"
+                    />
+                    {activeMobileTheme.backgroundColor ? (
+                      <button
+                        type="button"
+                        onClick={() => patchActiveMobileTheme({ backgroundColor: "" })}
+                        className="text-xs text-text-tertiary hover:text-text-secondary"
+                      >
+                        {t("mobileConfiguration.actions.clear")}
+                      </button>
+                    ) : null}
+                  </div>
+                  <p className="mt-1 text-xs text-text-tertiary">{t("mobileConfiguration.hints.backgroundColor")}</p>
+                </div>
+
+                <div className="space-y-4 border-t border-border-default pt-4">
+                  <p className="text-xs font-medium text-text-primary">
+                    {t("mobileConfiguration.themeSection.primaryButton")}
+                  </p>
+                  <ThemeColorField
+                    id="mobile-primary-button-bg"
+                    label={t("mobileConfiguration.fields.primaryButtonBackground")}
+                    hint={t("mobileConfiguration.hints.primaryButtonBackground")}
+                    value={activeMobileTheme.primaryButtonBg}
+                    onChange={(v) => patchActiveMobileTheme({ primaryButtonBg: v })}
+                    pickerFallback={
+                      themePersonalizationMode === "light"
+                        ? PICKER_FALLBACK_PRIMARY_BG
+                        : PICKER_FALLBACK_DARK_PRIMARY_BG
+                    }
+                    clearLabel={t("mobileConfiguration.actions.clear")}
+                  />
+                  <ThemeColorField
+                    id="mobile-primary-button-text"
+                    label={t("mobileConfiguration.fields.primaryButtonText")}
+                    hint={t("mobileConfiguration.hints.primaryButtonText")}
+                    value={activeMobileTheme.primaryButtonText}
+                    onChange={(v) => patchActiveMobileTheme({ primaryButtonText: v })}
+                    pickerFallback={
+                      themePersonalizationMode === "light"
+                        ? PICKER_FALLBACK_PRIMARY_TEXT
+                        : PICKER_FALLBACK_DARK_PRIMARY_TEXT
+                    }
+                    clearLabel={t("mobileConfiguration.actions.clear")}
+                  />
+                  <p className="text-xs font-medium text-text-primary">
+                    {t("mobileConfiguration.themeSection.secondaryButton")}
+                  </p>
+                  <ThemeColorField
+                    id="mobile-secondary-button-bg"
+                    label={t("mobileConfiguration.fields.secondaryButtonBackground")}
+                    hint={t("mobileConfiguration.hints.secondaryButtonBackground")}
+                    value={activeMobileTheme.secondaryButtonBg}
+                    onChange={(v) => patchActiveMobileTheme({ secondaryButtonBg: v })}
+                    pickerFallback={
+                      themePersonalizationMode === "light"
+                        ? PICKER_FALLBACK_SECONDARY_BG
+                        : PICKER_FALLBACK_DARK_SECONDARY_BG
+                    }
+                    clearLabel={t("mobileConfiguration.actions.clear")}
+                  />
+                  <ThemeColorField
+                    id="mobile-secondary-button-text"
+                    label={t("mobileConfiguration.fields.secondaryButtonText")}
+                    hint={t("mobileConfiguration.hints.secondaryButtonText")}
+                    value={activeMobileTheme.secondaryButtonText}
+                    onChange={(v) => patchActiveMobileTheme({ secondaryButtonText: v })}
+                    pickerFallback={
+                      themePersonalizationMode === "light"
+                        ? PICKER_FALLBACK_SECONDARY_TEXT
+                        : PICKER_FALLBACK_DARK_SECONDARY_TEXT
+                    }
+                    clearLabel={t("mobileConfiguration.actions.clear")}
+                  />
+                </div>
+
+                <div className="space-y-4 border-t border-border-default pt-4">
+                  <p className="text-xs font-medium text-text-primary">
+                    {t("mobileConfiguration.themeSection.surfacesTextAndBorders")}
+                  </p>
+                  <ThemeColorField
+                    id="mobile-text-primary"
+                    label={t("mobileConfiguration.fields.textPrimary")}
+                    hint={t("mobileConfiguration.hints.textPrimary")}
+                    value={activeMobileTheme.textPrimary}
+                    onChange={(v) => patchActiveMobileTheme({ textPrimary: v })}
+                    pickerFallback={
+                      themePersonalizationMode === "light"
+                        ? PICKER_FALLBACK_TEXT_PRIMARY
+                        : PICKER_FALLBACK_DARK_TEXT_PRIMARY
+                    }
+                    clearLabel={t("mobileConfiguration.actions.clear")}
+                  />
+                  <ThemeColorField
+                    id="mobile-text-secondary"
+                    label={t("mobileConfiguration.fields.textSecondary")}
+                    hint={t("mobileConfiguration.hints.textSecondary")}
+                    value={activeMobileTheme.textSecondary}
+                    onChange={(v) => patchActiveMobileTheme({ textSecondary: v })}
+                    pickerFallback={
+                      themePersonalizationMode === "light"
+                        ? PICKER_FALLBACK_TEXT_SECONDARY
+                        : PICKER_FALLBACK_DARK_TEXT_SECONDARY
+                    }
+                    clearLabel={t("mobileConfiguration.actions.clear")}
+                  />
+                  <ThemeColorField
+                    id="mobile-text-tertiary"
+                    label={t("mobileConfiguration.fields.textTertiary")}
+                    hint={t("mobileConfiguration.hints.textTertiary")}
+                    value={activeMobileTheme.textTertiary}
+                    onChange={(v) => patchActiveMobileTheme({ textTertiary: v })}
+                    pickerFallback={
+                      themePersonalizationMode === "light"
+                        ? PICKER_FALLBACK_TEXT_TERTIARY
+                        : PICKER_FALLBACK_DARK_TEXT_TERTIARY
+                    }
+                    clearLabel={t("mobileConfiguration.actions.clear")}
+                  />
+                  <ThemeColorField
+                    id="mobile-border-default"
+                    label={t("mobileConfiguration.fields.borderDefault")}
+                    hint={t("mobileConfiguration.hints.borderDefault")}
+                    value={activeMobileTheme.borderDefault}
+                    onChange={(v) => patchActiveMobileTheme({ borderDefault: v })}
+                    pickerFallback={
+                      themePersonalizationMode === "light" ? PICKER_FALLBACK_BORDER : PICKER_FALLBACK_DARK_BORDER
+                    }
+                    clearLabel={t("mobileConfiguration.actions.clear")}
+                  />
+                  <ThemeColorField
+                    id="mobile-surface-primary"
+                    label={t("mobileConfiguration.fields.surfacePrimary")}
+                    hint={t("mobileConfiguration.hints.surfacePrimary")}
+                    value={activeMobileTheme.surfacePrimary}
+                    onChange={(v) => patchActiveMobileTheme({ surfacePrimary: v })}
+                    pickerFallback={
+                      themePersonalizationMode === "light"
+                        ? PICKER_FALLBACK_SURFACE_PRIMARY
+                        : PICKER_FALLBACK_DARK_SURFACE_PRIMARY
+                    }
+                    clearLabel={t("mobileConfiguration.actions.clear")}
+                  />
+                  <ThemeColorField
+                    id="mobile-surface-secondary"
+                    label={t("mobileConfiguration.fields.surfaceSecondary")}
+                    hint={t("mobileConfiguration.hints.surfaceSecondary")}
+                    value={activeMobileTheme.surfaceSecondary}
+                    onChange={(v) => patchActiveMobileTheme({ surfaceSecondary: v })}
+                    pickerFallback={
+                      themePersonalizationMode === "light"
+                        ? PICKER_FALLBACK_SURFACE_SECONDARY
+                        : PICKER_FALLBACK_DARK_SURFACE_SECONDARY
+                    }
+                    clearLabel={t("mobileConfiguration.actions.clear")}
+                  />
+                </div>
+
+                <div className="space-y-4 border-t border-border-default pt-4">
+                  <p className="text-xs font-medium text-text-primary">
+                    {t("mobileConfiguration.themeSection.promotedBadge")}
+                  </p>
+                  <ThemeColorField
+                    id="mobile-promoted-badge-bg"
+                    label={t("mobileConfiguration.fields.promotedBadgeBackground")}
+                    hint={t("mobileConfiguration.hints.promotedBadgeBackground")}
+                    value={activeMobileTheme.promotedBadgeBackground}
+                    onChange={(v) => patchActiveMobileTheme({ promotedBadgeBackground: v })}
+                    pickerFallback={
+                      themePersonalizationMode === "light"
+                        ? PICKER_FALLBACK_PROMOTED_BG
+                        : PICKER_FALLBACK_DARK_PROMOTED_BG
+                    }
+                    clearLabel={t("mobileConfiguration.actions.clear")}
+                  />
+                  <ThemeColorField
+                    id="mobile-promoted-badge-text"
+                    label={t("mobileConfiguration.fields.promotedBadgeText")}
+                    hint={t("mobileConfiguration.hints.promotedBadgeText")}
+                    value={activeMobileTheme.promotedBadgeText}
+                    onChange={(v) => patchActiveMobileTheme({ promotedBadgeText: v })}
+                    pickerFallback={
+                      themePersonalizationMode === "light"
+                        ? PICKER_FALLBACK_PROMOTED_TEXT
+                        : PICKER_FALLBACK_DARK_PROMOTED_TEXT
+                    }
+                    clearLabel={t("mobileConfiguration.actions.clear")}
+                  />
+                  <ThemeColorField
+                    id="mobile-promoted-badge-border"
+                    label={t("mobileConfiguration.fields.promotedBadgeBorder")}
+                    hint={t("mobileConfiguration.hints.promotedBadgeBorder")}
+                    value={activeMobileTheme.promotedBadgeBorder}
+                    onChange={(v) => patchActiveMobileTheme({ promotedBadgeBorder: v })}
+                    pickerFallback={
+                      themePersonalizationMode === "light"
+                        ? PICKER_FALLBACK_PROMOTED_BORDER
+                        : PICKER_FALLBACK_DARK_PROMOTED_BORDER
+                    }
+                    clearLabel={t("mobileConfiguration.actions.clear")}
+                  />
+                </div>
+
+                <div>
+                  <div className="mb-1 flex items-center gap-1">
+                    <label className="block text-xs font-medium text-text-secondary" htmlFor="mobile-google-font">
+                      {t("mobileConfiguration.fields.googleFontUrl")}
+                    </label>
+                    <Tooltip content={t("mobileConfiguration.hints.googleFontUrlTooltip")} placement="right">
+                      <button type="button" className="text-text-tertiary hover:text-text-secondary">
+                        <TbHelpCircle className="h-4 w-4" />
+                      </button>
+                    </Tooltip>
+                  </div>
+                  <input
+                    id="mobile-google-font"
+                    type="url"
+                    value={googleFontUrl}
+                    onChange={(e) => {
+                      setGoogleFontUrl(e.target.value);
+                      setFontError("");
+                    }}
+                    placeholder="https://fonts.googleapis.com/css2?family=Roboto"
+                    className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
+                  />
+                  {fontError && <p className="mt-1 text-xs text-status-error-text">{fontError}</p>}
+                  <p className="mt-1 text-xs text-text-tertiary">{t("mobileConfiguration.hints.googleFontUrl")}</p>
+                </div>
+              </div>
+            </div>
+          </form>
+
+          {tenantId !== null && !isLoading ? (
+            <div className="min-w-0 lg:sticky lg:top-6 lg:z-10 lg:self-start">
+              <aside className="w-full lg:w-[min(100%,380px)]">
+                <p className="mb-1 text-sm font-medium text-text-primary">{t("mobileConfiguration.preview.title")}</p>
+                <p className="mb-3 text-xs text-text-tertiary">{t("mobileConfiguration.preview.hint")}</p>
+                <div className="mb-4 space-y-2">
+                  <div className="min-w-0">
+                    <p className="mb-1 text-xs font-medium text-text-secondary">
+                      {t("mobileConfiguration.preview.screenLabel")}
+                    </p>
                     <div className="w-full [&>div]:block [&>div]:w-full">
                       <Dropdown
                         trigger={
                           <Button
-                            id="copy-theme-trigger"
+                            id="mobile-preview-screen"
                             type="button"
                             variant="outline"
                             className="w-full justify-between gap-2 font-normal"
-                            aria-label={copyThemeTriggerAriaLabel}
+                            aria-label={t("mobileConfiguration.preview.screenLabel")}
                           >
-                            <span className="min-w-0 truncate text-left">{copyThemeTriggerDisplay || "\u00a0"}</span>
+                            <span className="min-w-0 truncate text-left">
+                              {t(`mobileConfiguration.preview.screens.${previewScreen}`)}
+                            </span>
                             <TbChevronDown className="size-4 shrink-0 text-text-secondary" aria-hidden />
                           </Button>
                         }
@@ -934,395 +1317,51 @@ export const MobileConfigurationPage = (): ReactElement => {
                         className="max-h-60 w-full min-w-full overflow-y-auto p-1"
                         closeOnSelect
                       >
-                        <button
-                          type="button"
-                          className="w-full rounded-sm px-2 py-1.5 text-left text-sm text-text-tertiary hover:bg-surface-secondary"
-                          onClick={() => setCopySourceId("")}
-                        >
-                          {t("mobileConfiguration.copySection.placeholder")}
-                        </button>
-                        {otherTenants.map((tenant) => (
+                        {(["landing", "tables", "menu", "order"] as const).map((value) => (
                           <button
-                            key={tenant.id}
+                            key={value}
                             type="button"
                             className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-surface-secondary"
-                            onClick={() => setCopySourceId(tenant.id)}
+                            onClick={() => setPreviewScreen(value)}
                           >
-                            {tenant.name}
+                            {t(`mobileConfiguration.preview.screens.${value}`)}
                           </button>
                         ))}
                       </Dropdown>
                     </div>
-                  )}
+                  </div>
+                  <p className="text-xs text-text-tertiary">
+                    {t("mobileConfiguration.preview.appearanceFollowsEditor")}
+                  </p>
                 </div>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  disabled={!copySourceId || copyMutation.isPending}
-                  onClick={handleCopyTheme}
-                >
-                  {copyMutation.isPending
-                    ? t("mobileConfiguration.copySection.copying")
-                    : t("mobileConfiguration.copySection.copy")}
-                </Button>
-              </div>
+                <MobileGuestAppPreview
+                  screen={previewScreen}
+                  appearance={previewAppearance}
+                  restaurantName={selectedTenant?.name ?? ""}
+                  pageTitle={pageTitle}
+                  landingHeadline={landingHeadline}
+                  landingSubtitle={landingSubtitle}
+                  defaultSubtitle={t("mobileConfiguration.preview.defaultSubtitle")}
+                  tablesCtaLabel={landingTablesCta}
+                  menuCtaLabel={landingMenuCta}
+                  tablesCtaDefault={t("mobileConfiguration.preview.ctaTables")}
+                  menuCtaDefault={t("mobileConfiguration.preview.ctaMenu")}
+                  navTablesLabel={t("mobileConfiguration.preview.navTables")}
+                  navMenuLabel={t("mobileConfiguration.preview.navMenu")}
+                  navHomeLabel={t("mobileConfiguration.preview.navHome")}
+                  quickNavAriaLabel={t("mobileConfiguration.preview.quickNavAria")}
+                  languageSwitcherAriaLabel={t("languageSwitcher.label")}
+                  openStatusLabel={landingOpenLabel.trim() || t("mobileConfiguration.preview.openStatusFallback")}
+                  closedStatusLabel={landingClosedLabel.trim() || t("mobileConfiguration.preview.closedStatusFallback")}
+                  tablesCopy={previewTablesCopy}
+                  menuCopy={previewMenuCopy}
+                  orderCopy={previewOrderCopy}
+                  themeOverride={previewThemeOverride}
+                  googleFontStylesheetHref={googleFontUrl.trim() || undefined}
+                />
+              </aside>
             </div>
-          </div>
-
-          <div className="rounded-lg border border-border-default bg-surface-secondary/40 p-4">
-            <p className="mb-4 text-sm font-medium text-text-primary">{t("mobileConfiguration.themeSection.title")}</p>
-
-            <div className="mb-4">
-              <p className="mb-2 text-xs font-medium text-text-secondary">
-                {t("mobileConfiguration.themeSection.editTargetLabel")}
-              </p>
-              <div className="flex max-w-md rounded-lg border border-border-default bg-surface-primary p-0.5">
-                <button
-                  type="button"
-                  onClick={() => setThemePersonalizationMode("light")}
-                  className={cn(
-                    "flex-1 rounded-md px-3 py-2 text-xs font-medium transition-colors",
-                    themePersonalizationMode === "light"
-                      ? "bg-interactive-primary text-interactive-primaryForeground"
-                      : "text-text-secondary hover:bg-surface-secondary/80",
-                  )}
-                >
-                  {t("mobileConfiguration.themeSection.editLight")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setThemePersonalizationMode("dark")}
-                  className={cn(
-                    "flex-1 rounded-md px-3 py-2 text-xs font-medium transition-colors",
-                    themePersonalizationMode === "dark"
-                      ? "bg-interactive-primary text-interactive-primaryForeground"
-                      : "text-text-secondary hover:bg-surface-secondary/80",
-                  )}
-                >
-                  {t("mobileConfiguration.themeSection.editDark")}
-                </button>
-              </div>
-              <p className="mt-2 text-xs text-text-tertiary">{t("mobileConfiguration.hints.themePersonalizationMode")}</p>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="mb-1 block text-xs font-medium text-text-secondary" htmlFor="mobile-bg-color">
-                  {t("mobileConfiguration.fields.backgroundColor")}
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    id="mobile-bg-color"
-                    type="color"
-                    value={
-                      activeMobileTheme.backgroundColor ||
-                      (themePersonalizationMode === "light" ? "#ffffff" : PICKER_FALLBACK_DARK_BG)
-                    }
-                    onChange={(e) => patchActiveMobileTheme({ backgroundColor: e.target.value })}
-                    className="h-10 w-14 cursor-pointer rounded-sm border border-border-default bg-surface-primary p-1"
-                  />
-                  <input
-                    type="text"
-                    value={activeMobileTheme.backgroundColor}
-                    onChange={(e) => patchActiveMobileTheme({ backgroundColor: e.target.value })}
-                    placeholder={
-                      themePersonalizationMode === "light" ? "#ffffff" : PICKER_FALLBACK_DARK_BG
-                    }
-                    className="flex-1 rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary font-mono"
-                  />
-                  {activeMobileTheme.backgroundColor ? (
-                    <button
-                      type="button"
-                      onClick={() => patchActiveMobileTheme({ backgroundColor: "" })}
-                      className="text-xs text-text-tertiary hover:text-text-secondary"
-                    >
-                      {t("mobileConfiguration.actions.clear")}
-                    </button>
-                  ) : null}
-                </div>
-                <p className="mt-1 text-xs text-text-tertiary">{t("mobileConfiguration.hints.backgroundColor")}</p>
-              </div>
-
-              <div className="space-y-4 border-t border-border-default pt-4">
-                <p className="text-xs font-medium text-text-primary">{t("mobileConfiguration.themeSection.primaryButton")}</p>
-                <ThemeColorField
-                  id="mobile-primary-button-bg"
-                  label={t("mobileConfiguration.fields.primaryButtonBackground")}
-                  hint={t("mobileConfiguration.hints.primaryButtonBackground")}
-                  value={activeMobileTheme.primaryButtonBg}
-                  onChange={(v) => patchActiveMobileTheme({ primaryButtonBg: v })}
-                  pickerFallback={
-                    themePersonalizationMode === "light"
-                      ? PICKER_FALLBACK_PRIMARY_BG
-                      : PICKER_FALLBACK_DARK_PRIMARY_BG
-                  }
-                  clearLabel={t("mobileConfiguration.actions.clear")}
-                />
-                <ThemeColorField
-                  id="mobile-primary-button-text"
-                  label={t("mobileConfiguration.fields.primaryButtonText")}
-                  hint={t("mobileConfiguration.hints.primaryButtonText")}
-                  value={activeMobileTheme.primaryButtonText}
-                  onChange={(v) => patchActiveMobileTheme({ primaryButtonText: v })}
-                  pickerFallback={
-                    themePersonalizationMode === "light"
-                      ? PICKER_FALLBACK_PRIMARY_TEXT
-                      : PICKER_FALLBACK_DARK_PRIMARY_TEXT
-                  }
-                  clearLabel={t("mobileConfiguration.actions.clear")}
-                />
-                <p className="text-xs font-medium text-text-primary">{t("mobileConfiguration.themeSection.secondaryButton")}</p>
-                <ThemeColorField
-                  id="mobile-secondary-button-bg"
-                  label={t("mobileConfiguration.fields.secondaryButtonBackground")}
-                  hint={t("mobileConfiguration.hints.secondaryButtonBackground")}
-                  value={activeMobileTheme.secondaryButtonBg}
-                  onChange={(v) => patchActiveMobileTheme({ secondaryButtonBg: v })}
-                  pickerFallback={
-                    themePersonalizationMode === "light"
-                      ? PICKER_FALLBACK_SECONDARY_BG
-                      : PICKER_FALLBACK_DARK_SECONDARY_BG
-                  }
-                  clearLabel={t("mobileConfiguration.actions.clear")}
-                />
-                <ThemeColorField
-                  id="mobile-secondary-button-text"
-                  label={t("mobileConfiguration.fields.secondaryButtonText")}
-                  hint={t("mobileConfiguration.hints.secondaryButtonText")}
-                  value={activeMobileTheme.secondaryButtonText}
-                  onChange={(v) => patchActiveMobileTheme({ secondaryButtonText: v })}
-                  pickerFallback={
-                    themePersonalizationMode === "light"
-                      ? PICKER_FALLBACK_SECONDARY_TEXT
-                      : PICKER_FALLBACK_DARK_SECONDARY_TEXT
-                  }
-                  clearLabel={t("mobileConfiguration.actions.clear")}
-                />
-              </div>
-
-              <div className="space-y-4 border-t border-border-default pt-4">
-                <p className="text-xs font-medium text-text-primary">{t("mobileConfiguration.themeSection.surfacesTextAndBorders")}</p>
-                <ThemeColorField
-                  id="mobile-text-primary"
-                  label={t("mobileConfiguration.fields.textPrimary")}
-                  hint={t("mobileConfiguration.hints.textPrimary")}
-                  value={activeMobileTheme.textPrimary}
-                  onChange={(v) => patchActiveMobileTheme({ textPrimary: v })}
-                  pickerFallback={
-                    themePersonalizationMode === "light"
-                      ? PICKER_FALLBACK_TEXT_PRIMARY
-                      : PICKER_FALLBACK_DARK_TEXT_PRIMARY
-                  }
-                  clearLabel={t("mobileConfiguration.actions.clear")}
-                />
-                <ThemeColorField
-                  id="mobile-text-secondary"
-                  label={t("mobileConfiguration.fields.textSecondary")}
-                  hint={t("mobileConfiguration.hints.textSecondary")}
-                  value={activeMobileTheme.textSecondary}
-                  onChange={(v) => patchActiveMobileTheme({ textSecondary: v })}
-                  pickerFallback={
-                    themePersonalizationMode === "light"
-                      ? PICKER_FALLBACK_TEXT_SECONDARY
-                      : PICKER_FALLBACK_DARK_TEXT_SECONDARY
-                  }
-                  clearLabel={t("mobileConfiguration.actions.clear")}
-                />
-                <ThemeColorField
-                  id="mobile-text-tertiary"
-                  label={t("mobileConfiguration.fields.textTertiary")}
-                  hint={t("mobileConfiguration.hints.textTertiary")}
-                  value={activeMobileTheme.textTertiary}
-                  onChange={(v) => patchActiveMobileTheme({ textTertiary: v })}
-                  pickerFallback={
-                    themePersonalizationMode === "light"
-                      ? PICKER_FALLBACK_TEXT_TERTIARY
-                      : PICKER_FALLBACK_DARK_TEXT_TERTIARY
-                  }
-                  clearLabel={t("mobileConfiguration.actions.clear")}
-                />
-                <ThemeColorField
-                  id="mobile-border-default"
-                  label={t("mobileConfiguration.fields.borderDefault")}
-                  hint={t("mobileConfiguration.hints.borderDefault")}
-                  value={activeMobileTheme.borderDefault}
-                  onChange={(v) => patchActiveMobileTheme({ borderDefault: v })}
-                  pickerFallback={
-                    themePersonalizationMode === "light" ? PICKER_FALLBACK_BORDER : PICKER_FALLBACK_DARK_BORDER
-                  }
-                  clearLabel={t("mobileConfiguration.actions.clear")}
-                />
-                <ThemeColorField
-                  id="mobile-surface-primary"
-                  label={t("mobileConfiguration.fields.surfacePrimary")}
-                  hint={t("mobileConfiguration.hints.surfacePrimary")}
-                  value={activeMobileTheme.surfacePrimary}
-                  onChange={(v) => patchActiveMobileTheme({ surfacePrimary: v })}
-                  pickerFallback={
-                    themePersonalizationMode === "light"
-                      ? PICKER_FALLBACK_SURFACE_PRIMARY
-                      : PICKER_FALLBACK_DARK_SURFACE_PRIMARY
-                  }
-                  clearLabel={t("mobileConfiguration.actions.clear")}
-                />
-                <ThemeColorField
-                  id="mobile-surface-secondary"
-                  label={t("mobileConfiguration.fields.surfaceSecondary")}
-                  hint={t("mobileConfiguration.hints.surfaceSecondary")}
-                  value={activeMobileTheme.surfaceSecondary}
-                  onChange={(v) => patchActiveMobileTheme({ surfaceSecondary: v })}
-                  pickerFallback={
-                    themePersonalizationMode === "light"
-                      ? PICKER_FALLBACK_SURFACE_SECONDARY
-                      : PICKER_FALLBACK_DARK_SURFACE_SECONDARY
-                  }
-                  clearLabel={t("mobileConfiguration.actions.clear")}
-                />
-              </div>
-
-              <div className="space-y-4 border-t border-border-default pt-4">
-                <p className="text-xs font-medium text-text-primary">{t("mobileConfiguration.themeSection.promotedBadge")}</p>
-                <ThemeColorField
-                  id="mobile-promoted-badge-bg"
-                  label={t("mobileConfiguration.fields.promotedBadgeBackground")}
-                  hint={t("mobileConfiguration.hints.promotedBadgeBackground")}
-                  value={activeMobileTheme.promotedBadgeBackground}
-                  onChange={(v) => patchActiveMobileTheme({ promotedBadgeBackground: v })}
-                  pickerFallback={
-                    themePersonalizationMode === "light"
-                      ? PICKER_FALLBACK_PROMOTED_BG
-                      : PICKER_FALLBACK_DARK_PROMOTED_BG
-                  }
-                  clearLabel={t("mobileConfiguration.actions.clear")}
-                />
-                <ThemeColorField
-                  id="mobile-promoted-badge-text"
-                  label={t("mobileConfiguration.fields.promotedBadgeText")}
-                  hint={t("mobileConfiguration.hints.promotedBadgeText")}
-                  value={activeMobileTheme.promotedBadgeText}
-                  onChange={(v) => patchActiveMobileTheme({ promotedBadgeText: v })}
-                  pickerFallback={
-                    themePersonalizationMode === "light"
-                      ? PICKER_FALLBACK_PROMOTED_TEXT
-                      : PICKER_FALLBACK_DARK_PROMOTED_TEXT
-                  }
-                  clearLabel={t("mobileConfiguration.actions.clear")}
-                />
-                <ThemeColorField
-                  id="mobile-promoted-badge-border"
-                  label={t("mobileConfiguration.fields.promotedBadgeBorder")}
-                  hint={t("mobileConfiguration.hints.promotedBadgeBorder")}
-                  value={activeMobileTheme.promotedBadgeBorder}
-                  onChange={(v) => patchActiveMobileTheme({ promotedBadgeBorder: v })}
-                  pickerFallback={
-                    themePersonalizationMode === "light"
-                      ? PICKER_FALLBACK_PROMOTED_BORDER
-                      : PICKER_FALLBACK_DARK_PROMOTED_BORDER
-                  }
-                  clearLabel={t("mobileConfiguration.actions.clear")}
-                />
-              </div>
-
-              <div>
-                <div className="mb-1 flex items-center gap-1">
-                  <label className="block text-xs font-medium text-text-secondary" htmlFor="mobile-google-font">
-                    {t("mobileConfiguration.fields.googleFontUrl")}
-                  </label>
-                  <Tooltip content={t("mobileConfiguration.hints.googleFontUrlTooltip")} placement="right">
-                    <button type="button" className="text-text-tertiary hover:text-text-secondary">
-                      <TbHelpCircle className="h-4 w-4" />
-                    </button>
-                  </Tooltip>
-                </div>
-                <input
-                  id="mobile-google-font"
-                  type="url"
-                  value={googleFontUrl}
-                  onChange={(e) => {
-                    setGoogleFontUrl(e.target.value);
-                    setFontError("");
-                  }}
-                  placeholder="https://fonts.googleapis.com/css2?family=Roboto"
-                  className="w-full rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
-                />
-                {fontError && <p className="mt-1 text-xs text-status-error-text">{fontError}</p>}
-                <p className="mt-1 text-xs text-text-tertiary">{t("mobileConfiguration.hints.googleFontUrl")}</p>
-              </div>
-            </div>
-          </div>
-        </form>
-
-        {tenantId !== null && !isLoading ? (
-          <div className="min-w-0 lg:sticky lg:top-6 lg:z-10 lg:self-start">
-          <aside className="w-full lg:w-[min(100%,380px)]">
-            <p className="mb-1 text-sm font-medium text-text-primary">{t("mobileConfiguration.preview.title")}</p>
-            <p className="mb-3 text-xs text-text-tertiary">{t("mobileConfiguration.preview.hint")}</p>
-            <div className="mb-4 space-y-2">
-              <div className="min-w-0">
-                <p className="mb-1 text-xs font-medium text-text-secondary">{t("mobileConfiguration.preview.screenLabel")}</p>
-                <div className="w-full [&>div]:block [&>div]:w-full">
-                  <Dropdown
-                    trigger={
-                      <Button
-                        id="mobile-preview-screen"
-                        type="button"
-                        variant="outline"
-                        className="w-full justify-between gap-2 font-normal"
-                        aria-label={t("mobileConfiguration.preview.screenLabel")}
-                      >
-                        <span className="min-w-0 truncate text-left">
-                          {t(`mobileConfiguration.preview.screens.${previewScreen}`)}
-                        </span>
-                        <TbChevronDown className="size-4 shrink-0 text-text-secondary" aria-hidden />
-                      </Button>
-                    }
-                    placement="bottom-start"
-                    className="max-h-60 w-full min-w-full overflow-y-auto p-1"
-                    closeOnSelect
-                  >
-                    {(["landing", "tables", "menu", "order"] as const).map((value) => (
-                      <button
-                        key={value}
-                        type="button"
-                        className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-surface-secondary"
-                        onClick={() => setPreviewScreen(value)}
-                      >
-                        {t(`mobileConfiguration.preview.screens.${value}`)}
-                      </button>
-                    ))}
-                  </Dropdown>
-                </div>
-              </div>
-              <p className="text-xs text-text-tertiary">{t("mobileConfiguration.preview.appearanceFollowsEditor")}</p>
-            </div>
-            <MobileGuestAppPreview
-              screen={previewScreen}
-              appearance={previewAppearance}
-              restaurantName={selectedTenant?.name ?? ""}
-              pageTitle={pageTitle}
-              landingHeadline={landingHeadline}
-              landingSubtitle={landingSubtitle}
-              defaultSubtitle={t("mobileConfiguration.preview.defaultSubtitle")}
-              tablesCtaLabel={landingTablesCta}
-              menuCtaLabel={landingMenuCta}
-              tablesCtaDefault={t("mobileConfiguration.preview.ctaTables")}
-              menuCtaDefault={t("mobileConfiguration.preview.ctaMenu")}
-              navTablesLabel={t("mobileConfiguration.preview.navTables")}
-              navMenuLabel={t("mobileConfiguration.preview.navMenu")}
-              navHomeLabel={t("mobileConfiguration.preview.navHome")}
-              quickNavAriaLabel={t("mobileConfiguration.preview.quickNavAria")}
-              languageSwitcherAriaLabel={t("languageSwitcher.label")}
-              openStatusLabel={landingOpenLabel.trim() || t("mobileConfiguration.preview.openStatusFallback")}
-              closedStatusLabel={landingClosedLabel.trim() || t("mobileConfiguration.preview.closedStatusFallback")}
-              tablesCopy={previewTablesCopy}
-              menuCopy={previewMenuCopy}
-              orderCopy={previewOrderCopy}
-              themeOverride={previewThemeOverride}
-              googleFontStylesheetHref={googleFontUrl.trim() || undefined}
-            />
-          </aside>
-          </div>
-        ) : null}
+          ) : null}
         </div>
       </div>
     </PageLayout>

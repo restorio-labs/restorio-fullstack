@@ -83,9 +83,7 @@ export const TenantMenuPage = (): ReactElement => {
   }
 
   const categories = menuQuery.data?.categories ?? [];
-  const displayName = tenantQuery.data.pageTitle?.trim()
-    ? tenantQuery.data.pageTitle
-    : tenantQuery.data.name;
+  const displayName = tenantQuery.data.pageTitle?.trim() ? tenantQuery.data.pageTitle : tenantQuery.data.name;
 
   return (
     <div className="min-h-[100dvh] bg-background-primary pb-24">

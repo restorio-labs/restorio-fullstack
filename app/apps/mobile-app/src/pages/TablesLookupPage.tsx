@@ -70,6 +70,7 @@ const FloorPreview = ({ canvas, openLabel, closedLabel, onTablePress }: FloorPre
 
     measure();
     const ro = new ResizeObserver(measure);
+
     ro.observe(el);
 
     return (): void => {
@@ -239,9 +240,7 @@ export const TablesLookupPage = (): ReactElement => {
     );
   }
 
-  const displayName = tenantQuery.data.pageTitle?.trim()
-    ? tenantQuery.data.pageTitle
-    : tenantQuery.data.name;
+  const displayName = tenantQuery.data.pageTitle?.trim() ? tenantQuery.data.pageTitle : tenantQuery.data.name;
   const lc = tenantQuery.data.landingContent;
   const openLabel = lc?.openStatusLabel?.trim() || t("tables.statusOpen");
   const closedLabel = lc?.closedStatusLabel?.trim() || t("tables.statusClosed");
@@ -249,14 +248,19 @@ export const TablesLookupPage = (): ReactElement => {
   const canvases = tablesQuery.data.canvases.filter((c) => c.tables.length > 0);
   const flatTables = canvases.flatMap((c) => c.tables);
 
-  const secondsLeft =
-    reservedModal != null ? Math.max(0, Math.ceil((reservedModal.untilMs - Date.now()) / 1000)) : 0;
+  const secondsLeft = reservedModal != null ? Math.max(0, Math.ceil((reservedModal.untilMs - Date.now()) / 1000)) : 0;
 
   return (
     <div className="min-h-[100dvh] bg-background-primary pb-24">
       <header className="sticky top-0 z-10 border-b border-border-default bg-surface-primary px-4 py-4 text-center">
         <div className="mx-auto flex max-w-2xl flex-col items-center gap-2">
-          <Button variant="outline" size="sm" type="button" className={cn("my-2 py-2 px-4")} onClick={() => navigate(`/${tenantSlug}`)}>
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            className={cn("my-2 py-2 px-4")}
+            onClick={() => navigate(`/${tenantSlug}`)}
+          >
             {t("tables.back")}
           </Button>
           <Text as="h1" variant="h2" weight="bold" align="center" className="w-full text-balance">
@@ -329,7 +333,9 @@ export const TablesLookupPage = (): ReactElement => {
                       <span
                         className={cn(
                           "shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold",
-                          isOpen ? "bg-status-success-background text-status-success-text" : "bg-status-error-background text-status-error-text",
+                          isOpen
+                            ? "bg-status-success-background text-status-success-text"
+                            : "bg-status-error-background text-status-error-text",
                         )}
                       >
                         {isOpen ? openLabel : closedLabel}

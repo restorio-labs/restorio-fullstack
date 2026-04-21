@@ -2,8 +2,8 @@ import type { CSSProperties, ReactElement, ReactNode } from "react";
 import { useEffect, useId, useMemo } from "react";
 import { TbChevronDown } from "react-icons/tb";
 
-import type { ThemeOverride } from "../tokens/types";
 import { buildScopedThemeStyle } from "../theme/cssVariables";
+import type { ThemeOverride } from "../tokens/types";
 import { cn } from "../utils";
 
 import { Dropdown } from "./overlays/Dropdown";
@@ -120,13 +120,7 @@ const PreviewLangSelect = ({
   </div>
 );
 
-const PreviewBottomNav = ({
-  ariaLabel,
-  children,
-}: {
-  ariaLabel: string;
-  children: ReactNode;
-}): ReactElement => (
+const PreviewBottomNav = ({ ariaLabel, children }: { ariaLabel: string; children: ReactNode }): ReactElement => (
   <nav
     className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 border-t border-border-default bg-surface-primary/95 px-3 py-3 backdrop-blur-sm sm:px-4"
     aria-label={ariaLabel}
@@ -153,12 +147,7 @@ const MenuItemPreviewCard = ({
     )}
   >
     <div className={cn("min-w-0 flex-1", !orderMode && "flex w-full flex-col items-center")}>
-      <Text
-        as="span"
-        variant="body-md"
-        weight="medium"
-        className={cn("block truncate", !orderMode && "text-center")}
-      >
+      <Text as="span" variant="body-md" weight="medium" className={cn("block truncate", !orderMode && "text-center")}>
         {name}
       </Text>
       {promoted ? (
@@ -401,11 +390,7 @@ export const MobileGuestAppPreview = ({
           </Text>
           <div className="flex flex-col gap-2">
             {menuCopy.items.map((item) => (
-              <MenuItemPreviewCard
-                key={item.name}
-                {...item}
-                promotedBadgeLabel={menuCopy.promotedBadgeLabel}
-              />
+              <MenuItemPreviewCard key={item.name} {...item} promotedBadgeLabel={menuCopy.promotedBadgeLabel} />
             ))}
           </div>
         </section>
@@ -512,12 +497,15 @@ export const MobileGuestAppPreview = ({
   switch (screen) {
     case "tables":
       body = tablesBody;
+
       break;
     case "menu":
       body = menuBody;
+
       break;
     case "order":
       body = orderBody;
+
       break;
     default:
       body = landingBody;
@@ -532,11 +520,7 @@ export const MobileGuestAppPreview = ({
     >
       <div className="relative overflow-hidden rounded-[1.85rem] ring-1 ring-border-default">
         <div
-          className={cn(
-            appearance === "dark" && "dark",
-            "pointer-events-none",
-            previewShellClassName(screen),
-          )}
+          className={cn(appearance === "dark" && "dark", "pointer-events-none", previewShellClassName(screen))}
           data-theme={appearance}
           style={surfaceStyle}
         >

@@ -65,7 +65,7 @@ export const TenantLandingPage = (): ReactElement => {
     );
   }
 
-  const data = tenantQuery.data;
+  const { data } = tenantQuery;
   const lc = data.landingContent;
   const displayName = data.pageTitle?.trim() ? data.pageTitle : data.name;
   const headline = lc?.headline?.trim() ? lc.headline : displayName;

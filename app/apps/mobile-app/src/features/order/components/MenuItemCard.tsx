@@ -58,7 +58,7 @@ export const MenuItemCard = ({
             <Text as="span" variant="h4" weight="semibold" className="text-start text-text-primary">
               {priceLabel}
             </Text>
-            {item.desc?.trim() ? (
+            {item.desc.trim() ? (
               <Text as="span" variant="body-md" className="line-clamp-1 text-text-tertiary">
                 {t("menuItem.tapForDescription")}
               </Text>
@@ -114,7 +114,7 @@ export const MenuItemCard = ({
               </div>
             </div>
           ) : null}
-          {item.desc?.trim() ? (
+          {item.desc.trim() ? (
             <Text
               as="p"
               variant="h3"
@@ -124,22 +124,11 @@ export const MenuItemCard = ({
               {item.desc.trim()}
             </Text>
           ) : (
-            <Text
-              as="p"
-              variant="body-lg"
-              align="center"
-              className="w-full max-w-prose text-text-secondary"
-            >
+            <Text as="p" variant="body-lg" align="center" className="w-full max-w-prose text-text-secondary">
               {t("menuItem.noDescription")}
             </Text>
           )}
-          <Text
-            as="p"
-            variant="h3"
-            weight="semibold"
-            align="center"
-            className="w-full text-text-primary"
-          >
+          <Text as="p" variant="h3" weight="semibold" align="center" className="w-full text-text-primary">
             {priceLabel}
           </Text>
         </div>

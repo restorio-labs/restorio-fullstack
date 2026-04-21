@@ -5,12 +5,12 @@ import { type ReactElement, useCallback, useEffect, useRef, useState } from "rea
 import { useParams } from "react-router-dom";
 
 import { publicApi } from "../api/client";
-import { useApplyPublicTenantPresentation } from "../hooks/useApplyPublicTenantPresentation";
-import { persistLastVisitedTenantPath } from "../lib/lastVisitedTenant";
 import { CartSummary } from "../features/order/components/CartSummary";
 import { CheckoutForm } from "../features/order/components/CheckoutForm";
 import { MenuCategorySection } from "../features/order/components/MenuCategorySection";
 import { useCart } from "../features/order/hooks/useCart";
+import { useApplyPublicTenantPresentation } from "../hooks/useApplyPublicTenantPresentation";
+import { persistLastVisitedTenantPath } from "../lib/lastVisitedTenant";
 
 const extractApiErrorMessage = (error: unknown, fallback: string): string => {
   if (typeof error === "object" && error !== null && "response" in error) {
@@ -149,13 +149,7 @@ export const OrderPage = (): ReactElement => {
         <Text as="h1" variant="h2" weight="bold" align="center" className="text-balance">
           {displayName}
         </Text>
-        <Text
-          as="p"
-          variant="body-lg"
-          weight="medium"
-          align="center"
-          className="mt-1 text-pretty text-text-secondary"
-        >
+        <Text as="p" variant="body-lg" weight="medium" align="center" className="mt-1 text-pretty text-text-secondary">
           {t("order.tableLabel", { number: String(tableNum) })}
         </Text>
       </header>

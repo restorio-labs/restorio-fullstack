@@ -29,10 +29,9 @@ export class PublicResource extends BaseResource {
   }
 
   async getTenantTablesOverview(tenantSlug: string, signal?: AbortSignal): Promise<PublicTablesOverview> {
-    const body = await this.client.get<SuccessResponse<PublicTablesOverview>>(
-      `/public/${tenantSlug}/tables-overview`,
-      { signal },
-    );
+    const body = await this.client.get<SuccessResponse<PublicTablesOverview>>(`/public/${tenantSlug}/tables-overview`, {
+      signal,
+    });
 
     return body.data;
   }

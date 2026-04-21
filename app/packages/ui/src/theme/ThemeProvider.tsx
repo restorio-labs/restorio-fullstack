@@ -200,8 +200,14 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
       border: { ...baseColors.border },
       text: { ...baseColors.text },
       interactive: { ...baseColors.interactive },
-      status: { ...baseColors.status },
-    } as typeof baseColors;
+      status: {
+        error: { ...baseColors.status.error },
+        success: { ...baseColors.status.success },
+        warning: { ...baseColors.status.warning },
+        info: { ...baseColors.status.info },
+        promoted: { ...baseColors.status.promoted },
+      },
+    };
 
     if (applied.colors.background) {
       Object.assign(merged.background, applied.colors.background);
@@ -230,12 +236,12 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
         const partial = patch[sub];
 
         if (partial && typeof partial === "object") {
-          merged.status[sub] = { ...merged.status[sub], ...partial };
+          Object.assign(merged.status[sub], partial);
         }
       }
     }
 
-    return merged;
+    return merged as typeof baseColors;
   }, [resolvedMode, override]);
 
   const value: ThemeContextValue = useMemo(
