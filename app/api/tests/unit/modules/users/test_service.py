@@ -1,3 +1,4 @@
+import string
 from uuid import uuid4
 
 import pytest
@@ -12,6 +13,16 @@ from services.user_service import UserService
 
 user_service = UserService(security=SecurityService())
 PASSWORD_HASH_MIN_LENGTH = 50
+
+
+def test_generate_temporary_password_meets_length_and_charset() -> None:
+    expected_len = 24
+    pw = user_service.generate_temporary_password(expected_len)
+    assert len(pw) == expected_len
+    assert any(c in string.ascii_lowercase for c in pw)
+    assert any(c in string.ascii_uppercase for c in pw)
+    assert any(c.isdigit() for c in pw)
+    assert any(c in "!@#$%^&*()_+-=[]{}|;:,.<>?" for c in pw)
 
 
 class FakeAsyncSession:

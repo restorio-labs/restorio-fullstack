@@ -28,7 +28,7 @@ class ValidationError(BaseHTTPException):
         self, message: str = "Validation failed", errors: list[dict[str, str]] | None = None
     ) -> None:
         super().__init__(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             message=message,
             details={"errors": errors} if errors else None,
         )

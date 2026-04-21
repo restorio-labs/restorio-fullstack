@@ -54,14 +54,14 @@ class TestValidationError:
     def test_validation_error_default_message(self) -> None:
         exception = ValidationError()
 
-        assert exception.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert exception.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
         assert exception.detail == "Validation failed"
 
     def test_validation_error_with_errors(self) -> None:
         errors = [{"field": "email", "message": "Invalid format"}]
         exception = ValidationError(message="Custom validation error", errors=errors)
 
-        assert exception.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert exception.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
         assert exception.detail == "Custom validation error"
         assert exception.details is not None
         assert "errors" in exception.details

@@ -45,7 +45,7 @@ def setup_exception_handlers(app: FastAPI, settings: Settings) -> None:
                 fields.append(field)
 
         return JSONResponse(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             content=ValidationErrorResponse(
                 fields=fields,
                 request_id=_get_request_id(request),

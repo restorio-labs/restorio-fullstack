@@ -1,4 +1,4 @@
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from core.foundation.security import SecurityService
 from core.models.activation_link import ActivationLink
@@ -16,7 +16,7 @@ class FakeAsyncSession:
         self.activation_links: list[ActivationLink] = []
         self.added_objects: list[object] = []
 
-    async def scalar(self, query: object) -> User | None:
+    async def scalar(self, query: object) -> object | None:
         query_str = str(query)
         query_params: dict[str, object] = {}
         if hasattr(query, "compile"):
@@ -25,6 +25,13 @@ class FakeAsyncSession:
         if "users.email" in query_str:
             email = next(iter(query_params.values()), None)
             return next((u for u in self.users if u.email == email), None)
+        if "tenant_roles" in query_str:
+            for param in query_params.values():
+                if not isinstance(param, UUID):
+                    continue
+                for tr in getattr(self, "tenant_roles", []):
+                    if tr.account_id == param:
+                        return tr
         return None
 
     def add(self, obj: object) -> None:
@@ -94,6 +101,9 @@ class FakeAsyncSession:
 class FakeScalarResult:
     def __init__(self, items: list) -> None:
         self._items = items
+
+    def __iter__(self) -> object:
+        return iter(self._items)
 
     def all(self) -> list:
         return self._items

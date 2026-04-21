@@ -40,7 +40,7 @@ class TestValidateNip:
     def test_invalid_nip_checksum(self) -> None:
         """NIP with invalid checksum should fail."""
         with pytest.raises(ValueError, match="checksum"):
-            validate_nip("1234567890")
+            validate_nip("1234567891")
 
     def test_known_valid_nips(self) -> None:
         """Test with known valid Polish NIP numbers."""
@@ -104,7 +104,7 @@ class TestInvoiceDataDTO:
         with pytest.raises(ValidationError) as exc_info:
             InvoiceDataDTO(
                 companyName="Test",
-                nip="1234567890",
+                nip="1234567891",
                 street="Test 1",
                 city="Test",
                 postalCode="00-001",

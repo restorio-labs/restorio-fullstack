@@ -136,6 +136,30 @@ class TestOrderItemResponseDTO:
         assert dto.quantity == self.QUANTITY
         assert dto.unit_price == Decimal("15.99")
 
+    def test_modifiers_property(self) -> None:
+        item_id = uuid4()
+        dto = OrderItemResponseDTO(
+            id=item_id,
+            product_id="prod-123",
+            name="Burger",
+            quantity=1,
+            unit_price=Decimal("15.99"),
+            selectedModifiers=["extra-cheese", "no-onions"],
+        )
+        assert dto.modifiers == ["extra-cheese", "no-onions"]
+        assert dto.selected_modifiers == dto.modifiers
+
+    def test_modifiers_property_empty(self) -> None:
+        item_id = uuid4()
+        dto = OrderItemResponseDTO(
+            id=item_id,
+            product_id="prod-123",
+            name="Burger",
+            quantity=1,
+            unit_price=Decimal("15.99"),
+        )
+        assert dto.modifiers == []
+
 
 class TestOrderResponseDTO:
     def test_valid_response_without_items(self) -> None:

@@ -186,3 +186,78 @@ class TestLoginResponseData:
     def test_valid_response(self) -> None:
         dto = LoginResponseData(at="jwt-access-token")
         assert dto.model_dump() == {}
+
+
+class TestAuthMeSessionData:
+    def test_defaults(self) -> None:
+        from core.dto.v1.auth import AuthMeSessionData
+
+        dto = AuthMeSessionData()
+        assert dto.authenticated is True
+        assert dto.account_type is None
+
+    def test_with_account_type(self) -> None:
+        from core.dto.v1.auth import AuthMeSessionData
+
+        dto = AuthMeSessionData(account_type="owner")
+        assert dto.authenticated is True
+        assert dto.account_type == "owner"
+
+
+class TestBulkCreateUsersDTO:
+    def test_valid_bulk_create(self) -> None:
+        from core.dto.v1.auth import BulkCreateUsersDTO
+
+        dto = BulkCreateUsersDTO(
+            users=[
+                {
+                    "email": "waiter1@example.com",
+                    "access_level": "waiter",
+                    "name": "Jan",
+                    "surname": "Kowalski",
+                },
+                {
+                    "email": "kitchen1@example.com",
+                    "access_level": "kitchen",
+                },
+            ]
+        )
+        assert len(dto.users) == 2
+
+    def test_empty_users_list_rejected(self) -> None:
+        from core.dto.v1.auth import BulkCreateUsersDTO
+
+        with pytest.raises(PydanticValidationError):
+            BulkCreateUsersDTO(users=[])
+
+
+class TestCreateUserDTONameNormalization:
+    def test_name_none_stays_none(self) -> None:
+        dto = CreateUserDTO(
+            email="kitchen@example.com",
+            access_level="kitchen",
+            name=None,
+            surname=None,
+        )
+        assert dto.name is None
+        assert dto.surname is None
+
+    def test_empty_string_name_becomes_none(self) -> None:
+        dto = CreateUserDTO(
+            email="kitchen@example.com",
+            access_level="kitchen",
+            name="",
+            surname="   ",
+        )
+        assert dto.name is None
+        assert dto.surname is None
+
+    def test_whitespace_only_name_becomes_none(self) -> None:
+        dto = CreateUserDTO(
+            email="kitchen@example.com",
+            access_level="kitchen",
+            name="   ",
+            surname="\t\n",
+        )
+        assert dto.name is None
+        assert dto.surname is None

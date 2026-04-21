@@ -97,7 +97,7 @@ force-sort-within-sections = true
 "__init__.py" = ["F401"]  # Allow unused imports in __init__.py
 "**/alembic/versions/*.py" = ["ALL"]  # Ignore all rules in migration files
 "**/__template__.py" = ["ARG001", "ERA001"]  # Template files have unused args and example comments
-"tests/**" = ["ARG001"]  # Allow unused arguments in test fixtures
+"tests/**" = ["ARG001", "PT019"]  # Unused test fixtures; patch-injected mock parameters
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -118,8 +118,9 @@ addopts = [
 ]
 
 [tool.coverage.run]
+source = ["core", "services", "routes", "main.py"]
 data_file = "coverage/.coverage"
 omit = ["*/alembic/*"]
 
 [tool.coverage.report]
-fail_under = 0
+fail_under = 95

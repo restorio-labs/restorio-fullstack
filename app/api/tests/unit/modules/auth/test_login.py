@@ -101,3 +101,32 @@ async def test_login_user_not_found() -> None:
         )
 
     assert "invalid credentials" in exc_info.value.detail.lower()
+
+
+@pytest.mark.asyncio
+async def test_login_uses_tenant_id_when_no_roles() -> None:
+    session = FakeAsyncSession()
+    tenant = Tenant(
+        id=uuid4(),
+        public_id="pub-from-tenant",
+        name="R",
+        slug="r",
+        status=TenantStatus.ACTIVE,
+    )
+    session.tenants.append(tenant)
+    user = User(
+        id=uuid4(),
+        email="lone@example.com",
+        password_hash=auth_service.security.hash_password("pw-Valid-1"),
+        tenant_id=tenant.id,
+        is_active=True,
+    )
+    session.users.append(user)
+    access_token = await auth_service.login(
+        session=session,
+        email="lone@example.com",
+        password="pw-Valid-1",
+    )
+    decoded = auth_service.security.decode_access_token(access_token)
+    assert decoded is not None
+    assert decoded["tenant_ids"] == [tenant.public_id]
