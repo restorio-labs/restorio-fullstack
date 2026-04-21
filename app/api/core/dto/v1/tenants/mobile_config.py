@@ -24,7 +24,8 @@ class MobileLandingContentDTO(BaseDTO):
             return None
         allowed = ("en", "pl", "es", "ar")
         if s not in allowed:
-            raise ValueError("uiLocale must be one of: en, pl, es, ar")
+            msg = "uiLocale must be one of: en, pl, es, ar"
+            raise ValueError(msg)
         return s
 
 

@@ -5,6 +5,7 @@ from pydantic import Field, field_validator
 from core.dto.v1.common.base import BaseDTO
 
 _NIP_WEIGHTS = (6, 5, 7, 2, 3, 4, 5, 6, 7)
+_NIP_REMAINDER_MAPS_TO_CHECK_DIGIT_ZERO = 10
 
 
 def validate_nip(nip: str) -> str:
@@ -19,9 +20,9 @@ def validate_nip(nip: str) -> str:
         raise ValueError(msg)
 
     digits = [int(d) for d in digits_only]
-    checksum = sum(d * w for d, w in zip(digits[:9], _NIP_WEIGHTS)) % 11
+    checksum = sum(d * w for d, w in zip(digits[:9], _NIP_WEIGHTS, strict=True)) % 11
 
-    if checksum == 10:
+    if checksum == _NIP_REMAINDER_MAPS_TO_CHECK_DIGIT_ZERO:
         checksum = 0
 
     if digits[9] != checksum:

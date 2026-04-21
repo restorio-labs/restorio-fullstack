@@ -1,5 +1,5 @@
-import pytest
 from pydantic import ValidationError
+import pytest
 
 from core.dto.v1.common import InvoiceDataDTO, validate_nip
 
@@ -76,13 +76,15 @@ class TestInvoiceDataDTO:
 
     def test_valid_invoice_data_camel_case(self) -> None:
         """Valid invoice data with camelCase aliases should pass."""
-        data = InvoiceDataDTO.model_validate({
-            "companyName": "Test Company",
-            "nip": "1234563218",
-            "street": "ul. Testowa 1",
-            "city": "Kraków",
-            "postalCode": "30-001",
-        })
+        data = InvoiceDataDTO.model_validate(
+            {
+                "companyName": "Test Company",
+                "nip": "1234563218",
+                "street": "ul. Testowa 1",
+                "city": "Kraków",
+                "postalCode": "30-001",
+            }
+        )
         assert data.company_name == "Test Company"
         assert data.postal_code == "30-001"
 

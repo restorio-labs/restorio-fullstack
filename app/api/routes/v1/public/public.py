@@ -6,7 +6,6 @@ from fastapi import APIRouter, Request, Response, status
 from sqlalchemy import select
 
 from core.dto.v1.menus import TenantMenuResponseDTO
-from core.dto.v1.tenants.mobile_config import MobileLandingContentDTO
 from core.dto.v1.public import (
     PublicAcquireTableSessionDTO,
     PublicCreateOrderPaymentDTO,
@@ -20,6 +19,7 @@ from core.dto.v1.public import (
     PublicTablesOverviewResponseDTO,
     PublicTenantInfoResponseDTO,
 )
+from core.dto.v1.tenants.mobile_config import MobileLandingContentDTO
 from core.exceptions import BadRequestError, NotFoundResponse
 from core.foundation.client_ip import get_client_ip
 from core.foundation.dependencies import (
@@ -31,9 +31,9 @@ from core.foundation.dependencies import (
     TenantMobileFaviconStorageServiceDep,
     TenantServiceDep,
 )
-from core.models import FloorCanvas
 from core.foundation.http.responses import CreatedResponse, SuccessResponse
 from core.foundation.infra.config import settings
+from core.models import FloorCanvas
 from core.models.transaction import Transaction
 from services.mongo_menu_service import MENU_COLLECTION, normalize_mongo_menu_categories
 from services.tenant_mobile_config_service import tenant_mobile_config_service
@@ -233,7 +233,9 @@ async def get_public_tables_overview(
         if prev is None or s.expires_at > prev:
             session_expires_by_ref[s.table_ref] = s.expires_at
 
-    canvas_result = await session.execute(select(FloorCanvas).where(FloorCanvas.tenant_id == tenant.id))
+    canvas_result = await session.execute(
+        select(FloorCanvas).where(FloorCanvas.tenant_id == tenant.id)
+    )
     canvases = list(canvas_result.scalars().all())
 
     overview_canvases: list[PublicFloorCanvasOverviewDTO] = []
