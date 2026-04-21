@@ -22,13 +22,13 @@ export const AppShell = ({
   sidebarAriaLabel = "Sidebar",
 }: AppShellProps): ReactElement => {
   return (
-    <div className={cn("flex flex-col min-h-screen bg-background-primary", className)}>
+    <div className={cn("flex h-svh min-h-0 flex-col bg-background-primary", className)}>
       {header && (
         <header className="flex-shrink-0 border-b border-border-default bg-surface-primary" role="banner">
           {header}
         </header>
       )}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex min-h-0 flex-1">
         {sidebar && sidebarPosition === "left" && (
           <aside
             className="flex min-h-0 flex-shrink-0 flex-col border-e border-border-default bg-surface-secondary"
@@ -38,7 +38,7 @@ export const AppShell = ({
             {sidebar}
           </aside>
         )}
-        <main className="flex-1 overflow-auto" role="main">
+        <main className="flex min-h-0 min-w-0 flex-1 flex-col" role="main">
           {children}
         </main>
         {sidebar && sidebarPosition === "right" && (

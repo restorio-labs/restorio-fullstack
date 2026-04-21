@@ -21,6 +21,13 @@
     "railAria": "Main navigation",
     "homeAria": "Home"
   },
+  "language": {
+    "switcherAria": "Language",
+    "optionEn": "English",
+    "optionPl": "Polski",
+    "optionEs": "Español",
+    "optionAr": "العربية"
+  },
   "order": {
     "invalidLinkTitle": "Invalid link",
     "invalidLinkDescription": "Scan the QR code again.",
@@ -44,7 +51,27 @@
     "notePlaceholder": "e.g. no onions, extra sauce…",
     "payProcessing": "Processing...",
     "payButton": "Pay {{amount}} {{currency}}",
-    "paymentFailed": "Payment could not be processed. Please try again."
+    "paymentFailed": "Payment could not be processed. Please try again.",
+    "invoice": {
+      "wantInvoice": "I need a VAT invoice (Faktura)",
+      "companyNameLabel": "Company name",
+      "companyNamePlaceholder": "Company Ltd.",
+      "companyNameRequired": "Company name is required",
+      "nipLabel": "NIP (Tax ID)",
+      "nipPlaceholder": "1234567890",
+      "nipRequired": "NIP is required",
+      "nipInvalid": "Enter a valid NIP number",
+      "streetLabel": "Street address",
+      "streetPlaceholder": "ul. Example 123/4",
+      "streetRequired": "Street address is required",
+      "cityLabel": "City",
+      "cityPlaceholder": "Warsaw",
+      "cityRequired": "City is required",
+      "postalCodeLabel": "Postal code",
+      "postalCodePlaceholder": "00-000",
+      "postalCodeRequired": "Postal code is required",
+      "postalCodeInvalid": "Enter a valid postal code (XX-XXX)"
+    }
   },
   "cart": {
     "empty": "Your cart is empty. Add items from the menu.",
@@ -56,7 +83,11 @@
   },
   "menuItem": {
     "addAria": "Add {{name}}",
-    "removeAria": "Remove {{name}}"
+    "removeAria": "Remove {{name}}",
+    "openDetailsAria": "View details: {{name}}",
+    "closeDetailsModal": "Close",
+    "tapForDescription": "Tap for full description",
+    "noDescription": "No description was added for this item."
   },
   "root": {
     "noRestaurantTitle": "No restaurant yet",
@@ -80,7 +111,10 @@
     "statusClosed": "Closed",
     "noLayoutTitle": "No floor layout",
     "noLayoutDescription": "This restaurant has not published a table layout yet.",
-    "listTitle": "All tables"
+    "listTitle": "All tables",
+    "reservedModalTitle": "Table in use",
+    "reservedModalBody": "This table is not available right now. We will refresh the layout when the countdown ends.",
+    "reservedCountdown": "{{time}} left"
   },
   "menuBrowse": {
     "back": "Back",

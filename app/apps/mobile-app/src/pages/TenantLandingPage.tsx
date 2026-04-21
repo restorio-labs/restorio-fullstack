@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { publicApi } from "../api/client";
+import { GuestBottomNav } from "../components/GuestBottomNav";
 import { useApplyPublicTenantPresentation } from "../hooks/useApplyPublicTenantPresentation";
 import { persistLastVisitedTenantPath } from "../lib/lastVisitedTenant";
 
@@ -31,7 +32,9 @@ export const TenantLandingPage = (): ReactElement => {
   if (!tenantSlug) {
     return (
       <div className="flex min-h-[100dvh] items-center justify-center p-4">
-        <EmptyState title={t("order.invalidLinkTitle")} description={t("order.invalidLinkDescription")} />
+        <div className="w-full max-w-md text-center">
+          <EmptyState title={t("order.invalidLinkTitle")} description={t("order.invalidLinkDescription")} />
+        </div>
       </div>
     );
   }
@@ -47,58 +50,59 @@ export const TenantLandingPage = (): ReactElement => {
   if (tenantQuery.isError || !tenantQuery.data) {
     return (
       <div className="flex min-h-[100dvh] items-center justify-center p-4">
-        <EmptyState
-          title={t("order.loadErrorTitle")}
-          description={t("order.loadErrorDescription")}
-          action={
-            <Button variant="primary" onClick={() => window.location.reload()}>
-              {t("order.reload")}
-            </Button>
-          }
-        />
+        <div className="w-full max-w-md text-center">
+          <EmptyState
+            title={t("order.loadErrorTitle")}
+            description={t("order.loadErrorDescription")}
+            action={
+              <Button variant="primary" onClick={() => window.location.reload()}>
+                {t("order.reload")}
+              </Button>
+            }
+          />
+        </div>
       </div>
     );
   }
 
-  const data = tenantQuery.data;
+  const { data } = tenantQuery;
   const lc = data.landingContent;
   const displayName = data.pageTitle?.trim() ? data.pageTitle : data.name;
   const headline = lc?.headline?.trim() ? lc.headline : displayName;
   const subtitle = lc?.subtitle?.trim() ? lc.subtitle : t("landing.defaultSubtitle");
+  const tablesCtaTrimmed = lc?.tablesCtaLabel?.trim();
+  const menuCtaTrimmed = lc?.menuCtaLabel?.trim();
+  const tablesCtaLabel = tablesCtaTrimmed ? tablesCtaTrimmed : t("landing.ctaTables");
+  const menuCtaLabel = menuCtaTrimmed ? menuCtaTrimmed : t("landing.ctaMenu");
 
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-background-primary px-4 pb-28 pt-8">
+    <div className="flex min-h-[100dvh] flex-col items-center bg-background-primary px-4 pb-28 pt-8">
       <header className="mx-auto w-full max-w-md text-center">
-        <Text as="h1" variant="h3" weight="bold" className="text-balance">
+        <Text as="h1" variant="h3" weight="bold" className="text-balance text-center">
           {headline}
         </Text>
-        <Text as="p" variant="body-md" className="mt-3 text-pretty text-text-secondary">
+        <Text as="p" variant="body-md" className="mt-3 text-pretty text-text-secondary text-center">
           {subtitle}
         </Text>
       </header>
 
       <div className="mx-auto mt-10 flex w-full max-w-md flex-col gap-3">
         <Button variant="primary" size="lg" fullWidth onClick={() => navigate(`/${tenantSlug}/tables`)}>
-          {lc?.tablesCtaLabel?.trim() || t("landing.ctaTables")}
+          {tablesCtaLabel}
         </Button>
         <Button variant="secondary" size="lg" fullWidth onClick={() => navigate(`/${tenantSlug}/menu`)}>
-          {lc?.menuCtaLabel?.trim() || t("landing.ctaMenu")}
+          {menuCtaLabel}
         </Button>
       </div>
 
-      <nav
-        className="fixed bottom-0 left-0 right-0 border-t border-border-default bg-surface-primary/95 px-4 py-3 backdrop-blur-sm"
-        aria-label={t("landing.quickNavAria")}
-      >
-        <div className="mx-auto flex max-w-md justify-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => navigate(`/${tenantSlug}/tables`)}>
-            {t("landing.navTables")}
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => navigate(`/${tenantSlug}/menu`)}>
-            {t("landing.navMenu")}
-          </Button>
-        </div>
-      </nav>
+      <GuestBottomNav ariaLabel={t("landing.quickNavAria")}>
+        <Button variant="ghost" size="sm" onClick={() => navigate(`/${tenantSlug}/tables`)}>
+          {t("landing.navTables")}
+        </Button>
+        <Button variant="ghost" size="sm" onClick={() => navigate(`/${tenantSlug}/menu`)}>
+          {t("landing.navMenu")}
+        </Button>
+      </GuestBottomNav>
     </div>
   );
 };

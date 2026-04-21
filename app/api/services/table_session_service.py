@@ -434,6 +434,26 @@ class TableSessionService:
         table_session.last_seen_at = datetime.now(UTC)
         await session.flush()
 
+    async def list_table_refs_with_active_kitchen_orders(
+        self,
+        db: AsyncIOMotorDatabase,
+        *,
+        tenant_public_id: str,
+    ) -> set[str]:
+        cursor = db[_KITCHEN_ORDERS_COLLECTION].find(
+            {
+                "restaurantId": tenant_public_id,
+                "status": {"$in": list(_ACTIVE_WAITER_STATUSES)},
+            },
+            {"tableId": 1},
+        )
+        refs: set[str] = set()
+        async for doc in cursor:
+            tid = doc.get("tableId")
+            if isinstance(tid, str) and tid.strip() != "":
+                refs.add(tid)
+        return refs
+
     async def _has_active_waiter_order(
         self,
         db: AsyncIOMotorDatabase,

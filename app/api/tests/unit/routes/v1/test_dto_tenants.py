@@ -70,6 +70,15 @@ class TestUpdateTenantDTO:
         assert dto.slug is None
         assert dto.status is None
 
+    def test_slug_none_stays_none(self) -> None:
+        dto = UpdateTenantDTO(slug=None)
+        assert dto.slug is None
+
+    def test_slug_explicit_none_via_model_validate(self) -> None:
+        dto = UpdateTenantDTO.model_validate({"slug": None, "name": "Only name"})
+        assert dto.slug is None
+        assert dto.name == "Only name"
+
     def test_partial_update_slug_only(self) -> None:
         dto = UpdateTenantDTO(slug="Żółć-updated")
         assert dto.name is None

@@ -9,7 +9,7 @@ import {
   type Tenant,
   type TenantMenu,
 } from "@restorio/types";
-import { Button, FloorCanvas, Modal, useI18n, useMediaQuery, useToast, cn } from "@restorio/ui";
+import { Button, Checkbox, FloorCanvas, Input, Modal, useI18n, useMediaQuery, useToast, cn } from "@restorio/ui";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -189,6 +189,27 @@ export const FloorRuntimeView = ({
   const [tableOrderItems, setTableOrderItems] = useState<Record<string, OrderedRuntimeItem[]>>({});
   const [tableOrderNotes, setTableOrderNotes] = useState<Record<string, string>>({});
   const [tableOrderIds, setTableOrderIds] = useState<Record<string, string>>({});
+
+  const [wantsInvoice, setWantsInvoice] = useState(false);
+  const [invoiceCompanyName, setInvoiceCompanyName] = useState("");
+  const [invoiceNip, setInvoiceNip] = useState("");
+  const [invoiceStreet, setInvoiceStreet] = useState("");
+  const [invoiceCity, setInvoiceCity] = useState("");
+  const [invoicePostalCode, setInvoicePostalCode] = useState("");
+  const [invoiceNipError, setInvoiceNipError] = useState("");
+  const [invoicePostalCodeError, setInvoicePostalCodeError] = useState("");
+
+  const resetInvoiceForm = useCallback(() => {
+    setWantsInvoice(false);
+    setInvoiceCompanyName("");
+    setInvoiceNip("");
+    setInvoiceStreet("");
+    setInvoiceCity("");
+    setInvoicePostalCode("");
+    setInvoiceNipError("");
+    setInvoicePostalCodeError("");
+  }, []);
+
   const hasCanvases = venue.floorCanvases.length > 0;
 
   const activeCanvas = hasCanvases
@@ -1270,15 +1291,16 @@ export const FloorRuntimeView = ({
         isOpen={isUnlockModalOpen}
         onClose={() => {
           setIsUnlockModalOpen(false);
+          resetInvoiceForm();
         }}
         title={
           isSelectedTableRejected
             ? t("waiterDashboard.handleRejectionModalTitle")
             : t("waiterDashboard.confirmPaymentModalTitle")
         }
-        size="sm"
+        size="md"
       >
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4">
           <p className="text-sm text-text-secondary">
             {isSelectedTableRejected
               ? t("waiterDashboard.handleRejectionModalDescription")
@@ -1286,12 +1308,69 @@ export const FloorRuntimeView = ({
                 ? t("waiterDashboard.unlockMobileTableDescription")
                 : t("waiterDashboard.confirmPaymentModalDescription")}
           </p>
+
+          {!isSelectedTableRejected && !selectedTableLockedByMobile && (
+            <>
+              <Checkbox
+                label={t("waiterDashboard.invoice.wantInvoice")}
+                checked={wantsInvoice}
+                onChange={(e) => setWantsInvoice(e.target.checked)}
+              />
+
+              {wantsInvoice && (
+                <div className="flex flex-col gap-3 rounded-lg border border-border-default bg-surface-secondary p-3">
+                  <Input
+                    label={t("waiterDashboard.invoice.companyNameLabel")}
+                    placeholder={t("waiterDashboard.invoice.companyNamePlaceholder")}
+                    value={invoiceCompanyName}
+                    onChange={(e) => setInvoiceCompanyName(e.target.value)}
+                  />
+                  <Input
+                    label={t("waiterDashboard.invoice.nipLabel")}
+                    placeholder={t("waiterDashboard.invoice.nipPlaceholder")}
+                    value={invoiceNip}
+                    onChange={(e) => {
+                      setInvoiceNip(e.target.value);
+                      setInvoiceNipError("");
+                    }}
+                    error={invoiceNipError}
+                  />
+                  <Input
+                    label={t("waiterDashboard.invoice.streetLabel")}
+                    placeholder={t("waiterDashboard.invoice.streetPlaceholder")}
+                    value={invoiceStreet}
+                    onChange={(e) => setInvoiceStreet(e.target.value)}
+                  />
+                  <div className="grid grid-cols-2 gap-3">
+                    <Input
+                      label={t("waiterDashboard.invoice.postalCodeLabel")}
+                      placeholder={t("waiterDashboard.invoice.postalCodePlaceholder")}
+                      value={invoicePostalCode}
+                      onChange={(e) => {
+                        setInvoicePostalCode(e.target.value);
+                        setInvoicePostalCodeError("");
+                      }}
+                      error={invoicePostalCodeError}
+                    />
+                    <Input
+                      label={t("waiterDashboard.invoice.cityLabel")}
+                      placeholder={t("waiterDashboard.invoice.cityPlaceholder")}
+                      value={invoiceCity}
+                      onChange={(e) => setInvoiceCity(e.target.value)}
+                    />
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
           <div className="flex justify-end gap-3">
             <Button
               type="button"
               variant="secondary"
               onClick={() => {
                 setIsUnlockModalOpen(false);
+                resetInvoiceForm();
               }}
             >
               {t("waiterDashboard.confirmPaymentModalCancel")}
@@ -1302,6 +1381,7 @@ export const FloorRuntimeView = ({
               onClick={() => {
                 void handleConfirmPayment();
                 setIsUnlockModalOpen(false);
+                resetInvoiceForm();
               }}
             >
               {t("waiterDashboard.confirmPaymentModalConfirm")}

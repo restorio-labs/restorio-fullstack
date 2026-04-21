@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   LAST_VISITED_TENANT_PATH_KEY,
@@ -29,15 +29,11 @@ const createMemoryLocalStorage = (): Storage => {
 
 describe("lastVisitedTenant", () => {
   beforeEach(() => {
-    Object.defineProperty(window, "localStorage", {
-      value: createMemoryLocalStorage(),
-      configurable: true,
-      writable: true,
-    });
+    vi.stubGlobal("window", { localStorage: createMemoryLocalStorage() });
   });
 
   afterEach(() => {
-    window.localStorage.removeItem(LAST_VISITED_TENANT_PATH_KEY);
+    vi.unstubAllGlobals();
   });
 
   it("readLastVisitedTenantPath returns null when unset", () => {

@@ -1,10 +1,12 @@
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from unittest.mock import Mock, patch
 
 from fastapi import Request  # pyright: ignore[reportMissingImports]
+import jwt
 import pytest  # pyright: ignore[reportMissingImports]
 
 from core.exceptions import UnauthorizedError
+from core.foundation.infra.config import settings
 from core.foundation.security import (
     SecurityService,
     get_current_user,
@@ -76,6 +78,16 @@ class TestDecodeAccessToken:
         malformed_token = "not.a.valid.jwt.token"
         with pytest.raises(UnauthorizedError):
             service.decode_access_token(malformed_token)
+
+    def test_decode_expired_token_raises(self) -> None:
+        service = SecurityService()
+        expired = jwt.encode(
+            {"sub": "u1", "exp": datetime.now(UTC) - timedelta(minutes=5)},
+            settings.SECRET_KEY,
+            algorithm=settings.ALGORITHM,
+        )
+        with pytest.raises(UnauthorizedError):
+            service.decode_access_token(expired)
 
     def test_decode_access_token_handles_unexpected_exception(self) -> None:
         service = SecurityService()

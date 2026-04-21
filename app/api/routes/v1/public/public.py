@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -6,7 +6,6 @@ from fastapi import APIRouter, Request, Response, status
 from sqlalchemy import select
 
 from core.dto.v1.menus import TenantMenuResponseDTO
-from core.dto.v1.tenants.mobile_config import MobileLandingContentDTO
 from core.dto.v1.public import (
     PublicAcquireTableSessionDTO,
     PublicCreateOrderPaymentDTO,
@@ -20,6 +19,7 @@ from core.dto.v1.public import (
     PublicTablesOverviewResponseDTO,
     PublicTenantInfoResponseDTO,
 )
+from core.dto.v1.tenants.mobile_config import MobileLandingContentDTO
 from core.exceptions import BadRequestError, NotFoundResponse
 from core.foundation.client_ip import get_client_ip
 from core.foundation.dependencies import (
@@ -31,14 +31,16 @@ from core.foundation.dependencies import (
     TenantMobileFaviconStorageServiceDep,
     TenantServiceDep,
 )
-from core.models import FloorCanvas
 from core.foundation.http.responses import CreatedResponse, SuccessResponse
 from core.foundation.infra.config import settings
+from core.models import FloorCanvas
 from core.models.transaction import Transaction
 from services.mongo_menu_service import MENU_COLLECTION, normalize_mongo_menu_categories
 from services.tenant_mobile_config_service import tenant_mobile_config_service
 
 router = APIRouter()
+
+_KITCHEN_RESERVE_FALLBACK = timedelta(seconds=90)
 
 _ORDERS_COLLECTION = "orders"
 
@@ -215,12 +217,25 @@ async def get_public_tables_overview(
     session: PostgresSession,
     tenant_service: TenantServiceDep,
     table_session_service: TableSessionServiceDep,
+    db: MongoDB,
 ) -> SuccessResponse[PublicTablesOverviewResponseDTO]:
     tenant = await tenant_service.get_tenant_by_slug(session, tenant_slug)
     active_sessions = await table_session_service.list_active_sessions(session, tenant.id)
-    locked_refs = {s.table_ref for s in active_sessions}
+    busy_kitchen_refs = await table_session_service.list_table_refs_with_active_kitchen_orders(
+        db,
+        tenant_public_id=tenant.public_id,
+    )
+    locked_refs = {s.table_ref for s in active_sessions} | busy_kitchen_refs
 
-    canvas_result = await session.execute(select(FloorCanvas).where(FloorCanvas.tenant_id == tenant.id))
+    session_expires_by_ref: dict[str, datetime] = {}
+    for s in active_sessions:
+        prev = session_expires_by_ref.get(s.table_ref)
+        if prev is None or s.expires_at > prev:
+            session_expires_by_ref[s.table_ref] = s.expires_at
+
+    canvas_result = await session.execute(
+        select(FloorCanvas).where(FloorCanvas.tenant_id == tenant.id)
+    )
     canvases = list(canvas_result.scalars().all())
 
     overview_canvases: list[PublicFloorCanvasOverviewDTO] = []
@@ -242,6 +257,13 @@ async def get_public_tables_overview(
             seats = seats_raw if isinstance(seats_raw, int) else None
             rotation = _coerce_float(raw["rotation"]) if "rotation" in raw else None
 
+            is_closed = tid in locked_refs
+            reserved_until: datetime | None = None
+            if is_closed:
+                reserved_until = session_expires_by_ref.get(tid)
+                if reserved_until is None:
+                    reserved_until = datetime.now(UTC) + _KITCHEN_RESERVE_FALLBACK
+
             tables.append(
                 PublicFloorTableStatusDTO(
                     id=tid,
@@ -253,7 +275,8 @@ async def get_public_tables_overview(
                     h=_coerce_float(raw.get("h")) or 1.0,
                     rotation=rotation,
                     seats=seats,
-                    status="closed" if tid in locked_refs else "open",
+                    status="closed" if is_closed else "open",
+                    reserved_until=reserved_until,
                 )
             )
 
@@ -401,6 +424,17 @@ async def create_public_order_payment(
         client_fingerprint=_extract_client_fingerprint(http_request),
     )
 
+    invoice_dict: dict[str, Any] | None = None
+    if request.invoice_data:
+        invoice_dict = {
+            "companyName": request.invoice_data.company_name,
+            "nip": request.invoice_data.nip,
+            "street": request.invoice_data.street,
+            "city": request.invoice_data.city,
+            "postalCode": request.invoice_data.postal_code,
+            "country": request.invoice_data.country,
+        }
+
     order_dict: dict[str, Any] = {
         "tableNumber": request.table_number,
         "tableRef": table_session.table_ref,
@@ -414,6 +448,7 @@ async def create_public_order_payment(
             for item in request.items
         ],
         "note": request.note,
+        "invoiceData": invoice_dict,
     }
 
     description = f"Zamówienie - stolik {request.table_number} - {tenant.name}"
@@ -460,7 +495,7 @@ async def create_public_order_payment(
         raise BadRequestError(message="Payment registration failed - no token received")
 
     now = datetime.now(UTC)
-    mongo_order = {
+    mongo_order: dict[str, Any] = {
         "tenantPublicId": tenant.public_id,
         "tenantSlug": tenant.slug,
         "tableNumber": request.table_number,
@@ -474,6 +509,8 @@ async def create_public_order_payment(
         "note": request.note,
         "createdAt": now,
     }
+    if invoice_dict:
+        mongo_order["invoiceData"] = invoice_dict
     await db[_ORDERS_COLLECTION].insert_one(mongo_order)
 
     base_url = settings.PRZELEWY24_API_URL.replace("/api/v1", "")

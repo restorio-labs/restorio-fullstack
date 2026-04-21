@@ -1,16 +1,16 @@
-import type { PublicTenantInfo, TenantMenu } from "@restorio/types";
+import type { InvoiceData, PublicTenantInfo, TenantMenu } from "@restorio/types";
 import { Button, EmptyState, Loader, Text, useI18n } from "@restorio/ui";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { type ReactElement, useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { publicApi } from "../api/client";
-import { useApplyPublicTenantPresentation } from "../hooks/useApplyPublicTenantPresentation";
-import { persistLastVisitedTenantPath } from "../lib/lastVisitedTenant";
 import { CartSummary } from "../features/order/components/CartSummary";
 import { CheckoutForm } from "../features/order/components/CheckoutForm";
 import { MenuCategorySection } from "../features/order/components/MenuCategorySection";
 import { useCart } from "../features/order/hooks/useCart";
+import { useApplyPublicTenantPresentation } from "../hooks/useApplyPublicTenantPresentation";
+import { persistLastVisitedTenantPath } from "../lib/lastVisitedTenant";
 
 const extractApiErrorMessage = (error: unknown, fallback: string): string => {
   if (typeof error === "object" && error !== null && "response" in error) {
@@ -56,7 +56,7 @@ export const OrderPage = (): ReactElement => {
   }, [tenantSlug]);
 
   const paymentMutation = useMutation({
-    mutationFn: (data: { email: string; note: string }) =>
+    mutationFn: (data: { email: string; note: string; invoiceData?: InvoiceData }) =>
       publicApi.createOrderPayment({
         tenantSlug: tenantSlug!,
         tableNumber: tableNum,
@@ -68,6 +68,7 @@ export const OrderPage = (): ReactElement => {
           unitPrice: item.unitPrice,
         })),
         note: data.note || undefined,
+        invoiceData: data.invoiceData,
       }),
     onSuccess: (data) => {
       if (lockStorageKey) {
@@ -81,9 +82,9 @@ export const OrderPage = (): ReactElement => {
   });
 
   const handleCheckout = useCallback(
-    (email: string, note: string) => {
+    (email: string, note: string, invoiceData?: InvoiceData) => {
       setSubmitError("");
-      paymentMutation.mutate({ email, note });
+      paymentMutation.mutate({ email, note, invoiceData });
     },
     [paymentMutation],
   );
@@ -95,7 +96,9 @@ export const OrderPage = (): ReactElement => {
   if (!tenantSlug || isNaN(tableNum)) {
     return (
       <div className="flex min-h-screen items-center justify-center p-4">
-        <EmptyState title={t("order.invalidLinkTitle")} description={t("order.invalidLinkDescription")} />
+        <div className="w-full max-w-md text-center">
+          <EmptyState title={t("order.invalidLinkTitle")} description={t("order.invalidLinkDescription")} />
+        </div>
       </div>
     );
   }
@@ -108,7 +111,7 @@ export const OrderPage = (): ReactElement => {
       <div className="flex min-h-screen items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <Loader size="lg" />
-          <Text as="p" variant="body-sm" className="text-text-secondary">
+          <Text as="p" variant="body-sm" className="text-center text-text-secondary">
             {t("order.loadingMenu")}
           </Text>
         </div>
@@ -119,15 +122,17 @@ export const OrderPage = (): ReactElement => {
   if (isError) {
     return (
       <div className="flex min-h-screen items-center justify-center p-4">
-        <EmptyState
-          title={t("order.loadErrorTitle")}
-          description={t("order.loadErrorDescription")}
-          action={
-            <Button variant="primary" onClick={() => window.location.reload()}>
-              {t("order.reload")}
-            </Button>
-          }
-        />
+        <div className="w-full max-w-md text-center">
+          <EmptyState
+            title={t("order.loadErrorTitle")}
+            description={t("order.loadErrorDescription")}
+            action={
+              <Button variant="primary" onClick={() => window.location.reload()}>
+                {t("order.reload")}
+              </Button>
+            }
+          />
+        </div>
       </div>
     );
   }
@@ -139,19 +144,21 @@ export const OrderPage = (): ReactElement => {
   const currency = t("common.currency");
 
   return (
-    <div className="flex min-h-screen flex-col bg-background-primary">
-      <header className="sticky top-0 z-10 border-b border-border-default bg-surface-primary px-4 py-3 text-center">
-        <Text as="h1" variant="h4" weight="bold" className="truncate">
+    <div className="flex min-h-screen flex-col items-center bg-background-primary">
+      <header className="sticky top-0 z-10 w-full border-b border-border-default bg-surface-primary px-4 py-4 text-center">
+        <Text as="h1" variant="h2" weight="bold" align="center" className="text-balance">
           {displayName}
         </Text>
-        <Text as="p" variant="body-sm" className="text-text-secondary">
+        <Text as="p" variant="body-lg" weight="medium" align="center" className="mt-1 text-pretty text-text-secondary">
           {t("order.tableLabel", { number: String(tableNum) })}
         </Text>
       </header>
 
-      <main className="flex-1 px-4 py-4">
+      <main className="w-full max-w-2xl flex-1 px-4 py-4">
         {categories.length === 0 ? (
-          <EmptyState title={t("order.emptyMenuTitle")} description={t("order.emptyMenuDescription")} />
+          <div className="mx-auto max-w-md text-center">
+            <EmptyState title={t("order.emptyMenuTitle")} description={t("order.emptyMenuDescription")} />
+          </div>
         ) : (
           categories.map((category) => (
             <MenuCategorySection
@@ -166,46 +173,50 @@ export const OrderPage = (): ReactElement => {
       </main>
 
       {cart.totalItems > 0 && (
-        <div className="sticky bottom-0 z-10 border-t border-border-default bg-surface-primary px-4 py-3">
-          <Button variant="primary" size="lg" fullWidth onClick={scrollToCheckout}>
-            {t("order.cartButton", {
-              count: String(cart.totalItems),
-              amount: cart.totalAmount.toFixed(2),
-              currency,
-            })}
-          </Button>
+        <div className="sticky bottom-0 z-10 w-full border-t border-border-default bg-surface-primary px-4 py-3">
+          <div className="mx-auto w-full max-w-2xl">
+            <Button variant="primary" size="lg" fullWidth onClick={scrollToCheckout}>
+              {t("order.cartButton", {
+                count: String(cart.totalItems),
+                amount: cart.totalAmount.toFixed(2),
+                currency,
+              })}
+            </Button>
+          </div>
         </div>
       )}
 
       {cart.items.length > 0 && (
-        <div ref={checkoutRef} className="border-t border-border-default bg-surface-secondary px-4 py-6">
-          <Text as="h2" variant="h4" weight="semibold" className="mb-4 text-center">
-            {t("order.summaryTitle")}
-          </Text>
+        <div ref={checkoutRef} className="w-full border-t border-border-default bg-surface-secondary px-4 py-6">
+          <div className="mx-auto w-full max-w-2xl">
+            <Text as="h2" variant="h4" weight="semibold" className="mb-4 text-center">
+              {t("order.summaryTitle")}
+            </Text>
 
-          <CartSummary
-            items={cart.items}
-            totalAmount={cart.totalAmount}
-            onRemove={cart.removeItem}
-            onUpdateQuantity={cart.updateQuantity}
-          />
-
-          <div className="mt-4">
-            <CheckoutForm
+            <CartSummary
+              items={cart.items}
               totalAmount={cart.totalAmount}
-              disabled={cart.items.length === 0}
-              isSubmitting={paymentMutation.isPending}
-              onSubmit={handleCheckout}
+              onRemove={cart.removeItem}
+              onUpdateQuantity={cart.updateQuantity}
             />
-          </div>
 
-          {submitError && (
-            <div className="mt-3 rounded-lg bg-status-error-bg p-3">
-              <Text as="p" variant="body-sm" className="text-status-error-text">
-                {submitError}
-              </Text>
+            <div className="mt-4">
+              <CheckoutForm
+                totalAmount={cart.totalAmount}
+                disabled={cart.items.length === 0}
+                isSubmitting={paymentMutation.isPending}
+                onSubmit={handleCheckout}
+              />
             </div>
-          )}
+
+            {submitError && (
+              <div className="mt-3 rounded-lg bg-status-error-bg p-3 text-center">
+                <Text as="p" variant="body-sm" className="text-status-error-text">
+                  {submitError}
+                </Text>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

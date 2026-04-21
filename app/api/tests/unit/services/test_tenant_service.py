@@ -5,7 +5,8 @@ from uuid import uuid4
 
 import pytest
 
-from core.dto.v1.tenants import CreateTenantDTO
+from core.dto.v1.tenants import CreateTenantDTO, UpdateTenantDTO
+from core.exceptions import NotFoundResponse
 from core.models.enums import AccountType, TenantStatus
 from core.models.tenant import Tenant
 from core.models.tenant_role import TenantRole
@@ -146,3 +147,115 @@ async def test_create_tenant_normalizes_slug_diacritics() -> None:
     tenant = await service.create_tenant(session, dto, owner_id)
 
     assert tenant.slug == "zazolc-gesla-jazn"
+
+
+def _session_scalar_result(value: object | None) -> object:
+    class _R:
+        def __init__(self, v: object | None) -> None:
+            self._v = v
+
+        def scalar_one_or_none(self) -> object | None:
+            return self._v
+
+    class _Sess:
+        def __init__(self) -> None:
+            self.deleted: list[object] = []
+            self.execute = AsyncMock(side_effect=self._exec)
+            self.commit = AsyncMock()
+            self.refresh = AsyncMock()
+            self.delete = AsyncMock(side_effect=self._record_delete)
+
+        async def _record_delete(self, o: object) -> None:
+            self.deleted.append(o)
+
+        async def _exec(self, _q: object) -> _R:
+            return _R(self._expected)
+
+    s = _Sess()
+    s._expected = value  # type: ignore[attr-defined]
+    return s
+
+
+@pytest.mark.asyncio
+async def test_get_tenant_found() -> None:
+    t = Tenant(id=uuid4(), name="A", slug="a", status=TenantStatus.ACTIVE)
+    session = _session_scalar_result(t)
+    out = await TenantService().get_tenant(session, t.id)  # type: ignore[arg-type]
+    assert out is t
+
+
+@pytest.mark.asyncio
+async def test_get_tenant_404() -> None:
+    tid = uuid4()
+    session = _session_scalar_result(None)
+    with pytest.raises(NotFoundResponse):
+        await TenantService().get_tenant(session, tid)  # type: ignore[arg-type]
+
+
+@pytest.mark.asyncio
+async def test_get_tenant_by_public_id() -> None:
+    t = Tenant(id=uuid4(), name="A", slug="a", status=TenantStatus.ACTIVE)
+    session = _session_scalar_result(t)
+    out = await TenantService().get_tenant_by_public_id(session, t.public_id)  # type: ignore[arg-type]
+    assert out is t
+
+
+@pytest.mark.asyncio
+async def test_get_tenant_by_public_id_404() -> None:
+    session = _session_scalar_result(None)
+    with pytest.raises(NotFoundResponse):
+        await TenantService().get_tenant_by_public_id(session, "missing")  # type: ignore[arg-type]
+
+
+@pytest.mark.asyncio
+async def test_get_tenant_by_slug() -> None:
+    t = Tenant(id=uuid4(), name="A", slug="a", status=TenantStatus.ACTIVE)
+    session = _session_scalar_result(t)
+    out = await TenantService().get_tenant_by_slug(session, t.slug)  # type: ignore[arg-type]
+    assert out is t
+
+
+@pytest.mark.asyncio
+async def test_get_tenant_by_slug_404() -> None:
+    session = _session_scalar_result(None)
+    with pytest.raises(NotFoundResponse):
+        await TenantService().get_tenant_by_slug(session, "nope")  # type: ignore[arg-type]
+
+
+@pytest.mark.asyncio
+async def test_update_tenant_and_delete() -> None:
+    t = Tenant(
+        id=uuid4(), name="Old", slug="old", status=TenantStatus.ACTIVE, public_id="pub", owner_id=uuid4()
+    )
+    t.created_at = datetime.now(UTC)
+    t.floor_canvases = []
+    for attr in (
+        "active_layout_version_id",
+    ):
+        setattr(t, attr, None)
+    session = _session_scalar_result(t)
+    svc = TenantService()
+    layout_id = uuid4()
+    u = UpdateTenantDTO(
+        name="N",
+        slug="new-slug",
+        status=TenantStatus.ACTIVE,
+        activeLayoutVersionId=layout_id,
+    )
+    out = await svc.update_tenant(session, t.id, u)  # type: ignore[arg-type]
+    assert out.name == "N"
+    assert out.slug == "new-slug"
+    assert out.active_layout_version_id == layout_id
+    session.commit.assert_awaited_once()  # type: ignore[union-attr]
+
+    s2 = _session_scalar_result(t)
+    await svc.delete_tenant(s2, t.id)  # type: ignore[arg-type]
+    s2.delete.assert_awaited_once_with(t)  # type: ignore[union-attr]
+    s2.commit.assert_awaited()  # type: ignore[union-attr]
+
+
+@pytest.mark.asyncio
+async def test_delete_tenant_not_found() -> None:
+    session = _session_scalar_result(None)
+    with pytest.raises(NotFoundResponse):
+        await TenantService().delete_tenant(session, uuid4())  # type: ignore[arg-type]

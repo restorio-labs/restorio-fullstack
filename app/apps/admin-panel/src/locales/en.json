@@ -227,13 +227,28 @@
       "pageTitle": "Browser title",
       "favicon": "Favicon (.ico)",
       "backgroundColor": "Background color",
+      "primaryButtonBackground": "Primary button — background",
+      "primaryButtonText": "Primary button — label color",
+      "secondaryButtonBackground": "Secondary button — background",
+      "secondaryButtonText": "Secondary button — label color",
+      "textPrimary": "Text — primary",
+      "textSecondary": "Text — secondary",
+      "textTertiary": "Text — tertiary / muted",
+      "borderDefault": "Borders — default",
+      "surfacePrimary": "Surfaces — primary (cards, inputs)",
+      "surfaceSecondary": "Surfaces — secondary (sections)",
+      "promotedBadgeBackground": "Promoted item badge — background",
+      "promotedBadgeText": "Promoted item badge — label",
+      "promotedBadgeBorder": "Promoted item badge — border",
       "googleFontUrl": "Google Font URL",
       "landingHeadline": "Landing headline",
       "landingSubtitle": "Landing subtitle",
       "tablesCtaLabel": "Tables button label",
       "menuCtaLabel": "Menu button label",
       "openStatusLabel": "“Open” table label",
-      "closedStatusLabel": "“Closed” table label"
+      "closedStatusLabel": "“Closed” table label",
+      "uiLocale": "Guest app language",
+      "uiLocaleBrowserDefault": "Browser default"
     },
     "placeholders": {
       "pageTitle": "Leave empty to use restaurant name"
@@ -241,18 +256,103 @@
     "hints": {
       "pageTitle": "Shown in the mobile browser tab and header when set.",
       "favicon": "ICO only. Image must be exactly 16×16, 32×32, 64×64, or 128×128 pixels.",
+      "faviconPreviewAlt": "Favicon preview",
       "faviconCurrent": "A favicon is already configured. Upload a new file to replace it.",
       "faviconSelected": "Selected: {{name}}",
-      "backgroundColor": "Primary background color for the mobile app.",
+      "backgroundColor": "Background for the guest app in the selected appearance (light or dark).",
+      "themePersonalizationMode": "Changing this updates the preview to the same appearance so you can see your edits. Guests still follow their device theme unless the app forces a mode.",
+      "primaryButtonBackground": "Solid style used for main actions in the guest app.",
+      "primaryButtonText": "Label and icon color on primary (solid) buttons.",
+      "secondaryButtonBackground": "Solid style used for secondary actions.",
+      "secondaryButtonText": "Label color on secondary solid buttons.",
+      "textPrimary": "Main body and heading text.",
+      "textSecondary": "Supporting text and descriptions.",
+      "textTertiary": "Hints, captions, and de-emphasized labels.",
+      "borderDefault": "Default borders and dividers between blocks.",
+      "surfacePrimary": "Raised panels, cards, and primary content areas.",
+      "surfaceSecondary": "Grouped sections and subtle backgrounds.",
+      "promotedBadgeBackground": "Badge behind “promoted” / chef’s pick labels on menu and order items.",
+      "promotedBadgeText": "Text color on the promoted badge.",
+      "promotedBadgeBorder": "Border around the badge for contrast.",
       "googleFontUrl": "Paste the full URL from Google Fonts.",
-      "googleFontUrlTooltip": "Go to fonts.google.com, select a font, and copy the embed URL."
+      "googleFontUrlTooltip": "Go to fonts.google.com, select a font, and copy the embed URL.",
+      "uiLocale": "When set, the guest app uses this language for all built-in text (tables page, navigation, system labels). Leave on “Browser default” to follow the guest’s device language."
     },
     "landingSection": {
       "title": "Landing & guest pages",
       "hint": "Shown on the restaurant home link before guests scan a table QR. Leave fields empty to use app defaults."
     },
     "themeSection": {
-      "title": "Theme customization"
+      "title": "Theme customization",
+      "editTargetLabel": "Customize colors for",
+      "editLight": "Light appearance",
+      "editDark": "Dark appearance",
+      "primaryButton": "Primary button",
+      "secondaryButton": "Secondary button",
+      "surfacesTextAndBorders": "Surfaces, text, and borders",
+      "promotedBadge": "Promoted menu badge"
+    },
+    "preview": {
+      "title": "Guest app preview",
+      "hint": "Sample screens; controls are inactive. Table and order views use placeholder content.",
+      "screenLabel": "Screen",
+      "appearanceFollowsEditor": "Preview appearance matches “Customize colors for” above (light or dark).",
+      "themeLabel": "Appearance",
+      "screens": {
+        "landing": "Home",
+        "tables": "Tables & layout",
+        "menu": "Menu",
+        "order": "Order at table"
+      },
+      "theme": {
+        "light": "Light",
+        "dark": "Dark",
+        "system": "Match browser"
+      },
+      "defaultSubtitle": "Browse the menu or check table availability before you sit down.",
+      "ctaTables": "Table availability & layout",
+      "ctaMenu": "View menu",
+      "navHome": "Home",
+      "navTables": "Tables",
+      "navMenu": "Menu",
+      "quickNavAria": "Quick navigation",
+      "openStatusFallback": "Open",
+      "closedStatusFallback": "Closed",
+      "tables": {
+        "back": "Back",
+        "subtitle": "Live availability from the floor plan",
+        "floorTitle": "Main floor",
+        "listTitle": "All tables",
+        "sampleOpen": "Table 4",
+        "sampleClosed": "Table 8"
+      },
+      "menu": {
+        "back": "Back",
+        "subtitle": "Browse dishes and prices",
+        "category": "Featured",
+        "promotedBadge": "Chef’s pick",
+        "item1Name": "House soup",
+        "item1Desc": "Seasonal vegetables, bread",
+        "item1Price": "18.00 PLN",
+        "item2Name": "Grilled trout",
+        "item2Price": "42.00 PLN"
+      },
+      "order": {
+        "tableCaption": "Table 3",
+        "cartButton": "Go to checkout · 2 items · 60.00 PLN",
+        "summaryTitle": "Order summary",
+        "category": "Featured",
+        "item1Name": "House soup",
+        "item1Price": "18.00 PLN",
+        "item2Name": "Grilled trout",
+        "item2Price": "42.00 PLN",
+        "subtotalLabel": "Subtotal",
+        "subtotalPrice": "60.00 PLN",
+        "serviceLabel": "Service fee",
+        "servicePrice": "3.00 PLN",
+        "totalLabel": "Total",
+        "totalPrice": "63.00 PLN"
+      }
     },
     "copySection": {
       "title": "Copy theme from another restaurant",

@@ -21,6 +21,13 @@
     "railAria": "التنقل الرئيسي",
     "homeAria": "الرئيسية"
   },
+  "language": {
+    "switcherAria": "اللغة",
+    "optionEn": "English",
+    "optionPl": "Polski",
+    "optionEs": "Español",
+    "optionAr": "العربية"
+  },
   "order": {
     "invalidLinkTitle": "رابط غير صالح",
     "invalidLinkDescription": "امسح رمز الاستجابة السريعة مرة أخرى.",
@@ -44,7 +51,27 @@
     "notePlaceholder": "مثلاً: بدون بصل، صلصة إضافية…",
     "payProcessing": "جارٍ المعالجة...",
     "payButton": "ادفع {{amount}} {{currency}}",
-    "paymentFailed": "تعذّرت معالجة الدفع. حاول مرة أخرى."
+    "paymentFailed": "تعذّرت معالجة الدفع. حاول مرة أخرى.",
+    "invoice": {
+      "wantInvoice": "أحتاج فاتورة ضريبية",
+      "companyNameLabel": "اسم الشركة",
+      "companyNamePlaceholder": "شركة مثال",
+      "companyNameRequired": "اسم الشركة مطلوب",
+      "nipLabel": "الرقم الضريبي (NIP)",
+      "nipPlaceholder": "1234567890",
+      "nipRequired": "الرقم الضريبي مطلوب",
+      "nipInvalid": "أدخل رقماً ضريبياً صالحاً",
+      "streetLabel": "العنوان",
+      "streetPlaceholder": "شارع مثال 123/4",
+      "streetRequired": "العنوان مطلوب",
+      "cityLabel": "المدينة",
+      "cityPlaceholder": "وارسو",
+      "cityRequired": "المدينة مطلوبة",
+      "postalCodeLabel": "الرمز البريدي",
+      "postalCodePlaceholder": "00-000",
+      "postalCodeRequired": "الرمز البريدي مطلوب",
+      "postalCodeInvalid": "أدخل رمزاً بريدياً صالحاً (XX-XXX)"
+    }
   },
   "cart": {
     "empty": "سلتك فارغة. أضف عناصر من القائمة.",
@@ -56,7 +83,11 @@
   },
   "menuItem": {
     "addAria": "إضافة {{name}}",
-    "removeAria": "إزالة {{name}}"
+    "removeAria": "إزالة {{name}}",
+    "openDetailsAria": "عرض التفاصيل: {{name}}",
+    "closeDetailsModal": "إغلاق",
+    "tapForDescription": "اضغط للوصف الكامل",
+    "noDescription": "لا يوجد وصف لهذا الصنف."
   },
   "root": {
     "noRestaurantTitle": "لا يوجد مطعم محفوظ",
@@ -80,7 +111,10 @@
     "statusClosed": "مشغول",
     "noLayoutTitle": "لا يوجد مخطط",
     "noLayoutDescription": "لم ينشر هذا المطعم مخطط طاولات بعد.",
-    "listTitle": "كل الطاولات"
+    "listTitle": "كل الطاولات",
+    "reservedModalTitle": "الطاولة مستخدمة",
+    "reservedModalBody": "الطاولة غير متاحة حاليًا. سنعيد تحديث المخطط بعد انتهاء العد التنازلي.",
+    "reservedCountdown": "متبقي {{time}}"
   },
   "menuBrowse": {
     "back": "رجوع",

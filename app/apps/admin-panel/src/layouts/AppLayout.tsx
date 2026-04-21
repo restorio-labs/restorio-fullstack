@@ -30,7 +30,9 @@ export const AppLayout = ({ children, header, footer, sidebar }: AppLayoutProps)
         {t("common.skipToContent")}
       </a>
       <AppShell header={header} footer={footer} sidebar={isDesktopUp ? sidebar : undefined} sidebarPosition="left">
-        <main id="main-content">{children}</main>
+        <div id="main-content" className="flex min-h-0 min-w-0 flex-1 flex-col">
+          {children}
+        </div>
       </AppShell>
 
       {!isDesktopUp && sidebar && (

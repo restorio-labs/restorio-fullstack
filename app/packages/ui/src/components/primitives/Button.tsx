@@ -13,9 +13,9 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-interactive-primary text-text-inverse hover:bg-interactive-primaryHover active:bg-interactive-primaryHover active:brightness-[0.92] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus [&_svg]:text-interactive-primaryIcon",
+    "bg-interactive-primary text-interactive-primaryForeground hover:bg-interactive-primaryHover active:bg-interactive-primaryHover active:brightness-[0.92] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus [&_svg]:text-interactive-primaryForeground",
   secondary:
-    "bg-interactive-secondary text-text-primary hover:bg-interactive-secondaryHover active:bg-interactive-secondaryActive focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus",
+    "bg-interactive-secondary text-interactive-secondaryForeground hover:bg-interactive-secondaryHover active:bg-interactive-secondaryActive focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus",
   danger:
     "bg-interactive-danger text-text-inverse hover:bg-interactive-dangerHover active:bg-interactive-dangerHover active:brightness-[0.92] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-interactive-danger-active, #b81e28)] [&_svg]:text-interactive-dangerIcon",
   ghost:

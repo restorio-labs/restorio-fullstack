@@ -27,7 +27,7 @@ export const CartSummary = ({ items, totalAmount, onRemove, onUpdateQuantity }: 
   return (
     <div className="rounded-lg border border-border-default bg-surface-primary">
       <div className="p-3">
-        <Text as="h3" variant="body-md" weight="semibold" className="mb-2">
+        <Text as="h3" variant="body-md" weight="semibold" className="mb-2 text-center">
           {t("cart.title")}
         </Text>
         <div className="flex flex-col gap-2">
@@ -73,7 +73,7 @@ export const CartSummary = ({ items, totalAmount, onRemove, onUpdateQuantity }: 
           ))}
         </div>
       </div>
-      <div className="flex items-center justify-between border-t border-border-default px-3 py-2">
+      <div className="flex items-center justify-between border-t border-border-default px-6 py-2">
         <Text as="span" variant="body-md" weight="semibold">
           {t("cart.total")}
         </Text>

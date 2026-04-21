@@ -283,7 +283,7 @@
     },
     "openSource": {
       "title": "Open Source",
-      "description": "Ten projekt powstał jako akademicki projekt inżynierski na NTNU. Kod źródłowy jest otwarty i zachęcamy do wkładu społeczności. Udostępniając technologię restauracyjną, dążymy do wspierania małych firm w ich transformacji cyfrowej."
+      "description": "Ten projekt powstał jako akademicki projekt inżynierski. Kod źródłowy jest otwarty i zachęcamy do wkładu społeczności. Udostępniając technologię restauracyjną, dążymy do wspierania małych firm w ich transformacji cyfrowej."
     },
     "problem": {
       "title": "Dlaczego to robimy?",
@@ -335,7 +335,7 @@
       "privacy": "Prywatność",
       "terms": "Warunki"
     },
-    "copyright": "© {year} Platforma Restorio. Akademicki Projekt Open Source."
+    "copyright": "© {year} Platforma Restorio. Akademicki Projekt  Source."
   },
   "legal": {
     "termsAndConditions": {

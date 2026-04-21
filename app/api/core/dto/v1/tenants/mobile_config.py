@@ -12,6 +12,21 @@ class MobileLandingContentDTO(BaseDTO):
     menu_cta_label: str | None = Field(None, max_length=120, alias="menuCtaLabel")
     open_status_label: str | None = Field(None, max_length=80, alias="openStatusLabel")
     closed_status_label: str | None = Field(None, max_length=80, alias="closedStatusLabel")
+    ui_locale: str | None = Field(None, max_length=5, alias="uiLocale")
+
+    @field_validator("ui_locale", mode="before")
+    @classmethod
+    def normalize_ui_locale(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        s = str(v).strip().lower()
+        if s == "":
+            return None
+        allowed = ("en", "pl", "es", "ar")
+        if s not in allowed:
+            msg = "uiLocale must be one of: en, pl, es, ar"
+            raise ValueError(msg)
+        return s
 
 
 class TenantMobileConfigResponseDTO(BaseDTO):

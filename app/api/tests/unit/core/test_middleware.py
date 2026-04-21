@@ -243,3 +243,14 @@ def test_is_origin_allowed_handles_none_and_restorio_hosts() -> None:
         is_origin_allowed("ftp://tenant.restorio.org", ["http://example.com"], debug=True) is False
     )
     assert is_origin_allowed("https://example.org", ["http://example.com"], debug=True) is False
+
+
+def test_is_origin_allowed_localhost_always_allowed() -> None:
+    assert is_origin_allowed("http://localhost:5000", [], debug=False) is True
+    assert is_origin_allowed("https://127.0.0.1:8080", [], debug=False) is True
+    assert is_origin_allowed("http://[::1]:3000", [], debug=False) is True
+
+
+def test_is_origin_allowed_restorio_org_root_domain() -> None:
+    assert is_origin_allowed("https://restorio.org", [], debug=True) is True
+    assert is_origin_allowed("http://restorio.org", [], debug=True) is True

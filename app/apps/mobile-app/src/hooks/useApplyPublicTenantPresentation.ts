@@ -1,13 +1,15 @@
 import type { PublicTenantInfo } from "@restorio/types";
-import { useTheme, type ThemeOverride } from "@restorio/ui";
+import { useI18n, useTheme, type ThemeOverride } from "@restorio/ui";
 import { useEffect } from "react";
 
 import { API_BASE_URL } from "../config";
+import { readStoredLocale, resolveInitialLocale, SUPPORTED_LOCALES, type SupportedLocale } from "../lib/i18n";
 
 const FAVICON_LINK_ID = "tenant-favicon";
 
 export const useApplyPublicTenantPresentation = (tenantData: PublicTenantInfo | undefined): void => {
   const { setOverride } = useTheme();
+  const { setLocale } = useI18n();
 
   useEffect(() => {
     if (!tenantData) {
@@ -50,4 +52,28 @@ export const useApplyPublicTenantPresentation = (tenantData: PublicTenantInfo | 
       setOverride(null);
     };
   }, [tenantData?.themeOverride, setOverride]);
+
+  useEffect(() => {
+    if (!tenantData) {
+      return;
+    }
+
+    const stored = readStoredLocale();
+
+    if (stored) {
+      setLocale(stored);
+
+      return;
+    }
+
+    const raw = tenantData.landingContent?.uiLocale?.trim().toLowerCase();
+
+    if (raw && SUPPORTED_LOCALES.includes(raw as SupportedLocale)) {
+      setLocale(raw);
+
+      return;
+    }
+
+    setLocale(resolveInitialLocale());
+  }, [tenantData, setLocale]);
 };

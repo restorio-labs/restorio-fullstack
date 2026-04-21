@@ -115,7 +115,7 @@ async def test_validation_exception_handler_deduplicates_fields() -> None:
 
     response = await handler(request, exc)
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
     body = response.body.decode()
     assert '"fields":["email","query.page"]' in body
     assert '"request_id":"req-123"' in body
