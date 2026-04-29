@@ -23,7 +23,9 @@ const TenantSwitcherItemText = ({ tenant, isSelected }: TenantSwitcherItemTextPr
     >
       {tenant.name}
     </span>
-    <span className={`whitespace-normal break-words text-xs ${isSelected ? "text-interactive-primary/80" : "text-text-tertiary"}`}>
+    <span
+      className={`whitespace-normal break-words text-xs ${isSelected ? "text-interactive-primary/80" : "text-text-tertiary"}`}
+    >
       {deslug(tenant.slug)}
     </span>
   </span>
