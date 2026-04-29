@@ -352,10 +352,10 @@ export const HomeContent = (): ReactElement => {
               }}
             />
             <div className="relative">
-              <Text variant="h2" weight="bold" className="mb-4 text-2xl text-background-primary md:text-3xl">
+              <Text variant="h2" weight="bold" className="mb-4 text-2xl text-slate-900 dark:text-white md:text-3xl">
                 {authStatus === "authenticated" ? t("landing.finalCta.loggedTitle") : t("landing.finalCta.title")}
               </Text>
-              <Text variant="body-lg" className="mb-8 text-background-primary/80">
+              <Text variant="body-lg" className="mb-8 text-slate-900/80 dark:text-white/85">
                 {authStatus === "authenticated" ? t("landing.finalCta.loggedSubtitle") : t("landing.finalCta.subtitle")}
               </Text>
               {authStatus === "anonymous" ? (
@@ -371,8 +371,8 @@ export const HomeContent = (): ReactElement => {
                   <Link href="/about">
                     <Button
                       size="lg"
-                      variant="secondary"
-                      className="min-w-[200px] border-background-primary/35 bg-background-primary/10 font-bold text-background-primary backdrop-blur-sm hover:bg-background-primary/15 dark:border-text-primary/35 dark:bg-text-primary/10 dark:text-text-primary dark:hover:bg-text-primary/15"
+                      variant="primary"
+                      className="min-w-[200px] border-0 bg-background-inverse font-bold text-text-inverse hover:opacity-90 dark:bg-background-primary dark:text-text-primary dark:hover:bg-background-secondary"
                     >
                       {t("landing.finalCta.secondary")}
                     </Button>
