@@ -1,6 +1,8 @@
+from datetime import timedelta
 from uuid import UUID
 
-from fastapi import APIRouter, Request, status
+from fastapi import APIRouter, Request, Response, status
+from sqlalchemy import select
 
 from core.dto.v1 import (
     CreateTenantDTO,
@@ -8,9 +10,11 @@ from core.dto.v1 import (
     TenantSummaryResponseDTO,
     UpdateTenantDTO,
 )
+from core.foundation.auth_cookies import set_auth_cookies
 from core.foundation.dependencies import (
     AuthorizedTenantId,
     PostgresSession,
+    SecurityServiceDep,
     TenantServiceDep,
 )
 from core.foundation.http.responses import (
@@ -20,7 +24,11 @@ from core.foundation.http.responses import (
     UnauthenticatedResponse,
     UpdatedResponse,
 )
+from core.foundation.infra.config import settings
 from core.foundation.role_guard import RequireOwner, RequireOwnerOrNoRole
+from core.foundation.token_store import generate_family, generate_jti
+from core.models.tenant import Tenant
+from core.models.tenant_role import TenantRole
 from routes.v1.mappers.tenant_mappers import (
     tenant_to_response,
     tenant_to_summary,
@@ -63,9 +71,11 @@ async def list_tenants(
 async def create_tenant(
     _role: RequireOwnerOrNoRole,
     request: Request,
+    response: Response,
     body: CreateTenantDTO,
     session: PostgresSession,
     service: TenantServiceDep,
+    security_service: SecurityServiceDep,
 ) -> CreatedResponse[TenantResponseDTO]:
     user = getattr(request.state, "user", None)
     if not isinstance(user, dict):
@@ -82,6 +92,40 @@ async def create_tenant(
         status=body.status,
     )
     tenant = await service.create_tenant(session, data, user_id)
+
+    tenant_role_ids = list(
+        await session.scalars(select(TenantRole.tenant_id).where(TenantRole.account_id == user_id))
+    )
+    tenant_ids: list[str] = []
+    if tenant_role_ids:
+        rows = await session.execute(select(Tenant.public_id).where(Tenant.id.in_(tenant_role_ids)))
+        tenant_ids = [row[0] for row in rows.all()]
+
+    role = await session.scalar(select(TenantRole).where(TenantRole.account_id == user_id).limit(1))
+    email = user.get("email")
+    token_data: dict[str, str | list[str] | None] = {
+        "sub": str(user_id),
+        "tenant_ids": tenant_ids,
+        "account_type": role.account_type.value if role is not None else None,
+        "email": email if isinstance(email, str) else None,
+    }
+    access_token = security_service.create_access_token(token_data)
+    refresh_token = security_service.create_access_token(
+        {
+            **token_data,
+            "type": "refresh",
+            "jti": generate_jti(),
+            "family": generate_family(),
+        },
+        expires_delta=timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
+    )
+    set_auth_cookies(
+        response=response,
+        request=request,
+        access_token=access_token,
+        refresh_token=refresh_token,
+    )
+
     return CreatedResponse(
         message="Tenant created successfully",
         data=tenant_to_response(tenant),

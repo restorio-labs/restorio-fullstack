@@ -4,7 +4,6 @@ import { slugify } from "@restorio/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { FormEvent, ReactElement } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
 
 import { api } from "../api/client";
 import { tenantDetailsQueryKey, useCurrentTenant } from "../context/TenantContext";
@@ -19,7 +18,6 @@ interface OnboardingFormValues {
 
 export const OnboardingPage = (): ReactElement => {
   const { t } = useI18n();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { setSelectedTenantId, refreshTenants } = useCurrentTenant();
 
@@ -72,12 +70,11 @@ export const OnboardingPage = (): ReactElement => {
       try {
         await api.auth.refresh();
       } catch {
-        // Token refresh may fail if cookies aren't set yet; continue regardless
+        // Tenant creation already rotates auth cookies on backend.
       }
 
       refreshTenants();
-      // Redirect to the floor editor page
-      navigate("/", { replace: true });
+      window.location.replace("/");
     },
   });
 
