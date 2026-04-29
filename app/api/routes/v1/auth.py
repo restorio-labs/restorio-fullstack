@@ -133,7 +133,7 @@ async def register(
             user_id=str(user.id),
             email=user.email,
         ),
-        message="Account created successfully, you should receive email shortly",
+        message="Konto zostało utworzone pomyślnie, wkrótce otrzymasz e-mail z linkiem aktywacyjnym",
     )
 
 

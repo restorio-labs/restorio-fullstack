@@ -114,7 +114,7 @@ class RegisterResponseDTO(BaseDTO):
     tenant_name: str = Field(..., description="Tenant name")
     tenant_slug: str = Field(..., description="Tenant slug")
     message: str = Field(
-        default="Account created successfully, you should receive email shortly",
+        default="Konto zostalo utworzone pomyslnie, wkrotce otrzymasz e-mail",
         description="Success message",
     )
 

@@ -31,18 +31,26 @@ class EmailService:
         resend.api_key = resend_api_key
 
         if restaurant_name:
-            subject = f"Activate your {restaurant_name} account"
-            greeting = f"Welcome to Restorio, {restaurant_name}!"
-        else:
-            subject = "Activate your Restorio account"
-            greeting = "Welcome to Restorio!"
+            subject = f"Aktywuj konto dla restauracji {restaurant_name}"
+            greeting = "Witamy w Restorio!"
+            html = f"""
+            <p>{greeting}</p>
+            <p>Aktywuj swoje konto dla restauracji {restaurant_name}, klikając w poniższy link:</p>
+            <p><a href="{activation_link}">Link aktywacyjny</a></p>
+            <p>Jeśli nie tworzyłeś konta w naszym serwisie, proszę zignorować tę wiadomość.</p>
+            """
 
-        html = f"""
-        <p>{greeting}</p>
-        <p>Please activate your account by clicking the link below:</p>
-        <p><a href="{activation_link}">Activate my account</a></p>
-        <p>If you did not request this activation, please ignore this email.</p>
-        """
+        else:
+            subject = "Aktywuj swoje konto Restorio"
+            greeting = "Witamy w Restorio!"
+            html = f"""
+            <p>{greeting}</p>
+            <p>Aktywuj swoje konto, klikając w poniższy link:</p>
+            <p><a href="{activation_link}">Link aktywacyjny</a></p>
+            <p>Jeśli nie tworzyłeś konta w naszym serwisie, proszę zignorować tę wiadomość.</p>
+            """
+
+
 
         await asyncio.to_thread(
             resend.Emails.send,
