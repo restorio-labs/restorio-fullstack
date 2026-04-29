@@ -205,7 +205,7 @@ export const AuthGuard = ({
           window.location.replace(redirectTarget);
         }
 
-        return fallback ? <>{fallback}</> : null;
+        return null;
       }
 
       return <Navigate to={redirectTarget} replace />;
@@ -218,5 +218,5 @@ export const AuthGuard = ({
     return null;
   }
 
-  return fallback ? <>{fallback}</> : null;
+  return null;
 };
