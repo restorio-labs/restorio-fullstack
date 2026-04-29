@@ -32,7 +32,7 @@ class EmailService:
 
         if restaurant_name:
             subject = f"Aktywuj konto dla restauracji {restaurant_name}"
-            greeting = f"Witamy w Restorio!"
+            greeting = "Witamy w Restorio!"
             html = f"""
             <p>{greeting}</p>
             <p>Aktywuj swoje konto dla restauracji {restaurant_name}, klikając w poniższy link:</p>
@@ -50,7 +50,7 @@ class EmailService:
             <p>Jeśli nie tworzyłeś konta w naszym serwisie, proszę zignorować tę wiadomość.</p>
             """
 
-        
+
 
         await asyncio.to_thread(
             resend.Emails.send,
