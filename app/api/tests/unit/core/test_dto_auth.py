@@ -3,6 +3,8 @@ import pytest
 
 from core.dto.v1.auth import (
     ActivateResponseData,
+    AuthMeSessionData,
+    BulkCreateUsersDTO,
     CreateUserDTO,
     LoginResponseData,
     RegisterCreatedData,
@@ -12,6 +14,8 @@ from core.dto.v1.auth import (
     TenantSlugData,
 )
 from core.exceptions import ValidationError
+
+BULK_USERS_COUNT = 2
 
 
 class TestRegisterDTO:
@@ -190,15 +194,11 @@ class TestLoginResponseData:
 
 class TestAuthMeSessionData:
     def test_defaults(self) -> None:
-        from core.dto.v1.auth import AuthMeSessionData
-
         dto = AuthMeSessionData()
         assert dto.authenticated is True
         assert dto.account_type is None
 
     def test_with_account_type(self) -> None:
-        from core.dto.v1.auth import AuthMeSessionData
-
         dto = AuthMeSessionData(account_type="owner")
         assert dto.authenticated is True
         assert dto.account_type == "owner"
@@ -206,8 +206,6 @@ class TestAuthMeSessionData:
 
 class TestBulkCreateUsersDTO:
     def test_valid_bulk_create(self) -> None:
-        from core.dto.v1.auth import BulkCreateUsersDTO
-
         dto = BulkCreateUsersDTO(
             users=[
                 {
@@ -222,11 +220,9 @@ class TestBulkCreateUsersDTO:
                 },
             ]
         )
-        assert len(dto.users) == 2
+        assert len(dto.users) == BULK_USERS_COUNT
 
     def test_empty_users_list_rejected(self) -> None:
-        from core.dto.v1.auth import BulkCreateUsersDTO
-
         with pytest.raises(PydanticValidationError):
             BulkCreateUsersDTO(users=[])
 

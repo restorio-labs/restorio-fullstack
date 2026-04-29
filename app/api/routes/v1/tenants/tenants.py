@@ -1,10 +1,10 @@
-from uuid import UUID
-
 from datetime import timedelta
+from uuid import UUID
 
 from fastapi import APIRouter, Request, Response, status
 from sqlalchemy import select
 
+from core.foundation.auth_cookies import set_auth_cookies
 from core.dto.v1 import (
     CreateTenantDTO,
     TenantResponseDTO,
@@ -17,7 +17,6 @@ from core.foundation.dependencies import (
     SecurityServiceDep,
     TenantServiceDep,
 )
-from core.foundation.auth_cookies import set_auth_cookies
 from core.foundation.http.responses import (
     CreatedResponse,
     DeletedResponse,
@@ -25,8 +24,8 @@ from core.foundation.http.responses import (
     UnauthenticatedResponse,
     UpdatedResponse,
 )
-from core.foundation.role_guard import RequireOwner, RequireOwnerOrNoRole
 from core.foundation.infra.config import settings
+from core.foundation.role_guard import RequireOwner, RequireOwnerOrNoRole
 from core.foundation.token_store import generate_family, generate_jti
 from core.models.tenant import Tenant
 from core.models.tenant_role import TenantRole
