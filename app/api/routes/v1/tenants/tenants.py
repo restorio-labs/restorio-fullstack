@@ -4,13 +4,13 @@ from uuid import UUID
 from fastapi import APIRouter, Request, Response, status
 from sqlalchemy import select
 
-from core.foundation.auth_cookies import set_auth_cookies
 from core.dto.v1 import (
     CreateTenantDTO,
     TenantResponseDTO,
     TenantSummaryResponseDTO,
     UpdateTenantDTO,
 )
+from core.foundation.auth_cookies import set_auth_cookies
 from core.foundation.dependencies import (
     AuthorizedTenantId,
     PostgresSession,
