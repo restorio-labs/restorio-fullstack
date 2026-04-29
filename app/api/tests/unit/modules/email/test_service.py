@@ -60,7 +60,7 @@ async def test_send_activation_email_calls_resend_with_correct_payload() -> None
         payload = call_args[0][1]
         assert payload["from"] == "noreply@restorio.org"
         assert payload["to"] == ["user@example.com"]
-        assert "Activate your My Restaurant account" in payload["subject"]
+        assert "Aktywuj konto My Restaurant" in payload["subject"]
         assert "My Restaurant" in payload["html"]
         assert "https://example.com/activate?id=abc" in payload["html"]
 
@@ -84,5 +84,5 @@ async def test_send_activation_email_without_restaurant_name() -> None:
         mock_to_thread.assert_called_once()
         call_args = mock_to_thread.call_args
         payload = call_args[0][1]
-        assert "Activate your Restorio account" in payload["subject"]
-        assert "Welcome to Restorio!" in payload["html"]
+        assert "Aktywuj swoje konto Restorio" in payload["subject"]
+        assert "Witamy w Restorio!" in payload["html"]

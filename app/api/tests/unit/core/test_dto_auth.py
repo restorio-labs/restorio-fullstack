@@ -149,7 +149,7 @@ class TestRegisterResponseDTO:
             tenant_name="My Venue",
             tenant_slug="my-venue",
         )
-        assert dto.message == "Account created successfully, you should receive email shortly"
+        assert dto.message == "Konto zostalo utworzone pomyslnie, wkrotce otrzymasz e-mail"
 
     def test_valid_with_custom_message(self) -> None:
         dto = RegisterResponseDTO(
