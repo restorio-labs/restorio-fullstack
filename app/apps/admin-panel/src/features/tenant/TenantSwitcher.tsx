@@ -19,11 +19,11 @@ interface TenantSwitcherTriggerTextProps {
 const TenantSwitcherItemText = ({ tenant, isSelected }: TenantSwitcherItemTextProps): ReactElement => (
   <span className="flex min-w-0 flex-col items-start gap-0.5 text-left">
     <span
-      className={`truncate text-base ${isSelected ? "font-semibold text-interactive-primary" : "font-medium text-text-primary"}`}
+      className={`whitespace-normal break-words text-base ${isSelected ? "font-semibold text-interactive-primary" : "font-medium text-text-primary"}`}
     >
       {tenant.name}
     </span>
-    <span className={`truncate text-xs ${isSelected ? "text-interactive-primary/80" : "text-text-tertiary"}`}>
+    <span className={`whitespace-normal break-words text-xs ${isSelected ? "text-interactive-primary/80" : "text-text-tertiary"}`}>
       {deslug(tenant.slug)}
     </span>
   </span>
@@ -31,8 +31,8 @@ const TenantSwitcherItemText = ({ tenant, isSelected }: TenantSwitcherItemTextPr
 
 const TenantSwitcherTriggerText = ({ tenant }: TenantSwitcherTriggerTextProps): ReactElement => (
   <span className="flex min-w-0 flex-col items-start gap-0.5 text-left">
-    <span className="truncate text-base font-medium text-text-primary">{tenant.name}</span>
-    <span className="truncate text-xs text-text-tertiary">{deslug(tenant.slug)}</span>
+    <span className="whitespace-normal break-words text-base font-medium text-text-primary">{tenant.name}</span>
+    <span className="whitespace-normal break-words text-xs text-text-tertiary">{deslug(tenant.slug)}</span>
   </span>
 );
 
@@ -76,7 +76,7 @@ export const TenantSwitcher = (): ReactElement | null => {
         isOpen={isOpen}
         onOpenChange={setIsOpen}
         placement="bottom-center"
-        className="min-w-full w-max mr-3"
+        className="mr-3 w-full min-w-full max-w-[32rem]"
         trigger={
           <div className="flex w-full items-center justify-between gap-2 rounded-lg border border-border-default bg-surface-primary px-5 py-4 text-text-primary shadow-sm transition hover:bg-surface-secondary">
             {selectedTenant ? (
@@ -103,7 +103,7 @@ export const TenantSwitcher = (): ReactElement | null => {
             <button
               key={tenant.id}
               type="button"
-              className="w-full rounded-sm px-4 py-2 text-left text-base hover:bg-surface-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-border-focus"
+              className="w-full whitespace-normal break-words rounded-sm px-4 py-2 text-left text-base hover:bg-surface-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-border-focus"
               onClick={() => {
                 setSelectedTenantId(tenant.id);
                 setIsOpen(false);
@@ -115,7 +115,7 @@ export const TenantSwitcher = (): ReactElement | null => {
           <div className="my-2 border-t border-border-default" />
           <button
             type="button"
-            className="w-full rounded-sm px-4 py-2 text-left text-base font-semibold text-interactive-primary hover:bg-surface-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-border-focus"
+            className="w-full whitespace-normal break-words rounded-sm px-4 py-2 text-left text-base font-semibold text-interactive-primary hover:bg-surface-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-border-focus"
             onClick={() => {
               navigate("/restaurant-creator");
               setIsOpen(false);
