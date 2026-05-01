@@ -154,7 +154,7 @@ const describeBulkFullSuccess = (kinds: Set<StaffInviteNotification>, t: (key: s
     return t("staff.toast.bulkSuccessMixedNotificationsDescription");
   }
 
-  const only = kinds.values().next().value as StaffInviteNotification;
+  const only = kinds.values().next().value!;
 
   if (only === "activation") {
     return t("staff.toast.bulkSuccessDescription");
