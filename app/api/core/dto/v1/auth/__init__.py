@@ -1,5 +1,5 @@
-import re
 from enum import StrEnum
+import re
 from uuid import UUID
 
 from pydantic import EmailStr, Field, field_validator, model_validator

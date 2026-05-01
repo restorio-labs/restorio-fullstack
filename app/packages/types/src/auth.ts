@@ -13,10 +13,7 @@ export interface RegisterResponse {
   data: RegisterCreatedData;
 }
 
-export type StaffInviteNotification =
-  | "activation"
-  | "existing_waiter_notice"
-  | "existing_account_linked";
+export type StaffInviteNotification = "activation" | "existing_waiter_notice" | "existing_account_linked";
 
 export interface CreateStaffUserData {
   user_id: string;
