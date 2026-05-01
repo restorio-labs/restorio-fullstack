@@ -6,7 +6,7 @@ from uuid import uuid4
 
 import pytest
 
-from core.dto.v1.auth import BulkCreateUsersDTO, CreateUserDTO
+from core.dto.v1.auth import BulkCreateUsersDTO, CreateUserDTO, StaffInviteNotification
 from core.exceptions import ConflictError, NotFoundResponse
 from core.foundation.http.responses import UnauthenticatedResponse
 from core.models.enums import AccountType, TenantStatus
@@ -274,6 +274,7 @@ async def test_bulk_create_sends_activation_email() -> None:
             m_email,
         )  # type: ignore[arg-type]
     assert r["results"][0]["status"] == "created"
+    assert r["results"][0]["notification"] == StaffInviteNotification.ACTIVATION.value
     m_email.send_activation_email.assert_awaited()
 
 
@@ -368,4 +369,152 @@ async def test_create_user_with_activation_email() -> None:
             m_email,
         )  # type: ignore[arg-type]
     assert "email sent" in r.message
+    assert r.data.notification == StaffInviteNotification.ACTIVATION
     m_email.send_activation_email.assert_awaited()
+
+
+@pytest.mark.asyncio
+async def test_create_user_existing_waiter_sends_notice_email() -> None:
+    tid = uuid4()
+    uid = uuid4()
+    tenant = Tenant(
+        id=tid,
+        public_id="p1",
+        name="R",
+        slug="r",
+        status=TenantStatus.ACTIVE,
+    )
+    created = User(
+        id=uid,
+        email="w@e.com",
+        password_hash="h",
+    )
+    session = MagicMock()
+    session.get = AsyncMock(return_value=tenant)
+    req = MagicMock()
+    m_user = MagicMock()
+    m_user.generate_temporary_password = MagicMock(return_value="t")
+    m_user.create_user_for_tenant = AsyncMock(return_value=(created, None, False))
+    m_auth = MagicMock()
+    m_email = AsyncMock()
+    data = CreateUserDTO(
+        email="w@e.com",
+        access_level=AccountType.WAITER,
+        name="W",
+        surname="T",
+    )
+    with patch.object(users_routes.settings, "WAITER_PANEL_URL", "https://waiter.test"):
+        r = await users_routes.create_user(
+            AccountType.OWNER,
+            data,
+            req,
+            tid,
+            session,
+            m_auth,
+            m_user,
+            m_email,
+        )  # type: ignore[arg-type]
+    assert "waiter notification email sent" in r.message
+    assert r.data.notification == StaffInviteNotification.EXISTING_WAITER_NOTICE
+    m_email.send_waiter_added_existing_account_email.assert_awaited_once_with(
+        to_email=created.email,
+        restaurant_name=tenant.name,
+        waiter_panel_url="https://waiter.test",
+    )
+    m_email.send_activation_email.assert_not_called()
+    m_auth.create_activation_link.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_create_user_existing_kitchen_no_notice_email() -> None:
+    tid = uuid4()
+    uid = uuid4()
+    tenant = Tenant(
+        id=tid,
+        public_id="p1",
+        name="R",
+        slug="r",
+        status=TenantStatus.ACTIVE,
+    )
+    created = User(
+        id=uid,
+        email="k@e.com",
+        password_hash="h",
+    )
+    session = MagicMock()
+    session.get = AsyncMock(return_value=tenant)
+    req = MagicMock()
+    m_user = MagicMock()
+    m_user.generate_temporary_password = MagicMock(return_value="t")
+    m_user.create_user_for_tenant = AsyncMock(return_value=(created, None, False))
+    m_auth = MagicMock()
+    m_email = AsyncMock()
+    data = CreateUserDTO(email="k@e.com", access_level=AccountType.KITCHEN)
+    r = await users_routes.create_user(
+        AccountType.OWNER,
+        data,
+        req,
+        tid,
+        session,
+        m_auth,
+        m_user,
+        m_email,
+    )  # type: ignore[arg-type]
+    assert r.message == "User added to tenant"
+    assert r.data.notification == StaffInviteNotification.EXISTING_ACCOUNT_LINKED
+    m_email.send_waiter_added_existing_account_email.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_bulk_create_existing_waiter_sends_notice_email() -> None:
+    tid = uuid4()
+    uid = uuid4()
+    tenant = Tenant(
+        id=tid,
+        public_id="p1",
+        name="R",
+        slug="r",
+        status=TenantStatus.ACTIVE,
+    )
+    created = User(
+        id=uid,
+        email="w@e.com",
+        password_hash="h",
+    )
+    session = MagicMock()
+    session.get = AsyncMock(return_value=tenant)
+    req = MagicMock()
+    req.state.user = {"email": "owner@e.com"}
+    data = BulkCreateUsersDTO(
+        users=[
+            CreateUserDTO(
+                email="w@e.com",
+                access_level=AccountType.WAITER,
+                name="A",
+                surname="B",
+            )
+        ]
+    )
+    m_user = MagicMock()
+    m_user.generate_temporary_password = MagicMock(return_value="t")
+    m_user.create_user_for_tenant = AsyncMock(return_value=(created, None, False))
+    m_auth = MagicMock()
+    m_email = AsyncMock()
+    with patch.object(users_routes.settings, "WAITER_PANEL_URL", "https://waiter.test"):
+        r = await users_routes.bulk_create_users(
+            AccountType.OWNER,
+            data,
+            req,
+            tid,
+            session,
+            m_auth,
+            m_user,
+            m_email,
+        )  # type: ignore[arg-type]
+    assert r["results"][0]["status"] == "created"
+    assert r["results"][0]["notification"] == StaffInviteNotification.EXISTING_WAITER_NOTICE.value
+    m_email.send_waiter_added_existing_account_email.assert_awaited_once_with(
+        to_email=created.email,
+        restaurant_name=tenant.name,
+        waiter_panel_url="https://waiter.test",
+    )

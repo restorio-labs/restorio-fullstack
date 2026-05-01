@@ -3,7 +3,12 @@ from uuid import UUID
 from fastapi import APIRouter, Request, status
 from sqlalchemy import select
 
-from core.dto.v1.auth import BulkCreateUsersDTO, CreateUserDTO, RegisterCreatedData
+from core.dto.v1.auth import (
+    BulkCreateUsersDTO,
+    CreateUserDTO,
+    StaffInviteNotification,
+    StaffUserCreatedData,
+)
 from core.exceptions import ConflictError, NotFoundResponse
 from core.foundation.dependencies import (
     AuthorizedTenantId,
@@ -23,11 +28,25 @@ from core.models.user import User
 router = APIRouter()
 
 
+def _staff_invite_notification(
+    send_activation_email: bool,
+    account_type: AccountType,
+) -> StaffInviteNotification:
+    if send_activation_email:
+        return StaffInviteNotification.ACTIVATION
+    if account_type == AccountType.WAITER:
+        return StaffInviteNotification.EXISTING_WAITER_NOTICE
+    return StaffInviteNotification.EXISTING_ACCOUNT_LINKED
+
+
 @router.post(
     "/{tenant_public_id}/bulk",
     status_code=status.HTTP_200_OK,
     summary="Create multiple staff users",
-    description="Create multiple inactive staff users and send activation emails. Returns partial results.",
+    description=(
+        "Create staff users. New accounts receive an activation email; existing waiters linked to the "
+        "tenant receive a Polish notification about the new restaurant assignment. Returns partial results."
+    ),
 )
 async def bulk_create_users(
     _role: RequireOwner,
@@ -104,11 +123,20 @@ async def bulk_create_users(
                     restaurant_name=tenant.name,
                     activation_link=activation_link,
                 )
+            elif entry.access_level == AccountType.WAITER:
+                await email_service.send_waiter_added_existing_account_email(
+                    to_email=created_user.email,
+                    restaurant_name=tenant.name,
+                    waiter_panel_url=settings.WAITER_PANEL_URL,
+                )
+
+            invite_note = _staff_invite_notification(send_activation_email, entry.access_level)
 
             results.append(
                 {
                     "email": entry.email,
                     "status": "created",
+                    "notification": invite_note.value,
                     "data": {
                         "user_id": str(created_user.id),
                         "tenant_id": tenant.public_id,
@@ -146,9 +174,12 @@ async def bulk_create_users(
 @router.post(
     "/{tenant_public_id}",
     status_code=status.HTTP_201_CREATED,
-    response_model=CreatedResponse[RegisterCreatedData],
+    response_model=CreatedResponse[StaffUserCreatedData],
     summary="Create an inactive staff user",
-    description="Create inactive staff user and send activation email",
+    description=(
+        "Creates a staff membership. New users get an activation email; existing waiters get a notification "
+        "that they can select the restaurant after logging into the waiter panel."
+    ),
 )
 async def create_user(
     _role: RequireOwner,
@@ -159,7 +190,7 @@ async def create_user(
     auth_service: AuthServiceDep,
     user_service: UserServiceDep,
     email_service: EmailServiceDep,
-) -> CreatedResponse[RegisterCreatedData]:
+) -> CreatedResponse[StaffUserCreatedData]:
     tenant = await session.get(Tenant, tenant_id)
     if tenant is None:
         raise UnauthenticatedResponse(message="Unauthorized")
@@ -196,19 +227,32 @@ async def create_user(
             restaurant_name=tenant.name,
             activation_link=activation_link,
         )
+    elif data.access_level == AccountType.WAITER:
+        await email_service.send_waiter_added_existing_account_email(
+            to_email=created_user.email,
+            restaurant_name=tenant.name,
+            waiter_panel_url=settings.WAITER_PANEL_URL,
+        )
+
+    notification = _staff_invite_notification(send_activation_email, data.access_level)
 
     return CreatedResponse(
-        data=RegisterCreatedData(
+        data=StaffUserCreatedData(
             user_id=str(created_user.id),
             email=created_user.email,
             tenant_id=tenant.public_id,
             tenant_name=tenant.name,
             tenant_slug=tenant.slug,
+            notification=notification,
         ),
         message=(
             "User created successfully, activation email sent"
             if send_activation_email
-            else "User added to tenant"
+            else (
+                "User added to tenant, waiter notification email sent"
+                if notification == StaffInviteNotification.EXISTING_WAITER_NOTICE
+                else "User added to tenant"
+            )
         ),
     )
 

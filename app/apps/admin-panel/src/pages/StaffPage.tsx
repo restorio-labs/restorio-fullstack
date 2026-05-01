@@ -1,5 +1,11 @@
 import { TokenStorage } from "@restorio/auth";
-import type { BulkCreateStaffUserResponse, CreateStaffUserRequest } from "@restorio/types";
+import type {
+  BulkCreateStaffUserResponse,
+  BulkCreateStaffUserResult,
+  CreateStaffUserRequest,
+  CreateStaffUserResponse,
+  StaffInviteNotification,
+} from "@restorio/types";
 import { Button, FormActions, Input, Modal, Dropdown, useI18n, useToast, Loader } from "@restorio/ui";
 import { isEmailValid } from "@restorio/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -126,6 +132,60 @@ const parseUsers = (
     })
     .filter((user): user is StaffUser => user !== null);
 
+const normalizeStaffInviteNotification = (
+  raw: StaffInviteNotification | undefined,
+): StaffInviteNotification => {
+  if (raw === "existing_waiter_notice" || raw === "existing_account_linked") {
+    return raw;
+  }
+
+  return "activation";
+};
+
+const summarizeBulkInviteNotifications = (
+  results: BulkCreateStaffUserResponse["results"],
+): Set<StaffInviteNotification> =>
+  new Set(
+    results
+      .filter((entry: BulkCreateStaffUserResult) => entry.status === "created")
+      .map((entry) => normalizeStaffInviteNotification(entry.notification)),
+  );
+
+const describeBulkFullSuccess = (
+  kinds: Set<StaffInviteNotification>,
+  t: (key: string) => string,
+): string => {
+  if (kinds.size !== 1) {
+    return t("staff.toast.bulkSuccessMixedNotificationsDescription");
+  }
+
+  const only = kinds.values().next().value as StaffInviteNotification;
+
+  if (only === "activation") {
+    return t("staff.toast.bulkSuccessDescription");
+  }
+
+  if (only === "existing_waiter_notice") {
+    return t("staff.toast.bulkSuccessAllWaiterNoticeDescription");
+  }
+
+  return t("staff.toast.bulkSuccessAllLinkedDescription");
+};
+
+const describeStaffSingleSuccess = (
+  notification: StaffInviteNotification,
+  t: (key: string) => string,
+): string => {
+  switch (notification) {
+    case "activation":
+      return t("staff.toast.singleSuccessDescription");
+    case "existing_waiter_notice":
+      return t("staff.toast.singleExistingWaiterDescription");
+    case "existing_account_linked":
+      return t("staff.toast.singleExistingLinkedDescription");
+  }
+};
+
 export const StaffPage = (): ReactElement => {
   const { t } = useI18n();
   const { showToast } = useToast();
@@ -209,7 +269,10 @@ export const StaffPage = (): ReactElement => {
       const total = response.results.length;
 
       if (created === total) {
-        showToast("success", t("staff.toast.bulkSuccessTitle"), t("staff.toast.bulkSuccessDescription"));
+        const kinds = summarizeBulkInviteNotifications(response.results);
+        const description = describeBulkFullSuccess(kinds, t);
+
+        showToast("success", t("staff.toast.bulkSuccessTitle"), description);
       } else {
         showToast(
           "warning",
@@ -226,7 +289,7 @@ export const StaffPage = (): ReactElement => {
     },
   });
 
-  const singleCreateMutation = useMutation({
+  const singleCreateMutation = useMutation<CreateStaffUserResponse, Error, CreateStaffUserRequest>({
     mutationFn: (payload: CreateStaffUserRequest) => {
       if (!selectedTenantId) {
         throw new Error("No tenant selected");
@@ -234,7 +297,7 @@ export const StaffPage = (): ReactElement => {
 
       return api.users.create(selectedTenantId, payload);
     },
-    onSuccess: async () => {
+    onSuccess: async (response) => {
       await refreshStaffUsers();
 
       if (savingRowKey !== null) {
@@ -242,7 +305,13 @@ export const StaffPage = (): ReactElement => {
       }
 
       setSavingRowKey(null);
-      showToast("success", t("staff.toast.singleSuccessTitle"), t("staff.toast.singleSuccessDescription"));
+      const notification = normalizeStaffInviteNotification(response.data.notification);
+
+      showToast(
+        "success",
+        t("staff.toast.singleSuccessTitle"),
+        describeStaffSingleSuccess(notification, t),
+      );
     },
     onError: (error: unknown) => {
       setSavingRowKey(null);
