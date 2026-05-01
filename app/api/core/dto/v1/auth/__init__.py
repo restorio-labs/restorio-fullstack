@@ -1,3 +1,4 @@
+from enum import StrEnum
 import re
 from uuid import UUID
 
@@ -104,6 +105,24 @@ class SetPasswordDTO(BaseDTO):
 class RegisterCreatedData(BaseDTO):
     user_id: str = Field(..., description="Created user ID")
     email: EmailStr = Field(..., description="User email")
+
+
+class StaffInviteNotification(StrEnum):
+    ACTIVATION = "activation"
+    EXISTING_WAITER_NOTICE = "existing_waiter_notice"
+    EXISTING_ACCOUNT_LINKED = "existing_account_linked"
+
+
+class StaffUserCreatedData(BaseDTO):
+    user_id: str = Field(..., description="Staff user ID")
+    email: EmailStr = Field(..., description="User email")
+    tenant_id: str = Field(..., description="Tenant public ID")
+    tenant_name: str = Field(..., description="Restaurant name")
+    tenant_slug: str = Field(..., description="Tenant slug")
+    notification: StaffInviteNotification = Field(
+        ...,
+        description="Whether an activation email went out or an existing account was linked",
+    )
 
 
 class RegisterResponseDTO(BaseDTO):

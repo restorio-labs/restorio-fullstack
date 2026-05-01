@@ -2,8 +2,8 @@ import type {
   BulkCreateStaffUserRequest,
   BulkCreateStaffUserResponse,
   CreateStaffUserRequest,
+  CreateStaffUserResponse,
   DeleteUserData,
-  RegisterResponse,
   StaffUserData,
   SuccessResponse,
 } from "@restorio/types";
@@ -14,8 +14,8 @@ export class UserResource extends BaseResource {
   /**
    * Create staff user (kitchen/waiter).
    */
-  create(tenantId: string, data: CreateStaffUserRequest, signal?: AbortSignal): Promise<RegisterResponse> {
-    return this.client.post(`users/${encodeURIComponent(tenantId)}`, data, { signal });
+  create(tenantId: string, data: CreateStaffUserRequest, signal?: AbortSignal): Promise<CreateStaffUserResponse> {
+    return this.client.post<CreateStaffUserResponse>(`users/${encodeURIComponent(tenantId)}`, data, { signal });
   }
 
   bulkCreate(

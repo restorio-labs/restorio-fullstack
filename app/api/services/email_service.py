@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import html
 
 import resend
 
@@ -59,5 +60,41 @@ class EmailService:
                 "to": [to_email],
                 "subject": subject,
                 "html": html,
+            },
+        )
+
+    async def send_waiter_added_existing_account_email(
+        self,
+        *,
+        to_email: str,
+        restaurant_name: str,
+        waiter_panel_url: str,
+    ) -> None:
+        resend_api_key, resend_from_email = self._get_resend_settings()
+        resend.api_key = resend_api_key
+
+        safe_name = html.escape(restaurant_name, quote=True)
+        safe_url = html.escape(waiter_panel_url.strip(), quote=True)
+        subject_name = restaurant_name.replace("\r", " ").replace("\n", " ").strip()
+        subject_name = subject_name.replace("<", "").replace(">", "")
+
+        subject = f"Dodano Cię do restauracji {subject_name}"
+        html_body = f"""
+            <p>Witamy w Restorio!</p>
+            <p>Twoje konto zostało przypisane do restauracji <strong>{safe_name}</strong>.</p>
+            <p>
+              Przy kolejnym logowaniu do panelu kelnera możesz wybrać tę restaurację na liście dostępnych lokali.
+            </p>
+            <p><a href="{safe_url}">Przejdź do panelu kelnera</a></p>
+            <p>W razie pytań skontaktuj się z administratorem restauracji.</p>
+            """
+
+        await asyncio.to_thread(
+            resend.Emails.send,
+            {
+                "from": resend_from_email,
+                "to": [to_email],
+                "subject": subject,
+                "html": html_body,
             },
         )

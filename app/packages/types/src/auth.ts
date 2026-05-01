@@ -13,6 +13,22 @@ export interface RegisterResponse {
   data: RegisterCreatedData;
 }
 
+export type StaffInviteNotification = "activation" | "existing_waiter_notice" | "existing_account_linked";
+
+export interface CreateStaffUserData {
+  user_id: string;
+  email: string;
+  tenant_id: string;
+  tenant_name: string;
+  tenant_slug: string;
+  notification: StaffInviteNotification;
+}
+
+export interface CreateStaffUserResponse {
+  message: string;
+  data: CreateStaffUserData;
+}
+
 export interface TenantSlugData {
   tenant_slug: string | null;
   requires_password_change?: boolean;
@@ -42,6 +58,7 @@ export interface BulkCreateStaffUserRequest {
 export interface BulkCreateStaffUserResult {
   email: string;
   status: "created" | "failed";
+  notification?: StaffInviteNotification;
   error?: string;
   data?: {
     user_id: string;
