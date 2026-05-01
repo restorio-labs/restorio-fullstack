@@ -132,9 +132,7 @@ const parseUsers = (
     })
     .filter((user): user is StaffUser => user !== null);
 
-const normalizeStaffInviteNotification = (
-  raw: StaffInviteNotification | undefined,
-): StaffInviteNotification => {
+const normalizeStaffInviteNotification = (raw: StaffInviteNotification | undefined): StaffInviteNotification => {
   if (raw === "existing_waiter_notice" || raw === "existing_account_linked") {
     return raw;
   }
@@ -151,10 +149,7 @@ const summarizeBulkInviteNotifications = (
       .map((entry) => normalizeStaffInviteNotification(entry.notification)),
   );
 
-const describeBulkFullSuccess = (
-  kinds: Set<StaffInviteNotification>,
-  t: (key: string) => string,
-): string => {
+const describeBulkFullSuccess = (kinds: Set<StaffInviteNotification>, t: (key: string) => string): string => {
   if (kinds.size !== 1) {
     return t("staff.toast.bulkSuccessMixedNotificationsDescription");
   }
@@ -172,10 +167,7 @@ const describeBulkFullSuccess = (
   return t("staff.toast.bulkSuccessAllLinkedDescription");
 };
 
-const describeStaffSingleSuccess = (
-  notification: StaffInviteNotification,
-  t: (key: string) => string,
-): string => {
+const describeStaffSingleSuccess = (notification: StaffInviteNotification, t: (key: string) => string): string => {
   switch (notification) {
     case "activation":
       return t("staff.toast.singleSuccessDescription");
@@ -307,11 +299,7 @@ export const StaffPage = (): ReactElement => {
       setSavingRowKey(null);
       const notification = normalizeStaffInviteNotification(response.data.notification);
 
-      showToast(
-        "success",
-        t("staff.toast.singleSuccessTitle"),
-        describeStaffSingleSuccess(notification, t),
-      );
+      showToast("success", t("staff.toast.singleSuccessTitle"), describeStaffSingleSuccess(notification, t));
     },
     onError: (error: unknown) => {
       setSavingRowKey(null);
