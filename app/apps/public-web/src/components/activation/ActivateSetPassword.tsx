@@ -20,6 +20,14 @@ interface ActivateSetPasswordViewProps {
   onPasswordFocus: () => void;
   onPasswordBlur: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  formCopy?: {
+    title: string;
+    description: string;
+    submit: string;
+    submitting: string;
+    passwordLabel: string;
+    confirmPasswordLabel: string;
+  };
 }
 
 export const ActivateSetPasswordView = ({
@@ -37,8 +45,15 @@ export const ActivateSetPasswordView = ({
   onPasswordFocus,
   onPasswordBlur,
   onSubmit,
+  formCopy,
 }: ActivateSetPasswordViewProps): ReactElement => {
   const t = useTranslations("activate");
+  const titleText = formCopy?.title ?? t("setPassword.title");
+  const descriptionText = formCopy?.description ?? t("setPassword.description");
+  const submitText = formCopy?.submit ?? t("setPassword.submit");
+  const submittingText = formCopy?.submitting ?? t("setPassword.submitting");
+  const passwordLabelText = formCopy?.passwordLabel ?? "Password";
+  const confirmPasswordLabelText = formCopy?.confirmPasswordLabel ?? "Repeat password";
 
   const confirmPasswordMeetsLength = confirmPassword.length >= MIN_PASSWORD_LENGTH;
   const passwordsMatchByLength = confirmPasswordMeetsLength && confirmPassword === password;
@@ -60,15 +75,15 @@ export const ActivateSetPasswordView = ({
   return (
     <>
       <Text variant="h2" weight="bold" className="mb-4">
-        {t("setPassword.title")}
+        {titleText}
       </Text>
       <Text variant="body-lg" className="mb-6 text-text-secondary">
-        {t("setPassword.description")}
+        {descriptionText}
       </Text>
       <form className="w-full space-y-4 text-left" onSubmit={onSubmit}>
         <div className="relative">
           <PasswordInput
-            label="Password"
+            label={passwordLabelText}
             autoComplete="new-password"
             value={password}
             onChange={(event) => onPasswordChange(event.target.value)}
@@ -81,7 +96,7 @@ export const ActivateSetPasswordView = ({
           {showPasswordRules && <PasswordRulesPin checks={passwordChecks} />}
         </div>
         <PasswordInput
-          label="Repeat password"
+          label={confirmPasswordLabelText}
           autoComplete="new-password"
           value={confirmPassword}
           onChange={(event) => onConfirmPasswordChange(event.target.value)}
@@ -91,7 +106,7 @@ export const ActivateSetPasswordView = ({
         />
         {errorMessage && <p className="text-sm text-status-error-text">{errorMessage}</p>}
         <Button type="submit" variant="primary" fullWidth disabled={!isPasswordFormValid || isSettingPassword}>
-          {isSettingPassword ? t("setPassword.submitting") : t("setPassword.submit")}
+          {isSettingPassword ? submittingText : submitText}
         </Button>
       </form>
     </>

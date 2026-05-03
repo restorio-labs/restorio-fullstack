@@ -30,6 +30,14 @@
       "activate": {
         "title": "Activar cuenta",
         "description": "Activa tu cuenta de Restorio."
+      },
+      "forgotPassword": {
+        "title": "Restablecer contraseña",
+        "description": "Introduce tu correo para recibir un enlace de restablecimiento."
+      },
+      "resetPassword": {
+        "title": "Nueva contraseña",
+        "description": "Elige una nueva contraseña para tu cuenta de Restorio."
       }
     }
   },
@@ -39,6 +47,7 @@
     "password": "Contraseña",
     "submit": "Iniciar sesión",
     "submitting": "Iniciando sesión...",
+    "forgotPasswordLink": "¿Olvidaste tu contraseña?",
     "genericError": "Error al iniciar sesión. Verifica tu correo y contraseña.",
     "errors": {
       "emailRequired": "El correo electrónico es obligatorio",
@@ -46,6 +55,49 @@
       "passwordRequired": "La contraseña es obligatoria",
       "passwordInvalid": "La contraseña no cumple los requisitos",
       "passwordMinLength": "La contraseña debe tener al menos {min} caracteres"
+    }
+  },
+  "forgotPassword": {
+    "title": "Restablecer contraseña",
+    "fields": {
+      "email": "Correo electrónico"
+    },
+    "submit": "Enviar enlace",
+    "submitting": "Enviando...",
+    "genericConfirm": "Si este correo está vinculado a una cuenta activa, enviaremos instrucciones para restablecer la contraseña.",
+    "errors": {
+      "emailRequired": "El correo electrónico es obligatorio",
+      "emailInvalid": "Introduce un correo electrónico válido",
+      "generic": "No se pudo completar la solicitud. Inténtalo de nuevo."
+    },
+    "backToLogin": "Volver al inicio de sesión"
+  },
+  "resetPassword": {
+    "form": {
+      "title": "Nueva contraseña",
+      "description": "Introduce tu nueva contraseña. Después de guardar, inicia sesión en la página de acceso.",
+      "submit": "Guardar contraseña",
+      "submitting": "Guardando..."
+    },
+    "fields": {
+      "password": "Contraseña",
+      "confirmPassword": "Confirmar contraseña"
+    },
+    "invalid": {
+      "title": "Enlace no válido o ausente",
+      "description": "El enlace de restablecimiento no es válido o ha caducado. Solicita uno nuevo en la página de restablecimiento.",
+      "requestNew": "Solicitar un nuevo enlace"
+    },
+    "success": {
+      "title": "Contraseña actualizada",
+      "description": "Ya puedes iniciar sesión con tu nueva contraseña.",
+      "goToLogin": "Ir al inicio de sesión"
+    },
+    "errors": {
+      "expired": "El enlace de restablecimiento ha caducado.",
+      "notFound": "El enlace de restablecimiento no es válido.",
+      "alreadyUsed": "Este enlace ya se ha usado. Solicita uno nuevo.",
+      "generic": "No se pudo cambiar la contraseña. Inténtalo de nuevo."
     }
   },
   "register": {

@@ -143,6 +143,34 @@ async def test_unauthorized_middleware_allows_public_auth_login_route() -> None:
 
 
 @pytest.mark.asyncio
+async def test_unauthorized_middleware_allows_public_auth_forgot_password_route() -> None:
+    async def call_next(_: Request) -> Response:
+        return Response(status_code=204)
+
+    middleware = UnauthorizedMiddleware(call_next)
+    scope = {"type": "http", "method": "POST", "path": "/api/v1/auth/forgot-password", "headers": []}
+    request = Request(scope)
+
+    response = await middleware.dispatch(request, call_next)
+
+    assert response.status_code == 204  # noqa: PLR2004
+
+
+@pytest.mark.asyncio
+async def test_unauthorized_middleware_allows_public_auth_reset_password_route() -> None:
+    async def call_next(_: Request) -> Response:
+        return Response(status_code=204)
+
+    middleware = UnauthorizedMiddleware(call_next)
+    scope = {"type": "http", "method": "POST", "path": "/api/v1/auth/reset-password", "headers": []}
+    request = Request(scope)
+
+    response = await middleware.dispatch(request, call_next)
+
+    assert response.status_code == 204  # noqa: PLR2004
+
+
+@pytest.mark.asyncio
 async def test_unauthorized_middleware_returns_401_on_invalid_token() -> None:
     async def call_next(_: Request) -> Response:
         return Response(status_code=200)

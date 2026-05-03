@@ -102,6 +102,24 @@ class SetPasswordDTO(BaseDTO):
         return _validate_password_complexity(value)
 
 
+class ForgotPasswordDTO(BaseDTO):
+    email: EmailStr = Field(..., description="Account email address")
+
+
+class ResetPasswordDTO(BaseDTO):
+    reset_token_id: UUID = Field(..., description="Password reset token id from email link")
+    password: str = Field(..., min_length=5, max_length=128, description="New password")
+
+    @field_validator("password")
+    @classmethod
+    def password_complexity(cls, value: str) -> str:
+        return _validate_password_complexity(value)
+
+
+class EmptyAuthActionData(BaseDTO):
+    pass
+
+
 class RegisterCreatedData(BaseDTO):
     user_id: str = Field(..., description="Created user ID")
     email: EmailStr = Field(..., description="User email")

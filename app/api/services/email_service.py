@@ -63,6 +63,29 @@ class EmailService:
             },
         )
 
+    async def send_password_reset_email(self, *, to_email: str, reset_link: str) -> None:
+        resend_api_key, resend_from_email = self._get_resend_settings()
+        resend.api_key = resend_api_key
+
+        subject = "Resetowanie hasła w Restorio"
+        safe_link = html.escape(reset_link.strip(), quote=True)
+        html_body = f"""
+            <p>Witamy w Restorio!</p>
+            <p>Otrzymaliśmy prośbę o zresetowanie hasła do Twojego konta.</p>
+            <p><a href="{safe_link}">Ustaw nowe hasło</a></p>
+            <p>Link jest ważny przez jedną godzinę. Jeśli to nie Ty, zignoruj tę wiadomość.</p>
+            """
+
+        await asyncio.to_thread(
+            resend.Emails.send,
+            {
+                "from": resend_from_email,
+                "to": [to_email],
+                "subject": subject,
+                "html": html_body,
+            },
+        )
+
     async def send_waiter_added_existing_account_email(
         self,
         *,

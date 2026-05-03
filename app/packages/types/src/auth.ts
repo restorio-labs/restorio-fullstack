@@ -44,6 +44,27 @@ export interface SetActivationPasswordRequest {
   password: string;
 }
 
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  reset_token_id: string;
+  password: string;
+}
+
+export interface EmptyAuthActionData {}
+
+export interface ForgotPasswordResponse {
+  message: string;
+  data: EmptyAuthActionData;
+}
+
+export interface ResetPasswordResponse {
+  message: string;
+  data: EmptyAuthActionData;
+}
+
 export interface CreateStaffUserRequest {
   email: string;
   access_level: "kitchen" | "waiter";

@@ -2,7 +2,7 @@ from datetime import UTC, datetime, timedelta
 import hashlib
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.exceptions import (
@@ -18,6 +18,7 @@ from core.exceptions import (
 from core.foundation.security import SecurityService
 from core.models.activation_link import ActivationLink
 from core.models.enums import TenantStatus
+from core.models.password_reset_token import PasswordResetToken
 from core.models.tenant import Tenant
 from core.models.tenant_role import TenantRole
 from core.models.user import User
@@ -195,6 +196,56 @@ class AuthService:
             token_data["account_type"] = role.account_type.value
 
         return self.security.create_access_token(data=token_data)
+
+    async def request_password_reset(self, session: AsyncSession, email: str) -> PasswordResetToken | None:
+        normalized = email.strip()
+        user = await session.scalar(select(User).where(User.email == normalized))
+        if user is None or not user.is_active:
+            return None
+        await session.execute(
+            delete(PasswordResetToken).where(
+                PasswordResetToken.user_id == user.id,
+                PasswordResetToken.used_at.is_(None),
+            )
+        )
+        token = PasswordResetToken(
+            email=user.email,
+            user_id=user.id,
+            expires_at=datetime.now(tz=UTC) + timedelta(hours=1),
+        )
+        session.add(token)
+        await session.flush()
+        await session.refresh(token)
+        return token
+
+    async def complete_password_reset(
+        self,
+        session: AsyncSession,
+        reset_token_id: UUID,
+        password: str,
+    ) -> UUID:
+        token = await session.get(PasswordResetToken, reset_token_id)
+        if token is None:
+            msg = "Password reset link not found"
+            raise NotFoundResponse(msg, str(reset_token_id))
+
+        now = datetime.now(tz=UTC)
+        if token.expires_at < now:
+            msg = "Password reset link has expired"
+            raise GoneError(msg)
+        if token.used_at is not None:
+            msg = "Password reset link has already been used"
+            raise BadRequestError(msg)
+
+        user = await session.get(User, token.user_id)
+        if user is None:
+            msg = "Account"
+            raise NotFoundResponse(msg, "password reset")
+
+        user.password_hash = self.security.hash_password(password)
+        user.force_password_change = False
+        token.used_at = now
+        return user.id
 
     async def check_password_pwned(self, password: str) -> None:
         """Check password against HaveIBeenPwned Pwned Passwords (k-anonymity range lookup).
