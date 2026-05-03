@@ -148,7 +148,12 @@ async def test_unauthorized_middleware_allows_public_auth_forgot_password_route(
         return Response(status_code=204)
 
     middleware = UnauthorizedMiddleware(call_next)
-    scope = {"type": "http", "method": "POST", "path": "/api/v1/auth/forgot-password", "headers": []}
+    scope = {
+        "type": "http",
+        "method": "POST",
+        "path": "/api/v1/auth/forgot-password",
+        "headers": [],
+    }
     request = Request(scope)
 
     response = await middleware.dispatch(request, call_next)

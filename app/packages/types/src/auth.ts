@@ -53,7 +53,7 @@ export interface ResetPasswordRequest {
   password: string;
 }
 
-export interface EmptyAuthActionData {}
+export type EmptyAuthActionData = Record<string, never>;
 
 export interface ForgotPasswordResponse {
   message: string;

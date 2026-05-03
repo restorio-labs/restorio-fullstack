@@ -197,7 +197,9 @@ class AuthService:
 
         return self.security.create_access_token(data=token_data)
 
-    async def request_password_reset(self, session: AsyncSession, email: str) -> PasswordResetToken | None:
+    async def request_password_reset(
+        self, session: AsyncSession, email: str
+    ) -> PasswordResetToken | None:
         normalized = email.strip()
         user = await session.scalar(select(User).where(User.email == normalized))
         if user is None or not user.is_active:

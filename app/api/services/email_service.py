@@ -51,8 +51,6 @@ class EmailService:
             <p>Jeśli nie tworzyłeś konta w naszym serwisie, proszę zignorować tę wiadomość.</p>
             """
 
-
-
         await asyncio.to_thread(
             resend.Emails.send,
             {

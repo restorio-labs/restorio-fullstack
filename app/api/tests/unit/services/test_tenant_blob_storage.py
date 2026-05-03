@@ -60,13 +60,19 @@ def _new_logo_service(internal: MagicMock, public: MagicMock) -> TenantLogoStora
         return TenantLogoStorageService()
 
 
-def _new_menu_image_service(internal: MagicMock, public: MagicMock) -> TenantMenuImageStorageService:
+def _new_menu_image_service(
+    internal: MagicMock, public: MagicMock
+) -> TenantMenuImageStorageService:
     with patch("services.tenant_menu_image_storage_service.Minio", side_effect=[internal, public]):
         return TenantMenuImageStorageService()
 
 
-def _new_favicon_service(internal: MagicMock, public: MagicMock) -> TenantMobileFaviconStorageService:
-    with patch("services.tenant_mobile_favicon_storage_service.Minio", side_effect=[internal, public]):
+def _new_favicon_service(
+    internal: MagicMock, public: MagicMock
+) -> TenantMobileFaviconStorageService:
+    with patch(
+        "services.tenant_mobile_favicon_storage_service.Minio", side_effect=[internal, public]
+    ):
         return TenantMobileFaviconStorageService()
 
 
@@ -472,9 +478,7 @@ def test_menu_image_oserror_normalize() -> None:
 
 def test_menu_image_read_too_large() -> None:
     i, p = MagicMock(), MagicMock()
-    i.stat_object.return_value = SimpleNamespace(
-        size=settings.TENANT_MENU_IMAGE_MAX_BYTES + 1
-    )
+    i.stat_object.return_value = SimpleNamespace(size=settings.TENANT_MENU_IMAGE_MAX_BYTES + 1)
     svc = _new_menu_image_service(i, p)
     with pytest.raises(BadRequestError, match="too large"):
         svc._read_uploaded_object("k")
@@ -657,7 +661,9 @@ def test_favicon_finalize_image_open_oserror() -> None:
     key = f"tmp/tenant-mobile-favicons/{tid}/x.ico"
     svc = _new_favicon_service(i, p)
     with (
-        patch("services.tenant_mobile_favicon_storage_service.Image.open", side_effect=OSError("bad")),
+        patch(
+            "services.tenant_mobile_favicon_storage_service.Image.open", side_effect=OSError("bad")
+        ),
         pytest.raises(BadRequestError, match="valid ICO"),
     ):
         svc.finalize_upload(tid, key)

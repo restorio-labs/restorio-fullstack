@@ -39,7 +39,11 @@ async def test_activate_activation_link_not_found() -> None:
     session.get = AsyncMock(return_value=None)
     with pytest.raises(NotFoundResponse, match="Activation link not found"):
         await auth_routes.activate(
-            uuid4(), _req(), Response(), session, auth_service  # type: ignore[arg-type]
+            uuid4(),
+            _req(),
+            Response(),
+            session,
+            auth_service,  # type: ignore[arg-type]
         )
 
 
@@ -60,7 +64,11 @@ async def test_activate_user_not_found() -> None:
     session.get = AsyncMock(side_effect=sget)
     with pytest.raises(NotFoundResponse, match="Account"):
         await auth_routes.activate(
-            aid, _req(), Response(), session, auth_service  # type: ignore[arg-type]
+            aid,
+            _req(),
+            Response(),
+            session,
+            auth_service,  # type: ignore[arg-type]
         )
 
 
@@ -104,7 +112,11 @@ async def test_activate_success_sets_cookies_and_audit() -> None:
     ):
         m_act.return_value = (tenant, False)
         r = await auth_routes.activate(
-            aid, _req(), Response(), session, auth_service  # type: ignore[arg-type]
+            aid,
+            _req(),
+            Response(),
+            session,
+            auth_service,  # type: ignore[arg-type]
         )
     m_cook.assert_called_once()
     m_audit.activation_success.assert_called_once()
@@ -119,7 +131,11 @@ async def test_set_password_not_found() -> None:
     data = SetPasswordDTO(activation_id=uuid4(), password="Str0ng!Pass-9")
     with pytest.raises(NotFoundResponse, match="Activation link not found"):
         await auth_routes.set_password(
-            data, _req(), Response(), session, auth_service  # type: ignore[arg-type]
+            data,
+            _req(),
+            Response(),
+            session,
+            auth_service,  # type: ignore[arg-type]
         )
 
 
@@ -140,7 +156,11 @@ async def test_set_password_expired() -> None:
     data = SetPasswordDTO(activation_id=aid, password="Str0ng!Pass-9")
     with pytest.raises(GoneError, match="expired"):
         await auth_routes.set_password(
-            data, _req(), Response(), session, auth_service  # type: ignore[arg-type]
+            data,
+            _req(),
+            Response(),
+            session,
+            auth_service,  # type: ignore[arg-type]
         )
 
 
@@ -161,7 +181,11 @@ async def test_set_password_already_used() -> None:
     data = SetPasswordDTO(activation_id=aid, password="Str0ng!Pass-9")
     with pytest.raises(BadRequestError, match="already activated"):
         await auth_routes.set_password(
-            data, _req(), Response(), session, auth_service  # type: ignore[arg-type]
+            data,
+            _req(),
+            Response(),
+            session,
+            auth_service,  # type: ignore[arg-type]
         )
 
 
@@ -190,7 +214,11 @@ async def test_set_password_user_not_found() -> None:
     data = SetPasswordDTO(activation_id=aid, password="Str0ng!Pass-9")
     with pytest.raises(NotFoundResponse, match="Account"):
         await auth_routes.set_password(
-            data, _req(), Response(), session, auth_service  # type: ignore[arg-type]
+            data,
+            _req(),
+            Response(),
+            session,
+            auth_service,  # type: ignore[arg-type]
         )
 
 
@@ -226,7 +254,11 @@ async def test_activate_requires_password_change_with_tenant_slug() -> None:
     session.get = AsyncMock(side_effect=sget)
     with patch("routes.v1.auth.set_auth_cookies"):
         r = await auth_routes.activate(
-            aid, _req(), Response(), session, auth_service  # type: ignore[arg-type]
+            aid,
+            _req(),
+            Response(),
+            session,
+            auth_service,  # type: ignore[arg-type]
         )
     assert r.data.requires_password_change is True
     assert r.data.tenant_slug == "slug"
@@ -314,7 +346,10 @@ async def test_forgot_password_sends_email_when_token_created() -> None:
     m_email = AsyncMock()
     session = MagicMock()
     data = ForgotPasswordDTO(email="u@u.com")
-    with patch.object(auth_routes.settings, "FRONTEND_URL", "https://app.test"), patch("routes.v1.auth.audit") as m_audit:
+    with (
+        patch.object(auth_routes.settings, "FRONTEND_URL", "https://app.test"),
+        patch("routes.v1.auth.audit") as m_audit,
+    ):
         r = await auth_routes.forgot_password(data, _req(), session, m_auth, m_email)  # type: ignore[arg-type]
     m_email.send_password_reset_email.assert_awaited_once()
     m_audit.password_reset_email_sent.assert_called_once()

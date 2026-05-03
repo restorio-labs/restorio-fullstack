@@ -31,7 +31,9 @@ def _make_ws(scope: dict) -> WebSocket:
 @pytest.mark.asyncio
 async def test_authenticate_from_query() -> None:
     w = _make_ws(_connect_scope(b"token=tok1"))
-    with patch.object(ws_mod.security_service, "decode_access_token", return_value={"sub": "u"}) as dec:
+    with patch.object(
+        ws_mod.security_service, "decode_access_token", return_value={"sub": "u"}
+    ) as dec:
         out = await ws_mod._authenticate_websocket(w)
     assert out == {"sub": "u"}
     dec.assert_called_once_with("tok1")

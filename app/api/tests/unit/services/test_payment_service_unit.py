@@ -156,9 +156,7 @@ async def test_verify_transaction_fetches_order_id_and_calls_put() -> None:
     ext.external_get_json = AsyncMock(
         return_value={"responseCode": 0, "data": {"orderId": expected_p24_order}}
     )
-    ext.external_put_json = AsyncMock(
-        return_value={"data": {"status": 0}}
-    )
+    ext.external_put_json = AsyncMock(return_value={"data": {"status": 0}})
     tx = MagicMock(spec=Transaction)
     tx.tenant_id = tid
     tx.session_id = sid
@@ -173,9 +171,7 @@ async def test_verify_transaction_fetches_order_id_and_calls_put() -> None:
     ten.p24_api = "k"
     ten.p24_crc = "crc"
     svc = P24Service()
-    await svc.verify_transaction_at_przelewy24(
-        ext, transaction=tx, tenant=ten
-    )
+    await svc.verify_transaction_at_przelewy24(ext, transaction=tx, tenant=ten)
     ext.external_get_json.assert_awaited_once()
     ext.external_put_json.assert_awaited_once()
     assert tx.p24_order_id == expected_p24_order
@@ -194,22 +190,16 @@ async def test_verify_transaction_rejects_tenant_mismatch() -> None:
     ten.p24_crc = "c"
     svc = P24Service()
     with pytest.raises(BadRequestError, match="does not belong"):
-        await svc.verify_transaction_at_przelewy24(
-            ext, transaction=tx, tenant=ten
-        )
+        await svc.verify_transaction_at_przelewy24(ext, transaction=tx, tenant=ten)
 
 
 @pytest.mark.asyncio
 async def test_fetch_transaction_error_string() -> None:
     ext = AsyncMock(spec=ExternalClient)
-    ext.external_get_json = AsyncMock(
-        return_value={"error": "plain error", "data": {"orderId": 1}}
-    )
+    ext.external_get_json = AsyncMock(return_value={"error": "plain error", "data": {"orderId": 1}})
     svc = P24Service()
     with pytest.raises(ExternalAPIError, match="plain error"):
-        await svc.fetch_transaction_by_session_id(
-            ext, session_id="s", merchant_id=1, api_key="k"
-        )
+        await svc.fetch_transaction_by_session_id(ext, session_id="s", merchant_id=1, api_key="k")
 
 
 @pytest.mark.asyncio
@@ -234,9 +224,7 @@ async def test_apply_p24_lookup_invalid_status() -> None:
     ten.p24_crc = "c"
     svc = P24Service()
     with pytest.raises(BadRequestError, match="Invalid"):
-        await svc.apply_p24_lookup_to_transaction(
-            ext, transaction=tx, tenant=ten
-        )
+        await svc.apply_p24_lookup_to_transaction(ext, transaction=tx, tenant=ten)
 
 
 @pytest.mark.asyncio
@@ -261,9 +249,7 @@ async def test_apply_p24_lookup_currency_mismatch() -> None:
     ten.p24_crc = "c"
     svc = P24Service()
     with pytest.raises(ConflictError, match="currency"):
-        await svc.apply_p24_lookup_to_transaction(
-            ext, transaction=tx, tenant=ten
-        )
+        await svc.apply_p24_lookup_to_transaction(ext, transaction=tx, tenant=ten)
 
 
 @pytest.mark.asyncio

@@ -60,9 +60,7 @@ async def test_get_floor_canvas() -> None:
 @pytest.mark.asyncio
 async def test_create_floor_canvas() -> None:
     tid = uuid4()
-    el = FloorTableElementDTO(
-        id="e1", x=0, y=0, w=1, h=1, tableNumber=1, seats=2
-    )
+    el = FloorTableElementDTO(id="e1", x=0, y=0, w=1, h=1, tableNumber=1, seats=2)
     body = CreateFloorCanvasDTO(name="C", width=10, height=8, elements=[el])
     now = datetime.now(UTC)
     fc = SimpleNamespace(
@@ -78,9 +76,7 @@ async def test_create_floor_canvas() -> None:
     )
     svc = MagicMock()
     svc.create_canvas = AsyncMock(return_value=fc)
-    r = await canvases_routes.create_floor_canvas(
-        tid, body, MagicMock(), svc
-    )  # type: ignore[arg-type]
+    r = await canvases_routes.create_floor_canvas(tid, body, MagicMock(), svc)  # type: ignore[arg-type]
     assert "created" in r.message
     assert r.data.name == "C"
 
@@ -88,9 +84,7 @@ async def test_create_floor_canvas() -> None:
 @pytest.mark.asyncio
 async def test_update_floor_canvas() -> None:
     tid, cid = uuid4(), uuid4()
-    el = FloorTableElementDTO(
-        id="e1", x=0, y=0, w=1, h=1, tableNumber=1, seats=2
-    )
+    el = FloorTableElementDTO(id="e1", x=0, y=0, w=1, h=1, tableNumber=1, seats=2)
     body = UpdateFloorCanvasDTO(name="N", elements=[el])
     now = datetime.now(UTC)
     fc = SimpleNamespace(
@@ -107,9 +101,7 @@ async def test_update_floor_canvas() -> None:
     svc = MagicMock()
     svc.ensure_valid_table_numeration = MagicMock()
     svc.update_canvas = AsyncMock(return_value=fc)
-    r = await canvases_routes.update_floor_canvas(
-        tid, cid, body, MagicMock(), svc
-    )  # type: ignore[arg-type]
+    r = await canvases_routes.update_floor_canvas(tid, cid, body, MagicMock(), svc)  # type: ignore[arg-type]
     svc.ensure_valid_table_numeration.assert_called_once()
     assert "updated" in r.message
 
@@ -128,9 +120,7 @@ async def test_list_canvas_versions() -> None:
     tid, cid = uuid4(), uuid4()
     svc = MagicMock()
     svc.list_versions = AsyncMock(return_value=[{"v": 1}])
-    r = await canvases_routes.list_canvas_versions(
-        tid, cid, MagicMock(), svc, limit=5
-    )  # type: ignore[arg-type]
+    r = await canvases_routes.list_canvas_versions(tid, cid, MagicMock(), svc, limit=5)  # type: ignore[arg-type]
     assert r.data[0]["v"] == 1
 
 
@@ -139,7 +129,5 @@ async def test_get_canvas_version() -> None:
     tid, cid = uuid4(), uuid4()
     svc = MagicMock()
     svc.get_version = AsyncMock(return_value={"snapshot": {}})
-    r = await canvases_routes.get_canvas_version(
-        tid, cid, 2, MagicMock(), svc
-    )  # type: ignore[arg-type]
+    r = await canvases_routes.get_canvas_version(tid, cid, 2, MagicMock(), svc)  # type: ignore[arg-type]
     assert r.data["snapshot"] == {}

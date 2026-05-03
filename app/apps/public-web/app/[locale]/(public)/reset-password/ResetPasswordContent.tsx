@@ -75,6 +75,7 @@ export const ResetPasswordContent = (): ReactElement => {
       } catch (err: unknown) {
         const data = getApiErrorData(err);
         const rawMessage = getApiErrorMessage(data);
+
         interface AxiosErrorShape {
           response?: { status?: number };
         }

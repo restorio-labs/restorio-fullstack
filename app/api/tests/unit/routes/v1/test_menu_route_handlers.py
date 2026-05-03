@@ -156,7 +156,9 @@ async def test_upsert_tenant_menu() -> None:
     db = _MongoWithCollection(coll)
 
     payload = UpsertTenantMenuDTO(
-        categories=[MenuCategoryInputDTO(name="A", order=0, items=[MenuItemInputDTO(name="B", price=1)])]
+        categories=[
+            MenuCategoryInputDTO(name="A", order=0, items=[MenuItemInputDTO(name="B", price=1)])
+        ]
     )
     with patch("routes.v1.tenants.menu.datetime") as dt:
         fixed = datetime(2026, 1, 1, tzinfo=UTC)

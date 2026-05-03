@@ -225,13 +225,16 @@ async def test_get_tenant_by_slug_404() -> None:
 @pytest.mark.asyncio
 async def test_update_tenant_and_delete() -> None:
     t = Tenant(
-        id=uuid4(), name="Old", slug="old", status=TenantStatus.ACTIVE, public_id="pub", owner_id=uuid4()
+        id=uuid4(),
+        name="Old",
+        slug="old",
+        status=TenantStatus.ACTIVE,
+        public_id="pub",
+        owner_id=uuid4(),
     )
     t.created_at = datetime.now(UTC)
     t.floor_canvases = []
-    for attr in (
-        "active_layout_version_id",
-    ):
+    for attr in ("active_layout_version_id",):
         setattr(t, attr, None)
     session = _session_scalar_result(t)
     svc = TenantService()

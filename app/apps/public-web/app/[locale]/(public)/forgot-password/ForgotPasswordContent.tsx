@@ -102,7 +102,13 @@ export const ForgotPasswordContent = (): ReactElement => {
           />
         </FormField>
         <FormActions align="stretch" className={animatedFieldClassName} style={{ animationDelay: "220ms" }}>
-          <Button type="submit" size="lg" variant="primary" fullWidth disabled={!isFormValid || submitting || blockAuthActions}>
+          <Button
+            type="submit"
+            size="lg"
+            variant="primary"
+            fullWidth
+            disabled={!isFormValid || submitting || blockAuthActions}
+          >
             {submitting ? t("submitting") : t("submit")}
           </Button>
         </FormActions>
