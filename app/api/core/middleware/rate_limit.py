@@ -29,6 +29,8 @@ RATE_LIMITED_PATHS: dict[str, RateRule] = {
     f"{settings.API_V1_PREFIX}/auth/register": RateRule(max_requests=5, window_seconds=60),
     f"{settings.API_V1_PREFIX}/auth/activate": RateRule(max_requests=10, window_seconds=60),
     f"{settings.API_V1_PREFIX}/auth/set-password": RateRule(max_requests=5, window_seconds=60),
+    f"{settings.API_V1_PREFIX}/auth/forgot-password": RateRule(max_requests=5, window_seconds=60),
+    f"{settings.API_V1_PREFIX}/auth/reset-password": RateRule(max_requests=5, window_seconds=60),
     f"{settings.API_V1_PREFIX}/auth/resend-activation": RateRule(max_requests=3, window_seconds=60),
     f"{settings.API_V1_PREFIX}/tenants": RateRule(max_requests=30, window_seconds=60),
 }

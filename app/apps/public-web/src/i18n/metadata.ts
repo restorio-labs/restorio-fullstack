@@ -12,7 +12,7 @@ const OPEN_GRAPH_LOCALE_MAP: Record<string, string> = {
   ar: "ar_AR",
 };
 
-const PAGE_KEYS = ["home", "about", "login", "register", "activate"] as const;
+const PAGE_KEYS = ["home", "about", "login", "register", "activate", "forgotPassword", "resetPassword"] as const;
 
 type PageKey = (typeof PAGE_KEYS)[number];
 

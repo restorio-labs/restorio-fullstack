@@ -9,7 +9,8 @@ import {
   LAST_VISITED_APP_STORAGE_KEY,
   getAppHref,
 } from "@restorio/utils";
-import { useTranslations } from "next-intl";
+import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 import { useMemo, useState } from "react";
 
@@ -52,6 +53,7 @@ export const LoginContent = (): ReactElement => {
   const [fieldErrors, setFieldErrors] = useState<LoginFieldErrors>({});
   const [view, setView] = useState<ViewState>("form");
   const t = useTranslations();
+  const locale = useLocale();
   const animatedFieldClassName = "onboarding-fade-up motion-reduce:animate-none";
 
   const passwordValid = useMemo(() => password.trim().length >= MIN_PASSWORD_LENGTH_FACADE, [password]);
@@ -191,6 +193,15 @@ export const LoginContent = (): ReactElement => {
             required
           />
         </FormField>
+
+        <div className={`text-right ${animatedFieldClassName}`} style={{ animationDelay: "280ms" }}>
+          <Link
+            href={`/${locale}/forgot-password`}
+            className="text-sm font-medium text-text-primary underline underline-offset-2 hover:underline"
+          >
+            {t("login.forgotPasswordLink")}
+          </Link>
+        </div>
 
         <FormActions align="stretch" className={animatedFieldClassName} style={{ animationDelay: "320ms" }}>
           <Button

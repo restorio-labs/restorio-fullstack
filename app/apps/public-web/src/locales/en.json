@@ -30,6 +30,14 @@
       "activate": {
         "title": "Activate Account",
         "description": "Activate your Restorio account."
+      },
+      "forgotPassword": {
+        "title": "Reset password",
+        "description": "Enter your email to receive a password reset link."
+      },
+      "resetPassword": {
+        "title": "Set a new password",
+        "description": "Choose a new password for your Restorio account."
       }
     }
   },
@@ -39,6 +47,7 @@
     "password": "Password",
     "submit": "Log in",
     "submitting": "Logging in...",
+    "forgotPasswordLink": "Forgot your password?",
     "genericError": "Login failed. Please check your email and password.",
     "errors": {
       "emailRequired": "Email is required",
@@ -48,6 +57,49 @@
       "passwordMinLength": "Password must be at least {min} characters",
       "invalidCredentials": "Invalid email or password",
       "accountNotActive": "This account is not active yet"
+    }
+  },
+  "forgotPassword": {
+    "title": "Reset your password",
+    "fields": {
+      "email": "Email"
+    },
+    "submit": "Send reset link",
+    "submitting": "Sending...",
+    "genericConfirm": "If this email is linked to an active account, we will send password reset instructions to it.",
+    "errors": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Enter a valid email address",
+      "generic": "Something went wrong. Please try again."
+    },
+    "backToLogin": "Back to log in"
+  },
+  "resetPassword": {
+    "form": {
+      "title": "Set a new password",
+      "description": "Enter your new password. After saving, sign in on the log in page.",
+      "submit": "Save password",
+      "submitting": "Saving..."
+    },
+    "fields": {
+      "password": "Password",
+      "confirmPassword": "Confirm password"
+    },
+    "invalid": {
+      "title": "Invalid or missing link",
+      "description": "The reset link is invalid or expired. Request a new one from the password reset page.",
+      "requestNew": "Request a new link"
+    },
+    "success": {
+      "title": "Password updated",
+      "description": "You can now sign in with your new password.",
+      "goToLogin": "Go to log in"
+    },
+    "errors": {
+      "expired": "The password reset link has expired.",
+      "notFound": "The password reset link is invalid.",
+      "alreadyUsed": "This link has already been used. Request a new one.",
+      "generic": "Could not change your password. Please try again."
     }
   },
   "register": {

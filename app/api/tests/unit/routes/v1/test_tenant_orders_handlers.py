@@ -103,9 +103,7 @@ async def test_list_tenant_orders() -> None:
         created_at=ts,
         updated_at=ts,
     )
-    det = SimpleNamespace(
-        order_id=oid, notes="n", items_snapshot=[]
-    )
+    det = SimpleNamespace(order_id=oid, notes="n", items_snapshot=[])
     waiter = SimpleNamespace(id=wid, name="W", surname="K")
 
     n = 0
@@ -139,9 +137,7 @@ async def test_create_tenant_order_rejects_unauthenticated() -> None:
     body = CreateOrderDTO(
         tableId="t1",
         items=[
-            CreateOrderItemDTO(
-                menuItemId="m1", name="A", quantity=1, basePrice=Decimal("1.00")
-            )
+            CreateOrderItemDTO(menuItemId="m1", name="A", quantity=1, basePrice=Decimal("1.00"))
         ],
     )
     with pytest.raises(UnauthenticatedResponse):
@@ -161,9 +157,7 @@ async def test_create_tenant_order_rejects_invalid_sub_uuid() -> None:
     body = CreateOrderDTO(
         tableId="t1",
         items=[
-            CreateOrderItemDTO(
-                menuItemId="m1", name="A", quantity=1, basePrice=Decimal("1.00")
-            )
+            CreateOrderItemDTO(menuItemId="m1", name="A", quantity=1, basePrice=Decimal("1.00"))
         ],
     )
     with pytest.raises(UnauthenticatedResponse):

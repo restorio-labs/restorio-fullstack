@@ -100,7 +100,11 @@ async def test_set_favicon_creates() -> None:
 async def test_set_favicon_updates_existing() -> None:
     tid = uuid4()
     existing = SimpleNamespace(
-        tenant_id=tid, favicon_object_key="old", page_title="T", theme_override=None, landing_content=None
+        tenant_id=tid,
+        favicon_object_key="old",
+        page_title="T",
+        theme_override=None,
+        landing_content=None,
     )
     r1 = MagicMock()
     r1.scalar_one_or_none = MagicMock(return_value=existing)
@@ -118,7 +122,11 @@ async def test_copy_theme_override_updates_existing() -> None:
     dst, src = uuid4(), uuid4()
     source_row = SimpleNamespace(tenant_id=src, theme_override={"a": 1})
     target_existing = SimpleNamespace(
-        tenant_id=dst, theme_override={"b": 2}, page_title="P", landing_content=None, favicon_object_key=None
+        tenant_id=dst,
+        theme_override={"b": 2},
+        page_title="P",
+        landing_content=None,
+        favicon_object_key=None,
     )
     n = 0
 

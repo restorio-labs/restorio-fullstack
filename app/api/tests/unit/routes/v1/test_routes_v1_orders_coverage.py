@@ -16,7 +16,12 @@ from routes.v1 import orders as orders_routes
 
 
 def _scope() -> dict:
-    return {"type": "http", "method": "GET", "path": "/", "headers": [(b"x-timezone", b"Europe/Warsaw")]}
+    return {
+        "type": "http",
+        "method": "GET",
+        "path": "/",
+        "headers": [(b"x-timezone", b"Europe/Warsaw")],
+    }
 
 
 def _req() -> Request:
@@ -99,7 +104,9 @@ async def test_list_archived_orders_with_since() -> None:
 
     session = MagicMock()
     session.execute = ex
-    out = await orders_routes.list_archived_orders("tp1", session, uuid4(), object(), page=1, page_size=10, since_hours=1)  # type: ignore[arg-type]
+    out = await orders_routes.list_archived_orders(
+        "tp1", session, uuid4(), object(), page=1, page_size=10, since_hours=1
+    )  # type: ignore[arg-type]
     assert out.total == 2  # noqa: PLR2004
 
 
@@ -151,7 +158,16 @@ async def test_create_order_with_table_and_waiter(_bc: AsyncMock) -> None:
     session = MagicMock()
     db = MagicMock()
     await orders_routes.create_order(
-        "tp1", item, req, db, svc, session, ts, tss, tid, object()  # type: ignore[arg-type]
+        "tp1",
+        item,
+        req,
+        db,
+        svc,
+        session,
+        ts,
+        tss,
+        tid,
+        object(),  # type: ignore[arg-type]
     )
     tss.acquire_waiter_session.assert_awaited_once()
     wargs = tss.acquire_waiter_session.call_args[1]
@@ -213,7 +229,14 @@ async def test_update_order(_bc: AsyncMock) -> None:
     svc.update_order = AsyncMock(return_value=_kitchen_order())
     p = UpdateOrderDTO.model_validate({"status": "ready"})
     r = await orders_routes.update_order(
-        "tp", "o1", p, _req(), MagicMock(), svc, uuid4(), object()  # type: ignore[arg-type]
+        "tp",
+        "o1",
+        p,
+        _req(),
+        MagicMock(),
+        svc,
+        uuid4(),
+        object(),  # type: ignore[arg-type]
     )
     assert "updated" in r.message
 
@@ -225,7 +248,14 @@ async def test_update_order_status(_bc: AsyncMock) -> None:
     svc.update_status = AsyncMock(return_value=_kitchen_order())
     p = UpdateOrderStatusDTO(status="rejected", rejection_reason="x")
     r = await orders_routes.update_order_status(
-        "tp", "o1", p, _req(), MagicMock(), svc, uuid4(), object()  # type: ignore[arg-type]
+        "tp",
+        "o1",
+        p,
+        _req(),
+        MagicMock(),
+        svc,
+        uuid4(),
+        object(),  # type: ignore[arg-type]
     )
     assert "status" in r.message
 
@@ -241,7 +271,15 @@ async def test_delete_order(_bc: AsyncMock) -> None:
     tss.release_by_table_ref = AsyncMock()
     tid = uuid4()
     await orders_routes.delete_order(
-        "tp", "o1", _req(), MagicMock(), svc, MagicMock(), tss, tid, object()  # type: ignore[arg-type]
+        "tp",
+        "o1",
+        _req(),
+        MagicMock(),
+        svc,
+        MagicMock(),
+        tss,
+        tid,
+        object(),  # type: ignore[arg-type]
     )
     tss.release_by_table_ref.assert_awaited_once()
 
@@ -259,7 +297,14 @@ async def test_archive_order(_bc: AsyncMock) -> None:
     with patch.object(orders_routes, "_archive_service") as ar:
         ar.archive_order = AsyncMock(return_value=arch)
         r = await orders_routes.archive_order(
-            "tp", "o1", MagicMock(), MagicMock(), svc, tss, tid, object()  # type: ignore[arg-type]
+            "tp",
+            "o1",
+            MagicMock(),
+            MagicMock(),
+            svc,
+            tss,
+            tid,
+            object(),  # type: ignore[arg-type]
         )
     assert "archived" in r.message
 
@@ -308,7 +353,7 @@ async def test_list_table_sessions() -> None:
         table_label="L",
         origin=SimpleNamespace(value="w"),
         status=SimpleNamespace(value="active"),
-            session_id="psid-1",
+        session_id="psid-1",
         waiter_user_id=None,
         acquired_at=datetime.now(UTC),
         last_seen_at=datetime.now(UTC),

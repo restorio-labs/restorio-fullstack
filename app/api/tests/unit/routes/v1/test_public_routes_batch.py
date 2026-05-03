@@ -96,7 +96,9 @@ async def test_get_public_tenant_favicon_stream() -> None:
     st = MagicMock()
     st.get_object_stream.return_value = stream
     session = MagicMock()
-    mc = SimpleNamespace(favicon_object_key="key/fav.ico", landing_content=None, page_title=None, theme_override=None)
+    mc = SimpleNamespace(
+        favicon_object_key="key/fav.ico", landing_content=None, page_title=None, theme_override=None
+    )
     with patch("routes.v1.public.public.tenant_mobile_config_service") as mcs:
         mcs.get_by_tenant_id = AsyncMock(return_value=mc)
         res = await public_routes.get_public_tenant_favicon("r1", session, svc, st)  # type: ignore[arg-type]
@@ -242,9 +244,7 @@ async def test_acquire_public_table_session() -> None:
     tss = MagicMock()
     tss.acquire_mobile_session = AsyncMock(return_value=_ts())
     coll = MagicMock()
-    db = type(
-        "DB", (), {"__getitem__": lambda _self, _n: coll}
-    )()
+    db = type("DB", (), {"__getitem__": lambda _self, _n: coll})()
     session = MagicMock()
     body = PublicAcquireTableSessionDTO(
         tenant_slug="r1", table_number=1, table_ref="a", lock_token="x"

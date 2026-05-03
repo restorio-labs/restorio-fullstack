@@ -7,9 +7,12 @@ from sqlalchemy import select
 from core.dto.v1.auth import (
     ActivateResponseData,
     AuthMeSessionData,
+    EmptyAuthActionData,
+    ForgotPasswordDTO,
     LoginResponseData,
     RegisterCreatedData,
     RegisterDTO,
+    ResetPasswordDTO,
     SetPasswordDTO,
     TenantSlugData,
 )
@@ -134,6 +137,59 @@ async def register(
             email=user.email,
         ),
         message="Konto zostało utworzone pomyślnie, wkrótce otrzymasz e-mail z linkiem aktywacyjnym",
+    )
+
+
+@router.post(
+    "/forgot-password",
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessResponse[EmptyAuthActionData],
+    summary="Request password reset email",
+    description="Always responds with a generic message; sends email only when an active account exists.",
+)
+async def forgot_password(
+    data: ForgotPasswordDTO,
+    request: Request,
+    session: PostgresSession,
+    auth_service: AuthServiceDep,
+    email_service: EmailServiceDep,
+) -> SuccessResponse[EmptyAuthActionData]:
+    token = await auth_service.request_password_reset(session=session, email=str(data.email))
+    if token is not None:
+        reset_link = f"{settings.FRONTEND_URL}/reset-password?reset_id={token.id}"
+        await email_service.send_password_reset_email(to_email=token.email, reset_link=reset_link)
+        audit.password_reset_email_sent(request=request, user_id=str(token.user_id))
+    return SuccessResponse(
+        data=EmptyAuthActionData(),
+        message=(
+            "Jeśli podany adres e-mail jest powiązany z aktywnym kontem, "
+            "wyślemy na niego instrukcję zresetowania hasła."
+        ),
+    )
+
+
+@router.post(
+    "/reset-password",
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessResponse[EmptyAuthActionData],
+    summary="Complete password reset",
+    description="Set a new password using a token from the reset email.",
+)
+async def reset_password(
+    data: ResetPasswordDTO,
+    request: Request,
+    session: PostgresSession,
+    auth_service: AuthServiceDep,
+) -> SuccessResponse[EmptyAuthActionData]:
+    user_id = await auth_service.complete_password_reset(
+        session=session,
+        reset_token_id=data.reset_token_id,
+        password=data.password,
+    )
+    audit.password_reset_completed(request=request, user_id=str(user_id))
+    return SuccessResponse(
+        data=EmptyAuthActionData(),
+        message="Hasło zostało zmienione. Możesz się zalogować.",
     )
 
 
