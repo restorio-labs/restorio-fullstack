@@ -47,17 +47,13 @@ async def test_list_tenants_success() -> None:
 async def test_list_tenants_unauthenticated() -> None:
     r = Request({"type": "http", "method": "GET", "path": "/", "headers": []})
     with pytest.raises(UnauthenticatedResponse):
-        await tenants_routes.list_tenants(
-            r, MagicMock(), MagicMock()
-        )  # type: ignore[arg-type]
+        await tenants_routes.list_tenants(r, MagicMock(), MagicMock())  # type: ignore[arg-type]
 
 
 @pytest.mark.asyncio
 async def test_list_tenants_rejects_non_uuid_sub() -> None:
     with pytest.raises(ValueError, match="badly formed hexadecimal"):
-        await tenants_routes.list_tenants(
-            _req_sub_invalid(), MagicMock(), MagicMock()
-        )  # type: ignore[arg-type]
+        await tenants_routes.list_tenants(_req_sub_invalid(), MagicMock(), MagicMock())  # type: ignore[arg-type]
 
 
 @pytest.mark.asyncio
@@ -132,7 +128,5 @@ async def test_delete_tenant() -> None:
     tid = uuid4()
     svc = MagicMock()
     svc.delete_tenant = AsyncMock()
-    r = await tenants_routes.delete_tenant(
-        AccountType.OWNER, tid, MagicMock(), svc
-    )  # type: ignore[arg-type]
+    r = await tenants_routes.delete_tenant(AccountType.OWNER, tid, MagicMock(), svc)  # type: ignore[arg-type]
     assert "deleted" in r.message

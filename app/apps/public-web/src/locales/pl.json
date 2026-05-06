@@ -30,6 +30,14 @@
       "activate": {
         "title": "Aktywuj konto",
         "description": "Aktywuj swoje konto Restorio."
+      },
+      "forgotPassword": {
+        "title": "Resetowanie hasła",
+        "description": "Podaj adres e-mail, aby otrzymać link do zresetowania hasła."
+      },
+      "resetPassword": {
+        "title": "Ustaw nowe hasło",
+        "description": "Wybierz nowe hasło do swojego konta Restorio."
       }
     }
   },
@@ -39,6 +47,7 @@
     "password": "Hasło",
     "submit": "Zaloguj się",
     "submitting": "Logowanie...",
+    "forgotPasswordLink": "Nie pamiętasz hasła?",
     "genericError": "Logowanie nie powiodło się. Sprawdź e-mail i hasło.",
     "errors": {
       "emailRequired": "Adres e-mail jest wymagany",
@@ -48,6 +57,49 @@
       "passwordMinLength": "Hasło musi mieć co najmniej {min} znaków",
       "invalidCredentials": "Nieprawidłowy adres e-mail lub hasło",
       "accountNotActive": "To konto nie jest jeszcze aktywne"
+    }
+  },
+  "forgotPassword": {
+    "title": "Zresetuj hasło",
+    "fields": {
+      "email": "Adres e-mail"
+    },
+    "submit": "Wyślij link",
+    "submitting": "Wysyłanie...",
+    "genericConfirm": "Jeśli podany adres e-mail jest powiązany z aktywnym kontem, wyślemy na niego instrukcję zresetowania hasła.",
+    "errors": {
+      "emailRequired": "Adres e-mail jest wymagany",
+      "emailInvalid": "Podaj prawidłowy adres e-mail",
+      "generic": "Nie udało się wysłać prośby. Spróbuj ponownie."
+    },
+    "backToLogin": "Powrót do logowania"
+  },
+  "resetPassword": {
+    "form": {
+      "title": "Ustaw nowe hasło",
+      "description": "Wprowadź nowe hasło. Po zapisaniu zalogujesz się nim na stronie logowania.",
+      "submit": "Zapisz hasło",
+      "submitting": "Zapisywanie..."
+    },
+    "fields": {
+      "password": "Hasło",
+      "confirmPassword": "Potwierdź hasło"
+    },
+    "invalid": {
+      "title": "Brak lub nieprawidłowy link",
+      "description": "Link do resetu hasła jest nieprawidłowy lub wygasł. Poproś o nowy na stronie resetowania hasła.",
+      "requestNew": "Poproś o nowy link"
+    },
+    "success": {
+      "title": "Hasło zostało zmienione",
+      "description": "Możesz zalogować się przy użyciu nowego hasła.",
+      "goToLogin": "Przejdź do logowania"
+    },
+    "errors": {
+      "expired": "Link do resetu hasła wygasł.",
+      "notFound": "Link do resetu hasła jest nieprawidłowy.",
+      "alreadyUsed": "Ten link został już użyty. Poproś o nowy.",
+      "generic": "Nie udało się zmienić hasła. Spróbuj ponownie."
     }
   },
   "register": {

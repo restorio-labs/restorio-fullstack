@@ -147,6 +147,8 @@ async def test_csrf_middleware_sets_cookie_on_get_for_localhost() -> None:
 def test_is_csrf_exempt_exact_match() -> None:
     assert _is_csrf_exempt("/api/v1/auth/login") is True
     assert _is_csrf_exempt("/api/v1/auth/register") is True
+    assert _is_csrf_exempt("/api/v1/auth/forgot-password") is True
+    assert _is_csrf_exempt("/api/v1/auth/reset-password") is True
     assert _is_csrf_exempt("/api/v1/health") is True
     assert _is_csrf_exempt("/health") is True
 
@@ -167,6 +169,22 @@ async def test_csrf_middleware_exempt_path_passthrough() -> None:
         "method": "POST",
         "path": "/api/v1/auth/login",
         "headers": [],
+    }
+    response = await middleware.dispatch(Request(scope), call_next)
+    assert response.status_code == status.HTTP_200_OK
+
+
+@pytest.mark.asyncio
+async def test_csrf_middleware_exempt_forgot_password_with_access_cookie() -> None:
+    async def call_next(_: Request) -> Response:
+        return Response(content="ok")
+
+    middleware = CSRFMiddleware(call_next)
+    scope = {
+        "type": "http",
+        "method": "POST",
+        "path": "/api/v1/auth/forgot-password",
+        "headers": [(b"cookie", b"rat=access")],
     }
     response = await middleware.dispatch(Request(scope), call_next)
     assert response.status_code == status.HTTP_200_OK

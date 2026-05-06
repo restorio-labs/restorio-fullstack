@@ -1,9 +1,13 @@
 import type {
   AuthMeData,
+  ForgotPasswordRequest,
+  ForgotPasswordResponse,
   LoginResponse,
   RefreshResponse,
   RegisterRequest,
   RegisterResponse,
+  ResetPasswordRequest,
+  ResetPasswordResponse,
   SetActivationPasswordRequest,
   SuccessResponse,
   TenantSlugResponse,
@@ -25,6 +29,14 @@ export class AuthResource extends BaseResource {
    */
   register(data: RegisterRequest, signal?: AbortSignal): Promise<RegisterResponse> {
     return this.client.post("auth/register", data, { signal });
+  }
+
+  forgotPassword(data: ForgotPasswordRequest, signal?: AbortSignal): Promise<ForgotPasswordResponse> {
+    return this.client.post("auth/forgot-password", data, { signal });
+  }
+
+  resetPassword(data: ResetPasswordRequest, signal?: AbortSignal): Promise<ResetPasswordResponse> {
+    return this.client.post("auth/reset-password", data, { signal });
   }
 
   /**
