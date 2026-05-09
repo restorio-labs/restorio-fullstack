@@ -12,6 +12,7 @@ from core.models.enums import (
 from core.models.floor_canvas import FloorCanvas
 from core.models.order import Order
 from core.models.order_details import OrderDetails
+from core.models.password_reset_token import PasswordResetToken
 from core.models.payment import Payment
 from core.models.payment_request import (
     CreatePaymentRequest,
@@ -35,6 +36,7 @@ __all__ = [
     "Order",
     "OrderDetails",
     "OrderStatus",
+    "PasswordResetToken",
     "Payment",
     "PaymentProvider",
     "PaymentStatus",

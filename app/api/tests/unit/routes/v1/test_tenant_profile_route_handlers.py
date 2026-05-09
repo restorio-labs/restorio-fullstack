@@ -96,8 +96,6 @@ async def test_upsert_tenant_profile_with_logo_key() -> None:
     svc = MagicMock()
     svc.upsert = AsyncMock(return_value=(row, True))
     session = MagicMock()
-    r = await profile_routes.upsert_tenant_profile(
-        AccountType.OWNER, tid, p, session, st, svc
-    )  # type: ignore[arg-type]
+    r = await profile_routes.upsert_tenant_profile(AccountType.OWNER, tid, p, session, st, svc)  # type: ignore[arg-type]
     assert "created" in r.message
     st.finalize_upload.assert_called_once()

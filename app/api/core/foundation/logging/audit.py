@@ -88,5 +88,11 @@ class AuditLogger:
     def register(self, *, request: Request, email: str) -> None:
         self._emit("register", request, email=email)
 
+    def password_reset_email_sent(self, *, request: Request, user_id: str) -> None:
+        self._emit("password_reset_email_sent", request, user_id=user_id)
+
+    def password_reset_completed(self, *, request: Request, user_id: str) -> None:
+        self._emit("password_reset_completed", request, user_id=user_id)
+
 
 audit = AuditLogger()
