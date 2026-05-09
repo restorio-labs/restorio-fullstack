@@ -11,20 +11,24 @@ Wzorzec w routerach (`routes/v1/...`) jest teraz spójny:
 
 Przykłady:
 - `app/api/routes/v1/auth.py`
-- `app/api/routes/v1/payments/create_payment.py`
-- `app/api/routes/v1/payments/update_p24_config.py`
+- `app/api/routes/v1/payments/payments.py`
+- `app/api/routes/v1/payments/p24_config.py`
+
+Szablon CRUD (np. pod testy integracyjne wzorca DI): `app/api/docs/examples/route_template.py`.
 
 ## 2. Dependency Injection (DI)
 Centralny punkt DI to:
 - `app/api/core/foundation/dependencies.py`
 
 Masz tam:
-- funkcje providerów (`get_user_service`, `get_email_service`, `get_p24_service`, `get_security_service`, `get_db_session`),
+- funkcje providerów (`get_user_service`, `get_email_service`, `get_p24_service`, `get_security_service`),
+- `get_db_session` (import z `core.foundation.database.database`) używany przez alias `PostgresSession`,
 - aliasy `Annotated[..., Depends(...)]`, np.:
   - `UserServiceDep`
   - `EmailServiceDep`
   - `P24ServiceDep`
   - `PostgresSession`
+  - `MongoDB` (endpointy korzystające z Motor/Mongo)
 
 Dzięki temu w endpointach typ zależności jest czytelny i nie trzeba za każdym razem pisać pełnego `Depends(...)`.
 
@@ -40,13 +44,11 @@ I później provider:
 
 To daje jeden współdzielony obiekt do operacji security (JWT/hash/verify), a inne serwisy (np. `AuthService`, `UserService`) dostają go przez DI.
 
-## 4. Repositories
-Warstwa repozytoriów jest przygotowywana:
-- `app/api/core/repositories/tenant_repository.py`
+## 4. Warstwa dostępu do danych
 
-`TenantRepository` ma już kontrakt metod (`find_by_id`, `find_all`, `save`, `create`, `update`, `delete`), ale implementacja jest jeszcze pusta (`pass`).
+Obecny standard to **serwisy + SQLAlchemy `AsyncSession`** (Postgres) oraz **`MongoDB`** przez Motor tam, gdzie dokumenty są w Mongo (menu, zamówienia kuchenne, konfiguracja). Osobnej warstwy repozytoriów w repozytorium nie ma — zapytania żyją w serwisach lub routerach tam, gdzie jest to nadal cienkie.
 
-Czyli aktualnie większość logiki dostępu do danych nadal jest w serwisach (`TenantService`, `EmailService`, `AuthService`) przez `AsyncSession`, a kolejnym krokiem może być stopniowe przeniesienie zapytań do repozytoriów.
+Jeśli w przyszłości wydzielisz repozytoria, trzymaj kontrakty obok domeny i migruj wywołania stopniowo z serwisów.
 
 ## 5. Settings
 Konfiguracja jest centralna:
@@ -58,9 +60,13 @@ W Twoim flow:
 - endpointy używają `settings` do URL-i frontendu / API (`FRONTEND_URL`, `PRZELEWY24_API_URL`),
 - serwisy trzymają config lokalnie w `__init__` (np. `EmailService`, `P24Service`, `SecurityService`), żeby nie czytać ENV w wielu miejscach logiki.
 
-To upraszcza testowanie i utrzymuje spójny kierunek: `endpoint -> DI -> service -> (docelowo) repository`.
+To upraszcza testowanie i utrzymuje spójny kierunek: `endpoint -> DI -> service -> DB`.
 
-## 6. Mermaid: stare vs aktualne podejście
+## 6. Postgres i health check
+
+Ten sam pul (`postgresql+asyncpg`) obsługuje żądania HTTP przez SQLAlchemy. Endpoint `routes/v1/health.py` sprawdza Postgres przez `engine.connect()` i `SELECT 1`, bez osobnego puli `asyncpg`.
+
+## 7. Mermaid: stare vs aktualne podejście
 
 ### Stare podejście (bardziej „spięte” i trudniejsze w testach)
 ```mermaid

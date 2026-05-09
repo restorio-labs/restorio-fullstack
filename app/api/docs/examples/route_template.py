@@ -12,7 +12,7 @@ Best Practices:
 
 from fastapi import APIRouter, status
 
-from core.foundation.dependencies import MongoDB, PostgresPool
+from core.foundation.dependencies import MongoDB, PostgresSession
 from core.foundation.http.responses import (
     CreatedResponse,
     DeletedResponse,
@@ -27,7 +27,7 @@ router = APIRouter()
 @router.get("", status_code=status.HTTP_200_OK)
 async def list_items(
     _db: MongoDB,
-    _pool: PostgresPool,
+    _session: PostgresSession,
     page: int = 1,
     page_size: int = 10,
 ) -> PaginatedResponse[dict]:
@@ -73,7 +73,7 @@ async def get_item(
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def create_item(
     _db: MongoDB,
-    _pool: PostgresPool,
+    _session: PostgresSession,
 ) -> CreatedResponse[dict]:
     """
     Create a new item.

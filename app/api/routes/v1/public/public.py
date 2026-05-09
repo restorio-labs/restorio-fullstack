@@ -5,6 +5,7 @@ from uuid import UUID, uuid4
 from fastapi import APIRouter, Request, Response, status
 from sqlalchemy import select
 
+from core.constants import KITCHEN_ORDERS_COLLECTION, ORDERS_COLLECTION
 from core.dto.v1.menus import TenantMenuResponseDTO
 from core.dto.v1.public import (
     PublicAcquireTableSessionDTO,
@@ -36,23 +37,23 @@ from core.foundation.infra.config import settings
 from core.models import FloorCanvas
 from core.models.transaction import Transaction
 from services.mongo_menu_service import MENU_COLLECTION, normalize_mongo_menu_categories
+from services.payment_service import (
+    MONGO_PAYMENT_STATUS_COMPLETED,
+    MONGO_PAYMENT_STATUS_PENDING,
+    TX_STATUS_ACCEPTED,
+    TX_STATUS_PAID,
+    TX_STATUS_REFUNDED,
+    mongo_payment_status_from_transaction,
+)
 from services.tenant_mobile_config_service import tenant_mobile_config_service
 
 router = APIRouter()
 
 _KITCHEN_RESERVE_FALLBACK = timedelta(seconds=90)
 
-_ORDERS_COLLECTION = "orders"
-
-MONGO_ORDER_STATUS_UNPAID = "unpaid"
-MONGO_ORDER_STATUS_PAID = "paid"
-MONGO_ORDER_STATUS_ACCEPTED = "accepted"
-MONGO_ORDER_STATUS_REFUNDED = "refunded"
-
-_TX_STATUS_UNPAID = 0
-_TX_STATUS_PAID = 1
-_TX_STATUS_ACCEPTED = 2
-_TX_STATUS_REFUNDED = 3
+MONGO_ORDER_STATUS_NEW = "new"
+MONGO_ORDER_STATUS_PREPARING = "preparing"
+MONGO_ORDER_STATUS_READY = "ready_to_serve"
 
 _RESOURCE_TRANSACTION = "Transaction"
 
@@ -97,18 +98,6 @@ def _public_table_session_response(
         tableNumber=table_number,
         message=message,
     )
-
-
-def _mongo_order_status_from_transaction(transaction_status: int) -> str:
-    if transaction_status == _TX_STATUS_UNPAID:
-        return MONGO_ORDER_STATUS_UNPAID
-    if transaction_status == _TX_STATUS_PAID:
-        return MONGO_ORDER_STATUS_PAID
-    if transaction_status == _TX_STATUS_ACCEPTED:
-        return MONGO_ORDER_STATUS_ACCEPTED
-    if transaction_status == _TX_STATUS_REFUNDED:
-        return MONGO_ORDER_STATUS_REFUNDED
-    return MONGO_ORDER_STATUS_UNPAID
 
 
 @router.get(
@@ -504,14 +493,15 @@ async def create_public_order_payment(
         "totalAmount": total_amount,
         "currency": "PLN",
         "email": request.email,
-        "status": MONGO_ORDER_STATUS_UNPAID,
+        "status": MONGO_ORDER_STATUS_NEW,
+        "paymentStatus": MONGO_PAYMENT_STATUS_PENDING,
         "sessionId": str(result.session_id),
         "note": request.note,
         "createdAt": now,
     }
     if invoice_dict:
         mongo_order["invoiceData"] = invoice_dict
-    await db[_ORDERS_COLLECTION].insert_one(mongo_order)
+    await db[ORDERS_COLLECTION].insert_one(mongo_order)
 
     base_url = settings.PRZELEWY24_API_URL.replace("/api/v1", "")
     redirect_url = f"{base_url}/trnRequest/{token}"
@@ -555,12 +545,58 @@ async def sync_public_transaction_from_p24(
         tenant=tenant,
     )
 
-    mongo_status = _mongo_order_status_from_transaction(transaction.status)
-    await db[_ORDERS_COLLECTION].update_one(
+    payment_status = mongo_payment_status_from_transaction(transaction.status)
+    now = datetime.now(UTC)
+
+    mobile_order = await db[ORDERS_COLLECTION].find_one({"sessionId": str(session_id)})
+
+    await db[ORDERS_COLLECTION].update_one(
         {"sessionId": str(session_id)},
-        {"$set": {"status": mongo_status, "updatedAt": datetime.now(UTC)}},
+        {"$set": {"paymentStatus": payment_status, "updatedAt": now}},
     )
-    if transaction.status in (_TX_STATUS_PAID, _TX_STATUS_ACCEPTED, _TX_STATUS_REFUNDED):
+
+    if transaction.status in (TX_STATUS_PAID, TX_STATUS_ACCEPTED):
+        if mobile_order is not None:
+            kitchen_order: dict[str, Any] = {
+                "_id": f"M-{str(session_id)[:8].upper()}",
+                "restaurantId": tenant.public_id,
+                "tableId": mobile_order.get("tableRef"),
+                "sessionId": str(session_id),
+                "items": [
+                    {
+                        "id": f"item-{i}",
+                        "menuItemId": "",
+                        "name": item.get("name", ""),
+                        "quantity": item.get("quantity", 1),
+                        "basePrice": float(item.get("unitPrice", 0)),
+                        "selectedModifiers": [],
+                        "totalPrice": float(item.get("unitPrice", 0)) * item.get("quantity", 1),
+                    }
+                    for i, item in enumerate(mobile_order.get("items", []))
+                ],
+                "status": MONGO_ORDER_STATUS_NEW,
+                "paymentStatus": MONGO_PAYMENT_STATUS_COMPLETED,
+                "subtotal": mobile_order.get("totalAmount", 0) / 100,
+                "tax": 0,
+                "total": mobile_order.get("totalAmount", 0) / 100,
+                "table": f"Stolik {mobile_order.get('tableNumber', '?')}",
+                "time": now.strftime("%H:%M"),
+                "notes": mobile_order.get("note"),
+                "rejectionReason": None,
+                "createdAt": now,
+                "updatedAt": now,
+                "source": "mobile",
+                "mobileOrderId": str(mobile_order.get("_id")),
+            }
+            await db[KITCHEN_ORDERS_COLLECTION].insert_one(kitchen_order)
+
+        await table_session_service.mark_completed_by_session_id(
+            session,
+            session_id=str(session_id),
+        )
+        await session.flush()
+
+    if transaction.status == TX_STATUS_REFUNDED:
         await table_session_service.mark_completed_by_session_id(
             session,
             session_id=str(session_id),

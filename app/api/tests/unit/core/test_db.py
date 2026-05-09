@@ -19,11 +19,6 @@ class FakeMongoClient:
         return self.databases[name]
 
 
-class FakePostgresPool:
-    def __init__(self) -> None:
-        self.created = True
-
-
 @pytest.mark.asyncio
 async def test_get_mongo_client_singleton(monkeypatch: pytest.MonkeyPatch) -> None:
     def fake_client(url: str) -> FakeMongoClient:
@@ -63,36 +58,3 @@ def test_get_mongo_db_returns_named_database(monkeypatch: pytest.MonkeyPatch) ->
 
     assert isinstance(database, FakeMongoDatabase)
     assert database.name is not None
-
-
-@pytest.mark.asyncio
-async def test_get_postgres_pool_singleton(monkeypatch: pytest.MonkeyPatch) -> None:
-    pools: list[FakePostgresPool] = []
-
-    async def fake_create_pool(*_: object, **__: object) -> FakePostgresPool:
-        pool = FakePostgresPool()
-        pools.append(pool)
-        return pool
-
-    monkeypatch.setattr(db.asyncpg, "create_pool", fake_create_pool)
-
-    pool1 = await db.DatabaseConnections.get_postgres_pool()
-    pool2 = await db.DatabaseConnections.get_postgres_pool()
-
-    assert isinstance(pool1, FakePostgresPool)
-    assert pool1 is pool2
-    assert len(pools) == 1
-
-
-@pytest.mark.asyncio
-async def test_get_postgres_pool_function(monkeypatch: pytest.MonkeyPatch) -> None:
-    pool = FakePostgresPool()
-
-    async def fake_get_pool() -> FakePostgresPool:
-        return pool
-
-    monkeypatch.setattr(db.DatabaseConnections, "get_postgres_pool", fake_get_pool)
-
-    result = await db.get_postgres_pool()
-
-    assert result is pool

@@ -2,7 +2,7 @@ from typing import Any
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-_CONFIG_COLLECTION = "restaurant_kitchen_config"
+from core.constants import KITCHEN_CONFIG_COLLECTION
 
 DEFAULT_REJECTION_LABELS: list[str] = [
     "Brak składników",
@@ -19,7 +19,7 @@ class KitchenConfigService:
         db: AsyncIOMotorDatabase,
         restaurant_id: str,
     ) -> dict[str, Any]:
-        doc = await db[_CONFIG_COLLECTION].find_one({"restaurantId": restaurant_id})
+        doc = await db[KITCHEN_CONFIG_COLLECTION].find_one({"restaurantId": restaurant_id})
         if not doc:
             return {
                 "restaurantId": restaurant_id,
@@ -37,7 +37,7 @@ class KitchenConfigService:
         restaurant_id: str,
         labels: list[str],
     ) -> dict[str, Any]:
-        await db[_CONFIG_COLLECTION].update_one(
+        await db[KITCHEN_CONFIG_COLLECTION].update_one(
             {"restaurantId": restaurant_id},
             {"$set": {"restaurantId": restaurant_id, "rejectionLabels": labels}},
             upsert=True,

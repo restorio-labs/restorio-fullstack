@@ -16,6 +16,26 @@ from core.models.tenant import Tenant
 from core.models.transaction import Transaction
 from services.external_client_service import ExternalClient
 
+TX_STATUS_UNPAID = 0
+TX_STATUS_PAID = 1
+TX_STATUS_ACCEPTED = 2
+TX_STATUS_REFUNDED = 3
+
+MONGO_PAYMENT_STATUS_PENDING = "pending"
+MONGO_PAYMENT_STATUS_COMPLETED = "completed"
+MONGO_PAYMENT_STATUS_REFUNDED = "refunded"
+
+
+def mongo_payment_status_from_transaction(transaction_status: int) -> str:
+    """Map Przelewy24 transaction status to MongoDB payment status."""
+    if transaction_status == TX_STATUS_UNPAID:
+        return MONGO_PAYMENT_STATUS_PENDING
+    if transaction_status in (TX_STATUS_PAID, TX_STATUS_ACCEPTED):
+        return MONGO_PAYMENT_STATUS_COMPLETED
+    if transaction_status == TX_STATUS_REFUNDED:
+        return MONGO_PAYMENT_STATUS_REFUNDED
+    return MONGO_PAYMENT_STATUS_PENDING
+
 
 def return_url_with_session_id(base_url: str, session_id: str) -> str:
     parsed = urlparse(base_url)

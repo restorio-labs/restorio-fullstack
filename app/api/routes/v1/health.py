@@ -1,8 +1,10 @@
 from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
 from minio import Minio
+from sqlalchemy import text
 
-from core.foundation.database.connection import get_mongo_db, get_postgres_pool
+from core.foundation.database.connection import get_mongo_db
+from core.foundation.database.database import engine
 from core.foundation.infra.config import settings
 
 router = APIRouter()
@@ -32,9 +34,8 @@ async def health_check() -> JSONResponse:
 
     if ok:
         try:
-            pool = await get_postgres_pool()
-            async with pool.acquire() as connection:
-                await connection.execute("SELECT 1")
+            async with engine.connect() as connection:
+                await connection.execute(text("SELECT 1"))
         except Exception:
             ok = False
 

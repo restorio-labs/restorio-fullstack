@@ -4,13 +4,14 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
 
+from core.constants import CANVAS_VERSIONS_COLLECTION
 from core.foundation.database.connection import get_mongo_db
 from core.models.floor_canvas import FloorCanvas
 
 
 async def archive_canvas_version(canvas: FloorCanvas) -> None:
     db = get_mongo_db()
-    collection = db["canvas_versions"]
+    collection = db[CANVAS_VERSIONS_COLLECTION]
 
     version_doc = {
         "canvas_id": str(canvas.id),
@@ -30,7 +31,7 @@ async def archive_canvas_version(canvas: FloorCanvas) -> None:
 
 async def get_canvas_version(canvas_id: UUID, version: int) -> dict[str, Any] | None:
     db = get_mongo_db()
-    collection = db["canvas_versions"]
+    collection = db[CANVAS_VERSIONS_COLLECTION]
 
     return await collection.find_one(
         {"canvas_id": str(canvas_id), "version": version},
@@ -40,7 +41,7 @@ async def get_canvas_version(canvas_id: UUID, version: int) -> dict[str, Any] | 
 
 async def get_canvas_versions(canvas_id: UUID, limit: int = 50) -> list[dict[str, Any]]:
     db = get_mongo_db()
-    collection = db["canvas_versions"]
+    collection = db[CANVAS_VERSIONS_COLLECTION]
 
     cursor = collection.find(
         {"canvas_id": str(canvas_id)},

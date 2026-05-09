@@ -5,9 +5,8 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
+from core.constants import KITCHEN_ORDERS_COLLECTION
 from core.exceptions import BadRequestError, NotFoundResponse
-
-_ORDERS_COLLECTION = "kitchen_orders"
 
 INVALID_ORDER_STATUS_TRANSITION_CODE = "INVALID_ORDER_STATUS_TRANSITION"
 
@@ -35,7 +34,7 @@ class OrderService:
         if status:
             query["status"] = status
 
-        cursor = db[_ORDERS_COLLECTION].find(query).sort("createdAt", -1)
+        cursor = db[KITCHEN_ORDERS_COLLECTION].find(query).sort("createdAt", -1)
         orders = await cursor.to_list(length=500)
         return [_serialize_order(o, timezone_name=timezone_name) for o in orders]
 
@@ -46,7 +45,7 @@ class OrderService:
         order_id: str,
         timezone_name: str | None = None,
     ) -> dict[str, Any]:
-        doc = await db[_ORDERS_COLLECTION].find_one(
+        doc = await db[KITCHEN_ORDERS_COLLECTION].find_one(
             {"_id": order_id, "restaurantId": restaurant_id}
         )
         if not doc:
@@ -84,7 +83,7 @@ class OrderService:
             "updatedAt": now,
         }
 
-        await db[_ORDERS_COLLECTION].insert_one(doc)
+        await db[KITCHEN_ORDERS_COLLECTION].insert_one(doc)
         return _serialize_order(doc, timezone_name=timezone_name)
 
     async def update_order(
@@ -95,7 +94,7 @@ class OrderService:
         data: dict[str, Any],
         timezone_name: str | None = None,
     ) -> dict[str, Any]:
-        doc = await db[_ORDERS_COLLECTION].find_one(
+        doc = await db[KITCHEN_ORDERS_COLLECTION].find_one(
             {"_id": order_id, "restaurantId": restaurant_id}
         )
         if not doc:
@@ -132,12 +131,12 @@ class OrderService:
         if data.get("status"):
             update["status"] = data["status"]
 
-        await db[_ORDERS_COLLECTION].update_one(
+        await db[KITCHEN_ORDERS_COLLECTION].update_one(
             {"_id": order_id},
             {"$set": update},
         )
 
-        updated = await db[_ORDERS_COLLECTION].find_one({"_id": order_id})
+        updated = await db[KITCHEN_ORDERS_COLLECTION].find_one({"_id": order_id})
         return _serialize_order(updated, timezone_name=timezone_name)
 
     async def update_status(
@@ -149,7 +148,7 @@ class OrderService:
         rejection_reason: str | None = None,
         timezone_name: str | None = None,
     ) -> dict[str, Any]:
-        doc = await db[_ORDERS_COLLECTION].find_one(
+        doc = await db[KITCHEN_ORDERS_COLLECTION].find_one(
             {"_id": order_id, "restaurantId": restaurant_id}
         )
         if not doc:
@@ -180,12 +179,12 @@ class OrderService:
         if rejection_reason:
             update["rejectionReason"] = rejection_reason
 
-        await db[_ORDERS_COLLECTION].update_one(
+        await db[KITCHEN_ORDERS_COLLECTION].update_one(
             {"_id": order_id},
             {"$set": update},
         )
 
-        updated = await db[_ORDERS_COLLECTION].find_one({"_id": order_id})
+        updated = await db[KITCHEN_ORDERS_COLLECTION].find_one({"_id": order_id})
         return _serialize_order(updated, timezone_name=timezone_name)
 
     async def delete_order(
@@ -195,14 +194,14 @@ class OrderService:
         order_id: str,
         timezone_name: str | None = None,
     ) -> dict[str, Any]:
-        doc = await db[_ORDERS_COLLECTION].find_one(
+        doc = await db[KITCHEN_ORDERS_COLLECTION].find_one(
             {"_id": order_id, "restaurantId": restaurant_id}
         )
         if not doc:
             msg = "Order"
             raise NotFoundResponse(msg, order_id)
 
-        await db[_ORDERS_COLLECTION].delete_one({"_id": order_id})
+        await db[KITCHEN_ORDERS_COLLECTION].delete_one({"_id": order_id})
         return _serialize_order(doc, timezone_name=timezone_name)
 
     async def get_order_for_archive(
@@ -211,7 +210,7 @@ class OrderService:
         restaurant_id: str,
         order_id: str,
     ) -> dict[str, Any]:
-        doc = await db[_ORDERS_COLLECTION].find_one(
+        doc = await db[KITCHEN_ORDERS_COLLECTION].find_one(
             {"_id": order_id, "restaurantId": restaurant_id}
         )
         if not doc:

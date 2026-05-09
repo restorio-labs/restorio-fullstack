@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 from types import SimpleNamespace
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 import pytest
 from starlette.requests import Request
+from starlette.responses import Response
 
 from core.dto.v1 import CreateTenantDTO, UpdateTenantDTO
 from core.foundation.http.responses import UnauthenticatedResponse
@@ -74,13 +75,23 @@ async def test_create_tenant() -> None:
     svc = MagicMock()
     svc.create_tenant = AsyncMock(return_value=out)
     body = CreateTenantDTO(name="B", slug="b", status=TenantStatus.ACTIVE)
-    r = await tenants_routes.create_tenant(  # type: ignore[call-arg]
-        AccountType.OWNER,
-        _req_with_user(),
-        body,
-        MagicMock(),
-        svc,
-    )
+    session = MagicMock()
+    session.scalars = AsyncMock(return_value=[])
+    session.execute = AsyncMock(return_value=MagicMock(all=MagicMock(return_value=[])))
+    session.scalar = AsyncMock(return_value=None)
+    security = MagicMock()
+    security.create_access_token = MagicMock(return_value="t")
+
+    with patch("routes.v1.tenants.tenants.set_auth_cookies"):
+        r = await tenants_routes.create_tenant(
+            AccountType.OWNER,
+            _req_with_user(),
+            Response(),
+            body,
+            session,
+            svc,
+            security,
+        )
     assert "created" in r.message
     assert r.data.id == "pub"
 

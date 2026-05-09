@@ -68,11 +68,13 @@ def _payment_dto(*, with_invoice: bool = False) -> PublicCreateOrderPaymentDTO:
 
 
 class _MongoBridge:
-    def __init__(self, coll: MagicMock) -> None:
+    def __init__(self, coll: MagicMock, kitchen_coll: MagicMock | None = None) -> None:
         self._coll = coll
+        self._kitchen_coll = kitchen_coll or MagicMock()
 
     def __getitem__(self, name: str) -> MagicMock:
-        assert name == "orders"
+        if name == "kitchen_orders":
+            return self._kitchen_coll
         return self._coll
 
 
@@ -267,6 +269,7 @@ async def test_sync_public_transaction_rejects_non_int_p24_status() -> None:
     )
     m_coll = MagicMock()
     m_coll.update_one = AsyncMock()
+    m_coll.find_one = AsyncMock(return_value=None)
     db = _MongoBridge(m_coll)
     tss = MagicMock()
     tss.mark_completed_by_session_id = AsyncMock()
@@ -327,7 +330,19 @@ async def test_sync_public_transaction_paid_marks_session_completed() -> None:
     p24.apply_p24_lookup_to_transaction = apply_p24
     m_coll = MagicMock()
     m_coll.update_one = AsyncMock()
-    db = _MongoBridge(m_coll)
+    m_coll.find_one = AsyncMock(
+        return_value={
+            "_id": "order-123",
+            "tableRef": "t-1",
+            "tableNumber": 3,
+            "items": [{"name": "Pizza", "quantity": 1, "unitPrice": 10.0}],
+            "totalAmount": 1000,
+            "note": "test",
+        }
+    )
+    kitchen_coll = MagicMock()
+    kitchen_coll.insert_one = AsyncMock()
+    db = _MongoBridge(m_coll, kitchen_coll)
     tss = MagicMock()
     tss.mark_completed_by_session_id = AsyncMock()
 
@@ -337,3 +352,4 @@ async def test_sync_public_transaction_paid_marks_session_completed() -> None:
     assert "synced" in out.message
     tss.mark_completed_by_session_id.assert_awaited_once()
     pg.flush.assert_awaited_once()
+    kitchen_coll.insert_one.assert_awaited_once()

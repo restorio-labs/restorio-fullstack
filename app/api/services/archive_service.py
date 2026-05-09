@@ -5,6 +5,7 @@ from typing import Any
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.constants import KITCHEN_ORDERS_COLLECTION
 from core.foundation.logging.logger import logger
 from core.models.archived_order import ArchivedOrder
 
@@ -57,7 +58,7 @@ class ArchiveService:
             archived.id,
         )
 
-        await db["kitchen_orders"].delete_one({"_id": order_doc["_id"]})
+        await db[KITCHEN_ORDERS_COLLECTION].delete_one({"_id": order_doc["_id"]})
         logger.info(
             "Deleted Mongo kitchen_order %s after archive commit",
             order_doc["_id"],

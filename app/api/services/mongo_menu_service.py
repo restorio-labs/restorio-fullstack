@@ -1,6 +1,7 @@
+from core.constants import MENUS_COLLECTION
 from core.dto.v1.menus import MenuCategoryDTO, MenuItemDTO
 
-MENU_COLLECTION = "menus"
+MENU_COLLECTION = MENUS_COLLECTION
 CATEGORY_META_KEY = "__category"
 
 

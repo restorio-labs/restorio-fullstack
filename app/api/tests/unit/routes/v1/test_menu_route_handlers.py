@@ -21,7 +21,11 @@ from core.dto.v1.tenants.mobile_config import (
 )
 from core.models.enums import AccountType
 from routes.v1.tenants import menu as menu_routes
-from services.mongo_menu_service import CATEGORY_META_KEY, MENU_COLLECTION
+from services.mongo_menu_service import (
+    CATEGORY_META_KEY,
+    MENU_COLLECTION,
+    normalize_mongo_menu_categories,
+)
 
 
 class _MongoWithCollection:
@@ -93,7 +97,7 @@ async def test_build_raw_menu() -> None:
 
 
 def test_normalize_categories_with_non_dict_category_skipped() -> None:
-    out = menu_routes._normalize_categories(
+    out = normalize_mongo_menu_categories(
         {
             "1": "not a dict",
             "2": {CATEGORY_META_KEY: {"name": "C", "order": 2}},
@@ -116,7 +120,7 @@ def test_normalize_categories_item_types() -> None:
             },
         }
     }
-    cats = menu_routes._normalize_categories(raw)
+    cats = normalize_mongo_menu_categories(raw)
     assert len(cats) == 1
     item = cats[0].items[0]
     assert item.price == 0.0

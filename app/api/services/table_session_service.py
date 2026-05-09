@@ -10,11 +10,11 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.constants import KITCHEN_ORDERS_COLLECTION
 from core.exceptions import ConflictError, NotFoundResponse
 from core.models import AuditLog, FloorCanvas, TableSession, TableSessionOrigin, TableSessionStatus
 from core.models.tenant import Tenant
 
-_KITCHEN_ORDERS_COLLECTION = "kitchen_orders"
 _ACTIVE_LOCK_TTL = timedelta(minutes=10)
 _ACTIVE_WAITER_STATUSES = {
     "new",
@@ -440,7 +440,7 @@ class TableSessionService:
         *,
         tenant_public_id: str,
     ) -> set[str]:
-        cursor = db[_KITCHEN_ORDERS_COLLECTION].find(
+        cursor = db[KITCHEN_ORDERS_COLLECTION].find(
             {
                 "restaurantId": tenant_public_id,
                 "status": {"$in": list(_ACTIVE_WAITER_STATUSES)},
@@ -460,7 +460,7 @@ class TableSessionService:
         tenant_public_id: str,
         table_ref: str,
     ) -> bool:
-        doc = await db[_KITCHEN_ORDERS_COLLECTION].find_one(
+        doc = await db[KITCHEN_ORDERS_COLLECTION].find_one(
             {
                 "restaurantId": tenant_public_id,
                 "tableId": table_ref,

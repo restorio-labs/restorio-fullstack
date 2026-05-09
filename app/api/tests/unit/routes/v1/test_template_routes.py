@@ -5,24 +5,24 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from starlette import status
 
-from core.foundation.dependencies import get_mongo_database, get_postgres_connection_pool
+from core.foundation.database.database import get_db_session
+from core.foundation.dependencies import get_mongo_database
 
 
 def test_template_routes_exercise_crud() -> None:
-    tpl = import_module("routes.v1.__template__")
+    tpl = import_module("docs.examples.route_template")
     app = FastAPI()
     app.include_router(tpl.router, prefix="/items")
     mdb = MagicMock()
-    pool = MagicMock()
 
     async def o_m() -> object:
         yield mdb
 
-    async def o_p() -> object:
-        yield pool
+    async def o_session() -> object:
+        yield MagicMock()
 
     app.dependency_overrides[get_mongo_database] = o_m
-    app.dependency_overrides[get_postgres_connection_pool] = o_p
+    app.dependency_overrides[get_db_session] = o_session
 
     client = TestClient(app)
     r = client.get("/items", params={"page": 1, "page_size": 10})
