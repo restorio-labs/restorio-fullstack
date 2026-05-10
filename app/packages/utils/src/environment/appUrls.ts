@@ -15,16 +15,23 @@ const LOCAL_PORTS: Record<AppSlug, number> = {
 
 const PRODUCTION_DOMAIN = "restorio.org";
 
-const subdomainFromSlug = (appSlug: AppSlug): string =>
-  appSlug.replace("-panel", "").replace("-web", "").replace("-app", "");
+const PRODUCTION_SUBDOMAINS: Record<AppSlug, string> = {
+  "public-web": "",
+  "admin-panel": "admin",
+  "kitchen-panel": "kitchen",
+  "waiter-panel": "waiter",
+  "mobile-app": "order",
+};
 
 export const getAppUrl = (environment: EnvironmentType, appSlug: AppSlug): string => {
   if (environment === Environment.PRODUCTION) {
-    if (appSlug === "public-web") {
+    const subdomain = PRODUCTION_SUBDOMAINS[appSlug];
+
+    if (subdomain.length === 0) {
       return `https://${PRODUCTION_DOMAIN}`;
     }
 
-    return `https://${subdomainFromSlug(appSlug)}.${PRODUCTION_DOMAIN}`;
+    return `https://${subdomain}.${PRODUCTION_DOMAIN}`;
   }
 
   const port = LOCAL_PORTS[appSlug];

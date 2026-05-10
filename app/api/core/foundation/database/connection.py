@@ -9,7 +9,11 @@ class DatabaseConnections:
     @classmethod
     def get_mongo_client(cls) -> AsyncIOMotorClient:
         if cls._mongo_client is None:
-            cls._mongo_client = AsyncIOMotorClient(settings.DATABASE_URL)
+            cls._mongo_client = AsyncIOMotorClient(
+                settings.DATABASE_URL,
+                serverSelectionTimeoutMS=8000,
+                connectTimeoutMS=8000,
+            )
         return cls._mongo_client
 
 

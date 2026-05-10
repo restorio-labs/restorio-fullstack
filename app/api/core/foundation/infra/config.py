@@ -34,6 +34,7 @@ class Settings(BaseSettings):
         "https://admin.restorio.org",
         "https://kitchen.restorio.org",
         "https://waiter.restorio.org",
+        "https://order.restorio.org",
         "https://mobile.restorio.org",
     ]
     _env = os.getenv("ENV", "development")

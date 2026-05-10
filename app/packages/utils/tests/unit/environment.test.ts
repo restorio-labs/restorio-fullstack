@@ -44,7 +44,7 @@ describe("getAppUrl", () => {
 
   it("returns subdomain production urls for non-public apps", () => {
     expect(getAppUrl(Environment.PRODUCTION, "admin-panel")).toBe("https://admin.restorio.org");
-    expect(getAppUrl(Environment.PRODUCTION, "mobile-app")).toBe("https://mobile.restorio.org");
+    expect(getAppUrl(Environment.PRODUCTION, "mobile-app")).toBe("https://order.restorio.org");
   });
 
   it("returns localhost urls for development", () => {
