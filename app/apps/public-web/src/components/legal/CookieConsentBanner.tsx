@@ -2,7 +2,7 @@
 
 import { Button, Card, Modal, Stack, Switch, Text } from "@restorio/ui";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useTranslations } from "@/i18n/useT";
 import { useEffect, useState, type ReactElement } from "react";
 
 interface CookiePreferences {

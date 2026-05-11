@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
 
-import { locales } from "./request";
+import { loadMessages, locales } from "./request";
 
 const DEFAULT_METADATA_BASE = "http://localhost:3000";
 
@@ -26,11 +25,29 @@ const resolveLocale = (locale: string): string => {
   return "en";
 };
 
+interface NestedMessages {
+  [key: string]: string | NestedMessages;
+}
+
+const getNestedValue = (obj: NestedMessages, path: string): string => {
+  const keys = path.split(".");
+  let current: string | NestedMessages = obj;
+  for (const key of keys) {
+    if (typeof current === "object" && current !== null && key in current) {
+      current = current[key];
+    } else {
+      return path;
+    }
+  }
+  return typeof current === "string" ? current : path;
+};
+
 export const getRootMetadata = async (locale: string): Promise<Metadata> => {
   const safeLocale = resolveLocale(locale);
-  const t = await getTranslations({ locale: safeLocale, namespace: "metadata" });
-  const siteTitle = t("title");
-  const siteDescription = t("description");
+  const messages = await loadMessages(safeLocale);
+  const metadata = messages.metadata as NestedMessages;
+  const siteTitle = getNestedValue(metadata, "title");
+  const siteDescription = getNestedValue(metadata, "description");
 
   return {
     title: {
@@ -62,18 +79,22 @@ export const getRootMetadata = async (locale: string): Promise<Metadata> => {
 export const getPageMetadata = async (locale: string, pageKey: string): Promise<Metadata> => {
   const safeLocale = resolveLocale(locale);
   const safePageKey: PageKey = isPageKey(pageKey) ? pageKey : "home";
-  const t = await getTranslations({ locale: safeLocale, namespace: "metadata" });
+  const messages = await loadMessages(safeLocale);
+  const metadata = messages.metadata as NestedMessages;
+
+  const title = getNestedValue(metadata, `pages.${safePageKey}.title`);
+  const description = getNestedValue(metadata, `pages.${safePageKey}.description`);
 
   return {
-    title: t(`pages.${safePageKey}.title`),
-    description: t(`pages.${safePageKey}.description`),
+    title,
+    description,
     openGraph: {
-      title: t(`pages.${safePageKey}.title`),
-      description: t(`pages.${safePageKey}.description`),
+      title,
+      description,
     },
     twitter: {
-      title: t(`pages.${safePageKey}.title`),
-      description: t(`pages.${safePageKey}.description`),
+      title,
+      description,
     },
   };
 };

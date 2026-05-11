@@ -6,7 +6,7 @@ import { Button, Icon, ThemeSwitcher, Topbar, cn, useAuthRoute, type AuthRouteSt
 import { goToApp } from "@restorio/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "@/i18n/useT";
 import { type ReactElement, useCallback, useEffect, useMemo, useState } from "react";
 import { IoLogOutOutline } from "react-icons/io5";
 

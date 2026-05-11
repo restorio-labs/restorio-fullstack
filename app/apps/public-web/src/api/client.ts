@@ -1,7 +1,9 @@
 import { ApiClient, RestorioApi } from "@restorio/api-client";
-import { resolveApiBaseUrl } from "@restorio/utils";
 
-const API_BASE_URL = resolveApiBaseUrl({ preferRelativeInBrowser: true });
+const API_BASE_URL =
+  typeof window !== "undefined" && window.location.hostname === "restorio.org"
+    ? "https://api.restorio.org/api/v1"
+    : "/api/v1";
 
 const accessTokenRef: { current: string | null } = { current: null };
 

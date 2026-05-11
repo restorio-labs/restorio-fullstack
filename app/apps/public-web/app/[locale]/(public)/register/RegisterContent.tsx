@@ -3,7 +3,7 @@
 import { Button, Form, FormActions, FormField, Input, PasswordInput, useAuthRoute } from "@restorio/ui";
 import { getApiErrorData, getApiErrorMessage } from "@restorio/utils";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useTranslations } from "@/i18n/useT";
 import { useId, useState, type ReactElement } from "react";
 
 import { api } from "@/api/client";

@@ -1,7 +1,7 @@
 "use client";
 
 import { ContentContainer, Text } from "@restorio/ui";
-import { useTranslations } from "next-intl";
+import { useTranslations } from "@/i18n/useT";
 import type { ReactElement } from "react";
 import { FaUtensils } from "react-icons/fa6";
 import {

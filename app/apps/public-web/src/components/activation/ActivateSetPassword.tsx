@@ -1,5 +1,5 @@
 import { Text, Button, PasswordInput } from "@restorio/ui";
-import { useTranslations } from "next-intl";
+import { useTranslations } from "@/i18n/useT";
 import type { FormEvent, ReactElement } from "react";
 
 import { MIN_PASSWORD_LENGTH, type PasswordChecks } from "../../services/validation";

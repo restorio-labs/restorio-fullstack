@@ -1,7 +1,7 @@
 "use client";
 
 import { cn, useAuthRoute, type AuthRouteStatus } from "@restorio/ui";
-import { useTranslations } from "next-intl";
+import { useTranslations } from "@/i18n/useT";
 import { type ReactElement, useEffect, useState } from "react";
 import { FaPlugCircleCheck, FaPlugCircleExclamation } from "react-icons/fa6";
 
@@ -50,12 +50,12 @@ export const ConnectionStatusBubble = (): ReactElement | null => {
   const isReconnecting = phase === "reconnecting";
 
   return (
-    <div className="flex w-full shrink-0 justify-end px-4 pb-3 pt-1">
+    <div className="fixed bottom-4 right-4 z-50 flex shrink-0 justify-end">
       <div className="relative w-max max-w-[calc(100vw-2rem)] overflow-x-auto rounded-2xl p-[2px] connection-status-glow-ring">
         <div
           role={isReconnecting ? "status" : "alert"}
           className={cn(
-            "rounded-2xl relative inline-flex max-w-full flex-nowrap items-center gap-3 whitespace-nowrap border border-border-default/50 bg-surface-primary/95 px-4 py-3 text-left text-sm text-text-primary shadow-md supports-[backdrop-filter]:backdrop-blur-md",
+            "rounded-2xl relative inline-flex max-w-full flex-nowrap items-center gap-3 whitespace-nowrap border border-border-default bg-surface-primary px-4 py-3 text-left text-sm text-text-primary shadow-lg",
             leaving ? "connection-status-bubble-leave" : "connection-status-bubble-enter",
           )}
         >

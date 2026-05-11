@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
 import type { ReactElement } from "react";
 
 import AnimatedReveal from "@/components/legal/AnimatedReveal";
@@ -7,23 +6,51 @@ import { LegalPageLayout } from "@/components/legal/LegalPageLayout";
 import { LegalSection } from "@/components/legal/LegalSection";
 import { TableOfContents } from "@/components/legal/TableOfContents";
 
+import { loadMessages } from "../../../../src/i18n/request";
+
+interface NestedMessages {
+  [key: string]: string | NestedMessages;
+}
+
+const getNestedValue = (obj: NestedMessages, path: string, values?: Record<string, string>): string => {
+  const keys = path.split(".");
+  let current: string | NestedMessages = obj;
+  for (const key of keys) {
+    if (typeof current === "object" && current !== null && key in current) {
+      current = current[key];
+    } else {
+      return path;
+    }
+  }
+  let result = typeof current === "string" ? current : path;
+  if (values) {
+    for (const [k, v] of Object.entries(values)) {
+      result = result.replace(new RegExp(`\\{${k}\\}`, "g"), v);
+    }
+  }
+  return result;
+};
+
 interface PageParams {
   params: Promise<{ locale: string }>;
 }
 
 export async function generateMetadata({ params }: PageParams): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "legal" });
+  const messages = await loadMessages(locale);
+  const legal = messages.legal as NestedMessages;
 
   return {
-    title: t("privacyPolicy.title"),
+    title: getNestedValue(legal, "privacyPolicy.title"),
     description: "Polityka Prywatności oraz Polityka Cookies platformy Restorio do zarządzania restauracją.",
   };
 }
 
 const PrivacyPage = async ({ params }: PageParams): Promise<ReactElement> => {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "legal" });
+  const messages = await loadMessages(locale);
+  const legal = messages.legal as NestedMessages;
+  const t = (key: string, values?: Record<string, string>): string => getNestedValue(legal, key, values);
 
   const lastUpdatedDate = "18 marca 2026";
 

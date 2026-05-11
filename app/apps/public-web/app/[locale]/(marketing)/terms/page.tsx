@@ -1,10 +1,34 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
 import type { ReactElement } from "react";
 
 import { LegalPageLayout } from "@/components/legal/LegalPageLayout";
 import { LegalSection } from "@/components/legal/LegalSection";
 import { TableOfContents } from "@/components/legal/TableOfContents";
+
+import { loadMessages } from "../../../../src/i18n/request";
+
+interface NestedMessages {
+  [key: string]: string | NestedMessages;
+}
+
+const getNestedValue = (obj: NestedMessages, path: string, values?: Record<string, string>): string => {
+  const keys = path.split(".");
+  let current: string | NestedMessages = obj;
+  for (const key of keys) {
+    if (typeof current === "object" && current !== null && key in current) {
+      current = current[key];
+    } else {
+      return path;
+    }
+  }
+  let result = typeof current === "string" ? current : path;
+  if (values) {
+    for (const [k, v] of Object.entries(values)) {
+      result = result.replace(new RegExp(`\\{${k}\\}`, "g"), v);
+    }
+  }
+  return result;
+};
 
 interface PageParams {
   params: Promise<{ locale: string }>;
@@ -12,17 +36,20 @@ interface PageParams {
 
 export async function generateMetadata({ params }: PageParams): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "legal" });
+  const messages = await loadMessages(locale);
+  const legal = messages.legal as NestedMessages;
 
   return {
-    title: t("termsAndConditions.title"),
-    description: t("termsAndConditions.description"),
+    title: getNestedValue(legal, "termsAndConditions.title"),
+    description: getNestedValue(legal, "termsAndConditions.description"),
   };
 }
 
 const TermsPage = async ({ params }: PageParams): Promise<ReactElement> => {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "legal" });
+  const messages = await loadMessages(locale);
+  const legal = messages.legal as NestedMessages;
+  const t = (key: string, values?: Record<string, string>): string => getNestedValue(legal, key, values);
 
   const lastUpdatedDate = "18 marca 2026";
 

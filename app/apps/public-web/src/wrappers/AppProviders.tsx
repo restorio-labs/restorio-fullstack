@@ -9,7 +9,6 @@ import {
   type AuthRouteResolvedStatus,
 } from "@restorio/ui";
 import { SESSION_HINT_COOKIE, THEME_STORAGE_KEY } from "@restorio/utils";
-import { useMessages } from "next-intl";
 import type { ReactNode } from "react";
 import { useCallback } from "react";
 
@@ -17,11 +16,11 @@ import { api } from "@/api/client";
 
 interface AppProvidersProps {
   children: ReactNode;
+  locale: string;
+  messages: Record<string, unknown>;
 }
 
-export const AppProviders = ({ children }: AppProvidersProps): ReactNode => {
-  const locale = "pl";
-  const messages = useMessages();
+export const AppProviders = ({ children, locale, messages }: AppProvidersProps): ReactNode => {
   const checkAuth = useCallback(async ({ onReconnecting }: AuthCheckContext): Promise<AuthRouteResolvedStatus> => {
     return checkPublicWebAuth(() => api.auth.me(), {
       requireSessionHintCookie: SESSION_HINT_COOKIE,

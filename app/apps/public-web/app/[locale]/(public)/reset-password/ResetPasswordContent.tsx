@@ -2,7 +2,7 @@
 
 import { Button, ContentContainer, Text } from "@restorio/ui";
 import { getApiErrorData, getApiErrorMessage } from "@restorio/utils";
-import { useLocale, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "@/i18n/useT";
 import type { FormEvent, ReactElement } from "react";
 import { useEffect, useRef, useState } from "react";
 

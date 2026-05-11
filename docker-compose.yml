@@ -17,7 +17,8 @@ services:
       - POSTGRES_DSN=${POSTGRES_DSN:-postgresql://restorio:restorio@postgres:5432/restorio}
       - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
       - API_V1_PREFIX=${API_V1_PREFIX:-/api/v1}
-      - CORS_ORIGINS=${CORS_ORIGINS:-["http://localhost:3000","http://localhost:3001","http://localhost:3002","http://localhost:3003","http://localhost:3004","https://restorio.org","https://*.restorio.org"]}
+      - ENV=${ENV:-production}
+      - CORS_ORIGINS=${CORS_ORIGINS:-}
       - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
       - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
       - ALGORITHM=${ALGORITHM:-HS256}
