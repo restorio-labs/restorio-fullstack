@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Request, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from core.dto.v1.auth import (
     BulkCreateUsersDTO,
@@ -107,6 +107,8 @@ async def bulk_create_users(
                 password=temp_password,
                 tenant_id=tenant_id,
                 account_type=entry.access_level,
+                name=entry.name,
+                surname=entry.surname,
                 force_password_change=True,
             )
 
@@ -330,6 +332,15 @@ async def delete_user(
 
     await session.delete(role)
     await session.flush()
+
+    remaining_roles = await session.scalar(
+        select(func.count()).select_from(TenantRole).where(TenantRole.account_id == user_id)
+    )
+    if (remaining_roles or 0) == 0:
+        orphan = await session.get(User, user_id)
+        if orphan is not None:
+            await session.delete(orphan)
+            await session.flush()
 
     return SuccessResponse(
         message="User deleted successfully",

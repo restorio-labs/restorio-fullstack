@@ -48,7 +48,8 @@ async def test_delete_user_success() -> None:
     tid, uid = uuid4(), uuid4()
     role = SimpleNamespace()
     session = MagicMock()
-    session.scalar = AsyncMock(return_value=role)
+    session.scalar = AsyncMock(side_effect=[role, 0])
+    session.get = AsyncMock(return_value=SimpleNamespace())
     session.delete = AsyncMock()
     session.flush = AsyncMock()
 
@@ -59,6 +60,31 @@ async def test_delete_user_success() -> None:
         session,  # type: ignore[arg-type]
     )
     assert "deleted" in r.message
+    assert session.scalar.await_count == 2
+    session.get.assert_awaited_once()
+    assert session.delete.await_count == 2
+
+
+@pytest.mark.asyncio
+async def test_delete_user_keeps_account_when_other_roles_remain() -> None:
+    tid, uid = uuid4(), uuid4()
+    role = SimpleNamespace()
+    session = MagicMock()
+    session.scalar = AsyncMock(side_effect=[role, 2])
+    session.get = AsyncMock()
+    session.delete = AsyncMock()
+    session.flush = AsyncMock()
+
+    r = await users_routes.delete_user(
+        AccountType.OWNER,
+        tid,
+        uid,
+        session,  # type: ignore[arg-type]
+    )
+    assert "deleted" in r.message
+    assert session.scalar.await_count == 2
+    session.get.assert_not_awaited()
+    assert session.delete.await_count == 1
 
 
 @pytest.mark.asyncio

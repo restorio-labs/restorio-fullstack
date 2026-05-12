@@ -749,12 +749,14 @@ export const StaffPage = (): ReactElement => {
                   <li key={user.id} className="flex min-w-0 items-center justify-between gap-3 py-4">
                     <div className="flex flex-col min-w-0 flex-1">
                       <span className="truncate text-sm text-text-primary">{user.email}</span>
-                      <span className="text-xs text-text-secondary truncate">
-                        {t("staff.list.personLabel", {
-                          name: user.name ?? t("staff.list.notProvided"),
-                          surname: user.surname ?? t("staff.list.notProvided"),
-                        })}
-                      </span>
+                      {user.accessLevel === "waiter" && (
+                        <span className="text-xs text-text-secondary truncate">
+                          {t("staff.list.personLabel", {
+                            name: user.name ?? t("staff.list.notProvided"),
+                            surname: user.surname ?? t("staff.list.notProvided"),
+                          })}
+                        </span>
+                      )}
                     </div>
                     <div className="flex shrink-0 items-center gap-3">
                       <span

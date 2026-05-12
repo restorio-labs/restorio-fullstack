@@ -344,3 +344,35 @@ async def test_create_user_for_tenant_user_already_in_tenant() -> None:
         )
 
     assert "User already belongs to this tenant" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_create_user_for_tenant_relinked_waiter_updates_existing_profile() -> None:
+    session = FakeAsyncSession()
+    tenant_id = uuid4()
+    existing = User(
+        id=uuid4(),
+        email="waiter@example.com",
+        password_hash="hashed",
+        is_active=False,
+        name=None,
+        surname=None,
+    )
+    session.users.append(existing)
+
+    user, tenant_role, send_activation_email = await user_service.create_user_for_tenant(
+        session=session,
+        email="waiter@example.com",
+        password="StrongPass1!",
+        tenant_id=tenant_id,
+        account_type=AccountType.WAITER,
+        name="Ada",
+        surname="Lovelace",
+        force_password_change=True,
+    )
+
+    assert user.id == existing.id
+    assert user.name == "Ada"
+    assert user.surname == "Lovelace"
+    assert tenant_role.account_type == AccountType.WAITER
+    assert send_activation_email is False
