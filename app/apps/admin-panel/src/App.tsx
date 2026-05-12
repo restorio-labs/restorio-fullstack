@@ -8,6 +8,14 @@ import { AdminSidebar } from "./features/sidebar/AdminSidebar";
 import { AppLayout } from "./layouts/AppLayout";
 import { OnboardingPage } from "./pages/OnboardingPage";
 
+const PublicWebLoginRedirect = (): null => {
+  useEffect(() => {
+    window.location.replace(AUTH_LOGIN_REDIRECT_URL);
+  }, []);
+
+  return null;
+};
+
 const FloorEditorPage = lazy(async () =>
   import("./pages/FloorEditorPage").then((module) => ({ default: module.FloorEditorPage })),
 );
@@ -73,7 +81,7 @@ const AdminRoleGate = (): ReactElement => {
   }
 
   if (!ADMIN_ALLOWED_ROLES.includes(role)) {
-    return <Navigate to={AUTH_LOGIN_REDIRECT_URL} replace />;
+    return <PublicWebLoginRedirect />;
   }
 
   return <AdminShell />;

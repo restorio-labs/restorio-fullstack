@@ -2,7 +2,7 @@
 
 import { Button, Card, Modal, Stack, Switch, Text } from "@restorio/ui";
 import Link from "next/link";
-import { useTranslations } from "@/i18n/useT";
+import { useLocale, useTranslations } from "@/i18n/useT";
 import { useEffect, useState, type ReactElement } from "react";
 
 interface CookiePreferences {
@@ -16,6 +16,7 @@ const COOKIE_CONSENT_KEY = "cookie-consent";
 
 const CookieConsentBanner = (): ReactElement | null => {
   const t = useTranslations("legal.cookieConsent");
+  const locale = useLocale();
   const [isVisible, setIsVisible] = useState(false);
   const [showCustomize, setShowCustomize] = useState(false);
   const [preferences, setPreferences] = useState<CookiePreferences>({
@@ -162,7 +163,10 @@ const CookieConsentBanner = (): ReactElement | null => {
                   {t("banner.savePreferences")}
                 </Button>
               )}
-              <Link href="/terms" className="ml-2 text-sm text-text-secondary underline-offset-2 hover:underline">
+              <Link
+                href={`/${locale}/terms`}
+                className="ml-2 text-sm text-text-secondary underline-offset-2 hover:underline"
+              >
                 {t("banner.privacyPolicy")}
               </Link>
             </div>

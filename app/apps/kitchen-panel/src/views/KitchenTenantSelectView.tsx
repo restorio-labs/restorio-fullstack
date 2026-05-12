@@ -3,6 +3,7 @@ import { PageLayout, Text, useI18n, Loader, ChooseApp } from "@restorio/ui";
 import { deslug, goToApp } from "@restorio/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { ReactElement } from "react";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 
 import { api } from "../api/client";
@@ -18,6 +19,12 @@ export const KitchenTenantSelectView = (): ReactElement => {
     queryKey: ["kitchen-panel", "tenants"],
     queryFn: () => api.tenants.list(),
   });
+
+  useEffect(() => {
+    if (!isLoading && !isError && tenants.length === 0) {
+      goToApp("admin-panel");
+    }
+  }, [isLoading, isError, tenants.length]);
 
   return (
     <PageLayout

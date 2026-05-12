@@ -1,9 +1,11 @@
 import { ApiClient, RestorioApi } from "@restorio/api-client";
 
+const LOCAL_HOSTNAMES = new Set(["localhost", "127.0.0.1", "::1"]);
+
 const API_BASE_URL =
-  typeof window !== "undefined" && window.location.hostname === "restorio.org"
-    ? "https://api.restorio.org/api/v1"
-    : "/api/v1";
+  typeof window !== "undefined" && LOCAL_HOSTNAMES.has(window.location.hostname)
+    ? "/api/v1"
+    : "https://api.restorio.org/api/v1";
 
 const accessTokenRef: { current: string | null } = { current: null };
 

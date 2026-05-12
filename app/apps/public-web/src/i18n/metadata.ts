@@ -2,7 +2,25 @@ import type { Metadata } from "next";
 
 import { loadMessages, locales } from "./request";
 
-const DEFAULT_METADATA_BASE = "http://localhost:3000";
+const resolveMetadataBaseUrl = (): string => {
+  const explicit = process.env.NEXT_PUBLIC_BASE_URL;
+
+  if (typeof explicit === "string" && explicit.length > 0) {
+    return explicit;
+  }
+
+  const vercel = process.env.VERCEL_URL;
+
+  if (typeof vercel === "string" && vercel.length > 0) {
+    if (vercel.startsWith("http://") || vercel.startsWith("https://")) {
+      return vercel;
+    }
+
+    return `https://${vercel}`;
+  }
+
+  return "http://localhost:3000";
+};
 
 const OPEN_GRAPH_LOCALE_MAP: Record<string, string> = {
   en: "en_US",
@@ -60,7 +78,7 @@ export const getRootMetadata = async (locale: string): Promise<Metadata> => {
       shortcut: "/favicon.ico",
       apple: "/favicon.ico",
     },
-    metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL ?? DEFAULT_METADATA_BASE),
+    metadataBase: new URL(resolveMetadataBaseUrl()),
     openGraph: {
       type: "website",
       siteName: siteTitle,

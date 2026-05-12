@@ -292,7 +292,7 @@ export const HomeContent = (): ReactElement => {
                 {t("landing.community.discord")}
               </a>
               <Link
-                href="/contact"
+                href={`/${locale}/contact`}
                 className="flex items-center gap-2 text-lg font-bold transition-colors hover:text-text-primary"
               >
                 {t("landing.community.contact")}
@@ -326,7 +326,7 @@ export const HomeContent = (): ReactElement => {
               </Text>
               {authStatus === "anonymous" ? (
                 <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-                  <Link href="/register">
+                  <Link href={`/${locale}/register`}>
                     <Button
                       size="lg"
                       className="min-w-[200px] border-0 bg-background-inverse font-bold text-text-inverse hover:opacity-90 dark:bg-background-primary dark:text-text-primary dark:hover:bg-background-secondary"
@@ -334,7 +334,7 @@ export const HomeContent = (): ReactElement => {
                       {t("landing.finalCta.primary")}
                     </Button>
                   </Link>
-                  <Link href="/about">
+                  <Link href={`/${locale}/about`}>
                     <Button
                       size="lg"
                       variant="primary"

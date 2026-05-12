@@ -1,18 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useTranslations } from "@/i18n/useT";
+import { useLocale, useTranslations } from "@/i18n/useT";
 import type { ReactElement } from "react";
 
 export const Footer = (): ReactElement => {
   const t = useTranslations();
+  const locale = useLocale();
   const currentYear = new Date().getFullYear();
 
   const navLinks = [
-    { href: "/privacy", label: t("navigation.privacy") },
-    { href: "/contact", label: t("navigation.contact") },
-    { href: "/terms", label: t("navigation.terms") },
-    { href: "/status", label: t("navigation.status") },
+    { href: `/${locale}/privacy`, label: t("navigation.privacy") },
+    { href: `/${locale}/contact`, label: t("navigation.contact") },
+    { href: `/${locale}/terms`, label: t("navigation.terms") },
+    { href: `/${locale}/status`, label: t("navigation.status") },
   ];
 
   const leftLinks = navLinks.slice(0, 2);

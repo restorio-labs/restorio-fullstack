@@ -14,6 +14,10 @@ export interface LogoutButtonProps extends Omit<ButtonProps, "onClick"> {
    * Custom content to display while the logout action is pending.
    */
   loadingLabel?: ReactNode;
+  /**
+   * When set, shown instead of loadingLabel while the logout action is pending.
+   */
+  loadingContent?: ReactNode;
   children?: ReactNode;
 }
 
@@ -61,6 +65,7 @@ export const LogoutButton = ({
   onLogout,
   redirectTo,
   loadingLabel = "Logging out…",
+  loadingContent,
   children,
   disabled,
   className,
@@ -101,7 +106,7 @@ export const LogoutButton = ({
       aria-busy={isLoading}
       aria-label={typeof children === "string" ? children : "Logout"}
     >
-      {isLoading ? loadingLabel : (children ?? <LogoutIcon className="h-6 w-6" />)}
+      {isLoading ? (loadingContent ?? loadingLabel) : (children ?? <LogoutIcon className="h-6 w-6" />)}
     </Button>
   );
 };

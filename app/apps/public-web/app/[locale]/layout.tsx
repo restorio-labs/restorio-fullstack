@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import type { ReactNode, ReactElement } from "react";
 
 import { getRootMetadata } from "../../src/i18n/metadata";
-import { locales } from "../../src/i18n/request";
+import { loadMessages, locales } from "../../src/i18n/request";
 import { AppProviders } from "../../src/wrappers/AppProviders";
 
 import "../globals.css";
@@ -23,16 +23,6 @@ export async function generateMetadata({ params }: MetadataParams): Promise<Meta
   const { locale } = await params;
 
   return getRootMetadata(locale);
-}
-
-async function loadMessages(locale: string): Promise<Record<string, unknown>> {
-  try {
-    const messages = (await import(`../../src/locales/${locale}.json`)) as { default: Record<string, unknown> };
-
-    return messages.default;
-  } catch {
-    return {};
-  }
 }
 
 interface RootLayoutProps {

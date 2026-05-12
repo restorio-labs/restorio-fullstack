@@ -9,7 +9,6 @@ import {
   getEnvironmentFromEnv,
   getMergedRuntimeEnv,
   goToApp,
-  redirectTo,
   resolveApiBaseUrl,
 } from "@restorio/utils";
 
@@ -71,13 +70,6 @@ describe("getEnvironmentFromEnv", () => {
 
   it("falls back to local for unknown mode", () => {
     expect(getEnvironmentFromEnv("test")).toBe(Environment.LOCAL);
-  });
-});
-
-describe("redirectTo", () => {
-  it("returns the public web url for provided environment", () => {
-    expect(redirectTo(Environment.PRODUCTION)).toBe("https://restorio.org");
-    expect(redirectTo(Environment.LOCAL)).toBe("http://localhost:3000");
   });
 });
 
@@ -198,7 +190,6 @@ describe("utils barrel exports", () => {
   it("exposes environment helpers from root index", () => {
     expect(typeof getAppUrl).toBe("function");
     expect(typeof getEnvironmentFromEnv).toBe("function");
-    expect(typeof redirectTo).toBe("function");
     expect(typeof getEnvMode).toBe("function");
     expect(typeof getAppHref).toBe("function");
     expect(typeof getAppBaseUrl).toBe("function");

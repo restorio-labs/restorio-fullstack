@@ -1327,9 +1327,6 @@ export const MobileConfigurationPage = (): ReactElement => {
                       </Dropdown>
                     </div>
                   </div>
-                  <p className="text-xs text-text-tertiary">
-                    {t("mobileConfiguration.preview.appearanceFollowsEditor")}
-                  </p>
                 </div>
                 <MobileGuestAppPreview
                   screen={previewScreen}

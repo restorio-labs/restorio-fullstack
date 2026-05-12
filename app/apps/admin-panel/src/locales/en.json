@@ -296,7 +296,6 @@
       "title": "Guest app preview",
       "hint": "Sample screens; controls are inactive. Table and order views use placeholder content.",
       "screenLabel": "Screen",
-      "appearanceFollowsEditor": "Preview appearance matches “Customize colors for” above (light or dark).",
       "themeLabel": "Appearance",
       "screens": {
         "landing": "Home",
