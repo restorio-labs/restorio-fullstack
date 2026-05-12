@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom";
 
 import { useAuthContext } from "./AuthContext";
 
-export type UserRole = "super_admin" | "admin" | "owner" | "manager" | "waiter" | "kitchen_staff";
+export type UserRole = "super_admin" | "admin" | "owner" | "manager" | "waiter" | "kitchen";
 
 export interface RoleGuardProps {
   children: ReactNode;

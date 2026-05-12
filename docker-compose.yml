@@ -16,8 +16,12 @@ services:
       - MONGODB_PASSWORD=${MONGODB_PASSWORD:-restorio}
       - POSTGRES_DSN=${COMPOSE_POSTGRES_DSN:-postgresql://restorio:restorio@postgres:5432/restorio}
       - API_V1_PREFIX=${API_V1_PREFIX:-/api/v1}
-      - CORS_ORIGINS=${CORS_ORIGINS:-["http://localhost:3000","http://localhost:3001","http://localhost:3002","http://localhost:3003","http://localhost:3004","https://restorio.org","https://*.restorio.org"]}
-      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+      - CORS_ORIGINS=${CORS_ORIGINS:-["http://localhost:3000","http://localhost:3001","http://localhost:3002","http://localhost:3003","http://localhost:3004","https://restorio.org","https://www.restorio.org","https://admin.restorio.org","https://kitchen.restorio.org","https://mobile.restorio.org","https://waiter.restorio.org"]}
+      - CORS_ALLOW_CF_PAGES_PREVIEWS=${CORS_ALLOW_CF_PAGES_PREVIEWS:-true}
+      - TRUST_PROXY_HEADERS=${TRUST_PROXY_HEADERS:-true}
+      - FRONTEND_URL=${FRONTEND_URL:-https://restorio.org}
+      - WAITER_PANEL_URL=${WAITER_PANEL_URL:-https://waiter.restorio.org}
+      - MOBILE_APP_URL=${MOBILE_APP_URL:-https://mobile.restorio.org}
       - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
       - ALGORITHM=${ALGORITHM:-HS256}
       - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
@@ -74,11 +78,11 @@ services:
       - restorio-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\" -h 127.0.0.1"]
       interval: 10s
       timeout: 5s
-      retries: 5
-      start_period: 20s
+      retries: 8
+      start_period: 60s
 
   mongo:
     image: mongo:7
@@ -93,13 +97,17 @@ services:
     networks:
       - restorio-network
     restart: unless-stopped
-    command: ["mongod", "--quiet", "--logpath", "/dev/null"]  # Suppress MongoDB startup logs 0=errors only 1=warnings >2=more verbose
+    command: ["mongod", "--quiet", "--logpath", "/dev/null"]
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test:
+        [
+          "CMD-SHELL",
+          "mongosh admin --quiet --username \"$${MONGO_INITDB_ROOT_USERNAME}\" --password \"$${MONGO_INITDB_ROOT_PASSWORD}\" --eval \"db.adminCommand({ ping: 1 })\"",
+        ]
       interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
+      timeout: 10s
+      retries: 8
+      start_period: 90s
 
   minio:
     image: minio/minio:latest
@@ -110,7 +118,7 @@ services:
     environment:
       - MINIO_ROOT_USER=${MINIO_ACCESS_KEY:-minioadmin}
       - MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY:-minioadmin}
-      - MINIO_API_CORS_ALLOW_ORIGIN=${MINIO_API_CORS_ALLOW_ORIGIN:-http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:3004}
+      - MINIO_API_CORS_ALLOW_ORIGIN=${MINIO_API_CORS_ALLOW_ORIGIN:-http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:3004,https://restorio.org,https://www.restorio.org,https://admin.restorio.org,https://kitchen.restorio.org,https://mobile.restorio.org,https://waiter.restorio.org}
     volumes:
       - minio-data:/data
     command: server /data --console-address ":9001"
@@ -118,11 +126,39 @@ services:
       - restorio-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test:
+        ["CMD-SHELL", "curl -sf http://127.0.0.1:9000/minio/health/live >/dev/null"]
       interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 15s
+      timeout: 10s
+      retries: 8
+      start_period: 45s
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: restorio-nginx
+    ports:
+      - "20122:80"
+      - "30122:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/www/admin-panel/dist:/var/www/restorio-platform/admin:ro
+      - ./nginx/www/kitchen-panel/dist:/var/www/restorio-platform/kitchen:ro
+      - ./nginx/www/mobile-app/dist:/var/www/restorio-platform/mobile:ro
+      - ./nginx/www/waiter-panel/dist:/var/www/restorio-platform/waiter:ro
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - restorio-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
 
 volumes:
   postgres-data:

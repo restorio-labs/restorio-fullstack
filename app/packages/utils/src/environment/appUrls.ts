@@ -20,7 +20,7 @@ const PRODUCTION_SUBDOMAINS: Record<AppSlug, string> = {
   "admin-panel": "admin",
   "kitchen-panel": "kitchen",
   "waiter-panel": "waiter",
-  "mobile-app": "order",
+  "mobile-app": "mobile",
 };
 
 export const getAppUrl = (environment: EnvironmentType, appSlug: AppSlug): string => {
@@ -57,11 +57,21 @@ export const getEnvMode = (): string => {
   const processEnv = typeof process !== "undefined" ? (process.env as Record<string, unknown>) : undefined;
   const envSource = getEnvSource(viteEnv);
 
-  return (
-    resolveNextEnvVar(processEnv ?? {}, "ENV", "NODE_ENV") ??
-    resolveNextEnvVar(envSource, "ENV", "NODE_ENV") ??
-    "development"
-  );
+  const fromProcess = resolveNextEnvVar(processEnv ?? {}, "ENV", "NODE_ENV");
+  if (fromProcess !== undefined) {
+    return fromProcess;
+  }
+
+  const fromVite = resolveNextEnvVar(envSource, "ENV", "NODE_ENV", "MODE");
+  if (fromVite !== undefined) {
+    return fromVite;
+  }
+
+  if (viteEnv?.PROD === true) {
+    return "production";
+  }
+
+  return "development";
 };
 
 export const getAppHref = (slug: AppSlug): string => {
@@ -75,7 +85,7 @@ export const getMergedRuntimeEnv = (): Record<string, unknown> => {
     typeof import.meta !== "undefined" ? (import.meta as { env?: Record<string, unknown> }).env : undefined;
   const processEnv = typeof process !== "undefined" ? (process.env as Record<string, unknown>) : undefined;
 
-  return { ...(processEnv ?? {}), ...(viteEnv ?? {}) };
+  return { ...(viteEnv ?? {}), ...(processEnv ?? {}) };
 };
 
 const APP_URL_OVERRIDE_KEYS: Partial<Record<AppSlug, readonly string[]>> = {
@@ -113,16 +123,47 @@ export interface ResolveApiBaseUrlOptions {
   readonly preferRelativeInBrowser?: boolean;
 }
 
+const DEFAULT_PRODUCTION_API_BASE = "https://api.restorio.org/api/v1";
+
+const _isLocalhostApiUrl = (value: string): boolean => {
+  try {
+    return new URL(value).hostname === "localhost" || new URL(value).hostname === "127.0.0.1";
+  } catch {
+    return false;
+  }
+};
+
 export const resolveApiBaseUrl = (options?: ResolveApiBaseUrlOptions): string => {
   const merged = getMergedRuntimeEnv();
   const fromEnv = resolveNextEnvVar(merged, "VITE_API_BASE_URL", "NEXT_PUBLIC_API_BASE_URL");
 
   if (typeof fromEnv === "string" && fromEnv.length > 0) {
-    return fromEnv;
+    const envTypeEarly = getEnvironmentFromEnv(getEnvMode());
+    if (!(envTypeEarly === Environment.PRODUCTION && _isLocalhostApiUrl(fromEnv))) {
+      return fromEnv;
+    }
   }
 
-  if (options?.preferRelativeInBrowser === true && typeof window !== "undefined") {
+  const envType = getEnvironmentFromEnv(getEnvMode());
+
+  if (
+    options?.preferRelativeInBrowser === true &&
+    typeof window !== "undefined" &&
+    envType !== Environment.PRODUCTION
+  ) {
     return "/api/v1";
+  }
+
+  const originOverride = resolveNextEnvVar(merged, "VITE_PUBLIC_API_ORIGIN", "NEXT_PUBLIC_PUBLIC_API_ORIGIN");
+
+  if (typeof originOverride === "string" && originOverride.length > 0) {
+    const trimmed = originOverride.replace(/\/$/, "");
+
+    return `${trimmed}/api/v1`;
+  }
+
+  if (envType === Environment.PRODUCTION) {
+    return DEFAULT_PRODUCTION_API_BASE;
   }
 
   return "http://localhost/api/v1";

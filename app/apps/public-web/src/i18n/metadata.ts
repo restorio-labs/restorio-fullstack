@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { getAppHref } from "@restorio/utils";
 
 import { locales } from "./request";
-
-const DEFAULT_METADATA_BASE = "http://localhost:3000";
 
 const OPEN_GRAPH_LOCALE_MAP: Record<string, string> = {
   en: "en_US",
@@ -43,7 +42,7 @@ export const getRootMetadata = async (locale: string): Promise<Metadata> => {
       shortcut: "/favicon.ico",
       apple: "/favicon.ico",
     },
-    metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL ?? DEFAULT_METADATA_BASE),
+    metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL ?? getAppHref("public-web")),
     openGraph: {
       type: "website",
       siteName: siteTitle,

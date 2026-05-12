@@ -44,7 +44,7 @@ describe("getAppUrl", () => {
 
   it("returns subdomain production urls for non-public apps", () => {
     expect(getAppUrl(Environment.PRODUCTION, "admin-panel")).toBe("https://admin.restorio.org");
-    expect(getAppUrl(Environment.PRODUCTION, "mobile-app")).toBe("https://order.restorio.org");
+    expect(getAppUrl(Environment.PRODUCTION, "mobile-app")).toBe("https://mobile.restorio.org");
   });
 
   it("returns localhost urls for development", () => {
@@ -156,6 +156,29 @@ describe("resolveApiBaseUrl", () => {
     vi.stubEnv("VITE_API_BASE_URL", "https://api.example.com/api/v1");
 
     expect(resolveApiBaseUrl()).toBe("https://api.example.com/api/v1");
+  });
+
+  it("uses public API host in production when no full URL env", () => {
+    vi.stubEnv("ENV", "production");
+    vi.stubEnv("NODE_ENV", "production");
+
+    expect(resolveApiBaseUrl()).toBe("https://api.restorio.org/api/v1");
+  });
+
+  it("builds API path from NEXT_PUBLIC_PUBLIC_API_ORIGIN in production", () => {
+    vi.stubEnv("ENV", "production");
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("NEXT_PUBLIC_PUBLIC_API_ORIGIN", "https://api.example.org");
+
+    expect(resolveApiBaseUrl()).toBe("https://api.example.org/api/v1");
+  });
+
+  it("does not use relative /api/v1 in production even when preferRelativeInBrowser", () => {
+    vi.stubEnv("ENV", "production");
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubGlobal("window", {});
+
+    expect(resolveApiBaseUrl({ preferRelativeInBrowser: true })).toBe("https://api.restorio.org/api/v1");
   });
 });
 
