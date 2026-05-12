@@ -305,7 +305,6 @@
       "title": "Podgląd aplikacji gościa",
       "hint": "Przykładowe ekrany; elementy są nieaktywne. Widoki stolików i zamówienia mają przykładową treść.",
       "screenLabel": "Ekran",
-      "appearanceFollowsEditor": "Wygląd podglądu odpowiada „Dostosuj kolory dla” powyżej (jasna lub ciemna wersja).",
       "themeLabel": "Wygląd",
       "screens": {
         "landing": "Start",

@@ -2,7 +2,8 @@
 
 import { Button, ContentContainer, Text } from "@restorio/ui";
 import { getApiErrorData, getApiErrorMessage } from "@restorio/utils";
-import { useLocale, useTranslations } from "next-intl";
+import Link from "next/link";
+import { useLocale, useTranslations } from "@/i18n/useT";
 import type { FormEvent, ReactElement } from "react";
 import { useEffect, useRef, useState } from "react";
 
@@ -118,15 +119,11 @@ export const ResetPasswordContent = (): ReactElement => {
           <Text variant="body-lg" className="mb-6 text-text-secondary">
             {t("invalid.description")}
           </Text>
-          <Button
-            variant="primary"
-            fullWidth
-            onClick={() => {
-              window.location.href = `/${locale}/forgot-password`;
-            }}
-          >
-            {t("invalid.requestNew")}
-          </Button>
+          <Link href={`/${locale}/forgot-password`} className="block w-full">
+            <Button variant="primary" fullWidth>
+              {t("invalid.requestNew")}
+            </Button>
+          </Link>
         </div>
       </ContentContainer>
     );
@@ -142,15 +139,11 @@ export const ResetPasswordContent = (): ReactElement => {
           <Text variant="body-lg" className="mb-6 text-text-secondary">
             {successMessage || t("success.description")}
           </Text>
-          <Button
-            variant="primary"
-            fullWidth
-            onClick={() => {
-              window.location.href = `/${locale}/login`;
-            }}
-          >
-            {t("success.goToLogin")}
-          </Button>
+          <Link href={`/${locale}/login`} className="block w-full">
+            <Button variant="primary" fullWidth>
+              {t("success.goToLogin")}
+            </Button>
+          </Link>
         </div>
       </ContentContainer>
     );

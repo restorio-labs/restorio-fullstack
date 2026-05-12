@@ -1,10 +1,16 @@
 import { AppWrapper, RoleGuard } from "@restorio/auth";
 import type { ReactElement } from "react";
-import { Suspense } from "react";
+import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import { api } from "./api/client";
-import { WaiterTenantSelectView, FloorRestaurantView } from "./views";
+
+const WaiterTenantSelectView = lazy(async () =>
+  import("./views/WaiterTenantSelectView").then((module) => ({ default: module.WaiterTenantSelectView })),
+);
+const FloorRestaurantView = lazy(async () =>
+  import("./views/FloorRestaurantView").then((module) => ({ default: module.FloorRestaurantView })),
+);
 
 export const App = (): ReactElement => {
   return (

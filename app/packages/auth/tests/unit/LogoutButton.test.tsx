@@ -40,6 +40,23 @@ describe("LogoutButton", () => {
     });
   });
 
+  it("prefers loadingContent over loadingLabel while pending", async () => {
+    const onLogout = vi.fn().mockImplementation(() => new Promise<void>(() => undefined));
+
+    render(
+      <LogoutButton onLogout={onLogout} loadingLabel="Signing out now" loadingContent={<span data-testid="busy">*</span>}>
+        Sign out
+      </LogoutButton>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("busy")).toBeInTheDocument();
+      expect(screen.queryByText("Signing out now")).not.toBeInTheDocument();
+    });
+  });
+
   it("respects provided loadingLabel", async () => {
     const onLogout = vi.fn().mockImplementation(() => new Promise<void>(() => undefined));
 

@@ -25,6 +25,31 @@ describe("AuthRouteProvider", () => {
     });
   });
 
+  it("refreshAuth invokes checkAuth again", async () => {
+    const checkAuth = vi
+      .fn()
+      .mockResolvedValueOnce("anonymous")
+      .mockResolvedValueOnce("authenticated");
+
+    const { result } = renderHook(() => useAuthRoute(), {
+      wrapper: ({ children }) => <AuthRouteProvider checkAuth={checkAuth}>{children}</AuthRouteProvider>,
+    });
+
+    await waitFor(() => {
+      expect(result.current.authStatus).toBe("anonymous");
+    });
+    expect(checkAuth).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      await result.current.refreshAuth();
+    });
+
+    await waitFor(() => {
+      expect(result.current.authStatus).toBe("authenticated");
+    });
+    expect(checkAuth).toHaveBeenCalledTimes(2);
+  });
+
   it("starts with loading then sets anonymous when checkAuth returns anonymous", async () => {
     const checkAuth = vi.fn().mockResolvedValue("anonymous");
 

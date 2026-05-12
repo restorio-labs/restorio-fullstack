@@ -1,22 +1,13 @@
 import { getThemeBootScript } from "@restorio/ui/theme-mode";
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
 import { notFound } from "next/navigation";
-import { NextIntlClientProvider, hasLocale } from "next-intl";
-import { getMessages, getTranslations } from "next-intl/server";
 import type { ReactNode, ReactElement } from "react";
 
 import { getRootMetadata } from "../../src/i18n/metadata";
-import { routing } from "../../src/i18n/routing";
+import { loadMessages, locales } from "../../src/i18n/request";
 import { AppProviders } from "../../src/wrappers/AppProviders";
 
 import "../globals.css";
-
-const inter = Inter({
-  subsets: ["latin", "latin-ext"],
-  variable: "--font-inter",
-  display: "swap",
-});
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -43,15 +34,14 @@ export default async function RootLayout({ children, params }: RootLayoutProps):
   const themeBootScript = getThemeBootScript();
   const { locale } = await params;
 
-  if (!hasLocale(routing.locales, locale)) {
+  if (!locales.includes(locale as (typeof locales)[number])) {
     notFound();
   }
 
-  const messages = await getMessages({ locale });
-  const t = await getTranslations({ locale });
+  const messages = await loadMessages(locale);
 
   return (
-    <html lang={locale} className={inter.variable} suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         {/* Theme boot script must run before hydration - no user input */}
         {/* eslint-disable-next-line react/no-danger */}
@@ -62,11 +52,9 @@ export default async function RootLayout({ children, params }: RootLayoutProps):
           href="#main-content"
           className="sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-interactive-primary focus:text-text-inverse focus:rounded-button focus-visible-ring focus:block focus:not-sr-only"
         >
-          {t("common.skipToContent")}
+          {(messages.common as Record<string, string>)?.skipToContent ?? "Skip to content"}
         </a>
-        <NextIntlClientProvider messages={messages}>
-          <AppProviders>{children}</AppProviders>
-        </NextIntlClientProvider>
+        <AppProviders locale={locale} messages={messages}>{children}</AppProviders>
       </body>
     </html>
   );

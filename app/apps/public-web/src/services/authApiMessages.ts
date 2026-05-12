@@ -1,9 +1,6 @@
-import type { useTranslations } from "next-intl";
+type Translator = (key: string) => string;
 
-type RootTranslator = ReturnType<typeof useTranslations>;
-type RegisterTranslator = ReturnType<typeof useTranslations<"register">>;
-
-export const translateLoginApiMessage = (message: string | undefined, t: RootTranslator): string | undefined => {
+export const translateLoginApiMessage = (message: string | undefined, t: Translator): string | undefined => {
   if (message == null || message.trim().length === 0) {
     return undefined;
   }
@@ -18,7 +15,7 @@ export const translateLoginApiMessage = (message: string | undefined, t: RootTra
   }
 };
 
-export const translateRegisterApiMessage = (message: string | undefined, t: RegisterTranslator): string | undefined => {
+export const translateRegisterApiMessage = (message: string | undefined, t: Translator): string | undefined => {
   if (message == null || message.trim().length === 0) {
     return undefined;
   }

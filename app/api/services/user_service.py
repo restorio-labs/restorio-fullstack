@@ -106,6 +106,9 @@ class UserService:
             if existing_role is not None:
                 msg = "User already belongs to this tenant"
                 raise ConflictError(msg)
+            if account_type == AccountType.WAITER and name is not None and surname is not None:
+                existing_user.name = name
+                existing_user.surname = surname
             tenant_role = TenantRole(
                 account_id=existing_user.id,
                 tenant_id=tenant_id,

@@ -1,11 +1,13 @@
 "use client";
 
 import { ContentContainer } from "@restorio/ui";
-import { getAppHref } from "@restorio/utils";
+import { goToApp } from "@restorio/utils";
+import { useRouter } from "next/navigation";
 import type { FormEvent, ReactElement } from "react";
 import { useEffect, useRef, useState } from "react";
 
 import { api } from "@/api/client";
+import { useLocale } from "@/i18n/useT";
 import {
   ActivateSetPasswordView,
   ActivateErrorView,
@@ -20,6 +22,8 @@ import { getPasswordFieldsValidation } from "@/services/passwordFieldsValidation
 type Result = "loading" | "success" | "already_activated" | "expired" | "error" | "resend_sent" | "set_password";
 
 export function ActivateContent(): ReactElement {
+  const router = useRouter();
+  const locale = useLocale();
   const [result, setResult] = useState<Result>("loading");
   const [errorMessage, setErrorMessage] = useState("");
   const [activationId, setActivationId] = useState("");
@@ -104,7 +108,7 @@ export function ActivateContent(): ReactElement {
           setErrorMessage(msg ?? "");
           setResult("expired");
         } else if (status === 404) {
-          window.location.href = "/";
+          router.replace(`/${locale}`);
         } else {
           setErrorMessage(msg ?? "");
           setResult("error");
@@ -113,7 +117,7 @@ export function ActivateContent(): ReactElement {
     };
 
     void run();
-  }, []);
+  }, [locale, router]);
 
   const handleResend = (): void => {
     const idFromUrl = new URLSearchParams(window.location.search).get("activation_id")?.trim() ?? "";
@@ -195,7 +199,7 @@ export function ActivateContent(): ReactElement {
   const resendOnCooldown = cooldownSeconds > 0;
 
   const goToAdmin = (): void => {
-    window.location.href = getAppHref("admin-panel");
+    goToApp("admin-panel");
   };
 
   return (

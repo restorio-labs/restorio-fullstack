@@ -3,9 +3,10 @@
 import { Button, cn, ContentContainer, Loader, Text, useAuthRoute, type AuthRouteStatus } from "@restorio/ui";
 import { goToApp } from "@restorio/utils";
 import Link from "next/link";
-import { useLocale, useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 import { FaBolt, FaChartLine, FaCheck, FaCirclePlay, FaCode, FaHeart, FaLeaf, FaUtensils } from "react-icons/fa6";
+
+import { useLocale, useTranslations } from "@/i18n/useT";
 
 export const HomeContent = (): ReactElement => {
   const { authStatus }: { authStatus: AuthRouteStatus } = useAuthRoute();
@@ -51,42 +52,7 @@ export const HomeContent = (): ReactElement => {
             {t("landing.hero.subtitle")}
           </Text>
 
-          {authStatus === "anonymous" ? (
-            <div className="flex flex-col items-center justify-center gap-4 pt-4 sm:flex-row">
-              <Link href="/register" className="inline-flex">
-                <Button
-                  size="lg"
-                  className="kinetic-gradient min-w-[200px] border-0 px-10 py-4 text-lg font-bold text-text-inverse shadow-lg shadow-primary/20 transition-transform active:scale-[0.98]"
-                >
-                  {t("landing.hero.ctaTrial")}
-                </Button>
-              </Link>
-              <Link href={`/${locale}#landing-preview`} className="inline-flex">
-                <Button
-                  size="lg"
-                  variant="secondary"
-                  className="min-w-[200px] rounded-xl border border-border-default bg-surface-secondary px-10 py-4 text-lg font-bold text-text-primary backdrop-blur-sm"
-                >
-                  {t("landing.hero.ctaDemo")}
-                </Button>
-              </Link>
-            </div>
-          ) : authStatus === "reconnecting" ? (
-            <div className="flex flex-col items-center justify-center gap-4 pt-4">
-              <Loader size="lg" aria-hidden />
-              <p className="max-w-lg text-center text-base font-medium text-text-secondary">
-                {t("common.tryingToConnect")}
-              </p>
-            </div>
-          ) : authStatus === "unavailable" ? (
-            <p className="mx-auto max-w-lg pt-4 text-center text-base font-medium text-status-warning-text">
-              {t("common.backendUnavailable")}
-            </p>
-          ) : authStatus === "loading" ? (
-            <div className="mx-auto flex justify-center pt-4">
-              <div className="h-14 w-64 animate-pulse rounded-xl bg-surface-secondary" />
-            </div>
-          ) : null}
+          
         </div>
 
         <ContentContainer
@@ -207,8 +173,8 @@ export const HomeContent = (): ReactElement => {
                     t("landing.pillars.guestsB3"),
                   ],
                   ring: "border-border-default/30",
-                  accent: "text-status-warning-text",
-                  iconBg: "bg-status-warning-background/20",
+                  accent: "text-pink-500",
+                  iconBg: "bg-pink-500/15",
                   IconComponent: FaHeart,
                   featured: false,
                 },
@@ -326,7 +292,7 @@ export const HomeContent = (): ReactElement => {
                 {t("landing.community.discord")}
               </a>
               <Link
-                href="/contact"
+                href={`/${locale}/contact`}
                 className="flex items-center gap-2 text-lg font-bold transition-colors hover:text-text-primary"
               >
                 {t("landing.community.contact")}
@@ -360,7 +326,7 @@ export const HomeContent = (): ReactElement => {
               </Text>
               {authStatus === "anonymous" ? (
                 <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-                  <Link href="/register">
+                  <Link href={`/${locale}/register`}>
                     <Button
                       size="lg"
                       className="min-w-[200px] border-0 bg-background-inverse font-bold text-text-inverse hover:opacity-90 dark:bg-background-primary dark:text-text-primary dark:hover:bg-background-secondary"
@@ -368,7 +334,7 @@ export const HomeContent = (): ReactElement => {
                       {t("landing.finalCta.primary")}
                     </Button>
                   </Link>
-                  <Link href="/about">
+                  <Link href={`/${locale}/about`}>
                     <Button
                       size="lg"
                       variant="primary"

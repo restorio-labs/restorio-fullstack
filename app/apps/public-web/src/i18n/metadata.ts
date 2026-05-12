@@ -1,8 +1,26 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
-import { getAppHref } from "@restorio/utils";
 
-import { locales } from "./request";
+import { loadMessages, locales } from "./request";
+
+const resolveMetadataBaseUrl = (): string => {
+  const explicit = process.env.NEXT_PUBLIC_BASE_URL;
+
+  if (typeof explicit === "string" && explicit.length > 0) {
+    return explicit;
+  }
+
+  const vercel = process.env.VERCEL_URL;
+
+  if (typeof vercel === "string" && vercel.length > 0) {
+    if (vercel.startsWith("http://") || vercel.startsWith("https://")) {
+      return vercel;
+    }
+
+    return `https://${vercel}`;
+  }
+
+  return "http://localhost:3000";
+};
 
 const OPEN_GRAPH_LOCALE_MAP: Record<string, string> = {
   en: "en_US",
@@ -25,11 +43,29 @@ const resolveLocale = (locale: string): string => {
   return "en";
 };
 
+interface NestedMessages {
+  [key: string]: string | NestedMessages;
+}
+
+const getNestedValue = (obj: NestedMessages, path: string): string => {
+  const keys = path.split(".");
+  let current: string | NestedMessages = obj;
+  for (const key of keys) {
+    if (typeof current === "object" && current !== null && key in current) {
+      current = current[key];
+    } else {
+      return path;
+    }
+  }
+  return typeof current === "string" ? current : path;
+};
+
 export const getRootMetadata = async (locale: string): Promise<Metadata> => {
   const safeLocale = resolveLocale(locale);
-  const t = await getTranslations({ locale: safeLocale, namespace: "metadata" });
-  const siteTitle = t("title");
-  const siteDescription = t("description");
+  const messages = await loadMessages(safeLocale);
+  const metadata = messages.metadata as NestedMessages;
+  const siteTitle = getNestedValue(metadata, "title");
+  const siteDescription = getNestedValue(metadata, "description");
 
   return {
     title: {
@@ -42,7 +78,7 @@ export const getRootMetadata = async (locale: string): Promise<Metadata> => {
       shortcut: "/favicon.ico",
       apple: "/favicon.ico",
     },
-    metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL ?? getAppHref("public-web")),
+    metadataBase: new URL(resolveMetadataBaseUrl()),
     openGraph: {
       type: "website",
       siteName: siteTitle,
@@ -61,18 +97,22 @@ export const getRootMetadata = async (locale: string): Promise<Metadata> => {
 export const getPageMetadata = async (locale: string, pageKey: string): Promise<Metadata> => {
   const safeLocale = resolveLocale(locale);
   const safePageKey: PageKey = isPageKey(pageKey) ? pageKey : "home";
-  const t = await getTranslations({ locale: safeLocale, namespace: "metadata" });
+  const messages = await loadMessages(safeLocale);
+  const metadata = messages.metadata as NestedMessages;
+
+  const title = getNestedValue(metadata, `pages.${safePageKey}.title`);
+  const description = getNestedValue(metadata, `pages.${safePageKey}.description`);
 
   return {
-    title: t(`pages.${safePageKey}.title`),
-    description: t(`pages.${safePageKey}.description`),
+    title,
+    description,
     openGraph: {
-      title: t(`pages.${safePageKey}.title`),
-      description: t(`pages.${safePageKey}.description`),
+      title,
+      description,
     },
     twitter: {
-      title: t(`pages.${safePageKey}.title`),
-      description: t(`pages.${safePageKey}.description`),
+      title,
+      description,
     },
   };
 };

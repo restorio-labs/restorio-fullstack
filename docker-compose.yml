@@ -22,6 +22,7 @@ services:
       - FRONTEND_URL=${FRONTEND_URL:-https://restorio.org}
       - WAITER_PANEL_URL=${WAITER_PANEL_URL:-https://waiter.restorio.org}
       - MOBILE_APP_URL=${MOBILE_APP_URL:-https://mobile.restorio.org}
+      - ENV=${ENV:-production}
       - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
       - ALGORITHM=${ALGORITHM:-HS256}
       - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
@@ -33,7 +34,8 @@ services:
       - RESEND_API_KEY=${RESEND_API_KEY:-}
       - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-}
       - MINIO_ENDPOINT=${COMPOSE_MINIO_ENDPOINT:-minio:9000}
-      - MINIO_PUBLIC_ENDPOINT=${MINIO_PUBLIC_ENDPOINT:-localhost:9000}
+      - MINIO_PUBLIC_ENDPOINT=${MINIO_PUBLIC_ENDPOINT:-minio.restorio.org}
+      - MINIO_PUBLIC_SECURE=${MINIO_PUBLIC_SECURE:-true}
       - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
       - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
       - MINIO_BUCKET=${MINIO_BUCKET:-restorio-media}

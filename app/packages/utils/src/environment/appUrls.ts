@@ -2,7 +2,6 @@ import { Environment, type AppSlug, type EnvironmentType } from "@restorio/types
 
 import { LAST_VISITED_APP_STORAGE_KEY } from "../storageKeys";
 
-import { getEnvSource } from "./getEnvSource";
 import { resolveNextEnvVar } from "./resolveNextEnvVar";
 
 const LOCAL_PORTS: Record<AppSlug, number> = {
@@ -52,26 +51,16 @@ export const getEnvironmentFromEnv = (mode: string): EnvironmentType => {
 };
 
 export const getEnvMode = (): string => {
-  const viteEnv =
-    typeof import.meta !== "undefined" ? (import.meta as { env?: Record<string, unknown> }).env : undefined;
-  const processEnv = typeof process !== "undefined" ? (process.env as Record<string, unknown>) : undefined;
-  const envSource = getEnvSource(viteEnv);
-
-  const fromProcess = resolveNextEnvVar(processEnv ?? {}, "ENV", "NODE_ENV");
-  if (fromProcess !== undefined) {
-    return fromProcess;
-  }
-
-  const fromVite = resolveNextEnvVar(envSource, "ENV", "NODE_ENV", "MODE");
-  if (fromVite !== undefined) {
-    return fromVite;
-  }
-
-  if (viteEnv?.PROD === true) {
+  // Vite statically replaces import.meta.env.MODE at build time
+  // IMPORTANT: Must access import.meta.env.MODE directly (not via variable)
+  // for Vite to perform static replacement
+  if (import.meta.env.MODE === "production") {
     return "production";
   }
 
-  return "development";
+  const processEnv = typeof process !== "undefined" ? (process.env as Record<string, unknown>) : undefined;
+
+  return resolveNextEnvVar(processEnv ?? {}, "ENV", "NODE_ENV") ?? "development";
 };
 
 export const getAppHref = (slug: AppSlug): string => {

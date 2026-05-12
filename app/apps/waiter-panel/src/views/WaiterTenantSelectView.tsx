@@ -1,8 +1,9 @@
 import type { TenantSummary } from "@restorio/types";
 import { Loader, PageLayout, Text, useI18n } from "@restorio/ui";
-import { deslug } from "@restorio/utils";
+import { deslug, goToApp } from "@restorio/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { ReactElement } from "react";
+import { useEffect } from "react";
 import { Link, Navigate } from "react-router-dom";
 
 import { api } from "../api/client";
@@ -18,6 +19,12 @@ export const WaiterTenantSelectView = (): ReactElement => {
     queryKey: ["waiter-panel", "tenants"],
     queryFn: () => api.tenants.list(),
   });
+
+  useEffect(() => {
+    if (!isLoading && !isError && tenants.length === 0) {
+      goToApp("admin-panel");
+    }
+  }, [isLoading, isError, tenants.length]);
 
   if (!isLoading && !isError && tenants.length === 1) {
     return <Navigate to={`/${tenants[0].id}`} replace />;

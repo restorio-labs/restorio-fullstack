@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import { useTranslations } from "@/i18n/useT";
 import React from "react";
 import type { ReactElement } from "react";
 

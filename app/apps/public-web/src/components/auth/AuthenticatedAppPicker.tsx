@@ -3,7 +3,7 @@
 import type { AppSlug } from "@restorio/types";
 import { ChooseApp } from "@restorio/ui";
 import { goToApp } from "@restorio/utils";
-import { useTranslations } from "next-intl";
+import { useTranslations } from "@/i18n/useT";
 import type { ReactElement } from "react";
 
 export const AuthenticatedAppPicker = (): ReactElement => {

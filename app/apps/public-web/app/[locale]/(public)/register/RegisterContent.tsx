@@ -3,7 +3,7 @@
 import { Button, Form, FormActions, FormField, Input, PasswordInput, useAuthRoute } from "@restorio/ui";
 import { getApiErrorData, getApiErrorMessage } from "@restorio/utils";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "@/i18n/useT";
 import { useId, useState, type ReactElement } from "react";
 
 import { api } from "@/api/client";
@@ -14,7 +14,7 @@ import { getPasswordFieldsValidation } from "@/services/passwordFieldsValidation
 import { MIN_PASSWORD_LENGTH, isEmailValid } from "@/services/validation";
 
 export const RegisterContent = (): ReactElement => {
-  const { authStatus } = useAuthRoute();
+  const { authStatus, refreshAuth } = useAuthRoute();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -24,6 +24,7 @@ export const RegisterContent = (): ReactElement => {
   const [feedbackStatus, setFeedbackStatus] = useState<"success" | "error" | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const t = useTranslations("register");
+  const locale = useLocale();
   const animatedFieldClassName = "onboarding-fade-up motion-reduce:animate-none";
 
   const checkboxId = useId();
@@ -32,11 +33,19 @@ export const RegisterContent = (): ReactElement => {
   const linkedTermsText: ReactElement = (
     <>
       {t("fields.accept")}{" "}
-      <Link href="/privacy" target="_blank" className="text-text-primary underline underline-offset-2 hover:underline">
+      <Link
+        href={`/${locale}/privacy`}
+        target="_blank"
+        className="text-text-primary underline underline-offset-2 hover:underline"
+      >
         {t("fields.statute")}
       </Link>{" "}
       {t("fields.and")}{" "}
-      <Link href="/terms" target="_blank" className="text-text-primary underline underline-offset-2 hover:underline">
+      <Link
+        href={`/${locale}/terms`}
+        target="_blank"
+        className="text-text-primary underline underline-offset-2 hover:underline"
+      >
         {t("fields.terms")}
       </Link>{" "}
       {t("fields.ofService")}
@@ -112,6 +121,8 @@ export const RegisterContent = (): ReactElement => {
         email: email.trim(),
         password,
       });
+
+      await refreshAuth();
 
       setFeedbackStatus("success");
       setFeedbackMessage(String(response.message));

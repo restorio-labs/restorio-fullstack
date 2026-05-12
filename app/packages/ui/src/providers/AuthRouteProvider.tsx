@@ -1,12 +1,13 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { ReactElement, ReactNode } from "react";
 
 export type AuthRouteStatus = "loading" | "reconnecting" | "authenticated" | "anonymous" | "unavailable";
 
 interface AuthRouteContextValue {
   authStatus: AuthRouteStatus;
+  refreshAuth: () => Promise<void>;
 }
 
 const AuthRouteContext = createContext<AuthRouteContextValue | null>(null);
@@ -24,33 +25,36 @@ export interface AuthRouteProviderProps {
 
 export const AuthRouteProvider = ({ children, checkAuth }: AuthRouteProviderProps): ReactElement => {
   const [authStatus, setAuthStatus] = useState<AuthRouteStatus>("loading");
+  const isMountedRef = useRef(false);
 
-  useEffect(() => {
-    let isMounted = true;
+  const runAuthCheck = useCallback(async (): Promise<void> => {
+    const resolved = await checkAuth({
+      onReconnecting: () => {
+        if (isMountedRef.current) {
+          setAuthStatus("reconnecting");
+        }
+      },
+    });
 
-    const run = async (): Promise<void> => {
-      const resolved = await checkAuth({
-        onReconnecting: () => {
-          if (isMounted) {
-            setAuthStatus("reconnecting");
-          }
-        },
-      });
-
-      if (!isMounted) {
-        return;
-      }
+    if (isMountedRef.current) {
       setAuthStatus(resolved);
-    };
-
-    void run();
-
-    return () => {
-      isMounted = false;
-    };
+    }
   }, [checkAuth]);
 
-  const value: AuthRouteContextValue = { authStatus };
+  useEffect(() => {
+    isMountedRef.current = true;
+    void runAuthCheck();
+
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, [runAuthCheck]);
+
+  const refreshAuth = useCallback(async (): Promise<void> => {
+    await runAuthCheck();
+  }, [runAuthCheck]);
+
+  const value: AuthRouteContextValue = { authStatus, refreshAuth };
 
   return <AuthRouteContext.Provider value={value}>{children}</AuthRouteContext.Provider>;
 };

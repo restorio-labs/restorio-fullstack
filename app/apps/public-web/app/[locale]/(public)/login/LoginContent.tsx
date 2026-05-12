@@ -6,11 +6,11 @@ import {
   getApiErrorData,
   getApiErrorMessage,
   getApiValidationFieldLeafs,
+  goToApp,
   LAST_VISITED_APP_STORAGE_KEY,
-  getAppHref,
 } from "@restorio/utils";
 import Link from "next/link";
-import { useLocale, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "@/i18n/useT";
 import type { ReactElement } from "react";
 import { useMemo, useState } from "react";
 
@@ -44,7 +44,7 @@ const extractFieldErrors = (data: unknown, t: ReturnType<typeof useTranslations>
 const MIN_PASSWORD_LENGTH_FACADE = 1;
 
 export const LoginContent = (): ReactElement => {
-  const { authStatus } = useAuthRoute();
+  const { authStatus, refreshAuth } = useAuthRoute();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -96,10 +96,12 @@ export const LoginContent = (): ReactElement => {
     try {
       const loginResponse = await api.auth.login(email.trim(), password);
 
+      await refreshAuth();
+
       const rlvp = localStorage.getItem(LAST_VISITED_APP_STORAGE_KEY);
 
       if (typeof rlvp === "string" && isAppSlug(rlvp) && rlvp !== "public-web") {
-        window.location.href = getAppHref(rlvp);
+        goToApp(rlvp);
 
         return;
       }
@@ -107,13 +109,13 @@ export const LoginContent = (): ReactElement => {
       const role = loginResponse.data.account_type;
 
       if (role === "kitchen") {
-        window.location.href = getAppHref("kitchen-panel");
+        goToApp("kitchen-panel");
 
         return;
       }
 
       if (role === "waiter") {
-        window.location.href = getAppHref("waiter-panel");
+        goToApp("waiter-panel");
 
         return;
       }

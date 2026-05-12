@@ -1,5 +1,5 @@
 import { Button, Text } from "@restorio/ui";
-import { useTranslations } from "next-intl";
+import { useTranslations } from "@/i18n/useT";
 import type { ReactElement } from "react";
 
 interface ActivateSuccessViewProps {
