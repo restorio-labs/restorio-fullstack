@@ -10,6 +10,11 @@ from core.foundation.infra.config import settings
 router = APIRouter()
 
 
+@router.get("/live", status_code=status.HTTP_200_OK)
+async def liveness() -> JSONResponse:
+    return JSONResponse(status_code=status.HTTP_200_OK, content={})
+
+
 @router.get("", status_code=status.HTTP_200_OK)
 async def health_check() -> JSONResponse:
     ok = True

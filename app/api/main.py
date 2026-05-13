@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from core.exceptions.handlers import setup_exception_handlers
 from core.foundation.infra.config import settings
@@ -25,6 +26,9 @@ def create_application() -> FastAPI:
     )
 
     setup_exception_handlers(app=app, settings=settings)
+
+    if settings.TRUST_PROXY_HEADERS:
+        app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
     app.add_middleware(RateLimitMiddleware)
     app.add_middleware(CSRFMiddleware)

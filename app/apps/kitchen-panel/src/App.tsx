@@ -17,7 +17,7 @@ const MenuAvailabilityView = lazy(async () =>
 export const App = (): ReactElement => {
   return (
     <AppWrapper client={api}>
-      <RoleGuard allowedRoles={["owner", "manager", "waiter", "kitchen_staff", "admin", "super_admin"]}>
+      <RoleGuard allowedRoles={["owner", "manager", "waiter", "kitchen", "admin", "super_admin"]}>
         <Suspense fallback={<div />}>
           <Routes>
             <Route path="/" element={<KitchenTenantSelectView />} />

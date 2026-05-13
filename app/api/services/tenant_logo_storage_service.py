@@ -56,7 +56,7 @@ class TenantLogoStorageService:
             settings.MINIO_PUBLIC_ENDPOINT,
             access_key=settings.MINIO_ACCESS_KEY,
             secret_key=settings.MINIO_SECRET_KEY,
-            secure=settings.MINIO_SECURE,
+            secure=settings.MINIO_PUBLIC_SECURE,
             region=settings.MINIO_REGION,
         )
 
@@ -249,7 +249,7 @@ class TenantLogoStorageService:
             raise ServiceUnavailableError(storage_unavailable_message) from exc
 
     def _build_public_url(self, object_key: str) -> str:
-        scheme = "https" if settings.MINIO_SECURE else "http"
+        scheme = "https" if settings.MINIO_PUBLIC_SECURE else "http"
         return f"{scheme}://{settings.MINIO_PUBLIC_ENDPOINT}/{settings.MINIO_BUCKET}/{quote(object_key, safe='/')}"
 
 

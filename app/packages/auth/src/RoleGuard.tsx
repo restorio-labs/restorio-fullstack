@@ -5,7 +5,7 @@ import { Navigate } from "react-router-dom";
 import { AUTH_LOGIN_REDIRECT_URL } from "./authConfig";
 import { useAuthContext } from "./AuthContext";
 
-export type UserRole = "super_admin" | "admin" | "owner" | "manager" | "waiter" | "kitchen_staff";
+export type UserRole = "super_admin" | "admin" | "owner" | "manager" | "waiter" | "kitchen";
 
 export interface RoleGuardProps {
   children: ReactNode;

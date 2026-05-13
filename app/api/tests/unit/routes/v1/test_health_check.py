@@ -5,7 +5,14 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from starlette import status
 
-from routes.v1.health import health_check
+from routes.v1.health import health_check, liveness
+
+
+@pytest.mark.asyncio
+async def test_liveness_returns_200() -> None:
+    r = await liveness()
+
+    assert r.status_code == status.HTTP_200_OK
 
 
 @pytest.mark.asyncio

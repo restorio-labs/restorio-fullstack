@@ -34,8 +34,13 @@ class Settings(BaseSettings):
         "https://admin.restorio.org",
         "https://kitchen.restorio.org",
         "https://waiter.restorio.org",
+        "https://order.restorio.org",
         "https://mobile.restorio.org",
     ]
+
+    CORS_ALLOW_CF_PAGES_PREVIEWS: bool = False
+
+    TRUST_PROXY_HEADERS: bool = False
     _env = os.getenv("ENV", "development")
     if _env in ("local", "development"):
         CORS_ORIGINS: list[str] = LOCAL_ORIGINS
@@ -70,6 +75,7 @@ class Settings(BaseSettings):
 
     MINIO_ENDPOINT: str = "localhost:9000"
     MINIO_PUBLIC_ENDPOINT: str = "localhost:9000"
+    MINIO_PUBLIC_SECURE: bool = False
     MINIO_ACCESS_KEY: str = "minioadmin"
     MINIO_SECRET_KEY: str = "minioadmin"
     MINIO_BUCKET: str = "restorio-media"

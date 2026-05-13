@@ -44,7 +44,10 @@ def _is_public_path(path: str) -> bool:
 def _cors_headers_for_request(request: Request) -> dict[str, str]:
     origin = request.headers.get("origin")
     if origin is not None and is_origin_allowed(
-        origin, settings.CORS_ORIGINS, debug=settings.DEBUG
+        origin,
+        settings.CORS_ORIGINS,
+        debug=settings.DEBUG,
+        allow_cf_pages_previews=settings.CORS_ALLOW_CF_PAGES_PREVIEWS,
     ):
         return {
             "Access-Control-Allow-Origin": origin,
