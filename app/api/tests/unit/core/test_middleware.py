@@ -287,3 +287,36 @@ def test_is_origin_allowed_localhost_always_allowed() -> None:
 def test_is_origin_allowed_restorio_org_root_domain() -> None:
     assert is_origin_allowed("https://restorio.org", [], debug=True) is True
     assert is_origin_allowed("http://restorio.org", [], debug=True) is True
+
+
+def test_is_origin_allowed_cf_pages_preview_when_enabled() -> None:
+    assert (
+        is_origin_allowed(
+            "https://abc123.my-app.pages.dev",
+            [],
+            debug=False,
+            allow_cf_pages_previews=True,
+        )
+        is True
+    )
+    assert (
+        is_origin_allowed(
+            "https://evil.example.com",
+            [],
+            debug=False,
+            allow_cf_pages_previews=True,
+        )
+        is False
+    )
+
+
+def test_is_origin_allowed_cf_pages_preview_when_disabled() -> None:
+    assert (
+        is_origin_allowed(
+            "https://abc123.my-app.pages.dev",
+            [],
+            debug=False,
+            allow_cf_pages_previews=False,
+        )
+        is False
+    )

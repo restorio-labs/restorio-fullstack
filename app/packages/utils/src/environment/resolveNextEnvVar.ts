@@ -2,7 +2,7 @@ export const resolveNextEnvVar = (source: Record<string, unknown>, ...keys: stri
   for (const key of keys) {
     const v = source[key];
 
-    if (typeof v === "string") {
+    if (typeof v === "string" && v.length > 0) {
       return v;
     }
   }

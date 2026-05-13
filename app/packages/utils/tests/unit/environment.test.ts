@@ -149,6 +149,29 @@ describe("resolveApiBaseUrl", () => {
 
     expect(resolveApiBaseUrl()).toBe("https://api.example.com/api/v1");
   });
+
+  it("uses public API host in production when no full URL env", () => {
+    vi.stubEnv("ENV", "production");
+    vi.stubEnv("NODE_ENV", "production");
+
+    expect(resolveApiBaseUrl()).toBe("https://api.restorio.org/api/v1");
+  });
+
+  it("builds API path from NEXT_PUBLIC_PUBLIC_API_ORIGIN in production", () => {
+    vi.stubEnv("ENV", "production");
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("NEXT_PUBLIC_PUBLIC_API_ORIGIN", "https://api.example.org");
+
+    expect(resolveApiBaseUrl()).toBe("https://api.example.org/api/v1");
+  });
+
+  it("does not use relative /api/v1 in production even when preferRelativeInBrowser", () => {
+    vi.stubEnv("ENV", "production");
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubGlobal("window", {});
+
+    expect(resolveApiBaseUrl({ preferRelativeInBrowser: true })).toBe("https://api.restorio.org/api/v1");
+  });
 });
 
 describe("getMergedRuntimeEnv", () => {

@@ -8,7 +8,7 @@
   },
   "waiterDashboard": {
     "title": "Panel kelnera",
-    "description": "Podglad sali na zywo na podstawie konfiguracji z panelu administracyjnego.",
+    "description": "Podgląd sali na żywo.",
     "activeFloorNone": "Nie wybrano sali",
     "activeFloorNoConfigured": "Brak skonfigurowanej sali",
     "refresh": "Odswiez",

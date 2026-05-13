@@ -52,7 +52,7 @@ describe("resolveNextEnvVar", () => {
     expect(resolveNextEnvVar({}, "NEXT_PUBLIC_API_URL")).toBeUndefined();
   });
 
-  it("returns an empty string when the matched value is an empty string", () => {
-    expect(resolveNextEnvVar({ EMPTY: "" }, "EMPTY")).toBe("");
+  it("treats an empty string as unset", () => {
+    expect(resolveNextEnvVar({ EMPTY: "" }, "EMPTY")).toBeUndefined();
   });
 });

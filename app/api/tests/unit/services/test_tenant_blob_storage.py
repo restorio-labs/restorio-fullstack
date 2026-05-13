@@ -739,6 +739,28 @@ def test_favicon_build_public_url_quotes_key() -> None:
     assert u.startswith("http")
 
 
+def test_menu_service_uses_public_secure_for_public_client() -> None:
+    i, p = MagicMock(), MagicMock()
+    with (
+        patch.object(settings, "MINIO_PUBLIC_SECURE", True),
+        patch("services.tenant_menu_image_storage_service.Minio", side_effect=[i, p]) as minio_cls,
+    ):
+        TenantMenuImageStorageService()
+
+    assert minio_cls.call_args_list[0].kwargs["secure"] is settings.MINIO_SECURE
+    assert minio_cls.call_args_list[1].kwargs["secure"] is True
+
+
+def test_favicon_build_public_url_uses_public_secure_scheme() -> None:
+    i, p = MagicMock(), MagicMock()
+    with patch.object(settings, "MINIO_PUBLIC_SECURE", True):
+        svc = _new_favicon_service(i, p)
+        u = svc.build_public_url("tenant-mobile-favicons/a b/favicon.ico")
+
+    assert "a%20b" in u
+    assert u.startswith("https://")
+
+
 def test_favicon_finalize_read_fails_before_open() -> None:
     tid = uuid4()
     i, p = MagicMock(), MagicMock()

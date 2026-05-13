@@ -1,6 +1,12 @@
+import { resolve } from "node:path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@restorio/utils": resolve(__dirname, "src/index.ts"),
+    },
+  },
   test: {
     globals: true,
     environment: "node",
