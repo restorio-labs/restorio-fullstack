@@ -75,6 +75,7 @@ class Settings(BaseSettings):
 
     MINIO_ENDPOINT: str = "localhost:9000"
     MINIO_PUBLIC_ENDPOINT: str = "localhost:9000"
+    MINIO_PUBLIC_SECURE: bool = False
     MINIO_ACCESS_KEY: str = "minioadmin"
     MINIO_SECRET_KEY: str = "minioadmin"
     MINIO_BUCKET: str = "restorio-media"
