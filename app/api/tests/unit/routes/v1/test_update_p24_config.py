@@ -9,7 +9,7 @@ import pytest
 from core.dto.v1.payments import UpdateP24ConfigDTO
 from core.foundation.http.responses import UpdatedResponse
 from core.models.enums import TenantStatus
-from routes.v1.payments.p24_config import update_p24_config
+from routes.v1.payments.p24_config import get_p24_config, update_p24_config
 
 
 def _make_tenant(
@@ -117,6 +117,49 @@ class TestUpdateP24Config:
         assert tenant.p24_merchantid == request.p24_merchantid
         assert tenant.p24_api == request.p24_api
         assert tenant.p24_crc == request.p24_crc
+
+
+class TestGetP24Config:
+    EXAMPLE_MERCHANT_ID = 123456
+    EXAMPLE_API_KEY = "a" * 32
+    EXAMPLE_CRC_KEY = "b" * 16
+
+    @pytest.mark.asyncio
+    async def test_returns_stored_p24_config(self) -> None:
+        tenant = _make_tenant(
+            p24_merchantid=self.EXAMPLE_MERCHANT_ID,
+            p24_api=self.EXAMPLE_API_KEY,
+            p24_crc=self.EXAMPLE_CRC_KEY,
+        )
+        session = _make_session(tenant)
+
+        result = await get_p24_config(MagicMock(), tenant.id, session)
+
+        assert result.p24_merchantid == self.EXAMPLE_MERCHANT_ID
+        assert result.p24_api == self.EXAMPLE_API_KEY
+        assert result.p24_crc == self.EXAMPLE_CRC_KEY
+
+    @pytest.mark.asyncio
+    async def test_returns_nulls_when_not_configured(self) -> None:
+        tenant = _make_tenant()
+        session = _make_session(tenant)
+
+        result = await get_p24_config(MagicMock(), tenant.id, session)
+
+        assert result.p24_merchantid is None
+        assert result.p24_api is None
+        assert result.p24_crc is None
+
+    @pytest.mark.asyncio
+    async def test_raises_404_when_tenant_missing(self) -> None:
+        session = _make_session(tenant=None)
+        tenant_id = uuid4()
+
+        with pytest.raises(HTTPException) as exc_info:
+            await get_p24_config(MagicMock(), tenant_id, session)
+
+        assert exc_info.value.status_code == 404
+        assert str(tenant_id) in exc_info.value.detail
 
 
 class TestUpdateP24ConfigDTOValidation:

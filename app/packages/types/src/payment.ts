@@ -22,6 +22,12 @@ export interface TransactionListParams {
   date_to?: string;
 }
 
+export interface P24ConfigData {
+  p24Merchantid: number | null;
+  p24Api: string | null;
+  p24Crc: string | null;
+}
+
 export interface UpdateP24ConfigRequest {
   p24_merchantid: number;
   p24_api: string;

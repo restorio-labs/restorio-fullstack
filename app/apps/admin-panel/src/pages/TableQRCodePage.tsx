@@ -1,7 +1,7 @@
 import { useI18n } from "@restorio/ui";
 import type { ReactElement } from "react";
 import { useMemo } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { useCurrentTenant } from "../context/TenantContext";
 import { useQRCodeDataUrl } from "../features/qr/hooks/useQRCodeDataUrl";
@@ -13,11 +13,13 @@ import { getTableQrUrl } from "../features/qr/tableQRCodes";
 export const TableQRCodePage = (): ReactElement => {
   const { t } = useI18n();
   const { tableId } = useParams<{ tableId: string }>();
+  const [searchParams] = useSearchParams();
   const { tenantsState } = useCurrentTenant();
   const navigate = useNavigate();
 
   const tableNumber = tableId ? parseInt(tableId, 10) : null;
   const resolvedTableNumber = tableNumber ?? 0;
+  const tableRefParam = searchParams.get("ref")?.trim() ?? undefined;
 
   const { tenant, isLoading } = useSelectedTenantDetails();
   const qrUrl = useMemo(() => {
@@ -25,8 +27,8 @@ export const TableQRCodePage = (): ReactElement => {
       return null;
     }
 
-    return getTableQrUrl(tenant.slug, tableNumber);
-  }, [tableNumber, tenant]);
+    return getTableQrUrl(tenant.slug, tableNumber, tableRefParam);
+  }, [tableNumber, tableRefParam, tenant]);
   const qrDataUrl = useQRCodeDataUrl(qrUrl, {
     width: 1024,
     margin: 2,

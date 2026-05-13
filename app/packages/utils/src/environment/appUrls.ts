@@ -44,10 +44,12 @@ export const getEnvironmentFromEnv = (mode: string): EnvironmentType => {
 };
 
 export const getEnvMode = (): string => {
-  // Vite statically replaces import.meta.env.MODE at build time
-  // IMPORTANT: Must access import.meta.env.MODE directly (not via variable)
-  // for Vite to perform static replacement
-  if (import.meta.env.MODE === "production") {
+  const viteMode =
+    typeof import.meta !== "undefined"
+      ? (import.meta as ImportMeta & { env?: { MODE?: string } }).env?.MODE
+      : undefined;
+
+  if (viteMode === "production") {
     return "production";
   }
 

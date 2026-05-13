@@ -6,7 +6,7 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.engine import Result
 
-from core.exceptions import ConflictError, NotFoundResponse
+from core.exceptions import BadRequestError, ConflictError, NotFoundResponse
 from core.models import AuditLog, TableSessionOrigin, TableSessionStatus
 from services.table_session_service import TableSessionService
 
@@ -170,6 +170,32 @@ async def test_resolve_table_identity_fallback_to_table_ref() -> None:
     assert out.table_ref == "orphan"
     assert out.table_number is None
     assert out.table_label is None
+
+
+@pytest.mark.asyncio
+async def test_resolve_table_identity_rejects_duplicate_table_number_across_canvases() -> None:
+    floor_a = [{"type": "table", "id": "e1", "tableNumber": 5}]
+    floor_b = [{"type": "table", "id": "e2", "tableNumber": 5}]
+    session = _sql_session_from_elements(floor_a, floor_b)
+    tid = uuid4()
+
+    svc = TableSessionService()
+    with pytest.raises(BadRequestError):
+        await svc.resolve_table_identity(session, tid, table_number=5, table_ref=None)
+
+
+@pytest.mark.asyncio
+async def test_resolve_table_identity_disambiguates_duplicate_numbers_with_table_ref() -> None:
+    floor_a = [{"type": "table", "id": "e1", "tableNumber": 5}]
+    floor_b = [{"type": "table", "id": "e2", "tableNumber": 5}]
+    session = _sql_session_from_elements(floor_a, floor_b)
+    tid = uuid4()
+
+    svc = TableSessionService()
+    out = await svc.resolve_table_identity(session, tid, table_ref="e2", table_number=None)
+
+    assert out.table_ref == "e2"
+    assert out.table_number == 5  # noqa: PLR2004
 
 
 @pytest.mark.asyncio

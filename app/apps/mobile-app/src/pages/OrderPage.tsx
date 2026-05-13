@@ -2,7 +2,7 @@ import type { InvoiceData, PublicTenantInfo, TenantMenu } from "@restorio/types"
 import { Button, EmptyState, Loader, Text, useI18n } from "@restorio/ui";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { type ReactElement, useCallback, useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 
 import { publicApi } from "../api/client";
 import { CartSummary } from "../features/order/components/CartSummary";
@@ -28,11 +28,15 @@ const extractApiErrorMessage = (error: unknown, fallback: string): string => {
 export const OrderPage = (): ReactElement => {
   const { t } = useI18n();
   const { tenantSlug, tableNumber } = useParams<{ tenantSlug: string; tableNumber: string }>();
+  const [searchParams] = useSearchParams();
   const tableNum = Number(tableNumber);
+  const tableRef = searchParams.get("ref")?.trim() || undefined;
   const [submitError, setSubmitError] = useState("");
   const checkoutRef = useRef<HTMLDivElement>(null);
   const cart = useCart();
-  const lockStorageKey = tenantSlug ? `restorio:table-lock:${tenantSlug}:${tableNum}` : "";
+  const lockStorageKey = tenantSlug
+    ? `restorio:table-lock:${tenantSlug}:${tableNum}:${tableRef ?? ""}`
+    : "";
 
   const tenantQuery = useQuery<PublicTenantInfo>({
     queryKey: ["public-tenant-info", tenantSlug],
@@ -60,6 +64,7 @@ export const OrderPage = (): ReactElement => {
       publicApi.createOrderPayment({
         tenantSlug: tenantSlug!,
         tableNumber: tableNum,
+        tableRef,
         lockToken: lockStorageKey ? (window.localStorage.getItem(lockStorageKey) ?? undefined) : undefined,
         email: data.email,
         items: cart.items.map((item) => ({

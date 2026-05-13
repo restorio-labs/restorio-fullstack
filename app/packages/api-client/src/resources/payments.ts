@@ -1,4 +1,5 @@
 import type {
+  P24ConfigData,
   TransactionListData,
   TransactionListParams,
   UpdateP24ConfigData,
@@ -9,6 +10,10 @@ import type {
 import { BaseResource } from "./base";
 
 export class PaymentsResource extends BaseResource {
+  async getP24Config(tenantId: string, signal?: AbortSignal): Promise<P24ConfigData> {
+    return this.client.get<P24ConfigData>(`/payments/tenants/${tenantId}/p24-config`, { signal });
+  }
+
   async updateP24Config(
     tenantId: string,
     data: UpdateP24ConfigRequest,

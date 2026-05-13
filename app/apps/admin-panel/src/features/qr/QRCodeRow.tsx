@@ -4,16 +4,24 @@ import { Link } from "react-router-dom";
 
 interface QRCodeRowProps {
   tableId?: number;
+  tableElementId?: string;
   qrDataUrl: string | null;
   subtitle?: string;
 }
 
-export const QRCodeRow = ({ tableId, qrDataUrl, subtitle }: QRCodeRowProps): ReactElement => {
+export const QRCodeRow = ({ tableId, tableElementId, qrDataUrl, subtitle }: QRCodeRowProps): ReactElement => {
   const { t } = useI18n();
+
+  const tableDetailPath =
+    tableId === undefined
+      ? "/qr-code/restaurant"
+      : tableElementId && tableElementId.trim() !== ""
+        ? `/qr-code/table/${tableId}?ref=${encodeURIComponent(tableElementId.trim())}`
+        : `/qr-code/table/${tableId}`;
 
   return (
     <Link
-      to={tableId !== undefined ? `/qr-code/table/${tableId}` : "/qr-code/restaurant"}
+      to={tableDetailPath}
       className="flex items-center justify-between gap-4 rounded-lg border border-border-default bg-surface-primary p-4 transition-colors hover:bg-surface-secondary print:break-inside-avoid print:border-2 print:border-black"
     >
       <div className="flex flex-col gap-1">

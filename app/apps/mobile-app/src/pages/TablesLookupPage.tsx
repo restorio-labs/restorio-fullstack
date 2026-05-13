@@ -191,7 +191,7 @@ export const TablesLookupPage = (): ReactElement => {
         return;
       }
 
-      navigate(`/${tenantSlug}/table/${tbl.tableNumber}`);
+      navigate(`/${tenantSlug}/table/${tbl.tableNumber}?ref=${encodeURIComponent(tbl.id)}`);
 
       return;
     }

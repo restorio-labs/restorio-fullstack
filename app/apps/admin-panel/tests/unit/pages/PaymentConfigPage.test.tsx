@@ -10,6 +10,7 @@ import { ROUTER_FUTURE_FLAGS } from "../routerFutureFlags";
 vi.mock("../../../src/api/client", () => ({
   api: {
     payments: {
+      getP24Config: vi.fn(),
       updateP24Config: vi.fn(),
     },
   },
@@ -26,13 +27,20 @@ import { PaymentConfigPage } from "../../../src/pages/PaymentConfigPage";
 
 // eslint-disable-next-line @typescript-eslint/unbound-method
 const mockUpdateP24Config = api.payments.updateP24Config as Mock;
+const mockGetP24Config = api.payments.getP24Config as Mock;
 const mockUseCurrentTenant = useCurrentTenant as Mock;
 const API_KEY = "a".repeat(32);
 const CRC_KEY = "b".repeat(16);
 
+const awaitInitialP24Query = async (): Promise<void> => {
+  await waitFor(() => {
+    expect(mockGetP24Config).toHaveBeenCalled();
+  });
+};
+
 const renderPage = (): RenderResult =>
   render(
-    <QueryClientProvider client={new QueryClient()}>
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
       <I18nProvider locale="en" messages={getMessages("en")} fallbackMessages={fallbackMessages}>
         <MemoryRouter future={ROUTER_FUTURE_FLAGS}>
           <PaymentConfigPage />
@@ -60,6 +68,11 @@ const clickSaveConfiguration = (): void => {
 describe("PaymentConfigPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockGetP24Config.mockResolvedValue({
+      p24Merchantid: null,
+      p24Api: null,
+      p24Crc: null,
+    });
     mockUseCurrentTenant.mockReturnValue({
       selectedTenantId: "550e8400-e29b-41d4-a716-446655440000",
       selectedTenant: {
@@ -72,6 +85,27 @@ describe("PaymentConfigPage", () => {
     });
   });
 
+  it("loads saved P24 config into the form", async () => {
+    mockGetP24Config.mockResolvedValueOnce({
+      p24Merchantid: 123456,
+      p24Api: API_KEY,
+      p24Crc: CRC_KEY,
+    });
+    renderPage();
+
+    await waitFor(() => {
+      expect(mockGetP24Config).toHaveBeenCalledWith("550e8400-e29b-41d4-a716-446655440000", expect.any(AbortSignal));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /save configuration/i })).toBeEnabled();
+    });
+
+    expect(screen.getByLabelText(/merchant id/i)).toHaveValue(123456);
+    expect(screen.getByLabelText(/p24 api key/i)).toHaveValue(API_KEY);
+    expect(screen.getByLabelText(/p24 crc key/i)).toHaveValue(CRC_KEY);
+  });
+
   it("renders selected restaurant details and payment fields", () => {
     renderPage();
 
@@ -82,14 +116,18 @@ describe("PaymentConfigPage", () => {
     expect(screen.getByRole("button", { name: /save configuration/i })).toBeDefined();
   });
 
-  it("disables submit button when form is empty", () => {
+  it("disables submit button when form is empty", async () => {
     renderPage();
+
+    await awaitInitialP24Query();
 
     expect(screen.getByRole("button", { name: /save configuration/i })).toBeDisabled();
   });
 
   it("enables submit button when all fields are filled", async () => {
     renderPage();
+
+    await awaitInitialP24Query();
 
     fillPaymentForm("123456", API_KEY, CRC_KEY);
 
@@ -101,6 +139,8 @@ describe("PaymentConfigPage", () => {
   it("calls API with selected tenant on submit", async () => {
     mockUpdateP24Config.mockResolvedValueOnce(undefined);
     renderPage();
+
+    await awaitInitialP24Query();
 
     fillPaymentForm("123456", API_KEY, CRC_KEY);
     clickSaveConfiguration();
@@ -118,6 +158,8 @@ describe("PaymentConfigPage", () => {
     mockUpdateP24Config.mockResolvedValueOnce(undefined);
     renderPage();
 
+    await awaitInitialP24Query();
+
     fillPaymentForm("123456", API_KEY, CRC_KEY);
     clickSaveConfiguration();
 
@@ -129,6 +171,8 @@ describe("PaymentConfigPage", () => {
   it("shows error message when API call fails", async () => {
     mockUpdateP24Config.mockRejectedValueOnce(new Error("Network error"));
     renderPage();
+
+    await awaitInitialP24Query();
 
     fillPaymentForm("123456", API_KEY, CRC_KEY);
     clickSaveConfiguration();
@@ -149,6 +193,8 @@ describe("PaymentConfigPage", () => {
     });
     renderPage();
 
+    await awaitInitialP24Query();
+
     fillPaymentForm("123456", "", CRC_KEY);
     fillPaymentForm("123456", API_KEY, CRC_KEY);
     clickSaveConfiguration();
@@ -159,23 +205,29 @@ describe("PaymentConfigPage", () => {
     });
   });
 
-  it("shows 'Saving...' text while submitting", async () => {
-    let resolvePromise!: () => void;
+  it("disables submit while update request is in flight", async () => {
+    let resolveSave!: (value: void) => void;
 
-    mockUpdateP24Config.mockReturnValueOnce(new Promise<void>((resolve) => (resolvePromise = resolve)));
+    mockUpdateP24Config.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveSave = resolve;
+        }),
+    );
     renderPage();
 
+    await awaitInitialP24Query();
+
     fillPaymentForm("123456", API_KEY, CRC_KEY);
-    await waitFor(() => {
-      expect(screen.getByRole("button", { name: /save configuration/i })).toBeEnabled();
-    });
     clickSaveConfiguration();
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /saving/i })).toBeDisabled();
+      expect(mockUpdateP24Config).toHaveBeenCalledTimes(1);
     });
 
-    resolvePromise();
+    expect(screen.getByRole("button", { name: /saving/i })).toBeDisabled();
+
+    resolveSave();
 
     await waitFor(() => {
       expect(screen.getByText(/p24 configuration updated successfully/i)).toBeInTheDocument();
@@ -185,6 +237,8 @@ describe("PaymentConfigPage", () => {
   it("keeps success message visible when user edits fields after submit", async () => {
     mockUpdateP24Config.mockResolvedValueOnce(undefined);
     renderPage();
+
+    await awaitInitialP24Query();
 
     fillPaymentForm("123456", API_KEY, CRC_KEY);
     clickSaveConfiguration();
@@ -211,6 +265,8 @@ describe("PaymentConfigPage", () => {
     });
     mockUpdateP24Config.mockResolvedValueOnce(undefined);
     renderPage();
+
+    await awaitInitialP24Query();
 
     fillPaymentForm("100", API_KEY, CRC_KEY);
     clickSaveConfiguration();

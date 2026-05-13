@@ -140,8 +140,9 @@ export const QRCodeGeneratorPage = (): ReactElement => {
                         <div className="flex flex-col gap-3">
                           {floorQRCodes.map((qrCode) => (
                             <QRCodeRow
-                              key={`${qrCode.canvasId}-${qrCode.tableId}`}
+                              key={`${qrCode.canvasId}-${qrCode.elementId}`}
                               tableId={qrCode.tableId}
+                              tableElementId={qrCode.elementId}
                               qrDataUrl={qrCode.qrDataUrl}
                               subtitle={qrCode.floorName}
                             />

@@ -21,6 +21,23 @@ describe("PaymentsResource", () => {
     resource = new PaymentsResource(client as ApiClient);
   });
 
+  it("getP24Config calls GET /payments/tenants/:id/p24-config", async () => {
+    const payload = {
+      p24Merchantid: 42,
+      p24Api: "k".repeat(32),
+      p24Crc: "c".repeat(16),
+    };
+
+    client.get = vi.fn().mockResolvedValueOnce(payload);
+
+    const result = await resource.getP24Config("tenant-1");
+
+    expect(client.get).toHaveBeenCalledWith("/payments/tenants/tenant-1/p24-config", {
+      signal: undefined,
+    });
+    expect(result).toEqual(payload);
+  });
+
   it("updateP24Config calls PUT /payments/tenants/:id/p24-config and returns response data", async () => {
     const payload = {
       p24_merchantid: 123456,

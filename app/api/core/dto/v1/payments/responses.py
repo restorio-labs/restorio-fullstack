@@ -29,3 +29,9 @@ class TransactionListItemDTO(BaseDTO):
     order: dict[str, Any] | None
     note: str | None
     created_at: datetime
+
+
+class P24ConfigResponseDTO(BaseDTO):
+    p24_merchantid: int | None = Field(None, serialization_alias="p24Merchantid")
+    p24_api: str | None = Field(None, serialization_alias="p24Api")
+    p24_crc: str | None = Field(None, serialization_alias="p24Crc")

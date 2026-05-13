@@ -8,6 +8,7 @@ export interface TableQRCode {
   canvasId: string;
   floorName: string;
   tableId: number;
+  elementId: string;
   url: string;
   qrDataUrl: string | null;
 }
@@ -48,18 +49,19 @@ export const useTableQRCodes = (
     setIsGenerating(true);
 
     const generateQRCodes = async (): Promise<void> => {
-      const entries = tables.map(({ canvasId, floorName, tableId }) => ({
+      const entries = tables.map(({ canvasId, floorName, tableId, elementId }) => ({
         canvasId,
         floorName,
         tableId,
-        url: getTableQrUrl(tenant.slug, tableId),
+        elementId,
+        url: getTableQrUrl(tenant.slug, tableId, elementId),
       }));
 
       const results = await Promise.allSettled(
-        entries.map(async ({ canvasId, floorName, tableId, url }) => {
+        entries.map(async ({ canvasId, floorName, tableId, elementId, url }) => {
           const qrDataUrl = await toDataURL(url, { width, margin });
 
-          return { canvasId, floorName, tableId, url, qrDataUrl };
+          return { canvasId, floorName, tableId, elementId, url, qrDataUrl };
         }),
       );
 
@@ -72,7 +74,7 @@ export const useTableQRCodes = (
           return result.value;
         }
 
-        const { canvasId, floorName, tableId, url } = entries[index];
+        const { canvasId, floorName, tableId, elementId, url } = entries[index];
 
         if (options?.errorMessage) {
           console.error(options.errorMessage, result.reason);
@@ -80,7 +82,7 @@ export const useTableQRCodes = (
           console.error(`Failed to generate QR code for table ${tableId}:`, result.reason);
         }
 
-        return { canvasId, floorName, tableId, url, qrDataUrl: null };
+        return { canvasId, floorName, tableId, elementId, url, qrDataUrl: null };
       });
 
       setTableQRCodes(codes);

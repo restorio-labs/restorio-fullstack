@@ -11,7 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.constants import KITCHEN_ORDERS_COLLECTION
-from core.exceptions import ConflictError, NotFoundResponse
+from core.exceptions import BadRequestError, ConflictError, NotFoundResponse
 from core.models import AuditLog, FloorCanvas, TableSession, TableSessionOrigin, TableSessionStatus
 from core.models.tenant import Tenant
 
@@ -79,13 +79,20 @@ class TableSessionService:
                         )
                     if table_number is not None and candidate_number == table_number:
                         label = raw_element.get("label")
-                        matched = ResolvedTableIdentity(
+                        next_identity = ResolvedTableIdentity(
                             table_ref=element_id,
                             table_number=table_number,
                             table_label=label.strip()
                             if isinstance(label, str) and label.strip()
                             else f"Table {table_number}",
                         )
+                        if matched is not None:
+                            msg = (
+                                "This table number exists on more than one floor; use the QR code "
+                                "for this table or choose the table from the list in the app."
+                            )
+                            raise BadRequestError(message=msg)
+                        matched = next_identity
 
         if matched is not None:
             return matched

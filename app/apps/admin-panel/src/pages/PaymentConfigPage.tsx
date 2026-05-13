@@ -1,7 +1,7 @@
 import { Button, Form, FormActions, Input, useI18n } from "@restorio/ui";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { FormEvent, ReactElement } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { api } from "../api/client";
@@ -17,10 +17,15 @@ interface PaymentFormValues {
 
 export const PaymentConfigPage = (): ReactElement => {
   const { t } = useI18n();
+  const queryClient = useQueryClient();
   const { selectedTenantId, tenantsState } = useCurrentTenant();
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error" | "validation">("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const { getFieldError, setFromResponse, clearErrors } = useValidationErrors();
+
+  const trimmedTenantId = selectedTenantId?.trim() ?? "";
+  const appliedP24FingerprintRef = useRef<string>("");
+  const tenantResetWaveRef = useRef<string | undefined>(undefined);
 
   const {
     register,
@@ -32,6 +37,13 @@ export const PaymentConfigPage = (): ReactElement => {
     mode: "onChange",
   });
 
+  const { data: p24Config } = useQuery({
+    queryKey: ["p24-config", trimmedTenantId],
+    queryFn: ({ signal }) => api.payments.getP24Config(trimmedTenantId, signal),
+    enabled: trimmedTenantId !== "",
+    staleTime: Number.POSITIVE_INFINITY,
+  });
+
   useEffect(() => {
     if (tenantsState === "error") {
       setErrorMessage(t("payment.errors.loadRestaurants"));
@@ -39,10 +51,36 @@ export const PaymentConfigPage = (): ReactElement => {
   }, [t, tenantsState]);
 
   useEffect(() => {
+    if (tenantResetWaveRef.current === trimmedTenantId) {
+      return;
+    }
+
+    tenantResetWaveRef.current = trimmedTenantId;
     setSubmitStatus("idle");
     clearErrors();
-    reset();
-  }, [clearErrors, reset, selectedTenantId]);
+    appliedP24FingerprintRef.current = "";
+    reset({ merchantId: "", apiKey: "", crcKey: "" });
+  }, [clearErrors, reset, trimmedTenantId]);
+
+  useEffect(() => {
+    if (trimmedTenantId === "" || p24Config === undefined) {
+      return;
+    }
+
+    const fingerprint = `${trimmedTenantId}:${String(p24Config.p24Merchantid ?? "")}:${p24Config.p24Api ?? ""}:${p24Config.p24Crc ?? ""}`;
+
+    if (appliedP24FingerprintRef.current === fingerprint) {
+      return;
+    }
+
+    appliedP24FingerprintRef.current = fingerprint;
+
+    reset({
+      merchantId: p24Config.p24Merchantid != null ? String(p24Config.p24Merchantid) : "",
+      apiKey: p24Config.p24Api ?? "",
+      crcKey: p24Config.p24Crc ?? "",
+    });
+  }, [reset, trimmedTenantId, p24Config]);
 
   const submitMutation = useMutation({
     mutationFn: async (values: PaymentFormValues) => {
@@ -59,6 +97,7 @@ export const PaymentConfigPage = (): ReactElement => {
     onSuccess: () => {
       setSubmitStatus("success");
       setErrorMessage("");
+      void queryClient.invalidateQueries({ queryKey: ["p24-config", trimmedTenantId] });
     },
     onError: (err: unknown) => {
       const isValidation = setFromResponse(err, "payment.fields");
