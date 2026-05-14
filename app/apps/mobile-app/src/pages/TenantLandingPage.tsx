@@ -3,23 +3,18 @@ import { Button, EmptyState, Loader, Text, useI18n } from "@restorio/ui";
 import { useQuery } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 import { useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 
 import { publicApi } from "../api/client";
 import { GuestBottomNav } from "../components/GuestBottomNav";
 import { useApplyPublicTenantPresentation } from "../hooks/useApplyPublicTenantPresentation";
+import { isTenantNotFoundApiError } from "../lib/isTenantNotFoundApiError";
 import { persistLastVisitedTenantPath } from "../lib/lastVisitedTenant";
 
 export const TenantLandingPage = (): ReactElement => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
-
-  useEffect(() => {
-    if (tenantSlug) {
-      persistLastVisitedTenantPath(`/${tenantSlug}`);
-    }
-  }, [tenantSlug]);
 
   const tenantQuery = useQuery<PublicTenantInfo>({
     queryKey: ["public-tenant-info", tenantSlug],
@@ -28,6 +23,12 @@ export const TenantLandingPage = (): ReactElement => {
   });
 
   useApplyPublicTenantPresentation(tenantQuery.data);
+
+  useEffect(() => {
+    if (tenantSlug && tenantQuery.data) {
+      persistLastVisitedTenantPath(`/${tenantSlug}`);
+    }
+  }, [tenantSlug, tenantQuery.data]);
 
   if (!tenantSlug) {
     return (
@@ -48,6 +49,10 @@ export const TenantLandingPage = (): ReactElement => {
   }
 
   if (tenantQuery.isError || !tenantQuery.data) {
+    if (tenantQuery.isError && isTenantNotFoundApiError(tenantQuery.error)) {
+      return <Navigate to="/" replace />;
+    }
+
     return (
       <div className="flex min-h-[100dvh] items-center justify-center p-4">
         <div className="w-full max-w-md text-center">

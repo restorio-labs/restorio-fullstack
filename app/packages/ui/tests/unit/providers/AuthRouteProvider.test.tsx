@@ -26,10 +26,7 @@ describe("AuthRouteProvider", () => {
   });
 
   it("refreshAuth invokes checkAuth again", async () => {
-    const checkAuth = vi
-      .fn()
-      .mockResolvedValueOnce("anonymous")
-      .mockResolvedValueOnce("authenticated");
+    const checkAuth = vi.fn().mockResolvedValueOnce("anonymous").mockResolvedValueOnce("authenticated");
 
     const { result } = renderHook(() => useAuthRoute(), {
       wrapper: ({ children }) => <AuthRouteProvider checkAuth={checkAuth}>{children}</AuthRouteProvider>,

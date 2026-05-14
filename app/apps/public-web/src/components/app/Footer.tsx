@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useLocale, useTranslations } from "@/i18n/useT";
 import type { ReactElement } from "react";
+
+import { useLocale, useTranslations } from "@/i18n/useT";
 
 export const Footer = (): ReactElement => {
   const t = useTranslations();

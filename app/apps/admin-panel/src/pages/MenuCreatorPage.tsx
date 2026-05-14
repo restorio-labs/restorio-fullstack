@@ -2,12 +2,14 @@ import type { SaveTenantMenuPayload, TenantMenuCategory, TenantMenuItem } from "
 import { Button, FormActions, useI18n, useToast, Loader } from "@restorio/ui";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { ChangeEvent, ReactElement } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { api } from "../api/client";
 import { FilePickerButton } from "../components/file-picker";
+import { UnsavedChangesModal } from "../components/UnsavedChangesModal";
 import { useCurrentTenant } from "../context/TenantContext";
 import { moveItemById } from "../features/menu/moveItemById";
+import { useUnsavedChangesGuard } from "../hooks/useUnsavedChangesGuard";
 import { PageLayout } from "../layouts/PageLayout";
 
 interface MenuItemFormState {
@@ -416,6 +418,19 @@ export const MenuCreatorPage = (): ReactElement => {
     saveMutation.mutate(result.payload);
   };
 
+  const handleDiscardChanges = useCallback(() => {
+    setDidUserEdit(false);
+  }, []);
+
+  const {
+    pendingNavigationPath,
+    handleKeepEditing,
+    handleDiscardChanges: discardAndNavigate,
+  } = useUnsavedChangesGuard({
+    isDirty: didUserEdit,
+    onDiscard: handleDiscardChanges,
+  });
+
   return (
     <PageLayout
       title={t("menuCreator.title")}
@@ -697,6 +712,12 @@ export const MenuCreatorPage = (): ReactElement => {
           )}
         </div>
       </div>
+      <UnsavedChangesModal
+        isOpen={pendingNavigationPath !== null}
+        onKeepEditing={handleKeepEditing}
+        onDiscard={discardAndNavigate}
+        isSaving={saveMutation.isPending}
+      />
     </PageLayout>
   );
 };

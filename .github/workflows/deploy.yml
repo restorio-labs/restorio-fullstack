@@ -1,0 +1,99 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: GitHub Environment name (create the environment under Settings → Environments; only production is used today)
+        type: string
+        default: production
+      deploy_docker:
+        description: Deploy Docker stack (API, databases, etc.)
+        required: true
+        type: boolean
+        default: true
+      deploy_static_frontends:
+        description: Deploy static frontends to Mikrus
+        required: true
+        type: boolean
+        default: true
+      deploy_vinext_frontend:
+        description: Deploy public-web (vinext) to Cloudflare
+        required: true
+        type: boolean
+        default: true
+      version_bump:
+        description: Semantic version bump (auto = use package.json versions)
+        type: choice
+        options:
+          - auto
+          - major
+          - minor
+          - patch
+        default: auto
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+    paths:
+      - "app/api/**"
+      - "app/apps/**"
+      - "app/packages/**"
+      - "docker-compose.yml"
+      - "nginx/**"
+      - ".github/workflows/deploy.yml"
+      - ".github/workflows/deploy-docker.yml"
+      - ".github/workflows/deploy-static-frontend.yml"
+      - ".github/workflows/deploy-vinext-frontend.yml"
+
+concurrency:
+  group: deploy-${{ github.ref }}-${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'production' }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-docker:
+    name: Deploy Docker Stack
+    if: github.event_name != 'workflow_dispatch' || inputs.deploy_docker
+    uses: ./.github/workflows/deploy-docker.yml
+    with:
+      environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'production' }}
+      version_bump: ${{ github.event_name == 'workflow_dispatch' && inputs.version_bump || 'auto' }}
+
+  deploy-static-frontends:
+    name: Deploy Static Frontends
+    if: github.event_name != 'workflow_dispatch' || inputs.deploy_static_frontends
+    uses: ./.github/workflows/deploy-static-frontend.yml
+    with:
+      environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'production' }}
+      version_bump: ${{ github.event_name == 'workflow_dispatch' && inputs.version_bump || 'auto' }}
+
+  deploy-vinext-frontend:
+    name: Deploy Vinext Frontend
+    if: github.event_name != 'workflow_dispatch' || inputs.deploy_vinext_frontend
+    uses: ./.github/workflows/deploy-vinext-frontend.yml
+    with:
+      environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'production' }}
+      version_bump: ${{ github.event_name == 'workflow_dispatch' && inputs.version_bump || 'auto' }}
+
+  deployment-summary:
+    name: Deployment Summary
+    runs-on: ubuntu-latest
+    needs: [deploy-docker, deploy-static-frontends, deploy-vinext-frontend]
+    if: always()
+    steps:
+      - name: Write summary
+        run: |
+          echo "## Deployment Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          ENV_NAME="${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'production' }}"
+          echo "**Environment:** ${ENV_NAME}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Component | Status |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-----------|--------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Docker Stack (API) | ${{ needs.deploy-docker.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Static Frontends | ${{ needs.deploy-static-frontends.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Vinext Frontend | ${{ needs.deploy-vinext-frontend.result }} |" >> "$GITHUB_STEP_SUMMARY"

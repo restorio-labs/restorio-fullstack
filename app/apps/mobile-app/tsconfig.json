@@ -17,7 +17,7 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "tests", "vitest.config.ts", "vite.config.ts"],
+  "include": ["src", "tests", "vitest.config.ts", "vite.config.ts", "../../tooling/viteInjectVersion.ts"],
   "exclude": ["node_modules", "dist"],
   "references": [
     { "path": "../../packages/types" },

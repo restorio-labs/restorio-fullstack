@@ -10,9 +10,13 @@ interface CartSummaryProps {
   onUpdateQuantity: (name: string, quantity: number) => void;
 }
 
+const VAT_RATE = 0.23;
+
 export const CartSummary = ({ items, totalAmount, onRemove, onUpdateQuantity }: CartSummaryProps): ReactElement => {
   const { t } = useI18n();
   const currency = t("common.currency");
+  const vatAmount = totalAmount - totalAmount / (1 + VAT_RATE);
+  const netAmount = totalAmount - vatAmount;
 
   if (items.length === 0) {
     return (
@@ -73,13 +77,31 @@ export const CartSummary = ({ items, totalAmount, onRemove, onUpdateQuantity }: 
           ))}
         </div>
       </div>
-      <div className="flex items-center justify-between border-t border-border-default px-6 py-2">
-        <Text as="span" variant="body-md" weight="semibold">
-          {t("cart.total")}
-        </Text>
-        <Text as="span" variant="body-lg" weight="bold">
-          {totalAmount.toFixed(2)} {currency}
-        </Text>
+      <div className="flex flex-col gap-1 border-t border-border-default px-6 py-2">
+        <div className="flex items-center justify-between">
+          <Text as="span" variant="body-sm" className="text-text-secondary">
+            {t("cart.netAmount")}
+          </Text>
+          <Text as="span" variant="body-sm" className="text-text-secondary">
+            {netAmount.toFixed(2)} {currency}
+          </Text>
+        </div>
+        <div className="flex items-center justify-between">
+          <Text as="span" variant="body-sm" className="text-text-secondary">
+            {t("cart.vatAmount", { rate: "23" })}
+          </Text>
+          <Text as="span" variant="body-sm" className="text-text-secondary">
+            {vatAmount.toFixed(2)} {currency}
+          </Text>
+        </div>
+        <div className="flex items-center justify-between pt-1">
+          <Text as="span" variant="body-md" weight="semibold">
+            {t("cart.total")}
+          </Text>
+          <Text as="span" variant="body-lg" weight="bold">
+            {totalAmount.toFixed(2)} {currency}
+          </Text>
+        </div>
       </div>
     </div>
   );

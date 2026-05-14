@@ -51,8 +51,6 @@ export const HomeContent = (): ReactElement => {
           >
             {t("landing.hero.subtitle")}
           </Text>
-
-          
         </div>
 
         <ContentContainer

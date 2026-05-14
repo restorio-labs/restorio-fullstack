@@ -18,7 +18,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { api } from "../../api/client";
 import { TenantSwitcher } from "../tenant/TenantSwitcher";
 
-const FLOOR_EDITOR_NAVIGATION_EVENT = "restorio:floor-editor-navigation-attempt";
+const UNSAVED_CHANGES_NAVIGATION_EVENT = "restorio:unsaved-changes-navigation-attempt";
 
 const NAV_ITEM_ROW_CLASS =
   "flex-row-reverse justify-between text-end [&>span:last-child]:w-full [&>span:last-child]:text-end lg:flex-row lg:justify-start lg:text-start lg:[&>span:last-child]:w-auto lg:[&>span:last-child]:text-start";
@@ -45,9 +45,9 @@ export const AdminSidebar = (): ReactElement => {
 
   const handleRouteNavigation = useCallback(
     (event: React.MouseEvent, path: string): void => {
-      if (pathname === "/" && pathname !== path) {
-        const navigationEvent = new CustomEvent(FLOOR_EDITOR_NAVIGATION_EVENT, {
-          detail: { path },
+      if (pathname !== path) {
+        const navigationEvent = new CustomEvent(UNSAVED_CHANGES_NAVIGATION_EVENT, {
+          detail: { path, sourcePath: pathname },
           cancelable: true,
         });
         const wasBlocked = !window.dispatchEvent(navigationEvent);
@@ -57,10 +57,6 @@ export const AdminSidebar = (): ReactElement => {
 
           return;
         }
-
-        navigate(path);
-
-        return;
       }
 
       navigate(path);

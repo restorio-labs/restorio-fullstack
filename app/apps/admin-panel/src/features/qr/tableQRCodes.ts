@@ -48,6 +48,7 @@ export const getTenantTableEntries = (tenant: Tenant): TenantFloorTableEntry[] =
 export const getTableQrUrl = (tenantSlug: string, tableNumber: number, elementId?: string): string => {
   const base = `${getAppHref("mobile-app")}/${tenantSlug}/table/${tableNumber}`;
   const trimmed = elementId?.trim();
+
   if (trimmed) {
     return `${base}?ref=${encodeURIComponent(trimmed)}`;
   }

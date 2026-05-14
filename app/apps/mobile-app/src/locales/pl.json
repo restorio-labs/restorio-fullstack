@@ -21,12 +21,10 @@
     "railAria": "Nawigacja główna",
     "homeAria": "Strona główna"
   },
-  "language": {
-    "switcherAria": "Język",
-    "optionEn": "English",
-    "optionPl": "Polski",
-    "optionEs": "Español",
-    "optionAr": "العربية"
+  "themeSwitcher": {
+    "light": "Jasny",
+    "dark": "Ciemny",
+    "ariaLabel": "Aktualny motyw: {{theme}}. Kliknij, aby zmienić."
   },
   "order": {
     "invalidLinkTitle": "Nieprawidłowy link",
@@ -79,6 +77,8 @@
     "lessAria": "Mniej: {{name}}",
     "moreAria": "Więcej: {{name}}",
     "linePrice": "{{price}} {{currency}} × {{quantity}}",
+    "netAmount": "Kwota netto",
+    "vatAmount": "VAT ({{rate}}%)",
     "total": "Razem"
   },
   "menuItem": {
@@ -88,11 +88,6 @@
     "closeDetailsModal": "Zamknij",
     "tapForDescription": "Dotknij, aby zobaczyć opis",
     "noDescription": "Brak opisu dla tej pozycji."
-  },
-  "root": {
-    "noRestaurantTitle": "Brak zapisanego lokalu",
-    "noRestaurantDescription": "Otwórz aplikację z kodu QR restauracji albo użyj wcześniej zapisanego linku.",
-    "scanHint": "Pamiętamy ostatni odwiedzony lokal — następnym razem przekierujemy Cię automatycznie."
   },
   "landing": {
     "defaultSubtitle": "Zobacz menu lub dostępność stolików zanim usiądziesz.",

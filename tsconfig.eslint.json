@@ -4,5 +4,5 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["vitest.monorepo.ts"]
+  "include": ["vitest.monorepo.ts", "vite.config.ts", "worker/**/*.ts"]
 }

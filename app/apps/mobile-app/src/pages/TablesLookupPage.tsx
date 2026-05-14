@@ -8,11 +8,12 @@ import { Button, cn, EmptyState, Loader, Modal, Text, useI18n } from "@restorio/
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 
 import { publicApi } from "../api/client";
 import { GuestBottomNav } from "../components/GuestBottomNav";
 import { useApplyPublicTenantPresentation } from "../hooks/useApplyPublicTenantPresentation";
+import { isTenantNotFoundApiError } from "../lib/isTenantNotFoundApiError";
 import { persistLastVisitedTenantPath } from "../lib/lastVisitedTenant";
 
 const REFRESH_MS = 12_000;
@@ -144,12 +145,6 @@ export const TablesLookupPage = (): ReactElement => {
   const [reservedModal, setReservedModal] = useState<ReservedModalState | null>(null);
   const [, setCountdownPulse] = useState(0);
 
-  useEffect(() => {
-    if (tenantSlug) {
-      persistLastVisitedTenantPath(`/${tenantSlug}`);
-    }
-  }, [tenantSlug]);
-
   const tenantQuery = useQuery<PublicTenantInfo>({
     queryKey: ["public-tenant-info", tenantSlug],
     queryFn: ({ signal }) => publicApi.getTenantInfo(tenantSlug!, signal),
@@ -164,6 +159,12 @@ export const TablesLookupPage = (): ReactElement => {
   });
 
   useApplyPublicTenantPresentation(tenantQuery.data);
+
+  useEffect(() => {
+    if (tenantSlug && tenantQuery.data) {
+      persistLastVisitedTenantPath(`/${tenantSlug}`);
+    }
+  }, [tenantSlug, tenantQuery.data]);
 
   useEffect(() => {
     if (!reservedModal || !tenantSlug) {
@@ -232,6 +233,10 @@ export const TablesLookupPage = (): ReactElement => {
   }
 
   if (isError || !tenantQuery.data || !tablesQuery.data) {
+    if (tenantQuery.isError && isTenantNotFoundApiError(tenantQuery.error)) {
+      return <Navigate to="/" replace />;
+    }
+
     return (
       <div className="flex min-h-[100dvh] items-center justify-center p-4">
         <div className="w-full max-w-md text-center">

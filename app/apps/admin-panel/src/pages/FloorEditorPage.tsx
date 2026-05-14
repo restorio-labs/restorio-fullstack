@@ -10,10 +10,11 @@ import { tenantDetailsQueryKey, useCurrentTenant } from "../context/TenantContex
 import { PageLayout } from "../layouts/PageLayout";
 import { FloorLayoutEditorView } from "../views/FloorLayoutEditorView";
 
-const FLOOR_EDITOR_NAVIGATION_EVENT = "restorio:floor-editor-navigation-attempt";
+const UNSAVED_CHANGES_NAVIGATION_EVENT = "restorio:unsaved-changes-navigation-attempt";
 
-interface FloorEditorNavigationAttemptDetail {
+interface UnsavedChangesNavigationAttemptDetail {
   path: string;
+  sourcePath: string;
 }
 
 const getActiveCanvas = (tenant: Tenant): FloorCanvasType | undefined => {
@@ -107,10 +108,10 @@ export const FloorEditorPage = (): ReactElement => {
     }
 
     const handleNavigationAttempt = (event: Event): void => {
-      const customEvent = event as CustomEvent<FloorEditorNavigationAttemptDetail>;
-      const nextPath = customEvent.detail.path;
+      const customEvent = event as CustomEvent<UnsavedChangesNavigationAttemptDetail>;
+      const { path: nextPath, sourcePath } = customEvent.detail;
 
-      if (!nextPath) {
+      if (!nextPath || sourcePath !== "/") {
         return;
       }
 
@@ -118,10 +119,10 @@ export const FloorEditorPage = (): ReactElement => {
       setPendingNavigationPath(nextPath);
     };
 
-    window.addEventListener(FLOOR_EDITOR_NAVIGATION_EVENT, handleNavigationAttempt as EventListener);
+    window.addEventListener(UNSAVED_CHANGES_NAVIGATION_EVENT, handleNavigationAttempt as EventListener);
 
     return () => {
-      window.removeEventListener(FLOOR_EDITOR_NAVIGATION_EVENT, handleNavigationAttempt as EventListener);
+      window.removeEventListener(UNSAVED_CHANGES_NAVIGATION_EVENT, handleNavigationAttempt as EventListener);
     };
   }, [isDirty]);
 

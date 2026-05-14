@@ -7,7 +7,6 @@ import type { FormEvent, ReactElement } from "react";
 import { useEffect, useRef, useState } from "react";
 
 import { api } from "@/api/client";
-import { useLocale } from "@/i18n/useT";
 import {
   ActivateSetPasswordView,
   ActivateErrorView,
@@ -17,6 +16,7 @@ import {
   ActivateSuccessView,
   ActivateAlreadyActivatedView,
 } from "@/components/activation";
+import { useLocale } from "@/i18n/useT";
 import { getPasswordFieldsValidation } from "@/services/passwordFieldsValidation";
 
 type Result = "loading" | "success" | "already_activated" | "expired" | "error" | "resend_sent" | "set_password";

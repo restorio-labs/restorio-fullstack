@@ -1,0 +1,120 @@
+name: Deploy Docker Stack
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: GitHub Environment name
+        required: true
+        type: string
+      version_bump:
+        description: Semantic version bump (auto = use pyproject.toml version)
+        required: false
+        type: string
+        default: auto
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: GitHub Environment name
+        required: true
+        type: string
+        default: production
+      version_bump:
+        description: Semantic version bump (auto = use pyproject.toml version)
+        type: choice
+        options:
+          - auto
+          - major
+          - minor
+          - patch
+        default: auto
+
+concurrency:
+  group: deploy-docker-${{ github.ref }}-${{ inputs.environment }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-docker-stack:
+    name: Deploy Docker containers
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    env:
+      MIKRUS_HOST: ${{ vars.MIKRUS_HOST }}
+      MIKRUS_PORT: ${{ vars.MIKRUS_PORT }}
+      MIKRUS_USER: ${{ vars.MIKRUS_USER }}
+      MIKRUS_DOCKER_COMPOSE_DIR: ${{ vars.MIKRUS_DOCKER_COMPOSE_DIR }}
+      SSHPASS: ${{ secrets.MIKRUS_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/set-restorio-app-version
+        with:
+          version_bump: ${{ inputs.version_bump }}
+
+      - name: Validate configuration
+        run: |
+          set -euo pipefail
+          MISSING=
+          [ -z "${SSHPASS:-}" ] && MISSING="${MISSING} secret MIKRUS_PASSWORD"
+          [ -z "${MIKRUS_HOST:-}" ] && MISSING="${MISSING} variable MIKRUS_HOST"
+          [ -z "${MIKRUS_PORT:-}" ] && MISSING="${MISSING} variable MIKRUS_PORT"
+          [ -z "${MIKRUS_USER:-}" ] && MISSING="${MISSING} variable MIKRUS_USER"
+          if [ -n "$MISSING" ]; then
+            echo "Missing for environment ${{ inputs.environment }}:$MISSING"
+            exit 1
+          fi
+
+      - name: Install deployment tools
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y sshpass rsync
+
+      - name: Sync docker-compose and config files
+        run: |
+          set -euo pipefail
+          COMPOSE_DIR="${MIKRUS_DOCKER_COMPOSE_DIR:-/root/restorio-fullstack}"
+
+          sshpass -e ssh -p "$MIKRUS_PORT" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$MIKRUS_USER@$MIKRUS_HOST" "mkdir -p $COMPOSE_DIR/app/api $COMPOSE_DIR/nginx"
+
+          sshpass -e scp -P "$MIKRUS_PORT" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null docker-compose.yml "$MIKRUS_USER@$MIKRUS_HOST:$COMPOSE_DIR/"
+
+          sshpass -e rsync -avz --delete -e "sshpass -e ssh -p $MIKRUS_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
+            --exclude 'ssl/' \
+            --exclude 'www/' \
+            nginx/ "$MIKRUS_USER@$MIKRUS_HOST:$COMPOSE_DIR/nginx/"
+
+          sshpass -e rsync -avz --delete -e "sshpass -e ssh -p $MIKRUS_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
+            --exclude '.venv' \
+            --exclude '__pycache__' \
+            --exclude '.pytest_cache' \
+            --exclude '.ruff_cache' \
+            --exclude '*.pyc' \
+            app/api/ "$MIKRUS_USER@$MIKRUS_HOST:$COMPOSE_DIR/app/api/"
+
+      - name: Deploy Docker stack
+        run: |
+          set -euo pipefail
+          COMPOSE_DIR="${MIKRUS_DOCKER_COMPOSE_DIR:-/root/restorio-fullstack}"
+
+          sshpass -e ssh -p "$MIKRUS_PORT" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$MIKRUS_USER@$MIKRUS_HOST" "COMPOSE_DIR='$COMPOSE_DIR' API_VERSION='$API_VERSION' bash -s" <<'EOSSH'
+          set -euo pipefail
+          cd "$COMPOSE_DIR"
+
+          echo "Pulling latest images..."
+          docker compose pull --ignore-pull-failures
+
+          echo "Building and starting containers with API_VERSION=$API_VERSION..."
+          VERSION="$API_VERSION" docker compose up -d --build --remove-orphans
+
+          echo "Waiting for services to be healthy..."
+          sleep 10
+
+          echo "Container status:"
+          docker compose ps
+
+          echo "Docker stack deployment complete!"
+          EOSSH

@@ -21,13 +21,6 @@
     "railAria": "Navegación principal",
     "homeAria": "Inicio"
   },
-  "language": {
-    "switcherAria": "Idioma",
-    "optionEn": "English",
-    "optionPl": "Polski",
-    "optionEs": "Español",
-    "optionAr": "العربية"
-  },
   "order": {
     "invalidLinkTitle": "Enlace no válido",
     "invalidLinkDescription": "Vuelve a escanear el código QR.",

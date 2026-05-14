@@ -10,12 +10,12 @@ import {
   LAST_VISITED_APP_STORAGE_KEY,
 } from "@restorio/utils";
 import Link from "next/link";
-import { useLocale, useTranslations } from "@/i18n/useT";
 import type { ReactElement } from "react";
 import { useMemo, useState } from "react";
 
 import { api } from "@/api/client";
 import { AuthenticatedAppPicker } from "@/components/auth/AuthenticatedAppPicker";
+import { useLocale, useTranslations } from "@/i18n/useT";
 import { translateLoginApiMessage } from "@/services/authApiMessages";
 import { isEmailValid } from "@/services/validation";
 

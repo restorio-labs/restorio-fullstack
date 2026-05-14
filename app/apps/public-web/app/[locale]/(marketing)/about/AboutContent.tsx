@@ -1,7 +1,6 @@
 "use client";
 
 import { ContentContainer, Text } from "@restorio/ui";
-import { useTranslations } from "@/i18n/useT";
 import type { ReactElement } from "react";
 import { FaUtensils } from "react-icons/fa6";
 import {
@@ -14,6 +13,8 @@ import {
   HiOutlineUser,
   HiOutlineWallet,
 } from "react-icons/hi2";
+
+import { useTranslations } from "@/i18n/useT";
 
 interface GoalCardProps {
   title: string;

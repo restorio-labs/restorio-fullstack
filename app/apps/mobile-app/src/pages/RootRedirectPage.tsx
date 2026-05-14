@@ -1,37 +1,36 @@
-import { Button, EmptyState, Text, useI18n } from "@restorio/ui";
-import type { ReactElement } from "react";
+import { useI18n } from "@restorio/ui";
+import { getAppBaseUrl } from "@restorio/utils";
+import { useLayoutEffect, type ReactElement } from "react";
 import { Navigate } from "react-router-dom";
 
-import { MobileLanguageSwitcher } from "../components/GuestBottomNav";
+import { SUPPORTED_LOCALES, resolveInitialLocale, type SupportedLocale } from "../lib/i18n";
 import { readLastVisitedTenantPath } from "../lib/lastVisitedTenant";
 
+const resolvePublicWebLocale = (locale: string): SupportedLocale => {
+  if (SUPPORTED_LOCALES.includes(locale as SupportedLocale)) {
+    return locale as SupportedLocale;
+  }
+
+  return resolveInitialLocale();
+};
+
 export const RootRedirectPage = (): ReactElement => {
-  const { t } = useI18n();
+  const { locale } = useI18n();
   const to = readLastVisitedTenantPath();
+
+  useLayoutEffect(() => {
+    if (to) {
+      return;
+    }
+
+    const base = getAppBaseUrl("public-web").replace(/\/$/, "");
+    const pathLocale = resolvePublicWebLocale(locale);
+    window.location.replace(`${base}/${pathLocale}`);
+  }, [to, locale]);
 
   if (to) {
     return <Navigate to={to} replace />;
   }
 
-  return (
-    <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-6 px-4 pb-24 pt-8">
-      <div className="w-full max-w-md text-center">
-        <EmptyState title={t("root.noRestaurantTitle")} description={t("root.noRestaurantDescription")} />
-      </div>
-      <Text as="p" variant="body-sm" className="max-w-sm text-center text-text-tertiary">
-        {t("root.scanHint")}
-      </Text>
-      <Button variant="secondary" type="button" onClick={() => window.location.reload()}>
-        {t("common.tryAgain")}
-      </Button>
-      <nav
-        className="fixed bottom-0 left-0 right-0 z-10 border-t border-border-default bg-surface-primary/95 px-4 py-3 backdrop-blur-sm"
-        aria-label={t("language.switcherAria")}
-      >
-        <div className="mx-auto flex max-w-lg justify-center">
-          <MobileLanguageSwitcher />
-        </div>
-      </nav>
-    </div>
-  );
+  return <div className="min-h-[100dvh] bg-surface-primary" />;
 };

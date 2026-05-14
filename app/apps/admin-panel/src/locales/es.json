@@ -12,6 +12,12 @@
   "errors": {
     "rootElementNotFound": "Elemento raíz no encontrado"
   },
+  "unsavedChanges": {
+    "title": "Cambios sin guardar",
+    "message": "Tienes cambios sin guardar. Si sales ahora, tus cambios se perderán.",
+    "keepEditing": "Seguir editando",
+    "discard": "Descartar cambios"
+  },
   "languageSwitcher": {
     "label": "Idioma",
     "options": {

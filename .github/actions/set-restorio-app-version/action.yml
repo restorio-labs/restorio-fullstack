@@ -1,0 +1,101 @@
+name: Set Per-App Versions
+description: Read versions from each app's package.json and optionally bump them
+
+inputs:
+  version_bump:
+    description: auto = use package.json versions; major/minor/patch = bump all from package.json
+    required: false
+    default: auto
+
+runs:
+  using: composite
+  steps:
+    - name: Compute per-app versions
+      shell: bash
+      run: |
+        set -euo pipefail
+        BUMP="${{ inputs.version_bump }}"
+
+        bump_version() {
+          local ver="$1"
+          local bump_type="$2"
+          local M m p
+          IFS='.' read -r M m p <<< "$ver"
+          M=${M:-0}; m=${m:-0}; p=${p:-0}
+          case "$bump_type" in
+            major) echo "$((M + 1)).0.0" ;;
+            minor) echo "${M}.$((m + 1)).0" ;;
+            patch) echo "${M}.${m}.$((p + 1))" ;;
+            *) echo "$ver" ;;
+          esac
+        }
+
+        get_pkg_version() {
+          local pkg_path="$1"
+          if [ ! -f "$pkg_path" ]; then
+            echo "ERROR: $pkg_path not found" >&2
+            exit 1
+          fi
+          local ver
+          ver=$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' "$pkg_path" | head -1 | sed 's/.*"\([^"]*\)"$/\1/')
+          if [ -z "$ver" ]; then
+            echo "ERROR: Could not extract version from $pkg_path" >&2
+            exit 1
+          fi
+          echo "$ver"
+        }
+
+        get_pyproject_version() {
+          local toml_path="$1"
+          if [ ! -f "$toml_path" ]; then
+            echo "ERROR: $toml_path not found" >&2
+            exit 1
+          fi
+          local ver
+          ver=$(grep -E '^version[[:space:]]*=' "$toml_path" | head -1 | sed 's/.*"\([^"]*\)".*/\1/')
+          if [ -z "$ver" ]; then
+            echo "ERROR: Could not extract version from $toml_path" >&2
+            exit 1
+          fi
+          echo "$ver"
+        }
+
+        ADMIN_PANEL_VERSION=$(get_pkg_version "app/apps/admin-panel/package.json")
+        KITCHEN_PANEL_VERSION=$(get_pkg_version "app/apps/kitchen-panel/package.json")
+        MOBILE_APP_VERSION=$(get_pkg_version "app/apps/mobile-app/package.json")
+        WAITER_PANEL_VERSION=$(get_pkg_version "app/apps/waiter-panel/package.json")
+        PUBLIC_WEB_VERSION=$(get_pkg_version "app/apps/public-web/package.json")
+        API_VERSION=$(get_pyproject_version "app/api/pyproject.toml")
+
+        if [ "$BUMP" != "auto" ]; then
+          ADMIN_PANEL_VERSION=$(bump_version "$ADMIN_PANEL_VERSION" "$BUMP")
+          KITCHEN_PANEL_VERSION=$(bump_version "$KITCHEN_PANEL_VERSION" "$BUMP")
+          MOBILE_APP_VERSION=$(bump_version "$MOBILE_APP_VERSION" "$BUMP")
+          WAITER_PANEL_VERSION=$(bump_version "$WAITER_PANEL_VERSION" "$BUMP")
+          PUBLIC_WEB_VERSION=$(bump_version "$PUBLIC_WEB_VERSION" "$BUMP")
+          API_VERSION=$(bump_version "$API_VERSION" "$BUMP")
+        fi
+
+        {
+          echo "ADMIN_PANEL_VERSION=$ADMIN_PANEL_VERSION"
+          echo "KITCHEN_PANEL_VERSION=$KITCHEN_PANEL_VERSION"
+          echo "MOBILE_APP_VERSION=$MOBILE_APP_VERSION"
+          echo "WAITER_PANEL_VERSION=$WAITER_PANEL_VERSION"
+          echo "PUBLIC_WEB_VERSION=$PUBLIC_WEB_VERSION"
+          echo "API_VERSION=$API_VERSION"
+        } >> "$GITHUB_ENV"
+
+        {
+          echo "### Per-App Build Versions"
+          echo ""
+          echo "| App | Version |"
+          echo "|-----|---------|"
+          echo "| admin-panel | \`$ADMIN_PANEL_VERSION\` |"
+          echo "| kitchen-panel | \`$KITCHEN_PANEL_VERSION\` |"
+          echo "| mobile-app | \`$MOBILE_APP_VERSION\` |"
+          echo "| waiter-panel | \`$WAITER_PANEL_VERSION\` |"
+          echo "| public-web | \`$PUBLIC_WEB_VERSION\` |"
+          echo "| api | \`$API_VERSION\` |"
+          echo ""
+          echo "**Bump type:** \`$BUMP\`"
+        } >> "$GITHUB_STEP_SUMMARY"

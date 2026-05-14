@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import type { ReactElement } from "react";
 
+import { loadMessages } from "../../../../src/i18n/request";
+
 import { LegalPageLayout } from "@/components/legal/LegalPageLayout";
 import { LegalSection } from "@/components/legal/LegalSection";
 import { TableOfContents } from "@/components/legal/TableOfContents";
-
-import { loadMessages } from "../../../../src/i18n/request";
 
 interface NestedMessages {
   [key: string]: string | NestedMessages;
@@ -14,19 +14,22 @@ interface NestedMessages {
 const getNestedValue = (obj: NestedMessages, path: string, values?: Record<string, string>): string => {
   const keys = path.split(".");
   let current: string | NestedMessages = obj;
+
   for (const key of keys) {
-    if (typeof current === "object" && current !== null && key in current) {
+    if (typeof current === "object" && key in current) {
       current = current[key];
     } else {
       return path;
     }
   }
   let result = typeof current === "string" ? current : path;
+
   if (values) {
     for (const [k, v] of Object.entries(values)) {
       result = result.replace(new RegExp(`\\{${k}\\}`, "g"), v);
     }
   }
+
   return result;
 };
 

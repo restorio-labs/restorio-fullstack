@@ -21,12 +21,10 @@
     "railAria": "Main navigation",
     "homeAria": "Home"
   },
-  "language": {
-    "switcherAria": "Language",
-    "optionEn": "English",
-    "optionPl": "Polski",
-    "optionEs": "Español",
-    "optionAr": "العربية"
+  "themeSwitcher": {
+    "light": "Light",
+    "dark": "Dark",
+    "ariaLabel": "Current theme: {{theme}}. Click to switch."
   },
   "order": {
     "invalidLinkTitle": "Invalid link",
@@ -79,6 +77,8 @@
     "lessAria": "Decrease: {{name}}",
     "moreAria": "Increase: {{name}}",
     "linePrice": "{{price}} {{currency}} × {{quantity}}",
+    "netAmount": "Net amount",
+    "vatAmount": "VAT ({{rate}}%)",
     "total": "Total"
   },
   "menuItem": {

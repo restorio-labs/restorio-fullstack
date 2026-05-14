@@ -3,12 +3,12 @@
 import { Button, Form, FormActions, FormField, Input, useAuthRoute } from "@restorio/ui";
 import { getApiErrorData, getApiErrorMessage } from "@restorio/utils";
 import Link from "next/link";
-import { useLocale, useTranslations } from "@/i18n/useT";
 import type { ReactElement } from "react";
 import { useState } from "react";
 
 import { api } from "@/api/client";
 import { AuthenticatedAppPicker } from "@/components/auth/AuthenticatedAppPicker";
+import { useLocale, useTranslations } from "@/i18n/useT";
 import { isEmailValid } from "@/services/validation";
 
 export const ForgotPasswordContent = (): ReactElement => {

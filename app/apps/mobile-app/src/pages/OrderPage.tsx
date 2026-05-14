@@ -2,7 +2,7 @@ import type { InvoiceData, PublicTenantInfo, TenantMenu } from "@restorio/types"
 import { Button, EmptyState, Loader, Text, useI18n } from "@restorio/ui";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { type ReactElement, useCallback, useEffect, useRef, useState } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { Navigate, useParams, useSearchParams } from "react-router-dom";
 
 import { publicApi } from "../api/client";
 import { CartSummary } from "../features/order/components/CartSummary";
@@ -10,6 +10,7 @@ import { CheckoutForm } from "../features/order/components/CheckoutForm";
 import { MenuCategorySection } from "../features/order/components/MenuCategorySection";
 import { useCart } from "../features/order/hooks/useCart";
 import { useApplyPublicTenantPresentation } from "../hooks/useApplyPublicTenantPresentation";
+import { isTenantNotFoundApiError } from "../lib/isTenantNotFoundApiError";
 import { persistLastVisitedTenantPath } from "../lib/lastVisitedTenant";
 
 const extractApiErrorMessage = (error: unknown, fallback: string): string => {
@@ -30,13 +31,11 @@ export const OrderPage = (): ReactElement => {
   const { tenantSlug, tableNumber } = useParams<{ tenantSlug: string; tableNumber: string }>();
   const [searchParams] = useSearchParams();
   const tableNum = Number(tableNumber);
-  const tableRef = searchParams.get("ref")?.trim() || undefined;
+  const tableRef = searchParams.get("ref")?.trim() ?? undefined;
   const [submitError, setSubmitError] = useState("");
   const checkoutRef = useRef<HTMLDivElement>(null);
   const cart = useCart();
-  const lockStorageKey = tenantSlug
-    ? `restorio:table-lock:${tenantSlug}:${tableNum}:${tableRef ?? ""}`
-    : "";
+  const lockStorageKey = tenantSlug ? `restorio:table-lock:${tenantSlug}:${tableNum}:${tableRef ?? ""}` : "";
 
   const tenantQuery = useQuery<PublicTenantInfo>({
     queryKey: ["public-tenant-info", tenantSlug],
@@ -54,10 +53,10 @@ export const OrderPage = (): ReactElement => {
   useApplyPublicTenantPresentation(tenantData);
 
   useEffect(() => {
-    if (tenantSlug) {
+    if (tenantSlug && tenantQuery.data) {
       persistLastVisitedTenantPath(`/${tenantSlug}`);
     }
-  }, [tenantSlug]);
+  }, [tenantSlug, tenantQuery.data]);
 
   const paymentMutation = useMutation({
     mutationFn: (data: { email: string; note: string; invoiceData?: InvoiceData }) =>
@@ -125,6 +124,10 @@ export const OrderPage = (): ReactElement => {
   }
 
   if (isError) {
+    if (tenantQuery.isError && isTenantNotFoundApiError(tenantQuery.error)) {
+      return <Navigate to="/" replace />;
+    }
+
     return (
       <div className="flex min-h-screen items-center justify-center p-4">
         <div className="w-full max-w-md text-center">

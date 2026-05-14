@@ -21,6 +21,12 @@
   "errors": {
     "rootElementNotFound": "Root element not found"
   },
+  "unsavedChanges": {
+    "title": "Unsaved changes",
+    "message": "You have unsaved changes. If you leave now, your changes will be lost.",
+    "keepEditing": "Keep editing",
+    "discard": "Discard changes"
+  },
   "sidebar": {
     "ariaLabel": "Admin navigation",
     "sections": {
@@ -409,13 +415,17 @@
         "label": "P24 API Key",
         "placeholder": "Enter Przelewy24 API key",
         "helper": "Exactly 32 characters",
-        "error": "API key is required and must contain exactly 32 characters"
+        "error": "API key is required and must contain exactly 32 characters",
+        "show": "Show API key",
+        "hide": "Hide API key"
       },
       "crcKey": {
         "label": "P24 CRC Key",
         "placeholder": "Enter Przelewy24 CRC key",
         "helper": "Exactly 16 characters",
-        "error": "CRC key is required and must contain exactly 16 characters"
+        "error": "CRC key is required and must contain exactly 16 characters",
+        "show": "Show CRC key",
+        "hide": "Hide CRC key"
       },
       "p24Merchantid": {
         "error": "Merchant ID must be between 0 and 999999"

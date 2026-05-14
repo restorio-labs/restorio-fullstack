@@ -1,9 +1,10 @@
 "use client";
 
 import { cn, useAuthRoute, type AuthRouteStatus } from "@restorio/ui";
-import { useTranslations } from "@/i18n/useT";
 import { type ReactElement, useEffect, useState } from "react";
 import { FaPlugCircleCheck, FaPlugCircleExclamation } from "react-icons/fa6";
+
+import { useTranslations } from "@/i18n/useT";
 
 const EXIT_MS = 320;
 

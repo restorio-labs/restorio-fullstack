@@ -21,7 +21,7 @@
       "@restorio/utils": ["../../packages/utils/src"]
     }
   },
-  "include": ["src", "vite.config.ts"],
+  "include": ["src", "vite.config.ts", "../../tooling/viteInjectVersion.ts"],
   "exclude": ["node_modules", "dist", "postcss.config.cjs"],
   "references": [
     { "path": "../../packages/types" },

@@ -1,6 +1,7 @@
-import { useTranslations } from "@/i18n/useT";
 import React from "react";
 import type { ReactElement } from "react";
+
+import { useTranslations } from "@/i18n/useT";
 
 interface PasswordRulesPinProps {
   checks: {

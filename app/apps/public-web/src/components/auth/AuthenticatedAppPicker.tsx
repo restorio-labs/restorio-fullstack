@@ -3,8 +3,9 @@
 import type { AppSlug } from "@restorio/types";
 import { ChooseApp } from "@restorio/ui";
 import { goToApp } from "@restorio/utils";
-import { useTranslations } from "@/i18n/useT";
 import type { ReactElement } from "react";
+
+import { useTranslations } from "@/i18n/useT";
 
 export const AuthenticatedAppPicker = (): ReactElement => {
   const t = useTranslations();

@@ -1,4 +1,4 @@
-import { Button, Form, FormActions, Input, useI18n } from "@restorio/ui";
+import { Button, Form, FormActions, Input, PasswordInput, useI18n } from "@restorio/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { FormEvent, ReactElement } from "react";
 import { useEffect, useRef, useState } from "react";
@@ -152,13 +152,16 @@ export const PaymentConfigPage = (): ReactElement => {
             {...register("merchantId", { required: true })}
           />
 
-          <Input
+          <PasswordInput
             label={t("payment.fields.apiKey.label")}
             placeholder={t("payment.fields.apiKey.placeholder")}
             minLength={32}
             maxLength={32}
             helperText={t("payment.fields.apiKey.helper")}
             error={getFieldError("p24Api")}
+            autoComplete="off"
+            showPasswordAriaLabel={t("payment.fields.apiKey.show")}
+            hidePasswordAriaLabel={t("payment.fields.apiKey.hide")}
             {...register("apiKey", {
               required: true,
               minLength: 32,
@@ -166,13 +169,16 @@ export const PaymentConfigPage = (): ReactElement => {
             })}
           />
 
-          <Input
+          <PasswordInput
             label={t("payment.fields.crcKey.label")}
             placeholder={t("payment.fields.crcKey.placeholder")}
             minLength={16}
             maxLength={16}
             helperText={t("payment.fields.crcKey.helper")}
             error={getFieldError("p24Crc")}
+            autoComplete="off"
+            showPasswordAriaLabel={t("payment.fields.crcKey.show")}
+            hidePasswordAriaLabel={t("payment.fields.crcKey.hide")}
             {...register("crcKey", {
               required: true,
               minLength: 16,

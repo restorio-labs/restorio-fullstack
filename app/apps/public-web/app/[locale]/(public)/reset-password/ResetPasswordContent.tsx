@@ -3,12 +3,12 @@
 import { Button, ContentContainer, Text } from "@restorio/ui";
 import { getApiErrorData, getApiErrorMessage } from "@restorio/utils";
 import Link from "next/link";
-import { useLocale, useTranslations } from "@/i18n/useT";
 import type { FormEvent, ReactElement } from "react";
 import { useEffect, useRef, useState } from "react";
 
 import { api } from "@/api/client";
 import { ActivateSetPasswordView } from "@/components/activation";
+import { useLocale, useTranslations } from "@/i18n/useT";
 import { getPasswordFieldsValidation } from "@/services/passwordFieldsValidation";
 
 type View = "invalid" | "form" | "success";

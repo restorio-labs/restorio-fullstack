@@ -44,7 +44,11 @@ describe("LogoutButton", () => {
     const onLogout = vi.fn().mockImplementation(() => new Promise<void>(() => undefined));
 
     render(
-      <LogoutButton onLogout={onLogout} loadingLabel="Signing out now" loadingContent={<span data-testid="busy">*</span>}>
+      <LogoutButton
+        onLogout={onLogout}
+        loadingLabel="Signing out now"
+        loadingContent={<span data-testid="busy">*</span>}
+      >
         Sign out
       </LogoutButton>,
     );

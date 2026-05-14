@@ -19,44 +19,52 @@ const resolveNestedMessage = (messages: Record<string, unknown>, key: string): u
     if (!current || typeof current !== "object") {
       return undefined;
     }
+
     return (current as Record<string, unknown>)[part];
   }, messages);
 };
 
 export function useT(namespace?: string): TranslatorFunction {
-  const { t: translate, messages, locale } = useI18n();
+  const { t: translate, messages } = useI18n();
 
   const t = useCallback(
     (key: string, values?: TranslationValues): string => {
       const fullKey = namespace ? `${namespace}.${key}` : key;
+
       return translate(fullKey, values);
     },
-    [translate, namespace]
+    [translate, namespace],
   );
 
   const rich = useCallback(
     (key: string, values?: RichValues): ReactNode => {
       const fullKey = namespace ? `${namespace}.${key}` : key;
       const message = translate(fullKey);
-      
-      if (!values) return message;
+
+      if (!values) {
+        return message;
+      }
 
       const parts: ReactNode[] = [];
       let remaining = message;
       let keyIndex = 0;
 
-      remaining = remaining.replace(/<(\w+)\s*\/>/g, (_match, tagName) => {
+      remaining = remaining.replace(/<(\w+)\s*\/>/g, (_match, tagName: string) => {
         const handler = values[tagName];
+
         if (typeof handler === "function") {
           return `__SELF_CLOSE_${tagName}__`;
         }
+
         return _match;
       });
-      remaining = remaining.replace(/<(\w+)><\/\1>/g, (_match, tagName) => {
+      remaining = remaining.replace(/<(\w+)><\/\1>/g, (_match, tagName: string) => {
         const handler = values[tagName];
+
         if (typeof handler === "function") {
           return `__SELF_CLOSE_${tagName}__`;
         }
+
         return _match;
       });
 
@@ -98,7 +106,9 @@ export function useT(namespace?: string): TranslatorFunction {
             }
             const tagName = subMatch[1];
             const handler = values[tagName];
+
             if (typeof handler === "function") {
+              // eslint-disable-next-line react/no-array-index-key -- composite key with subLastIndex is unique
               subParts.push(<span key={`${idx}-${subLastIndex}`}>{handler(null)}</span>);
             }
             subLastIndex = subMatch.index + subMatch[0].length;
@@ -110,26 +120,30 @@ export function useT(namespace?: string): TranslatorFunction {
 
           return subParts.length > 0 ? subParts : part;
         }
+
         return part;
       });
 
       return <>{processedParts.flat()}</>;
     },
-    [translate, namespace]
+    [translate, namespace],
   );
 
   const raw = useCallback(
     (key: string): unknown => {
       const fullKey = namespace ? `${namespace}.${key}` : key;
+
       return resolveNestedMessage(messages, fullKey);
     },
-    [messages, namespace]
+    [messages, namespace],
   );
 
   return useMemo(() => {
     const translator = t as TranslatorFunction;
+
     translator.rich = rich;
     translator.raw = raw;
+
     return translator;
   }, [t, rich, raw]);
 }
@@ -140,5 +154,6 @@ export function useTranslations(namespace?: string): TranslatorFunction {
 
 export function useLocale(): string {
   const { locale } = useI18n();
+
   return locale;
 }

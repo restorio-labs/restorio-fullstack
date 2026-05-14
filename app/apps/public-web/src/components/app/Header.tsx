@@ -6,11 +6,11 @@ import { Button, Icon, Loader, ThemeSwitcher, Topbar, cn, useAuthRoute, type Aut
 import { goToApp } from "@restorio/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTranslations, useLocale } from "@/i18n/useT";
 import { type ReactElement, useCallback, useEffect, useMemo, useState } from "react";
 import { IoLogOutOutline } from "react-icons/io5";
 
 import { api } from "@/api/client";
+import { useTranslations, useLocale } from "@/i18n/useT";
 
 export const Header = (): ReactElement => {
   const t = useTranslations();
@@ -172,7 +172,8 @@ export const Header = (): ReactElement => {
               href={`/${locale}/register`}
               className={cn(
                 "inline-flex min-h-14 w-full items-center justify-center rounded-full bg-interactive-primary px-6 py-3 text-lg font-semibold text-text-inverse shadow-md shadow-primary/25 transition-colors duration-200 hover:bg-interactive-primaryHover active:bg-interactive-primaryActive focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus",
-                pathname === `/${locale}/register` && "ring-2 ring-border-focus ring-offset-2 ring-offset-surface-primary",
+                pathname === `/${locale}/register` &&
+                  "ring-2 ring-border-focus ring-offset-2 ring-offset-surface-primary",
                 "md:hidden",
               )}
             >

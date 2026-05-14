@@ -11,7 +11,9 @@
     "vitest.config.ts",
     "tests/**/*.ts",
     "tests/**/*.tsx",
-    "proxy.ts"
+    "proxy.ts",
+    "open-next.config.ts",
+    "worker/**/*.ts"
   ],
   "exclude": ["postcss.config.cjs"]
 }

@@ -1,0 +1,126 @@
+name: Deploy Static Frontends
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: GitHub Environment name
+        required: true
+        type: string
+        default: production
+      version_bump:
+        description: Semantic version bump (auto = use package.json versions)
+        type: choice
+        options:
+          - auto
+          - major
+          - minor
+          - patch
+        default: auto
+  workflow_call:
+    inputs:
+      environment:
+        description: GitHub Environment name
+        required: true
+        type: string
+      version_bump:
+        description: Semantic version bump (auto = use package.json versions)
+        required: false
+        type: string
+        default: auto
+
+concurrency:
+  group: deploy-static-fronts-${{ github.ref }}-${{ inputs.environment }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-static-fronts-mikrus:
+    name: Deploy static fronts to Mikrus
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    env:
+      MIKRUS_HOST: ${{ vars.MIKRUS_HOST }}
+      MIKRUS_PORT: ${{ vars.MIKRUS_PORT }}
+      MIKRUS_USER: ${{ vars.MIKRUS_USER }}
+      MIKRUS_DOCKER_COMPOSE_DIR: ${{ vars.MIKRUS_DOCKER_COMPOSE_DIR }}
+      SSHPASS: ${{ secrets.MIKRUS_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: ./.github/actions/set-restorio-app-version
+        with:
+          version_bump: ${{ inputs.version_bump }}
+
+      - uses: ./.github/actions/setup-bun
+
+      - name: Validate Mikrus configuration
+        run: |
+          set -euo pipefail
+          MISSING=
+          [ -z "${SSHPASS:-}" ] && MISSING="${MISSING} secret MIKRUS_PASSWORD"
+          [ -z "${MIKRUS_HOST:-}" ] && MISSING="${MISSING} variable MIKRUS_HOST"
+          [ -z "${MIKRUS_PORT:-}" ] && MISSING="${MISSING} variable MIKRUS_PORT"
+          [ -z "${MIKRUS_USER:-}" ] && MISSING="${MISSING} variable MIKRUS_USER"
+          if [ -n "$MISSING" ]; then
+            echo "Missing for environment ${{ inputs.environment }}:$MISSING"
+            exit 1
+          fi
+
+      - name: Install deployment tools
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y sshpass rsync
+
+      - name: Build workspace packages
+        run: bun run turbo run build --filter='./app/packages/*'
+
+      - name: Build static frontend apps
+        env:
+          VITE_ENV: production
+          NODE_ENV: production
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || 'https://api.restorio.org/api/v1' }}
+          VITE_PUBLIC_WEB_URL: ${{ vars.VITE_PUBLIC_WEB_URL || 'https://restorio.org' }}
+          VITE_ADMIN_PANEL_URL: ${{ vars.VITE_ADMIN_PANEL_URL || 'https://admin.restorio.org' }}
+        run: |
+          set -euo pipefail
+          cd app/apps/admin-panel && VITE_APP_VERSION="$ADMIN_PANEL_VERSION" bun run build && cd -
+          cd app/apps/kitchen-panel && VITE_APP_VERSION="$KITCHEN_PANEL_VERSION" bun run build && cd -
+          cd app/apps/mobile-app && VITE_APP_VERSION="$MOBILE_APP_VERSION" bun run build && cd -
+          cd app/apps/waiter-panel && VITE_APP_VERSION="$WAITER_PANEL_VERSION" bun run build && cd -
+
+      - name: Prepare static bundle
+        run: |
+          set -euo pipefail
+          rm -rf deploy-bundle
+          mkdir -p deploy-bundle/{admin-panel,kitchen-panel,mobile-app,waiter-panel}
+          cp -R app/apps/admin-panel/dist/. deploy-bundle/admin-panel/
+          cp -R app/apps/kitchen-panel/dist/. deploy-bundle/kitchen-panel/
+          cp -R app/apps/mobile-app/dist/. deploy-bundle/mobile-app/
+          cp -R app/apps/waiter-panel/dist/. deploy-bundle/waiter-panel/
+
+      - name: Upload static bundle to Mikrus
+        run: |
+          set -euo pipefail
+          sshpass -e ssh -p "$MIKRUS_PORT" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$MIKRUS_USER@$MIKRUS_HOST" "rm -rf /tmp/restorio-front-builds && mkdir -p /tmp/restorio-front-builds"
+          sshpass -e scp -P "$MIKRUS_PORT" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -r deploy-bundle/. "$MIKRUS_USER@$MIKRUS_HOST:/tmp/restorio-front-builds/"
+
+      - name: Activate static bundle
+        run: |
+          set -euo pipefail
+          COMPOSE_DIR="${MIKRUS_DOCKER_COMPOSE_DIR:-/root/restorio-fullstack}"
+
+          sshpass -e ssh -p "$MIKRUS_PORT" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$MIKRUS_USER@$MIKRUS_HOST" "COMPOSE_DIR='$COMPOSE_DIR' bash -s" <<'EOSSH'
+          set -euo pipefail
+
+          mkdir -p "$COMPOSE_DIR/nginx/www/{admin-panel,kitchen-panel,mobile-app,waiter-panel}/dist"
+          rsync -a --delete /tmp/restorio-front-builds/admin-panel/ "$COMPOSE_DIR/nginx/www/admin-panel/dist/"
+          rsync -a --delete /tmp/restorio-front-builds/kitchen-panel/ "$COMPOSE_DIR/nginx/www/kitchen-panel/dist/"
+          rsync -a --delete /tmp/restorio-front-builds/mobile-app/ "$COMPOSE_DIR/nginx/www/mobile-app/dist/"
+          rsync -a --delete /tmp/restorio-front-builds/waiter-panel/ "$COMPOSE_DIR/nginx/www/waiter-panel/dist/"
+
+          echo "Static frontends deployed successfully!"
+          EOSSH

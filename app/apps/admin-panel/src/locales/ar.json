@@ -12,6 +12,12 @@
   "errors": {
     "rootElementNotFound": "لم يتم العثور على العنصر الجذري"
   },
+  "unsavedChanges": {
+    "title": "تغييرات غير محفوظة",
+    "message": "لديك تغييرات غير محفوظة. إذا غادرت الآن، ستفقد تغييراتك.",
+    "keepEditing": "متابعة التحرير",
+    "discard": "تجاهل التغييرات"
+  },
   "languageSwitcher": {
     "label": "اللغة",
     "options": {

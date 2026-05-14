@@ -1,8 +1,9 @@
 "use client";
 
 import { Stack, Text } from "@restorio/ui";
-import { useTranslations } from "@/i18n/useT";
 import { useEffect, useLayoutEffect, useRef, type ReactElement } from "react";
+
+import { useTranslations } from "@/i18n/useT";
 
 interface CookieTypeItem {
   name: string;

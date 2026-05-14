@@ -3,12 +3,12 @@
 import { Button, Form, FormActions, FormField, Input, PasswordInput, useAuthRoute } from "@restorio/ui";
 import { getApiErrorData, getApiErrorMessage } from "@restorio/utils";
 import Link from "next/link";
-import { useLocale, useTranslations } from "@/i18n/useT";
 import { useId, useState, type ReactElement } from "react";
 
 import { api } from "@/api/client";
 import { AuthenticatedAppPicker } from "@/components/auth/AuthenticatedAppPicker";
 import { PasswordRulesPin } from "@/components/password/RulesPin";
+import { useLocale, useTranslations } from "@/i18n/useT";
 import { translateRegisterApiMessage } from "@/services/authApiMessages";
 import { getPasswordFieldsValidation } from "@/services/passwordFieldsValidation";
 import { MIN_PASSWORD_LENGTH, isEmailValid } from "@/services/validation";

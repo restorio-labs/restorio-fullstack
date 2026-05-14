@@ -50,13 +50,15 @@ interface NestedMessages {
 const getNestedValue = (obj: NestedMessages, path: string): string => {
   const keys = path.split(".");
   let current: string | NestedMessages = obj;
+
   for (const key of keys) {
-    if (typeof current === "object" && current !== null && key in current) {
+    if (typeof current === "object" && key in current) {
       current = current[key];
     } else {
       return path;
     }
   }
+
   return typeof current === "string" ? current : path;
 };
 
@@ -66,6 +68,7 @@ export const getRootMetadata = async (locale: string): Promise<Metadata> => {
   const metadata = messages.metadata as NestedMessages;
   const siteTitle = getNestedValue(metadata, "title");
   const siteDescription = getNestedValue(metadata, "description");
+  const appVersion = process.env.VITE_APP_VERSION ?? process.env.PUBLIC_WEB_VERSION ?? "dev";
 
   return {
     title: {
@@ -79,6 +82,9 @@ export const getRootMetadata = async (locale: string): Promise<Metadata> => {
       apple: "/favicon.ico",
     },
     metadataBase: new URL(resolveMetadataBaseUrl()),
+    other: {
+      "restorio-app-version": appVersion,
+    },
     openGraph: {
       type: "website",
       siteName: siteTitle,
