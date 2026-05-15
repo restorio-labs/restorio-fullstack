@@ -1,6 +1,5 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import React from "react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { fireEvent, render, screen, act } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import { ActivateAlreadyActivatedView } from "../../../../src/components/activation/ActivateAlreadyActivatedView";
 import { ActivateErrorView } from "../../../../src/components/activation/ActivateErrorView";
@@ -8,6 +7,7 @@ import { ActivateExpiredView } from "../../../../src/components/activation/Activ
 import { ActivateLoadingView } from "../../../../src/components/activation/ActivateLoadingView";
 import { ActivateResendSentView } from "../../../../src/components/activation/ActivateResendSentView";
 import { ActivateSetPasswordView } from "../../../../src/components/activation/ActivateSetPassword";
+import { ActivateSuccessView } from "../../../../src/components/activation/ActivateSuccessView";
 import type { PasswordChecks } from "../../../../src/services/validation";
 
 type TranslationFn = (key: string, values?: Record<string, number | string>) => string;
@@ -23,13 +23,18 @@ const { useTranslationsMock } = vi.hoisted(() => {
   };
 });
 
-vi.mock("next-intl", () => ({
+vi.mock("@/i18n/useT", () => ({
   useTranslations: useTranslationsMock,
 }));
 
 describe("Activation views", () => {
   beforeEach((): void => {
     useTranslationsMock.mockClear();
+    vi.useFakeTimers();
+  });
+
+  afterEach((): void => {
+    vi.useRealTimers();
   });
 
   it("renders loading view with expected texts", () => {
@@ -40,18 +45,38 @@ describe("Activation views", () => {
     expect(useTranslationsMock).toHaveBeenCalledWith("activate");
   });
 
-  it("renders already activated view and triggers navigation", () => {
-    const handleGoToAdmin = vi.fn();
+  it("renders already activated view and triggers redirect after 2s", async () => {
+    const handleRedirect = vi.fn();
 
-    render(<ActivateAlreadyActivatedView onGoToAdmin={handleGoToAdmin} />);
+    render(<ActivateAlreadyActivatedView onRedirect={handleRedirect} />);
 
-    const button = screen.getByRole("button", { name: "buttons.goToAdmin" });
+    expect(screen.getByText("alreadyActivated.title")).toBeInTheDocument();
+    expect(screen.getByText("success.redirecting")).toBeInTheDocument();
+    expect(handleRedirect).not.toHaveBeenCalled();
 
-    expect(button).toBeInTheDocument();
+    await act(async () => {
+      vi.advanceTimersByTime(2000);
+    });
 
-    fireEvent.click(button);
+    expect(handleRedirect).toHaveBeenCalledTimes(1);
+    expect(useTranslationsMock).toHaveBeenCalledWith("activate");
+  });
 
-    expect(handleGoToAdmin).toHaveBeenCalledTimes(1);
+  it("renders success view and triggers redirect after 2s", async () => {
+    const handleRedirect = vi.fn();
+
+    render(<ActivateSuccessView onRedirect={handleRedirect} />);
+
+    expect(screen.getByText("success.title")).toBeInTheDocument();
+    expect(screen.getByText("success.description")).toBeInTheDocument();
+    expect(screen.getByText("success.redirecting")).toBeInTheDocument();
+    expect(handleRedirect).not.toHaveBeenCalled();
+
+    await act(async () => {
+      vi.advanceTimersByTime(2000);
+    });
+
+    expect(handleRedirect).toHaveBeenCalledTimes(1);
     expect(useTranslationsMock).toHaveBeenCalledWith("activate");
   });
 

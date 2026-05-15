@@ -21,7 +21,7 @@ export default defineConfig({
   resolve: {
     alias: {
       ...monorepoResolveAliases,
-      "@/": resolve(__dirname, "./src"),
+      "@": resolve(__dirname, "./src"),
     },
   },
 });

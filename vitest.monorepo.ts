@@ -11,4 +11,6 @@ export const monorepoResolveAliases = {
   "@restorio/utils": resolve(repoRoot, "app/packages/utils/src"),
   "@utils": resolve(repoRoot, "app/packages/ui/src/utils/index.ts"),
   "@components": resolve(repoRoot, "app/packages/ui/src/components"),
+  react: resolve(repoRoot, "node_modules/react"),
+  "react-dom": resolve(repoRoot, "node_modules/react-dom"),
 };

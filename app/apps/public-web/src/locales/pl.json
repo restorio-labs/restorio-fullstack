@@ -269,7 +269,8 @@
     },
     "success": {
       "title": "Twoje konto zostało aktywowane.",
-      "description": "Jesteś teraz zalogowany. Przejdź do panelu administracyjnego, aby dokończyć konfigurację."
+      "description": "Jesteś teraz zalogowany. Przejdź do panelu administracyjnego, aby dokończyć konfigurację.",
+      "redirecting": "Przekierowujemy Cię..."
     },
     "alreadyActivated": {
       "title": "To konto jest już aktywne."

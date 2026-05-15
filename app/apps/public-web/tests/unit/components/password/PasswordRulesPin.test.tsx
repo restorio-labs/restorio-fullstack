@@ -1,6 +1,5 @@
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
-import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { PasswordRulesPin } from "../../../../src/components/password/RulesPin";
@@ -18,7 +17,7 @@ const { useTranslationsMock } = vi.hoisted(() => {
   };
 });
 
-vi.mock("next-intl", () => ({
+vi.mock("@/i18n/useT", () => ({
   useTranslations: useTranslationsMock,
 }));
 

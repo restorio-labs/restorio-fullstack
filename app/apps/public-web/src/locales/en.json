@@ -266,7 +266,8 @@
     },
     "success": {
       "title": "Your account is activated.",
-      "description": "You’re now logged in. Continue to the admin panel to finish setup."
+      "description": "You’re now logged in. Continue to the admin panel to finish setup.",
+      "redirecting": "Redirecting you now..."
     },
     "alreadyActivated": {
       "title": "This account is already activated.",

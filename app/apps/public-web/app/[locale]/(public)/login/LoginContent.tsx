@@ -11,15 +11,14 @@ import {
 } from "@restorio/utils";
 import Link from "next/link";
 import type { ReactElement } from "react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { api } from "@/api/client";
-import { AuthenticatedAppPicker } from "@/components/auth/AuthenticatedAppPicker";
 import { useLocale, useTranslations } from "@/i18n/useT";
 import { translateLoginApiMessage } from "@/services/authApiMessages";
 import { isEmailValid } from "@/services/validation";
 
-type ViewState = "form" | "choosing_app";
+type ViewState = "form" | "redirecting";
 type LoginField = "email" | "password";
 type LoginFieldErrors = Partial<Record<LoginField, string>>;
 
@@ -120,7 +119,7 @@ export const LoginContent = (): ReactElement => {
         return;
       }
 
-      setView("choosing_app");
+      goToApp("admin-panel");
     } catch (err: unknown) {
       const data = getApiErrorData(err);
       const extractedFieldErrors = extractFieldErrors(data, t);
@@ -138,8 +137,47 @@ export const LoginContent = (): ReactElement => {
     }
   };
 
-  if (authStatus === "authenticated" || view === "choosing_app") {
-    return <AuthenticatedAppPicker />;
+  useEffect(() => {
+    if (authStatus !== "authenticated") {
+      return;
+    }
+
+    const fetchRoleAndRedirect = async (): Promise<void> => {
+      try {
+        const meData = await api.auth.me();
+        const role = meData.account_type;
+
+        const rlvp = localStorage.getItem(LAST_VISITED_APP_STORAGE_KEY);
+
+        if (typeof rlvp === "string" && isAppSlug(rlvp) && rlvp !== "public-web") {
+          goToApp(rlvp);
+
+          return;
+        }
+
+        if (role === "kitchen") {
+          goToApp("kitchen-panel");
+
+          return;
+        }
+
+        if (role === "waiter") {
+          goToApp("waiter-panel");
+
+          return;
+        }
+
+        goToApp("admin-panel");
+      } catch {
+        goToApp("admin-panel");
+      }
+    };
+
+    void fetchRoleAndRedirect();
+  }, [authStatus]);
+
+  if (authStatus === "authenticated" || view === "redirecting") {
+    return null;
   }
 
   return (

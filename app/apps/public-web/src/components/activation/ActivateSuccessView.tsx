@@ -1,14 +1,23 @@
-import { Button, Text } from "@restorio/ui";
+import { Loader, Text } from "@restorio/ui";
 import type { ReactElement } from "react";
+import { useEffect } from "react";
 
 import { useTranslations } from "@/i18n/useT";
 
 interface ActivateSuccessViewProps {
-  onGoToAdmin: () => void;
+  onRedirect: () => void;
 }
 
-export const ActivateSuccessView = ({ onGoToAdmin }: ActivateSuccessViewProps): ReactElement => {
+export const ActivateSuccessView = ({ onRedirect }: ActivateSuccessViewProps): ReactElement => {
   const t = useTranslations("activate");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onRedirect();
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [onRedirect]);
 
   return (
     <>
@@ -19,10 +28,11 @@ export const ActivateSuccessView = ({ onGoToAdmin }: ActivateSuccessViewProps): 
         {t("success.description")}
       </Text>
       <div className="mt-8 flex justify-center">
-        <Button variant="primary" size="lg" onClick={onGoToAdmin}>
-          {t("buttons.goToAdmin")}
-        </Button>
+        <Loader size="lg" />
       </div>
+      <Text variant="body-sm" className="mt-4 text-text-tertiary">
+        {t("success.redirecting")}
+      </Text>
     </>
   );
 };

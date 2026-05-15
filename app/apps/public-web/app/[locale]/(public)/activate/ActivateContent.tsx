@@ -4,7 +4,7 @@ import { ContentContainer } from "@restorio/ui";
 import { goToApp } from "@restorio/utils";
 import { useRouter } from "next/navigation";
 import type { FormEvent, ReactElement } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { api } from "@/api/client";
 import {
@@ -198,9 +198,28 @@ export function ActivateContent(): ReactElement {
 
   const resendOnCooldown = cooldownSeconds > 0;
 
-  const goToAdmin = (): void => {
-    goToApp("admin-panel");
-  };
+  const handleRoleBasedRedirect = useCallback(async (): Promise<void> => {
+    try {
+      const meData = await api.auth.me();
+      const role = meData.account_type;
+
+      if (role === "kitchen") {
+        goToApp("kitchen-panel");
+
+        return;
+      }
+
+      if (role === "waiter") {
+        goToApp("waiter-panel");
+
+        return;
+      }
+
+      goToApp("admin-panel");
+    } catch {
+      goToApp("admin-panel");
+    }
+  }, []);
 
   return (
     <div>
@@ -210,16 +229,16 @@ export function ActivateContent(): ReactElement {
 
           {result === "success" && (
             <ActivateSuccessView
-              onGoToAdmin={() => {
-                goToAdmin();
+              onRedirect={() => {
+                void handleRoleBasedRedirect();
               }}
             />
           )}
 
           {result === "already_activated" && (
             <ActivateAlreadyActivatedView
-              onGoToAdmin={() => {
-                goToAdmin();
+              onRedirect={() => {
+                void handleRoleBasedRedirect();
               }}
             />
           )}
