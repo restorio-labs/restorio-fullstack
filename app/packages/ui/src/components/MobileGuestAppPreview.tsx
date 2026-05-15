@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactElement, ReactNode } from "react";
 import { useEffect, useId, useMemo } from "react";
-import { TbChevronDown } from "react-icons/tb";
+import { TbChevronDown as TbChevronDownIcon } from "react-icons/tb";
 
 import { buildScopedThemeStyle } from "../theme/cssVariables";
 import type { ThemeOverride } from "../tokens/types";
@@ -9,6 +9,8 @@ import { cn } from "../utils";
 import { Dropdown } from "./overlays/Dropdown";
 import { Button } from "./primitives/Button";
 import { Text } from "./primitives/Text";
+
+const TbChevronDown = TbChevronDownIcon as React.ComponentType<React.SVGProps<SVGSVGElement>>;
 
 export type MobileGuestPreviewAppearance = "light" | "dark";
 

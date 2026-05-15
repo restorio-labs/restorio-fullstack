@@ -42,7 +42,7 @@ const extractFieldErrors = (data: unknown, t: ReturnType<typeof useTranslations>
 };
 const MIN_PASSWORD_LENGTH_FACADE = 1;
 
-export const LoginContent = (): ReactElement => {
+export const LoginContent = (): ReactElement | null => {
   const { authStatus, refreshAuth } = useAuthRoute();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
