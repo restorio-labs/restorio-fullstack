@@ -22,77 +22,111 @@ export const MenuItemCard = ({
 
   const priceLabel = `${item.price.toFixed(2)} ${t("common.currency")}`;
 
+  const textContent = (
+    <div className="flex min-w-0 flex-col items-stretch justify-center gap-2 py-0.5">
+      {item.promoted ? (
+        <div className="flex w-full justify-end">
+          <span className="inline-flex w-fit max-w-full shrink-0 items-center rounded-md border-2 border-status-promoted-border bg-status-promoted-background px-3 py-1.5 text-base font-semibold leading-tight text-status-promoted-text shadow-sm">
+            {t("order.promotedBadge")}
+          </span>
+        </div>
+      ) : null}
+      <Text as="span" variant="h4" weight="medium" className="line-clamp-2 break-words text-start text-text-primary">
+        {item.name}
+      </Text>
+      <Text as="span" variant="h4" weight="semibold" className="break-words text-start text-text-primary">
+        {priceLabel}
+      </Text>
+      {item.desc.trim() ? (
+        <Text as="span" variant="body-md" className="line-clamp-2 break-words text-pretty text-text-tertiary">
+          {t("menuItem.tapForDescription")}
+        </Text>
+      ) : null}
+    </div>
+  );
+
+  const imageNode = (
+    <div className="relative aspect-square w-full overflow-hidden rounded-md bg-surface-secondary">
+      {item.imageUrl ? (
+        <img src={item.imageUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
+      ) : null}
+    </div>
+  );
+
   return (
     <>
       <div
         className={cn(
-          "flex gap-2 rounded-lg border border-border-default bg-surface-primary p-2 sm:gap-3 sm:p-3",
-          browseOnly ? "" : "items-stretch",
+          "rounded-lg border border-border-default bg-surface-primary p-2 sm:p-3",
+          browseOnly
+            ? ""
+            : "grid grid-cols-[min(260px,42vw)_minmax(0,1fr)] gap-x-2 gap-y-2 sm:grid-cols-[260px_minmax(0,1fr)] sm:gap-x-3 sm:gap-y-3",
         )}
       >
-        <button
-          type="button"
-          onClick={() => setDetailOpen(true)}
-          className={cn(
-            "flex min-h-0 min-w-0 flex-1 items-center gap-2 rounded-md text-start outline-none ring-border-focus focus-visible:ring-2 sm:gap-3",
-            browseOnly && "w-full",
-          )}
-          aria-label={t("menuItem.openDetailsAria", { name: item.name })}
-        >
-          <div className="relative aspect-square w-[min(260px,42vw)] shrink-0 overflow-hidden rounded-md bg-surface-secondary sm:w-[260px]">
-            {item.imageUrl ? (
-              <img src={item.imageUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
-            ) : null}
-          </div>
-          <div className="flex max-w-[min(15rem,46vw)] ml-2 w-full shrink-0 flex-col items-stretch justify-center gap-2 py-0.5 sm:max-w-[17.5rem]">
-            {item.promoted ? (
-              <div className="flex w-full justify-end">
-                <span className="inline-flex w-fit max-w-full shrink-0 items-center rounded-md border-2 border-status-promoted-border bg-status-promoted-background px-3 py-1.5 text-base font-semibold leading-tight text-status-promoted-text shadow-sm">
-                  {t("order.promotedBadge")}
-                </span>
-              </div>
-            ) : null}
-            <Text as="span" variant="h4" weight="medium" className="line-clamp-2 text-start text-text-primary">
-              {item.name}
-            </Text>
-            <Text as="span" variant="h4" weight="semibold" className="text-start text-text-primary">
-              {priceLabel}
-            </Text>
-            {item.desc.trim() ? (
-              <Text as="span" variant="body-md" className="line-clamp-1 text-text-tertiary">
-                {t("menuItem.tapForDescription")}
-              </Text>
-            ) : null}
-          </div>
-        </button>
-
-        {!browseOnly ? (
-          <div className="flex shrink-0 flex-row items-center gap-1.5 self-center pr-0.5">
-            {quantity > 0 ? (
-              <>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => onRemove()}
-                  aria-label={t("menuItem.removeAria", { name: item.name })}
-                  className="h-8 w-8 !p-0"
-                >
-                  −
-                </Button>
-                <span className="w-7 min-w-[1.75rem] text-center text-base font-semibold tabular-nums">{quantity}</span>
-              </>
-            ) : null}
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => onAdd()}
-              aria-label={t("menuItem.addAria", { name: item.name })}
-              className="h-8 w-8 !p-0"
+        {browseOnly ? (
+          <button
+            type="button"
+            onClick={() => setDetailOpen(true)}
+            className="flex min-w-0 items-center gap-2 rounded-md text-start outline-none ring-border-focus focus-visible:ring-2 sm:gap-3"
+            aria-label={t("menuItem.openDetailsAria", { name: item.name })}
+          >
+            <div className="relative aspect-square w-[min(260px,42vw)] shrink-0 overflow-hidden rounded-md bg-surface-secondary sm:w-[260px]">
+              {item.imageUrl ? (
+                <img src={item.imageUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
+              ) : null}
+            </div>
+            {textContent}
+          </button>
+        ) : (
+          <>
+            <div className="row-start-1 col-start-1">{imageNode}</div>
+            <button
+              type="button"
+              onClick={() => setDetailOpen(true)}
+              className="row-start-1 col-start-2 min-w-0 rounded-md text-start outline-none ring-border-focus focus-visible:ring-2"
+              aria-label={t("menuItem.openDetailsAria", { name: item.name })}
             >
-              +
-            </Button>
-          </div>
-        ) : null}
+              {textContent}
+            </button>
+            <div className="col-span-2 row-start-2 flex w-full gap-2">
+              {quantity > 0 ? (
+                <>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => onRemove()}
+                    aria-label={t("menuItem.removeAria", { name: item.name })}
+                    className="h-10 min-w-0 flex-1 !px-0 text-lg"
+                  >
+                    −
+                  </Button>
+                  <span className="flex h-10 min-w-[2.75rem] flex-1 items-center justify-center rounded-md border border-border-default bg-surface-secondary text-base font-semibold tabular-nums text-text-primary">
+                    {quantity}
+                  </span>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => onAdd()}
+                    aria-label={t("menuItem.addAria", { name: item.name })}
+                    className="h-10 min-w-0 flex-1 !px-0 text-lg"
+                  >
+                    +
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => onAdd()}
+                  aria-label={t("menuItem.addAria", { name: item.name })}
+                  className="h-10 w-full !px-0 text-lg"
+                >
+                  +
+                </Button>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       <Modal
@@ -119,7 +153,7 @@ export const MenuItemCard = ({
               as="p"
               variant="h3"
               align="center"
-              className="w-full max-w-prose whitespace-pre-wrap text-text-primary"
+              className="w-full max-w-prose break-words whitespace-pre-wrap text-text-primary"
             >
               {item.desc.trim()}
             </Text>
