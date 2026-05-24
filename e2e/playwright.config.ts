@@ -1,5 +1,14 @@
 import { defineConfig, devices } from "@playwright/test";
 
+export const APP_URLS = {
+  publicWeb: "http://localhost:3000",
+  adminPanel: "http://localhost:3001",
+  kitchenPanel: "http://localhost:3002",
+  mobileApp: "http://localhost:3003",
+  waiterPanel: "http://localhost:3004",
+  api: "http://localhost:8000",
+} as const;
+
 export default defineConfig({
   testDir: "./specs",
   fullyParallel: true,
@@ -8,7 +17,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL: APP_URLS.publicWeb,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
   },
@@ -31,13 +40,13 @@ export default defineConfig({
   webServer: [
     {
       command: "bun run dev",
-      url: "http://localhost:3000",
+      url: APP_URLS.publicWeb,
       reuseExistingServer: !process.env.CI,
       timeout: 120000,
     },
     {
-      command: "docker compose up -d api redis",
-      url: "http://localhost:8000/health",
+      command: "docker compose up -d api",
+      url: `${APP_URLS.api}/health`,
       reuseExistingServer: !process.env.CI,
       timeout: 30000,
     },
