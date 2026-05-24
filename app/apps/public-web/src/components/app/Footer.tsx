@@ -12,7 +12,7 @@ export const Footer = (): ReactElement => {
 
   const navLinks = [
     { href: `/${locale}/privacy`, label: t("navigation.privacy") },
-    { href: `/${locale}/contact`, label: t("navigation.contact") },
+    { href: "mailto:contact@restorio.org", label: t("navigation.contact") },
     { href: `/${locale}/terms`, label: t("navigation.terms") },
     { href: `/${locale}/status`, label: t("navigation.status") },
   ];

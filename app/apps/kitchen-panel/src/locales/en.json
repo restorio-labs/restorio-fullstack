@@ -15,6 +15,12 @@
     "restaurant": "Restaurant",
     "items": "Items",
     "notes": "Notes:",
+    "invoice": {
+      "title": "VAT invoice (Faktura)",
+      "company": "Company",
+      "nip": "NIP",
+      "address": "Address"
+    },
     "orderSummary": "{{table}} · {{count}} items",
     "itemQuantity": "{{quantity}}x {{name}}",
     "viewMode": {

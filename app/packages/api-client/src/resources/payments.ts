@@ -1,7 +1,9 @@
 import type {
   P24ConfigData,
+  SuccessResponse,
   TransactionListData,
   TransactionListParams,
+  TransactionsReconcileResult,
   UpdateP24ConfigData,
   UpdateP24ConfigRequest,
   UpdatedResponse,
@@ -53,5 +55,19 @@ export class PaymentsResource extends BaseResource {
         ...(params ?? {}),
       },
     });
+  }
+
+  reconcilePendingTransactions(
+    tenantId: string,
+    signal?: AbortSignal,
+  ): Promise<SuccessResponse<TransactionsReconcileResult>> {
+    return this.client.post<SuccessResponse<TransactionsReconcileResult>, Record<string, never>>(
+      "/payments/transactions/reconcile-pending",
+      {},
+      {
+        signal,
+        params: { tenant_public_id: tenantId },
+      },
+    );
   }
 }

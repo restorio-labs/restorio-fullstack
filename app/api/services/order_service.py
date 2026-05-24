@@ -82,6 +82,9 @@ class OrderService:
             "createdAt": now,
             "updatedAt": now,
         }
+        inv = data.get("invoiceData")
+        if isinstance(inv, dict) and inv:
+            doc["invoiceData"] = inv
 
         await db[KITCHEN_ORDERS_COLLECTION].insert_one(doc)
         return _serialize_order(doc, timezone_name=timezone_name)
@@ -122,6 +125,8 @@ class OrderService:
                 ]
         if "notes" in data:
             update["notes"] = data["notes"]
+        if "invoiceData" in data:
+            update["invoiceData"] = data["invoiceData"]
         if "total" in data:
             update["total"] = float(data["total"])
         if "subtotal" in data:
@@ -244,7 +249,7 @@ def _resolve_timezone(timezone_name: str | None) -> ZoneInfo:
 
 
 def _serialize_order(doc: dict[str, Any], *, timezone_name: str | None = None) -> dict[str, Any]:
-    return {
+    result: dict[str, Any] = {
         "id": doc["_id"],
         "restaurantId": doc.get("restaurantId", ""),
         "tableId": doc.get("tableId"),
@@ -262,6 +267,10 @@ def _serialize_order(doc: dict[str, Any], *, timezone_name: str | None = None) -
         "createdAt": _to_iso(doc.get("createdAt"), timezone_name=timezone_name),
         "updatedAt": _to_iso(doc.get("updatedAt"), timezone_name=timezone_name),
     }
+    inv = doc.get("invoiceData")
+    if inv is not None:
+        result["invoiceData"] = inv
+    return result
 
 
 def _to_iso(value: Any, *, timezone_name: str | None = None) -> str:

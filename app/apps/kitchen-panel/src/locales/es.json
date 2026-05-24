@@ -15,6 +15,12 @@
     "restaurant": "Restaurante",
     "items": "Artículos",
     "notes": "Notas:",
+    "invoice": {
+      "title": "Factura con IVA",
+      "company": "Empresa",
+      "nip": "NIF",
+      "address": "Dirección"
+    },
     "orderSummary": "{{table}} · {{count}} artículos",
     "itemQuantity": "{{quantity}}x {{name}}",
     "viewMode": {

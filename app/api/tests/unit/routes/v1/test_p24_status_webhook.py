@@ -196,6 +196,88 @@ async def test_p24_status_webhook_creates_kitchen_order_on_paid() -> None:
 
 
 @pytest.mark.asyncio
+async def test_p24_status_webhook_creates_kitchen_order_from_transaction_when_mongo_order_missing() -> None:
+    tenant = _tenant()
+    sid = uuid4()
+    tx = Transaction(
+        session_id=sid,
+        tenant_id=tenant.id,
+        merchant_id=1,
+        pos_id=1,
+        amount=1000,
+        currency="PLN",
+        description="d",
+        email="a@b.com",
+        country="PL",
+        language="pl",
+        url_return="u",
+        url_status="u2",
+        sign="s",
+    )
+    tx.order = {
+        "tableRef": "t-1",
+        "tableNumber": 3,
+        "items": [{"name": "Pizza", "quantity": 1, "unitPrice": 10.0}],
+        "note": "from-tx",
+    }
+
+    async def apply_p24(
+        _ec: object,
+        *,
+        transaction: Transaction,
+        tenant: Tenant,
+    ) -> tuple[dict, int]:
+        transaction.status = 1
+        return ({"status": 1, "amount": 1000, "currency": "PLN"}, 0)
+
+    res = MagicMock()
+    res.scalar_one_or_none = MagicMock(return_value=tx)
+    pg = MagicMock()
+    pg.execute = AsyncMock(return_value=res)
+    pg.commit = AsyncMock()
+
+    tsvc = MagicMock()
+    tsvc.get_tenant = AsyncMock(return_value=tenant)
+
+    p24 = MagicMock()
+    p24.apply_p24_lookup_to_transaction = apply_p24
+
+    m_coll = MagicMock()
+    m_coll.update_one = AsyncMock()
+    m_coll.find_one = AsyncMock(return_value=None)
+    kitchen_coll = MagicMock()
+    kitchen_coll.insert_one = AsyncMock()
+    db = _MongoBridge(m_coll, kitchen_coll)
+
+    tss = MagicMock()
+    tss.mark_completed_by_session_id = AsyncMock()
+
+    out = await p24_status.p24_status_webhook(
+        session=pg,
+        tenant_service=tsvc,
+        p24_service=p24,
+        external_client=MagicMock(),
+        table_session_service=tss,
+        db=db,
+        merchantId=1,
+        posId=1,
+        sessionId=str(sid),
+        amount=1000,
+        originAmount=1000,
+        currency="PLN",
+        orderId=123,
+        methodId=1,
+        statement="test",
+        sign="sig",
+    )
+
+    assert "received" in out.message
+    kitchen_coll.insert_one.assert_awaited_once()
+    tss.mark_completed_by_session_id.assert_awaited_once()
+    pg.commit.assert_awaited_once()
+
+
+@pytest.mark.asyncio
 async def test_p24_status_webhook_no_kitchen_order_when_unpaid() -> None:
     tenant = _tenant()
     sid = uuid4()

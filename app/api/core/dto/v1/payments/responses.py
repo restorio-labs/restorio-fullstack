@@ -31,6 +31,12 @@ class TransactionListItemDTO(BaseDTO):
     created_at: datetime
 
 
+class TransactionsReconcileResponseDTO(BaseDTO):
+    scanned: int = Field(..., ge=0)
+    updated: int = Field(..., ge=0)
+    failed: int = Field(..., ge=0)
+
+
 class P24ConfigResponseDTO(BaseDTO):
     p24_merchantid: int | None = Field(None, serialization_alias="p24Merchantid")
     p24_api: str | None = Field(None, serialization_alias="p24Api")

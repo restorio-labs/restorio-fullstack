@@ -294,6 +294,19 @@ async def test_archive_order(_bc: AsyncMock) -> None:
     arch = SimpleNamespace(id=uuid4())
     tss = MagicMock()
     tss.release_by_table_ref = AsyncMock()
+    tsvc = MagicMock()
+    tsvc.get_tenant = AsyncMock(
+        return_value=Tenant(
+            id=tid,
+            public_id="pub",
+            name="n",
+            slug="s",
+            status=TenantStatus.ACTIVE,
+            p24_merchantid=1,
+            p24_api="k" * 32,
+            p24_crc="crc",
+        )
+    )
     with patch.object(orders_routes, "_archive_service") as ar:
         ar.archive_order = AsyncMock(return_value=arch)
         r = await orders_routes.archive_order(
@@ -303,10 +316,12 @@ async def test_archive_order(_bc: AsyncMock) -> None:
             MagicMock(),
             svc,
             tss,
+            tsvc,
             tid,
             object(),  # type: ignore[arg-type]
         )
     assert "archived" in r.message
+    tsvc.get_tenant.assert_awaited_once()
 
 
 @pytest.mark.asyncio

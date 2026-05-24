@@ -24,6 +24,12 @@
     "restaurant": "Restauracja",
     "items": "Pozycje",
     "notes": "Notatki:",
+    "invoice": {
+      "title": "Faktura VAT",
+      "company": "Firma",
+      "nip": "NIP",
+      "address": "Adres"
+    },
     "orderSummary": "{{table}} · {{count}} pozycji",
     "itemQuantity": "{{quantity}}x {{name}}",
     "viewMode": {

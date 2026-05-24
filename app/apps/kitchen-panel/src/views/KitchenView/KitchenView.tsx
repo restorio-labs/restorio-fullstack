@@ -494,6 +494,23 @@ export const KitchenView = (): ReactElement => {
                                   )}
                                 </Stack>
                               )}
+                              {order.invoiceData ? (
+                                <Box className="flex min-w-0 flex-col items-start gap-2 rounded-md border border-border-default bg-surface-secondary px-3 py-2">
+                                  <Text as="p" variant="body-sm" weight="medium">
+                                    {t("kitchen.invoice.title")}
+                                  </Text>
+                                  <Text as="p" variant="body-sm" className="ml-2 text-text-secondary">
+                                    {t("kitchen.invoice.company")}: {order.invoiceData.companyName}
+                                  </Text>
+                                  <Text as="p" variant="body-sm" className="ml-2 text-text-secondary">
+                                    {t("kitchen.invoice.nip")}: {order.invoiceData.nip}
+                                  </Text>
+                                  <Text as="p" variant="body-sm" className="ml-2 text-text-secondary">
+                                    {t("kitchen.invoice.address")}: {order.invoiceData.street},{" "}
+                                    {order.invoiceData.postalCode} {order.invoiceData.city}
+                                  </Text>
+                                </Box>
+                              ) : null}
                               {isRejected && order.rejectionReason && (
                                 <Box className="rounded-md border border-status-error-border bg-status-error-background px-3 py-2">
                                   <Text as="p" variant="body-sm" className="text-status-error-text">

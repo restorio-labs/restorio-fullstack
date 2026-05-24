@@ -2,6 +2,7 @@ import { getOrderStatusUpdateErrorToastTitle, type OrderStatusErrorTranslateFn }
 import {
   OrderStatus,
   type FloorCanvas as FloorCanvasType,
+  type InvoiceData,
   type OrderStatusDisplay,
   type TableDisplayInfo,
   type TableSession,
@@ -37,6 +38,7 @@ interface KitchenOrder {
   items: KitchenOrderItem[];
   notes?: string;
   rejectionReason?: string;
+  invoiceData?: InvoiceData;
   createdAt: string;
   updatedAt: string;
 }
@@ -131,6 +133,33 @@ const formatOccupationTime = (createdAt: string): string => {
   return `${mins}m`;
 };
 
+const WAITER_NIP_WEIGHTS = [6, 5, 7, 2, 3, 4, 5, 6, 7];
+
+const validateWaiterNipFormat = (nip: string): boolean => {
+  const digitsOnly = nip.replace(/[\s-]/g, "");
+
+  if (!/^\d{10}$/.test(digitsOnly)) {
+    return false;
+  }
+
+  const digits = digitsOnly.split("").map(Number);
+  let checksum = 0;
+
+  for (let i = 0; i < 9; i++) {
+    checksum += digits[i] * WAITER_NIP_WEIGHTS[i];
+  }
+
+  checksum %= 11;
+
+  if (checksum === 10) {
+    checksum = 0;
+  }
+
+  return digits[9] === checksum;
+};
+
+const validateWaiterPostalFormat = (code: string): boolean => /^\d{2}-?\d{3}$/.test(code.trim());
+
 export const FloorRuntimeView = ({
   venue,
   selectedFloorId,
@@ -210,6 +239,63 @@ export const FloorRuntimeView = ({
     setInvoicePostalCodeError("");
   }, []);
 
+  const validateWaiterInvoiceFields = useCallback((): boolean => {
+    setInvoiceNipError("");
+    setInvoicePostalCodeError("");
+
+    if (!invoiceCompanyName.trim()) {
+      showErrorToast(t("waiterDashboard.invoice.companyNameRequired"));
+
+      return false;
+    }
+
+    if (!invoiceNip.trim()) {
+      showErrorToast(t("waiterDashboard.invoice.nipRequired"));
+
+      return false;
+    }
+
+    if (!validateWaiterNipFormat(invoiceNip)) {
+      setInvoiceNipError(t("waiterDashboard.invoice.nipInvalid"));
+
+      return false;
+    }
+
+    if (!invoiceStreet.trim()) {
+      showErrorToast(t("waiterDashboard.invoice.streetRequired"));
+
+      return false;
+    }
+
+    if (!invoiceCity.trim()) {
+      showErrorToast(t("waiterDashboard.invoice.cityRequired"));
+
+      return false;
+    }
+
+    if (!invoicePostalCode.trim()) {
+      showErrorToast(t("waiterDashboard.invoice.postalCodeRequired"));
+
+      return false;
+    }
+
+    if (!validateWaiterPostalFormat(invoicePostalCode)) {
+      setInvoicePostalCodeError(t("waiterDashboard.invoice.postalCodeInvalid"));
+
+      return false;
+    }
+
+    return true;
+  }, [
+    invoiceCity,
+    invoiceCompanyName,
+    invoiceNip,
+    invoicePostalCode,
+    invoiceStreet,
+    showErrorToast,
+    t,
+  ]);
+
   const hasCanvases = venue.floorCanvases.length > 0;
 
   const activeCanvas = hasCanvases
@@ -286,6 +372,7 @@ export const FloorRuntimeView = ({
             })),
             notes: order.notes,
             rejectionReason: order.rejectionReason,
+            invoiceData: order.invoiceData,
             createdAt: String(order.createdAt),
             updatedAt: String(order.updatedAt),
           }),
@@ -487,6 +574,16 @@ export const FloorRuntimeView = ({
     const order = remoteOrders.find((o) => o.tableId === selectedTableElement.id);
 
     return order?.rejectionReason;
+  }, [remoteOrders, selectedTableElement]);
+
+  const selectedTableInvoiceData = useMemo((): InvoiceData | undefined => {
+    if (!selectedTableElement) {
+      return undefined;
+    }
+
+    const order = remoteOrders.find((o) => o.tableId === selectedTableElement.id);
+
+    return order?.invoiceData;
   }, [remoteOrders, selectedTableElement]);
 
   const isSelectedTableRejected = selectedTableOrderStatus === "rejected";
@@ -752,9 +849,9 @@ export const FloorRuntimeView = ({
     }
   }, [isSelectedTableAvailable, selectedTableElement, selectedTableOrderId, selectedTableOrderItems, syncRemoteOrder]);
 
-  const handleConfirmPayment = useCallback(async (): Promise<void> => {
+  const handleConfirmPayment = useCallback(async (): Promise<boolean> => {
     if (!selectedTableElement || isSelectedTableAvailable) {
-      return;
+      return false;
     }
 
     try {
@@ -762,13 +859,35 @@ export const FloorRuntimeView = ({
         if (isSelectedTableRejected) {
           await ordersApi.delete(venue.id, selectedTableOrderId);
         } else {
+          if (!selectedTableLockedByMobile && wantsInvoice) {
+            if (!validateWaiterInvoiceFields()) {
+              return false;
+            }
+
+            const trimmedPostal = invoicePostalCode.trim();
+            const postalFormatted = trimmedPostal.includes("-")
+              ? trimmedPostal
+              : `${trimmedPostal.slice(0, 2)}-${trimmedPostal.slice(2)}`;
+
+            await ordersApi.update(venue.id, selectedTableOrderId, {
+              invoiceData: {
+                companyName: invoiceCompanyName.trim(),
+                nip: invoiceNip.replace(/[\s-]/g, ""),
+                street: invoiceStreet.trim(),
+                city: invoiceCity.trim(),
+                postalCode: postalFormatted,
+                country: "PL",
+              },
+            });
+          }
+
           await ordersApi.updateStatus(venue.id, selectedTableOrderId, OrderStatus.PAID);
           await ordersApi.archive(venue.id, selectedTableOrderId);
         }
       } else if (selectedTableSession) {
         await ordersApi.unlockTableSession(venue.id, selectedTableSession.tableRef);
       } else {
-        return;
+        return false;
       }
       void queryClient.invalidateQueries({ queryKey: ["waiter-panel", "kitchen-orders", venue.id] });
       void queryClient.invalidateQueries({ queryKey: ["waiter-panel", "archived-orders", venue.id] });
@@ -802,19 +921,31 @@ export const FloorRuntimeView = ({
         return next;
       });
       setIsMenuDockOpen(false);
+
+      return true;
     } catch (err: unknown) {
       showErrorToast(getOrderStatusUpdateErrorToastTitle(err, translate));
+
+      return false;
     }
   }, [
+    invoiceCity,
+    invoiceCompanyName,
+    invoiceNip,
+    invoicePostalCode,
+    invoiceStreet,
     isSelectedTableAvailable,
     isSelectedTableRejected,
     queryClient,
     selectedTableElement,
+    selectedTableLockedByMobile,
     selectedTableOrderId,
+    selectedTableSession,
     showErrorToast,
     translate,
+    validateWaiterInvoiceFields,
     venue.id,
-    selectedTableSession,
+    wantsInvoice,
   ]);
 
   const handleForcePreparing = useCallback(async (): Promise<void> => {
@@ -1159,28 +1290,43 @@ export const FloorRuntimeView = ({
                     )}
                   </div>
                   {!selectedTableLockedByMobile && (
-                    <div className="flex flex-col gap-2">
-                      <label htmlFor={orderNoteFieldId} className="text-sm text-text-secondary">
-                        {t("waiterDashboard.orderNoteLabel")}
-                      </label>
-                      <textarea
-                        id={orderNoteFieldId}
-                        rows={2}
-                        value={selectedTableOrderNote}
-                        onChange={(event) => {
-                          const nextValue = event.target.value;
+                    <>
+                      <div className="flex flex-col gap-2">
+                        <label htmlFor={orderNoteFieldId} className="text-sm text-text-secondary">
+                          {t("waiterDashboard.orderNoteLabel")}
+                        </label>
+                        <textarea
+                          id={orderNoteFieldId}
+                          rows={2}
+                          value={selectedTableOrderNote}
+                          onChange={(event) => {
+                            const nextValue = event.target.value;
 
-                          setTableOrderNotes((prev) => ({
-                            ...prev,
-                            [selectedTableElement.id]: nextValue,
-                          }));
-                        }}
-                        onBlur={() => {
-                          void handlePersistOrderNote();
-                        }}
-                        className="w-full rounded-md border border-border-default bg-surface-primary px-4 py-3 text-sm text-text-primary"
-                      />
-                    </div>
+                            setTableOrderNotes((prev) => ({
+                              ...prev,
+                              [selectedTableElement.id]: nextValue,
+                            }));
+                          }}
+                          onBlur={() => {
+                            void handlePersistOrderNote();
+                          }}
+                          className="w-full rounded-md border border-border-default bg-surface-primary px-4 py-3 text-sm text-text-primary"
+                        />
+                      </div>
+                      {selectedTableInvoiceData ? (
+                        <div className="rounded-md border border-border-default bg-surface-secondary p-3 text-sm text-text-secondary">
+                          <p className="font-medium text-text-primary">{t("waiterDashboard.invoice.summaryTitle")}</p>
+                          <p className="mt-1">{selectedTableInvoiceData.companyName}</p>
+                          <p>
+                            {t("waiterDashboard.invoice.summaryNip")}: {selectedTableInvoiceData.nip}
+                          </p>
+                          <p>
+                            {selectedTableInvoiceData.street}, {selectedTableInvoiceData.postalCode}{" "}
+                            {selectedTableInvoiceData.city}
+                          </p>
+                        </div>
+                      ) : null}
+                    </>
                   )}
                   <div className="flex flex-col gap-2">
                     {!selectedTableLockedByMobile && (
@@ -1379,9 +1525,14 @@ export const FloorRuntimeView = ({
               type="button"
               variant={isSelectedTableRejected ? "danger" : "primary"}
               onClick={() => {
-                void handleConfirmPayment();
-                setIsUnlockModalOpen(false);
-                resetInvoiceForm();
+                void (async (): Promise<void> => {
+                  const ok = await handleConfirmPayment();
+
+                  if (ok) {
+                    setIsUnlockModalOpen(false);
+                    resetInvoiceForm();
+                  }
+                })();
               }}
             >
               {t("waiterDashboard.confirmPaymentModalConfirm")}

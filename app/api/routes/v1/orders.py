@@ -304,13 +304,15 @@ async def archive_order(
     session: PostgresSession,
     service: OrderServiceDep,
     table_session_service: TableSessionServiceDep,
+    tenant_service: TenantServiceDep,
     _tenant_id: AuthorizedTenantId,
     _role: RequireAnyStaff,
 ) -> SuccessResponse[dict]:
     order_doc = await service.get_order_for_archive(db, tenant_public_id, order_id)
     tenant_id = order_doc.get("restaurantId", tenant_public_id)
+    tenant = await tenant_service.get_tenant(session, _tenant_id)
     archived = await _archive_service.archive_order(
-        db, session, tenant_id, tenant_public_id, order_doc
+        db, session, tenant_id, tenant_public_id, order_doc, pg_tenant=tenant
     )
     await table_session_service.release_by_table_ref(
         session,

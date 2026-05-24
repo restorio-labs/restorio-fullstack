@@ -6,11 +6,13 @@ import pytest
 from sqlalchemy.engine import Result
 
 from core.exceptions import BadRequestError, ConflictError, ExternalAPIError
+from core.models.enums import TenantStatus
 from core.models.tenant import Tenant
 from core.models.transaction import Transaction
 from services.external_client_service import ExternalClient
 from services.payment_service import (
     P24Service,
+    build_waiter_settlement_transaction,
     return_url_with_session_id,
 )
 
@@ -278,3 +280,58 @@ async def test_get_transactions_page_paginates() -> None:
 
     assert total == 1
     assert items == [tx]
+
+
+def test_p24_notification_status_url_uses_frontend_base(monkeypatch: pytest.MonkeyPatch) -> None:
+    import services.payment_service as pay_svc
+
+    monkeypatch.setattr(pay_svc.settings, "API_BASE_URL", "")
+    monkeypatch.setattr(pay_svc.settings, "FRONTEND_URL", "https://app.example.com")
+    monkeypatch.setattr(pay_svc.settings, "API_V1_PREFIX", "/api/v1")
+    assert pay_svc.p24_notification_status_url() == "https://app.example.com/api/v1/payments/status"
+
+
+def test_p24_notification_status_url_prefers_api_base_url(monkeypatch: pytest.MonkeyPatch) -> None:
+    import services.payment_service as pay_svc
+
+    monkeypatch.setattr(pay_svc.settings, "API_BASE_URL", "https://api.restorio.org")
+    monkeypatch.setattr(pay_svc.settings, "FRONTEND_URL", "https://restorio.org")
+    monkeypatch.setattr(pay_svc.settings, "API_V1_PREFIX", "/api/v1")
+    assert pay_svc.p24_notification_status_url() == "https://api.restorio.org/api/v1/payments/status"
+
+
+def test_build_waiter_settlement_transaction_skips_non_positive_total() -> None:
+    tenant = Tenant(
+        id=uuid4(),
+        public_id="pub",
+        name="N",
+        slug="sl",
+        status=TenantStatus.ACTIVE,
+        p24_merchantid=9,
+        p24_api="k" * 32,
+        p24_crc="crc",
+    )
+    assert build_waiter_settlement_transaction(tenant, {"_id": "K1", "total": 0}) is None
+
+
+def test_build_waiter_settlement_transaction_builds_paid_row() -> None:
+    tenant = Tenant(
+        id=uuid4(),
+        public_id="pub",
+        name="N",
+        slug="sl",
+        status=TenantStatus.ACTIVE,
+        p24_merchantid=9,
+        p24_api="k" * 32,
+        p24_crc="crc",
+    )
+    tx = build_waiter_settlement_transaction(
+        tenant,
+        {"_id": "K-XY", "total": 12.34, "table": "Stolik 2", "notes": "nap"},
+    )
+    assert tx is not None
+    assert tx.amount == 1234
+    assert tx.status == 1
+    assert tx.p24_order_id is None
+    assert tx.tenant_id == tenant.id
+    assert "K-XY" in tx.description

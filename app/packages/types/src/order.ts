@@ -1,3 +1,5 @@
+import type { InvoiceData } from "./payment";
+
 export enum OrderStatus {
   NEW = "new",
   PENDING = "pending",
@@ -35,6 +37,7 @@ export interface Order {
   time: string;
   notes?: string;
   rejectionReason?: string;
+  invoiceData?: InvoiceData;
   createdAt: Date;
   updatedAt: Date;
 }

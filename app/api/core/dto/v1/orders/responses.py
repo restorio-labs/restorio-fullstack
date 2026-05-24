@@ -1,5 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
+from typing import Any
 
 from pydantic import AliasChoices, Field
 
@@ -96,6 +97,12 @@ class KitchenOrderResponseDTO(BaseDTO):
         alias="updatedAt",
         validation_alias=AliasChoices("updatedAt", "updated_at"),
         description="Updated timestamp",
+    )
+    invoice_data: dict[str, Any] | None = Field(
+        None,
+        alias="invoiceData",
+        validation_alias=AliasChoices("invoiceData", "invoice_data"),
+        description="VAT invoice payload as stored (camelCase keys)",
     )
 
 

@@ -1,10 +1,25 @@
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, Mock
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pytest
 
+from core.models.enums import TenantStatus
+from core.models.tenant import Tenant
 from services.archive_service import ArchiveService
+
+
+def _tenant_row() -> Tenant:
+    return Tenant(
+        id=UUID("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+        public_id="tenant-public-id",
+        name="Resto",
+        slug="resto",
+        status=TenantStatus.ACTIVE,
+        p24_merchantid=111,
+        p24_api="k" * 32,
+        p24_crc="crc",
+    )
 
 
 class _FakeMongoDatabase:
@@ -55,9 +70,10 @@ async def test_archive_order_persists_in_postgres_before_deleting_mongo() -> Non
         tenant_id="tenant-public-id",
         restaurant_id="tenant-public-id",
         order_doc=order_doc,
+        pg_tenant=_tenant_row(),
     )
 
-    session.add.assert_called_once()
+    assert session.add.call_count == 2
     session.commit.assert_awaited_once()
     session.refresh.assert_awaited_once()
     delete_one.assert_awaited_once_with({"_id": "K-ABC123"})
@@ -81,6 +97,7 @@ async def test_archive_order_parses_created_at_string() -> None:
     order_doc = {
         "_id": "K-Z",
         "createdAt": "2025-01-15T12:30:00+00:00",
+        "total": 9.99,
     }
     archived = await service.archive_order(
         db=db,
@@ -88,7 +105,9 @@ async def test_archive_order_parses_created_at_string() -> None:
         tenant_id="t1",
         restaurant_id="t1",
         order_doc=order_doc,
+        pg_tenant=_tenant_row(),
     )
+    assert session.add.call_count == 2
     assert archived.order_created_at.isoformat().startswith("2025-01-15T12:30:00+00:00")
     assert archived.original_order_id == "K-Z"
 
@@ -106,13 +125,45 @@ async def test_archive_order_default_created_at_when_invalid() -> None:
     )
     delete_one = AsyncMock()
     db = _FakeMongoDatabase(delete_one)
-    order_doc = {"_id": "K-B", "createdAt": 12345}
+    order_doc = {"_id": "K-B", "createdAt": 12345, "total": 5.0}
     archived = await service.archive_order(
         db=db,
         session=session,
         tenant_id="t1",
         restaurant_id="t1",
         order_doc=order_doc,
+        pg_tenant=_tenant_row(),
     )
+    assert session.add.call_count == 2
     assert isinstance(archived.order_created_at, datetime)
     assert archived.original_order_id == "K-B"
+
+
+@pytest.mark.asyncio
+async def test_archive_order_skips_waiter_ledger_for_mobile_kitchen_order() -> None:
+    service = ArchiveService()
+    session = Mock()
+    session.add = Mock()
+    session.commit = AsyncMock()
+    session.refresh = AsyncMock(
+        side_effect=lambda archived: setattr(
+            archived, "id", UUID("44444444-4444-4444-4444-444444444444")
+        )
+    )
+    delete_one = AsyncMock()
+    db = _FakeMongoDatabase(delete_one)
+    order_doc = {
+        "_id": "M-ABC",
+        "source": "mobile",
+        "total": 200.0,
+        "createdAt": datetime(2026, 5, 1, tzinfo=UTC),
+    }
+    await service.archive_order(
+        db=db,
+        session=session,
+        tenant_id="t1",
+        restaurant_id="t1",
+        order_doc=order_doc,
+        pg_tenant=_tenant_row(),
+    )
+    assert session.add.call_count == 1

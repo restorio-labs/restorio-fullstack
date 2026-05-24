@@ -1,5 +1,5 @@
 import base64
-from datetime import date
+from datetime import UTC, date, datetime, timedelta
 import hashlib
 import json
 from typing import Any
@@ -50,6 +50,56 @@ def return_url_with_session_id(base_url: str, session_id: str) -> str:
 
 def _p24_api_url(path: str) -> str:
     return f"{settings.PRZELEWY24_API_URL.rstrip('/')}/{path.lstrip('/')}"
+
+
+def p24_notification_status_url() -> str:
+    base = (settings.API_BASE_URL or settings.FRONTEND_URL).strip().rstrip("/")
+    prefix = settings.API_V1_PREFIX if settings.API_V1_PREFIX.startswith("/") else f"/{settings.API_V1_PREFIX}"
+    return f"{base}{prefix}/payments/status"
+
+
+def build_waiter_settlement_transaction(tenant: Tenant, order_doc: dict[str, Any]) -> Transaction | None:
+    total_raw = order_doc.get("total", 0)
+    try:
+        total = float(total_raw)
+    except (TypeError, ValueError):
+        total = 0.0
+    amount_minor = int(round(total * 100))
+    if amount_minor <= 0:
+        return None
+
+    table_label = order_doc.get("table") or ""
+    original_id = str(order_doc.get("_id", ""))
+    description = (
+        f"Kelner — {table_label} — {original_id}" if table_label else f"Kelner — {original_id}"
+    )
+
+    mid = int(tenant.p24_merchantid or 0)
+    pid = mid
+    public_base = (settings.API_BASE_URL or settings.FRONTEND_URL).rstrip("/")
+    stub = f"{public_base}/waiter-settlement"
+
+    return Transaction(
+        session_id=uuid4(),
+        tenant_id=tenant.id,
+        merchant_id=mid,
+        pos_id=pid,
+        amount=amount_minor,
+        currency="PLN",
+        description=description[:1024],
+        email="waiter-ledger@restorio.internal",
+        country="PL",
+        language="pl",
+        url_return=stub[:512],
+        url_status=stub[:512],
+        sign="waiter-ledger",
+        wait_for_result=True,
+        regulation_accept=False,
+        status=TX_STATUS_PAID,
+        p24_order_id=None,
+        order={"source": "waiter", "originalKitchenOrderId": original_id},
+        note=order_doc.get("notes") if isinstance(order_doc.get("notes"), str) else None,
+    )
 
 
 class P24RegistrationResult:
@@ -202,7 +252,7 @@ class P24Service:
             country="PL",
             language="pl",
             url_return=effective_return,
-            url_status=f"{settings.FRONTEND_URL}/api/v1/payments/status",
+            url_status=p24_notification_status_url(),
             wait_for_result=True,
             regulation_accept=True,
             sign=sign,
@@ -367,3 +417,24 @@ class P24Service:
         items = list((await session.execute(items_query)).scalars().all())
 
         return items, total
+
+    async def get_transactions_pending_reconcile(
+        self,
+        session: AsyncSession,
+        tenant_id: UUID,
+        *,
+        hours_max_age: int = 72,
+        limit: int = 50,
+    ) -> list[Transaction]:
+        cutoff = datetime.now(UTC) - timedelta(hours=hours_max_age)
+        stmt = (
+            select(Transaction)
+            .where(
+                Transaction.tenant_id == tenant_id,
+                Transaction.status == TX_STATUS_UNPAID,
+                Transaction.created_at >= cutoff,
+            )
+            .order_by(Transaction.created_at.desc())
+            .limit(limit)
+        )
+        return list((await session.execute(stmt)).scalars().all())

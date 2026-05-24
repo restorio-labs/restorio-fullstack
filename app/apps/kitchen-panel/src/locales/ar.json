@@ -15,6 +15,12 @@
     "restaurant": "مطعم",
     "items": "العناصر",
     "notes": "ملاحظات:",
+    "invoice": {
+      "title": "فاتورة ضريبة القيمة المضافة",
+      "company": "الشركة",
+      "nip": "الرقم الضريبي",
+      "address": "العنوان"
+    },
     "orderSummary": "{{table}} · {{count}} عنصر",
     "itemQuantity": "{{quantity}}x {{name}}",
     "viewMode": {

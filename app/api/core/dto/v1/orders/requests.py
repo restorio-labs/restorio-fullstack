@@ -90,6 +90,11 @@ class UpdateOrderDTO(BaseDTO):
     currency: str | None = Field(None, min_length=3, max_length=3, description="Updated currency")
     items: list[CreateOrderItemDTO] | None = Field(None, description="Order items")
     notes: str | None = Field(None, description="Order notes")
+    invoice_data: InvoiceDataDTO | None = Field(
+        None,
+        alias="invoiceData",
+        description="VAT invoice data (Faktura)",
+    )
 
     @property
     def total_amount(self) -> Decimal | None:

@@ -8,6 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.constants import KITCHEN_ORDERS_COLLECTION
 from core.foundation.logging.logger import logger
 from core.models.archived_order import ArchivedOrder
+from core.models.tenant import Tenant
+from services.payment_service import build_waiter_settlement_transaction
 
 
 class ArchiveService:
@@ -18,6 +20,8 @@ class ArchiveService:
         tenant_id: str,
         restaurant_id: str,
         order_doc: dict[str, Any],
+        *,
+        pg_tenant: Tenant,
     ) -> ArchivedOrder:
         created_at = order_doc.get("createdAt")
         if isinstance(created_at, str):
@@ -45,6 +49,10 @@ class ArchiveService:
         )
 
         session.add(archived)
+        if order_doc.get("source") != "mobile":
+            waiter_tx = build_waiter_settlement_transaction(pg_tenant, order_doc)
+            if waiter_tx is not None:
+                session.add(waiter_tx)
         logger.info(
             "Archiving order %s for restaurant %s into archived_orders",
             order_doc["_id"],

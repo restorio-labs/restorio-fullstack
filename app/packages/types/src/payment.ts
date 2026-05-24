@@ -15,6 +15,12 @@ export interface TransactionListItem {
 
 export type TransactionListData = PaginatedResponse<TransactionListItem>;
 
+export interface TransactionsReconcileResult {
+  scanned: number;
+  updated: number;
+  failed: number;
+}
+
 export interface TransactionListParams {
   page?: number;
   pagination?: number;

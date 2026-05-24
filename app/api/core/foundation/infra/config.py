@@ -70,6 +70,7 @@ class Settings(BaseSettings):
     RESEND_API_KEY: str = ""
     RESEND_FROM_EMAIL: str = ""
     FRONTEND_URL: str = "http://localhost:3000"
+    API_BASE_URL: str = ""
     WAITER_PANEL_URL: str = "http://localhost:3004"
     MOBILE_APP_URL: str = "http://localhost:3003"
 

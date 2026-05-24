@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ApiClient } from "../../../src/client";
 import { PaymentsResource } from "../../../src/resources";
 
-type ApiClientMock = Pick<ApiClient, "get" | "put">;
+type ApiClientMock = Pick<ApiClient, "get" | "put" | "post">;
 
 describe("PaymentsResource", () => {
   let client: ApiClientMock;
@@ -16,6 +16,7 @@ describe("PaymentsResource", () => {
     client = {
       get: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, page_size: 20, total_pages: 0 }),
       put: vi.fn().mockResolvedValue(undefined),
+      post: vi.fn().mockResolvedValue({ message: "ok", data: { scanned: 0, updated: 0, failed: 0 } }),
     };
 
     resource = new PaymentsResource(client as ApiClient);
@@ -111,6 +112,20 @@ describe("PaymentsResource", () => {
 
     const result = await resource.listTransactions("tenant-a");
 
+    expect(result).toEqual(payload);
+  });
+
+  it("reconcilePendingTransactions posts reconcile endpoint with tenant query param", async () => {
+    const payload = { message: "Reconcile completed", data: { scanned: 2, updated: 1, failed: 0 } };
+    client.post = vi.fn().mockResolvedValueOnce(payload);
+
+    const result = await resource.reconcilePendingTransactions("tenant-a");
+
+    expect(client.post).toHaveBeenCalledWith(
+      "/payments/transactions/reconcile-pending",
+      {},
+      { signal: undefined, params: { tenant_public_id: "tenant-a" } },
+    );
     expect(result).toEqual(payload);
   });
 });

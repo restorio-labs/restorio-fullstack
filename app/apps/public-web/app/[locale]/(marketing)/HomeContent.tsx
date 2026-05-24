@@ -289,12 +289,12 @@ export const HomeContent = (): ReactElement => {
               >
                 {t("landing.community.discord")}
               </a>
-              <Link
-                href={`/${locale}/contact`}
+              <a
+                href="mailto:contact@restorio.org"
                 className="flex items-center gap-2 text-lg font-bold transition-colors hover:text-text-primary"
               >
                 {t("landing.community.contact")}
-              </Link>
+              </a>
             </div>
           </div>
         </ContentContainer>
