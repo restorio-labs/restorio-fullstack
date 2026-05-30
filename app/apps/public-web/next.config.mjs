@@ -8,7 +8,7 @@ const nextConfig = {
   async rewrites() {
     const target = process.env.NEXT_PUBLIC_API_PROXY_TARGET ?? (process.env.NODE_ENV === "production"
       ? "https://api.restorio.org"
-      : "http://localhost");
+      : "http://localhost:8000");
 
     return [{ source: "/api/:path*", destination: `${target}/api/:path*` }];
   },

@@ -80,7 +80,7 @@ async def list_archived_orders(
     _role: RequireAnyStaff,
     page: Annotated[int, Query(ge=1)] = 1,
     page_size: Annotated[int, Query(ge=1, le=100)] = 20,
-    since_hours: Annotated[int | None, Query(alias="sinceHours", ge=1)] = 24,
+    since_hours: Annotated[int | None, Query(alias="sinceHours", ge=1)] = None,
 ) -> PaginatedResponse[ArchivedOrderResponseDTO]:
     filters = [ArchivedOrder.restaurant_id == tenant_public_id]
     if since_hours is not None:

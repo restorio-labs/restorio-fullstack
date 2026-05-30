@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from decimal import Decimal
 from unittest.mock import AsyncMock, Mock
 from uuid import UUID, uuid4
 
@@ -6,7 +7,7 @@ import pytest
 
 from core.models.enums import TenantStatus
 from core.models.tenant import Tenant
-from services.archive_service import ArchiveService
+from services.archive_service import ArchiveService, _resolve_order_amounts
 
 
 def _tenant_row() -> Tenant:
@@ -167,3 +168,80 @@ async def test_archive_order_skips_waiter_ledger_for_mobile_kitchen_order() -> N
         pg_tenant=_tenant_row(),
     )
     assert session.add.call_count == 1
+
+
+def test_resolve_order_amounts_uses_explicit_total() -> None:
+    subtotal, tax, total = _resolve_order_amounts(
+        {
+            "subtotal": 10,
+            "tax": 2.3,
+            "total": 12.3,
+            "items": [{"totalPrice": 99}],
+        }
+    )
+
+    assert subtotal == Decimal("10")
+    assert tax == Decimal("2.3")
+    assert total == Decimal("12.3")
+
+
+def test_resolve_order_amounts_computes_from_items_when_total_is_zero() -> None:
+    subtotal, tax, total = _resolve_order_amounts(
+        {
+            "subtotal": 0,
+            "tax": 0,
+            "total": 0,
+            "items": [
+                {"totalPrice": 12.5, "quantity": 1},
+                {"basePrice": 5, "quantity": 2},
+            ],
+        }
+    )
+
+    assert subtotal == Decimal("22.5")
+    assert tax == Decimal("0")
+    assert total == Decimal("22.5")
+
+
+@pytest.mark.asyncio
+async def test_archive_order_persists_total_from_items_when_order_total_is_zero() -> None:
+    service = ArchiveService()
+    session = Mock()
+    session.add = Mock()
+    session.commit = AsyncMock()
+    session.refresh = AsyncMock(
+        side_effect=lambda archived: setattr(
+            archived, "id", UUID("55555555-5555-5555-5555-555555555555")
+        )
+    )
+    delete_one = AsyncMock()
+    db = _FakeMongoDatabase(delete_one)
+    order_doc = {
+        "_id": "K-ZERO",
+        "restaurantId": "tenant-public-id",
+        "tableId": "table-1",
+        "table": "Table 1",
+        "status": "paid",
+        "paymentStatus": "completed",
+        "subtotal": 0,
+        "tax": 0,
+        "total": 0,
+        "items": [
+            {"id": "item-1", "name": "Burger", "quantity": 2, "basePrice": 15.0, "totalPrice": 30.0},
+            {"id": "item-2", "name": "Fries", "quantity": 1, "basePrice": 8.5, "totalPrice": 8.5},
+        ],
+        "createdAt": datetime(2026, 4, 8, 10, 0, tzinfo=UTC),
+    }
+
+    archived = await service.archive_order(
+        db=db,
+        session=session,
+        tenant_id="tenant-public-id",
+        restaurant_id="tenant-public-id",
+        order_doc=order_doc,
+        pg_tenant=_tenant_row(),
+    )
+
+    assert archived.subtotal == Decimal("38.5")
+    assert archived.tax == Decimal("0")
+    assert archived.total == Decimal("38.5")

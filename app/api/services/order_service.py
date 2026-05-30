@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import uuid4
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -9,6 +9,8 @@ from core.constants import KITCHEN_ORDERS_COLLECTION
 from core.exceptions import BadRequestError, NotFoundResponse
 
 INVALID_ORDER_STATUS_TRANSITION_CODE = "INVALID_ORDER_STATUS_TRANSITION"
+KITCHEN_TERMINAL_BOARD_STATUSES = frozenset({"rejected", "cancelled", "refunded"})
+KITCHEN_TERMINAL_BOARD_VISIBILITY_HOURS = 24
 
 _VALID_TRANSITIONS: dict[str, set[str]] = {
     "new": {"preparing", "rejected"},
@@ -30,9 +32,7 @@ class OrderService:
         status: str | None = None,
         timezone_name: str | None = None,
     ) -> list[dict[str, Any]]:
-        query: dict[str, Any] = {"restaurantId": restaurant_id}
-        if status:
-            query["status"] = status
+        query = _build_list_orders_query(restaurant_id, status=status)
 
         cursor = db[KITCHEN_ORDERS_COLLECTION].find(query).sort("createdAt", -1)
         orders = await cursor.to_list(length=500)
@@ -236,6 +236,27 @@ class OrderService:
             )
             raise BadRequestError(msg)
         return doc
+
+
+def _build_list_orders_query(restaurant_id: str, *, status: str | None = None) -> dict[str, Any]:
+    cutoff = datetime.now(UTC) - timedelta(hours=KITCHEN_TERMINAL_BOARD_VISIBILITY_HOURS)
+
+    if status is not None:
+        query: dict[str, Any] = {"restaurantId": restaurant_id, "status": status}
+        if status in KITCHEN_TERMINAL_BOARD_STATUSES:
+            query["updatedAt"] = {"$gte": cutoff}
+        return query
+
+    return {
+        "restaurantId": restaurant_id,
+        "$or": [
+            {"status": {"$nin": list(KITCHEN_TERMINAL_BOARD_STATUSES)}},
+            {
+                "status": {"$in": list(KITCHEN_TERMINAL_BOARD_STATUSES)},
+                "updatedAt": {"$gte": cutoff},
+            },
+        ],
+    }
 
 
 def _resolve_timezone(timezone_name: str | None) -> ZoneInfo:

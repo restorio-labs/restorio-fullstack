@@ -52,7 +52,9 @@ export const getEnvironmentFromEnv = (mode: string): EnvironmentType => {
 
 export const getEnvMode = (): string => {
   const viteMode =
-    typeof import.meta !== "undefined" ? (import.meta as ImportMeta & { env?: { MODE?: string } }).env.MODE : undefined;
+    typeof import.meta !== "undefined"
+      ? (import.meta as ImportMeta & { env?: { MODE?: string } }).env?.MODE
+      : undefined;
 
   if (viteMode === "production") {
     return "production";
@@ -156,5 +158,5 @@ export const resolveApiBaseUrl = (options?: ResolveApiBaseUrlOptions): string =>
     return DEFAULT_PRODUCTION_API_BASE;
   }
 
-  return "http://localhost/api/v1";
+  return "http://localhost:8000/api/v1";
 };

@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -6,7 +6,10 @@ import pytest
 from core.exceptions import BadRequestError, NotFoundResponse
 from services.order_service import (
     INVALID_ORDER_STATUS_TRANSITION_CODE,
+    KITCHEN_TERMINAL_BOARD_STATUSES,
+    KITCHEN_TERMINAL_BOARD_VISIBILITY_HOURS,
     OrderService,
+    _build_list_orders_query,
     _resolve_timezone,
     _serialize_order,
     _to_iso,
@@ -79,6 +82,32 @@ async def test_list_orders_applies_filter_and_sort() -> None:
     assert len(result) == 1
     assert result[0]["id"] == "K-1"
     coll.find.assert_called_once_with({"restaurantId": "r1", "status": "new"})
+
+
+def test_build_list_orders_query_excludes_old_terminal_orders() -> None:
+    query = _build_list_orders_query("r1")
+
+    assert query["restaurantId"] == "r1"
+    assert "$or" in query
+    assert query["$or"][0]["status"]["$nin"] == list(KITCHEN_TERMINAL_BOARD_STATUSES)
+    terminal_clause = query["$or"][1]
+    assert terminal_clause["status"]["$in"] == list(KITCHEN_TERMINAL_BOARD_STATUSES)
+    cutoff = terminal_clause["updatedAt"]["$gte"]
+    assert datetime.now(UTC) - cutoff <= timedelta(hours=KITCHEN_TERMINAL_BOARD_VISIBILITY_HOURS + 1)
+
+
+def test_build_list_orders_query_limits_rejected_status_by_updated_at() -> None:
+    query = _build_list_orders_query("r1", status="rejected")
+
+    assert query["status"] == "rejected"
+    assert "updatedAt" in query
+    assert "$or" not in query
+
+
+def test_build_list_orders_query_keeps_active_status_filter_simple() -> None:
+    query = _build_list_orders_query("r1", status="new")
+
+    assert query == {"restaurantId": "r1", "status": "new"}
 
 
 @pytest.mark.asyncio

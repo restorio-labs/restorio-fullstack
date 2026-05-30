@@ -12,6 +12,56 @@ from core.models.tenant import Tenant
 from services.payment_service import build_waiter_settlement_transaction
 
 
+def _decimal_from(value: Any, default: Decimal = Decimal("0")) -> Decimal:
+    if value is None or value == "":
+        return default
+
+    try:
+        return Decimal(str(value))
+    except (ArithmeticError, ValueError, TypeError):
+        return default
+
+
+def _sum_items_total(items: Any) -> Decimal:
+    if not isinstance(items, list):
+        return Decimal("0")
+
+    total = Decimal("0")
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+
+        item_total = item.get("totalPrice", item.get("total_price"))
+        if item_total is not None:
+            total += _decimal_from(item_total)
+            continue
+
+        base_price = _decimal_from(item.get("basePrice", item.get("base_price")))
+        quantity = _decimal_from(item.get("quantity", 1), Decimal("1"))
+        total += base_price * quantity
+
+    return total
+
+
+def _resolve_order_amounts(order_doc: dict[str, Any]) -> tuple[Decimal, Decimal, Decimal]:
+    items_total = _sum_items_total(order_doc.get("items"))
+    tax = _decimal_from(order_doc.get("tax"))
+    subtotal = _decimal_from(order_doc.get("subtotal"))
+    total = _decimal_from(order_doc.get("total"))
+
+    if subtotal <= 0 and items_total > 0:
+        subtotal = items_total
+
+    if total <= 0:
+        if subtotal > 0:
+            total = subtotal + tax
+        elif items_total > 0:
+            subtotal = items_total
+            total = items_total + tax
+
+    return subtotal, tax, total
+
+
 class ArchiveService:
     async def archive_order(
         self,
@@ -29,6 +79,8 @@ class ArchiveService:
         elif not isinstance(created_at, datetime):
             created_at = datetime.now(UTC)
 
+        subtotal, tax, total = _resolve_order_amounts(order_doc)
+
         archived = ArchivedOrder(
             original_order_id=str(order_doc["_id"]),
             tenant_id=tenant_id,
@@ -38,9 +90,9 @@ class ArchiveService:
             status=order_doc.get("status", "ready"),
             payment_status=order_doc.get("paymentStatus", "completed"),
             rejection_reason=order_doc.get("rejectionReason"),
-            subtotal=Decimal(str(order_doc.get("subtotal", 0))),
-            tax=Decimal(str(order_doc.get("tax", 0))),
-            total=Decimal(str(order_doc.get("total", 0))),
+            subtotal=subtotal,
+            tax=tax,
+            total=total,
             currency="PLN",
             notes=order_doc.get("notes"),
             items_snapshot=order_doc.get("items", []),
