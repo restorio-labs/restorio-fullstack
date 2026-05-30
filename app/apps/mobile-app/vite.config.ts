@@ -1,17 +1,18 @@
 import { resolve } from "path";
 
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig, mergeConfig } from "vite";
 
-export default defineConfig({
-  plugins: [react()],
-  root: ".",
-  resolve: {
-    alias: {
-      "@": resolve(__dirname, "./src"),
+import { createPanelViteConfig } from "../../vite.shared";
+
+export default defineConfig(
+  mergeConfig(createPanelViteConfig(3003, false), {
+    plugins: [react()],
+    root: ".",
+    resolve: {
+      alias: {
+        "@": resolve(__dirname, "./src"),
+      },
     },
-  },
-  server: {
-    port: 3003,
-  },
-});
+  }),
+);

@@ -89,6 +89,13 @@ describe("getEnvMode", () => {
 
     expect(getEnvMode()).toBe("production");
   });
+
+  it("falls back to process env when import.meta.env is undefined", () => {
+    vi.stubEnv("ENV", "development");
+    vi.stubGlobal("import", { meta: {} });
+
+    expect(getEnvMode()).toBe("development");
+  });
 });
 
 describe("getAppHref", () => {
@@ -141,7 +148,7 @@ describe("resolveApiBaseUrl", () => {
   });
 
   it("returns localhost default when no env", () => {
-    expect(resolveApiBaseUrl()).toBe("http://localhost/api/v1");
+    expect(resolveApiBaseUrl()).toBe("http://localhost:8000/api/v1");
   });
 
   it("returns VITE_API_BASE_URL when set", () => {

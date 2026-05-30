@@ -111,6 +111,42 @@ async def test_list_archived_orders_with_since() -> None:
 
 
 @pytest.mark.asyncio
+async def test_list_archived_orders_without_since_returns_all() -> None:
+    a1 = SimpleNamespace(
+        id=uuid4(),
+        original_order_id="old",
+        tenant_id="t",
+        restaurant_id="tp",
+        table_id="tb",
+        table_label="L",
+        status="paid",
+        payment_status="completed",
+        total=1,
+        currency="PLN",
+        notes=None,
+        order_created_at=datetime.now(UTC),
+        archived_at=datetime.now(UTC),
+    )
+
+    async def ex(_q: object) -> MagicMock:
+        r = MagicMock()
+        if not hasattr(ex, "called"):
+            ex.called = True
+            r.scalar_one = MagicMock(return_value=1)
+        else:
+            r.scalars = MagicMock(return_value=MagicMock(all=MagicMock(return_value=[a1])))
+        return r
+
+    session = MagicMock()
+    session.execute = ex
+    out = await orders_routes.list_archived_orders(
+        "tp1", session, uuid4(), object(), page=1, page_size=10, since_hours=None
+    )  # type: ignore[arg-type]
+    assert out.total == 1
+    assert out.items[0].original_order_id == "old"
+
+
+@pytest.mark.asyncio
 async def test_get_order() -> None:
     svc = MagicMock()
     svc.get_order = AsyncMock(return_value=_kitchen_order())
