@@ -269,7 +269,7 @@
     },
     "success": {
       "title": "Twoje konto zostało aktywowane.",
-      "description": "Jesteś teraz zalogowany. Przejdź do panelu administracyjnego, aby dokończyć konfigurację.",
+      "description": "Jesteś teraz zalogowany. Zostaniesz prekierowany do odpowiedniego panelu.",
       "redirecting": "Przekierowujemy Cię..."
     },
     "alreadyActivated": {

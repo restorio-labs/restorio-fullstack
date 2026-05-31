@@ -1,7 +1,7 @@
 "use client";
 
 import { ContentContainer } from "@restorio/ui";
-import { goToApp } from "@restorio/utils";
+import { goToApp, resolveAuthenticatedAppRedirect } from "@restorio/utils";
 import { useRouter } from "next/navigation";
 import type { FormEvent, ReactElement } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -201,21 +201,8 @@ export function ActivateContent(): ReactElement {
   const handleRoleBasedRedirect = useCallback(async (): Promise<void> => {
     try {
       const meData = await api.auth.me();
-      const role = meData.account_type;
 
-      if (role === "kitchen") {
-        goToApp("kitchen-panel");
-
-        return;
-      }
-
-      if (role === "waiter") {
-        goToApp("waiter-panel");
-
-        return;
-      }
-
-      goToApp("admin-panel");
+      goToApp(resolveAuthenticatedAppRedirect(meData.account_type));
     } catch {
       goToApp("admin-panel");
     }
