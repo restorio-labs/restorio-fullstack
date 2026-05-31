@@ -1,6 +1,8 @@
 import { colorTokens } from "../tokens/colors";
 import type { ThemeColorOverrideSlice, ThemeOverride } from "../tokens/types";
 
+import { buildSansFontFamilyFromGoogleFontUrl } from "./googleFonts";
+
 const isPlainRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
@@ -170,7 +172,27 @@ export const generateCSSVariables = (override: ThemeOverride): Record<string, st
 
   if (override.typography) {
     if (override.typography.fontFamily) {
-      Object.assign(variables, flattenToCSSVariables(override.typography.fontFamily, "font-family"));
+      const { googleFontUrl, sans, mono, ...rest } = override.typography.fontFamily;
+      const fontFamilyVars: Record<string, string> = {};
+      const sansFromGoogle =
+        typeof googleFontUrl === "string" ? buildSansFontFamilyFromGoogleFontUrl(googleFontUrl) : null;
+      const resolvedSans = sans ?? sansFromGoogle;
+
+      if (resolvedSans) {
+        fontFamilyVars.sans = resolvedSans;
+      }
+
+      if (mono) {
+        fontFamilyVars.mono = mono;
+      }
+
+      for (const [key, value] of Object.entries(rest)) {
+        if (typeof value === "string" && value.length > 0) {
+          fontFamilyVars[key] = value;
+        }
+      }
+
+      Object.assign(variables, flattenToCSSVariables(fontFamilyVars, "font-family"));
     }
 
     if (override.typography.fontSize) {

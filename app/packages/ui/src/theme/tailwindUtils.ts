@@ -63,7 +63,10 @@ export const createTailwindThemeConfig = (): Config["theme"] => {
         DEFAULT: radiusTokens.default,
         ...radiusSemantic,
       },
-      fontFamily: typographyTokens.fontFamily,
+      fontFamily: {
+        sans: "var(--font-family-sans)",
+        mono: "var(--font-family-mono)",
+      },
       fontSize: typographyFontSize,
       fontWeight: typographyTokens.fontWeight,
       letterSpacing: typographyTokens.letterSpacing,

@@ -1,6 +1,6 @@
 import type { PublicTenantInfo } from "@restorio/types";
-import { useI18n, useTheme, type ThemeOverride } from "@restorio/ui";
-import { useEffect } from "react";
+import { resolveGoogleFontStylesheetHref, useGoogleFontStylesheet, useI18n, useTheme, type ThemeOverride } from "@restorio/ui";
+import { useEffect, useMemo } from "react";
 
 import { API_BASE_URL } from "../config";
 import { readStoredLocale, resolveInitialLocale, SUPPORTED_LOCALES, type SupportedLocale } from "../lib/i18n";
@@ -10,6 +10,17 @@ const FAVICON_LINK_ID = "tenant-favicon";
 export const useApplyPublicTenantPresentation = (tenantData: PublicTenantInfo | undefined): void => {
   const { setOverride } = useTheme();
   const { setLocale } = useI18n();
+  const themeOverride = useMemo((): ThemeOverride | null => {
+    const raw = tenantData?.themeOverride;
+
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+      return null;
+    }
+
+    return raw as ThemeOverride;
+  }, [tenantData?.themeOverride]);
+
+  useGoogleFontStylesheet(resolveGoogleFontStylesheetHref(themeOverride));
 
   useEffect(() => {
     if (!tenantData) {
@@ -40,18 +51,12 @@ export const useApplyPublicTenantPresentation = (tenantData: PublicTenantInfo | 
   }, [tenantData]);
 
   useEffect(() => {
-    const raw = tenantData?.themeOverride;
-
-    if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
-      setOverride(null);
-    } else {
-      setOverride(raw as ThemeOverride);
-    }
+    setOverride(themeOverride);
 
     return (): void => {
       setOverride(null);
     };
-  }, [tenantData?.themeOverride, setOverride]);
+  }, [themeOverride, setOverride]);
 
   useEffect(() => {
     if (!tenantData) {
