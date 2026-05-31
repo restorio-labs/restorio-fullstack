@@ -1,8 +1,10 @@
 import type { CSSProperties, ReactElement, ReactNode } from "react";
-import { useEffect, useId, useMemo } from "react";
+import { useId, useMemo } from "react";
 import { TbChevronDown as TbChevronDownIcon } from "react-icons/tb";
 
 import { buildScopedThemeStyle } from "../theme/cssVariables";
+import { resolveGoogleFontStylesheetHref } from "../theme/googleFonts";
+import { useGoogleFontStylesheet } from "../hooks/useGoogleFontStylesheet";
 import type { ThemeOverride } from "../tokens/types";
 import { cn } from "../utils";
 
@@ -86,7 +88,7 @@ export interface MobileGuestAppPreviewProps {
 
 const previewShellClassName = (screen: MobileGuestPreviewScreen): string =>
   cn(
-    "relative flex max-h-[min(1024px,112vh)] min-h-[768px] flex-col overflow-y-auto bg-background-primary px-3 pt-6 sm:px-4",
+    "relative flex max-h-[min(1024px,112vh)] min-h-[768px] flex-col overflow-y-auto bg-background-primary px-3 pt-6 font-sans sm:px-4",
     screen === "order" ? "pb-8" : "pb-24",
   );
 
@@ -221,31 +223,9 @@ export const MobileGuestAppPreview = ({
     [appearance, themeOverride],
   );
 
-  useEffect(() => {
-    const id = `mobile-guest-app-preview-font-${fontLinkId}`;
-    const href = googleFontStylesheetHref?.trim();
+  const resolvedFontHref = googleFontStylesheetHref?.trim() || resolveGoogleFontStylesheetHref(themeOverride);
 
-    if (!href) {
-      document.getElementById(id)?.remove();
-
-      return;
-    }
-
-    let link = document.getElementById(id) as HTMLLinkElement | null;
-
-    if (!link) {
-      link = document.createElement("link");
-      link.id = id;
-      link.rel = "stylesheet";
-      document.head.appendChild(link);
-    }
-
-    link.href = href;
-
-    return (): void => {
-      document.getElementById(id)?.remove();
-    };
-  }, [fontLinkId, googleFontStylesheetHref]);
+  useGoogleFontStylesheet(resolvedFontHref);
 
   const displayName = pageTitle.trim() || restaurantName;
   const headline = landingHeadline.trim() || displayName;

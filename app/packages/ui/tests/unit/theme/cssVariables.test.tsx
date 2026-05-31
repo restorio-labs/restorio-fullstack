@@ -93,6 +93,22 @@ describe("generateCSSVariables", () => {
     });
   });
 
+  it("should derive sans from googleFontUrl and omit googleFontUrl CSS variable", () => {
+    const override: ThemeOverride = {
+      typography: {
+        fontFamily: {
+          googleFontUrl: "https://fonts.googleapis.com/css2?family=Comic+Relief",
+        },
+      },
+    };
+
+    const result = generateCSSVariables(override);
+
+    expect(result).toEqual({
+      "--font-family-sans": '"Comic Relief", sans-serif',
+    });
+  });
+
   it("should generate CSS variables for typography fontSize", () => {
     const override: ThemeOverride = {
       typography: {

@@ -20,7 +20,9 @@ export interface ThemeOverride {
   spacing?: Partial<typeof spacingTokens>;
   radius?: Partial<typeof radiusTokens>;
   typography?: Partial<{
-    fontFamily?: Partial<typeof typographyTokens.fontFamily>;
+    fontFamily?: Partial<typeof typographyTokens.fontFamily> & {
+      googleFontUrl?: string;
+    };
     fontSize?: Partial<typeof typographyTokens.fontSize>;
     fontWeight?: Partial<typeof typographyTokens.fontWeight>;
   }>;
