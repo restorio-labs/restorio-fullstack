@@ -1,6 +1,5 @@
 "use client";
 
-import { APP_SLUGS, type AppSlug } from "@restorio/types";
 import { Button, Form, FormActions, FormField, Input, PasswordInput, useAuthRoute } from "@restorio/ui";
 import {
   getApiErrorData,
@@ -8,6 +7,7 @@ import {
   getApiValidationFieldLeafs,
   goToApp,
   LAST_VISITED_APP_STORAGE_KEY,
+  resolveAuthenticatedAppRedirect,
 } from "@restorio/utils";
 import Link from "next/link";
 import type { ReactElement } from "react";
@@ -21,10 +21,6 @@ import { isEmailValid } from "@/services/validation";
 type ViewState = "form" | "redirecting";
 type LoginField = "email" | "password";
 type LoginFieldErrors = Partial<Record<LoginField, string>>;
-
-const isAppSlug = (value: string): value is AppSlug => {
-  return (APP_SLUGS as readonly string[]).includes(value);
-};
 
 const extractFieldErrors = (data: unknown, t: ReturnType<typeof useTranslations>): LoginFieldErrors => {
   const errors: LoginFieldErrors = {};
@@ -93,33 +89,14 @@ export const LoginContent = (): ReactElement | null => {
     setSubmitting(true);
 
     try {
-      const loginResponse = await api.auth.login(email.trim(), password);
+      await api.auth.login(email.trim(), password);
 
       await refreshAuth();
 
+      const meData = await api.auth.me();
       const rlvp = localStorage.getItem(LAST_VISITED_APP_STORAGE_KEY);
 
-      if (typeof rlvp === "string" && isAppSlug(rlvp) && rlvp !== "public-web") {
-        goToApp(rlvp);
-
-        return;
-      }
-
-      const role = loginResponse.data.account_type;
-
-      if (role === "kitchen") {
-        goToApp("kitchen-panel");
-
-        return;
-      }
-
-      if (role === "waiter") {
-        goToApp("waiter-panel");
-
-        return;
-      }
-
-      goToApp("admin-panel");
+      goToApp(resolveAuthenticatedAppRedirect(meData.account_type, rlvp));
     } catch (err: unknown) {
       const data = getApiErrorData(err);
       const extractedFieldErrors = extractFieldErrors(data, t);
@@ -145,29 +122,9 @@ export const LoginContent = (): ReactElement | null => {
     const fetchRoleAndRedirect = async (): Promise<void> => {
       try {
         const meData = await api.auth.me();
-        const role = meData.account_type;
-
         const rlvp = localStorage.getItem(LAST_VISITED_APP_STORAGE_KEY);
 
-        if (typeof rlvp === "string" && isAppSlug(rlvp) && rlvp !== "public-web") {
-          goToApp(rlvp);
-
-          return;
-        }
-
-        if (role === "kitchen") {
-          goToApp("kitchen-panel");
-
-          return;
-        }
-
-        if (role === "waiter") {
-          goToApp("waiter-panel");
-
-          return;
-        }
-
-        goToApp("admin-panel");
+        goToApp(resolveAuthenticatedAppRedirect(meData.account_type, rlvp));
       } catch {
         goToApp("admin-panel");
       }
