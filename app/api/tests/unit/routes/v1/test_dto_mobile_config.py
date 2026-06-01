@@ -51,14 +51,6 @@ class TestMobileLandingContentDTO:
         dto = MobileLandingContentDTO(uiLocale="PL")
         assert dto.ui_locale == "pl"
 
-    def test_ui_locale_valid_es(self) -> None:
-        dto = MobileLandingContentDTO(uiLocale="ES")
-        assert dto.ui_locale == "es"
-
-    def test_ui_locale_valid_ar(self) -> None:
-        dto = MobileLandingContentDTO(uiLocale="ar")
-        assert dto.ui_locale == "ar"
-
     def test_ui_locale_invalid_raises(self) -> None:
         with pytest.raises(ValidationError) as exc_info:
             MobileLandingContentDTO(uiLocale="de")

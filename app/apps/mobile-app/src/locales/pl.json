@@ -131,8 +131,8 @@
         "description": "Płatność została zaksięgowana. Twoje zamówienie jest przyjęte."
       },
       "pending": {
-        "title": "Zamówienie dotarło do kuchni. Oczekuje na przyjęcie.",
-        "description": "Zamówienie oczekuje na zaakceptowanie przez kuchnię."
+        "title": "Płatność w trakcie realizacji",
+        "description": "Trwa potwierdzanie płatności. Może to chwilę potrwać — użyj Sprawdź ponownie, jeśli status się nie zmieni."
       },
       "refunded": {
         "title": "Zwrot płatności",

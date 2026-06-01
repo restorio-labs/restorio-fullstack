@@ -75,7 +75,7 @@ export const getSystemDirection = (): "ltr" | "rtl" => {
 
   try {
     const lang = document.documentElement.lang || navigator.language;
-    const rtlLanguages = ["ar", "he", "fa", "ur", "yi"];
+    const rtlLanguages = ["he", "fa", "ur", "yi"];
     const langCode = lang.split("-")[0].toLowerCase();
 
     return rtlLanguages.includes(langCode) ? "rtl" : "ltr";

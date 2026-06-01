@@ -1,9 +1,10 @@
 from datetime import date
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 import pytest
 from sqlalchemy.engine import Result
+from starlette.requests import Request
 
 from core.exceptions import BadRequestError, ConflictError, ExternalAPIError
 from core.models.enums import TenantStatus
@@ -13,8 +14,51 @@ from services.external_client_service import ExternalClient
 from services.payment_service import (
     P24Service,
     build_waiter_settlement_transaction,
+    resolve_mobile_payment_return_base_url,
     return_url_with_session_id,
 )
+
+
+def _http_request_with_headers(headers: list[tuple[bytes, bytes]]) -> Request:
+    return Request(
+        {
+            "type": "http",
+            "method": "POST",
+            "path": "/public/payments/create",
+            "client": ("127.0.0.1", 1234),
+            "headers": headers,
+        }
+    )
+
+
+def test_resolve_mobile_payment_return_base_url_uses_origin_in_development() -> None:
+    req = _http_request_with_headers([(b"origin", b"http://localhost:3003")])
+    with (
+        patch.dict("os.environ", {"ENV": "development"}, clear=False),
+        patch("services.payment_service.settings") as mock_settings,
+    ):
+        mock_settings.MOBILE_APP_URL = "https://mobile.restorio.org"
+        assert resolve_mobile_payment_return_base_url(req) == "http://localhost:3003"
+
+
+def test_resolve_mobile_payment_return_base_url_uses_configured_in_production() -> None:
+    req = _http_request_with_headers([(b"origin", b"http://localhost:3003")])
+    with (
+        patch.dict("os.environ", {"ENV": "production"}, clear=False),
+        patch("services.payment_service.settings") as mock_settings,
+    ):
+        mock_settings.MOBILE_APP_URL = "https://mobile.restorio.org"
+        assert resolve_mobile_payment_return_base_url(req) == "https://mobile.restorio.org"
+
+
+def test_resolve_mobile_payment_return_base_url_falls_back_without_origin() -> None:
+    req = _http_request_with_headers([])
+    with (
+        patch.dict("os.environ", {"ENV": "development"}, clear=False),
+        patch("services.payment_service.settings") as mock_settings,
+    ):
+        mock_settings.MOBILE_APP_URL = "http://localhost:3003"
+        assert resolve_mobile_payment_return_base_url(req) == "http://localhost:3003"
 
 
 def test_return_url_with_session_id_merges_query() -> None:

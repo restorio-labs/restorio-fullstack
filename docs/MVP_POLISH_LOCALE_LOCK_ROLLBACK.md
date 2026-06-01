@@ -74,7 +74,7 @@ In `app/apps/public-web/src/wrappers/AppProviders.tsx`:
 
 In `app/apps/public-web/src/i18n/routing.ts`:
 - Restore:
-  - `locales: ["en", "pl", "es", "ar"]`
+  - `locales: ["en", "pl"]`
   - `localeDetection: true`
 - Remove forced:
   - `locales: ["pl"]`
@@ -82,7 +82,7 @@ In `app/apps/public-web/src/i18n/routing.ts`:
 
 In `app/apps/public-web/src/i18n/request.ts`:
 - Restore:
-  - `locales = ["en", "pl", "es", "ar"] as const`
+  - `locales = ["en", "pl"] as const`
   - `defaultLocale` (whatever you want as product default; historically `en`)
 - Keep `notFound()` guard for unsupported locales.
 
@@ -98,4 +98,4 @@ bunx tsc -p app/apps/public-web/tsconfig.json --noEmit
 Optional runtime checks:
 - `/` redirects based on detected/selected locale (not always `/pl`)
 - admin language dropdown is visible and changes locale
-- public pages load correctly for `en/pl/es/ar`
+- public pages load correctly for `en/pl`

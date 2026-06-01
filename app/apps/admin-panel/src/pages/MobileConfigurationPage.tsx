@@ -873,8 +873,6 @@ export const MobileConfigurationPage = (): ReactElement => {
                     <option value="">{t("mobileConfiguration.fields.uiLocaleBrowserDefault")}</option>
                     <option value="en">{t("languageSwitcher.options.en")}</option>
                     <option value="pl">{t("languageSwitcher.options.pl")}</option>
-                    <option value="es">{t("languageSwitcher.options.es")}</option>
-                    <option value="ar">{t("languageSwitcher.options.ar")}</option>
                   </select>
                   <p className="mt-1 text-xs text-text-tertiary">{t("mobileConfiguration.hints.uiLocale")}</p>
                 </div>

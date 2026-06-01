@@ -25,36 +25,44 @@ const extractApiErrorMessage = (error: unknown, fallback: string): string => {
   return fallback;
 };
 
+const TX_STATUS_UNPAID = 0;
+const TX_STATUS_PAID = 1;
+const TX_STATUS_ACCEPTED = 2;
+const TX_STATUS_REFUNDED = 3;
+
+const isPaymentSettled = (status: number): boolean =>
+  status === TX_STATUS_PAID || status === TX_STATUS_ACCEPTED;
+
 const paymentStatusPresentation = (
   status: number,
   t: (key: string) => string,
 ): { title: string; description: string; tone: "success" | "warning" | "error" } => {
-  switch (status) {
-    case 2:
-      return {
-        title: t("paymentReturn.status.success.title"),
-        description: t("paymentReturn.status.success.description"),
-        tone: "success",
-      };
-    case 1:
-      return {
-        title: t("paymentReturn.status.pending.title"),
-        description: t("paymentReturn.status.pending.description"),
-        tone: "warning",
-      };
-    case 3:
-      return {
-        title: t("paymentReturn.status.refunded.title"),
-        description: t("paymentReturn.status.refunded.description"),
-        tone: "error",
-      };
-    default:
-      return {
-        title: t("paymentReturn.status.unfinished.title"),
-        description: t("paymentReturn.status.unfinished.description"),
-        tone: "warning",
-      };
+  if (isPaymentSettled(status)) {
+    return {
+      title: t("paymentReturn.status.success.title"),
+      description: t("paymentReturn.status.success.description"),
+      tone: "success",
+    };
   }
+  if (status === TX_STATUS_REFUNDED) {
+    return {
+      title: t("paymentReturn.status.refunded.title"),
+      description: t("paymentReturn.status.refunded.description"),
+      tone: "error",
+    };
+  }
+  if (status === TX_STATUS_UNPAID) {
+    return {
+      title: t("paymentReturn.status.pending.title"),
+      description: t("paymentReturn.status.pending.description"),
+      tone: "warning",
+    };
+  }
+  return {
+    title: t("paymentReturn.status.unfinished.title"),
+    description: t("paymentReturn.status.unfinished.description"),
+    tone: "warning",
+  };
 };
 
 export const PaymentReturnPage = (): ReactElement => {
@@ -191,10 +199,7 @@ export const PaymentReturnPage = (): ReactElement => {
         <Text as="p" variant="body-md" className="mb-6 text-text-secondary">
           {presentation.description}
         </Text>
-        <Text as="p" variant="body-sm" className="text-text-tertiary">
-          {t("paymentReturn.closeHint")}
-        </Text>
-        {data.status !== 2 ? (
+        {!isPaymentSettled(data.status) ? (
           <>
             <Button variant="primary" fullWidth disabled={isFetching} className="mb-4" onClick={() => void refetch()}>
               {isFetching ? t("common.loading") : t("common.checkAgain")}

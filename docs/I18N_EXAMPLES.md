@@ -31,14 +31,12 @@ import i18next from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
 import en from './locales/en.json';
-import es from './locales/es.json';
-import ar from './locales/ar.json';
+import pl from './locales/pl.json';
 
 i18next.use(initReactI18next).init({
   resources: {
     en: { translation: en },
-    es: { translation: es },
-    ar: { translation: ar },
+    pl: { translation: pl },
   },
   lng: 'en',
   fallbackLng: 'en',
@@ -86,22 +84,22 @@ export default i18next;
 ```
 
 ```json
-// locales/ar.json (RTL example)
+// locales/pl.json
 {
   "auth": {
-    "login": "تسجيل الدخول",
-    "email": "عنوان البريد الإلكتروني",
-    "password": "كلمة المرور",
-    "emailPlaceholder": "أدخل بريدك الإلكتروني",
-    "emailError": "يرجى إدخال بريد إلكتروني صالح",
-    "emailHelper": "لن نشارك بريدك الإلكتروني أبدًا"
+    "login": "Zaloguj się",
+    "email": "Adres e-mail",
+    "password": "Hasło",
+    "emailPlaceholder": "Wpisz swój e-mail",
+    "emailError": "Podaj prawidłowy adres e-mail",
+    "emailHelper": "Nigdy nie udostępnimy Twojego e-maila"
   },
   "buttons": {
-    "submit": "إرسال",
-    "cancel": "إلغاء",
-    "save": "حفظ",
-    "delete": "حذف",
-    "close": "إغلاق"
+    "submit": "Wyślij",
+    "cancel": "Anuluj",
+    "save": "Zapisz",
+    "delete": "Usuń",
+    "close": "Zamknij"
   }
 }
 ```
@@ -293,16 +291,16 @@ import { ThemeProvider } from '@restorio/ui';
 import { useState } from 'react';
 
 import enMessages from './locales/en.json';
-import esMessages from './locales/es.json';
+import plMessages from './locales/pl.json';
 
 const messages = {
   en: enMessages,
-  es: esMessages,
+  pl: plMessages,
 };
 
 export const App = () => {
   const [locale, setLocale] = useState('en');
-  const direction = locale === 'ar' || locale === 'he' ? 'rtl' : 'ltr';
+  const direction = 'ltr';
 
   return (
     <IntlProvider locale={locale} messages={messages[locale]}>
@@ -397,7 +395,7 @@ export default async function LocaleLayout({
   params: { locale: string };
 }) {
   const messages = await getMessages();
-  const direction = locale === 'ar' || locale === 'he' ? 'rtl' : 'ltr';
+  const direction = 'ltr';
 
   return (
     <html lang={locale} dir={direction}>
@@ -507,8 +505,7 @@ export const I18nProvider = ({
   locale: string;
   translations: Translations;
 }) => {
-  const rtlLanguages = ['ar', 'he', 'fa', 'ur'];
-  const dir = rtlLanguages.includes(locale) ? 'rtl' : 'ltr';
+  const dir = 'ltr';
 
   const t = (key: string, params?: Record<string, string | number>): string => {
     const translation = getNestedTranslation(translations, key);
@@ -581,18 +578,14 @@ export const LanguageSwitcher = () => {
 
   const languages = [
     { value: 'en', label: 'English' },
-    { value: 'es', label: 'Español' },
-    { value: 'ar', label: 'العربية' },
-    { value: 'he', label: 'עברית' },
+    { value: 'pl', label: 'Polski' },
   ];
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLang = e.target.value;
     i18n.changeLanguage(newLang);
-    
-    // Update direction
-    const isRtl = ['ar', 'he', 'fa', 'ur'].includes(newLang);
-    document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
+    document.documentElement.lang = newLang;
+    document.documentElement.dir = 'ltr';
   };
 
   return (

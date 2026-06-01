@@ -69,9 +69,7 @@
     "label": "Język",
     "options": {
       "en": "Angielski",
-      "pl": "Polski",
-      "es": "Hiszpański",
-      "ar": "Arabski"
+      "pl": "Polski"
     }
   },
   "tenantSwitcher": {
