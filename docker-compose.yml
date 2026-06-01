@@ -21,7 +21,7 @@ services:
       - TRUST_PROXY_HEADERS=${TRUST_PROXY_HEADERS:-true}
       - FRONTEND_URL=${FRONTEND_URL:-https://restorio.org}
       - WAITER_PANEL_URL=${WAITER_PANEL_URL:-https://waiter.restorio.org}
-      - MOBILE_APP_URL=${MOBILE_APP_URL:-https://mobile.restorio.org}
+      - MOBILE_APP_URL=${MOBILE_APP_URL:-http://localhost:3003}
       - ENV=${ENV:-production}
       - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
       - SECRET_KEY=${SECRET_KEY:-change-me-in-production}

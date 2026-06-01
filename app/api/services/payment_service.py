@@ -2,12 +2,14 @@ import base64
 from datetime import UTC, date, datetime, timedelta
 import hashlib
 import json
+import os
 from typing import Any
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 from uuid import UUID, uuid4
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.requests import Request
 
 from core.exceptions import BadRequestError, ConflictError, ExternalAPIError
 from core.foundation.infra.config import settings
@@ -35,6 +37,42 @@ def mongo_payment_status_from_transaction(transaction_status: int) -> str:
     if transaction_status == TX_STATUS_REFUNDED:
         return MONGO_PAYMENT_STATUS_REFUNDED
     return MONGO_PAYMENT_STATUS_PENDING
+
+
+_LOCAL_DEV_ENVS = frozenset({"development", "local", "dev", "test"})
+_LOCAL_DEV_HOSTS = frozenset({"localhost", "127.0.0.1", "::1", "mobile.local"})
+
+
+def _is_local_dev_host(hostname: str | None) -> bool:
+    if not hostname:
+        return False
+    host = hostname.lower()
+    if host in _LOCAL_DEV_HOSTS:
+        return True
+    return host.endswith(".local")
+
+
+def resolve_mobile_payment_return_base_url(request: Request | None = None) -> str:
+    configured = settings.MOBILE_APP_URL.rstrip("/")
+    env = (os.getenv("ENV") or "development").strip().lower()
+    if env not in _LOCAL_DEV_ENVS or request is None:
+        return configured
+
+    for header_name in ("origin", "referer"):
+        raw = request.headers.get(header_name)
+        if not raw:
+            continue
+        parsed = urlparse(raw.strip())
+        if parsed.scheme not in ("http", "https"):
+            continue
+        if not _is_local_dev_host(parsed.hostname):
+            continue
+        netloc = parsed.netloc or parsed.hostname or ""
+        if not netloc:
+            continue
+        return f"{parsed.scheme}://{netloc}".rstrip("/")
+
+    return configured
 
 
 def return_url_with_session_id(base_url: str, session_id: str) -> str:

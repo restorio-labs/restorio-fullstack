@@ -136,8 +136,8 @@
         "description": "Payment was received. Your order is confirmed."
       },
       "pending": {
-        "title": "Your order reached the kitchen. Awaiting acceptance.",
-        "description": "The order is waiting to be accepted by the kitchen."
+        "title": "Payment processing",
+        "description": "Your payment is being confirmed. This may take a moment — use Check again if the status does not update."
       },
       "refunded": {
         "title": "Payment refunded",

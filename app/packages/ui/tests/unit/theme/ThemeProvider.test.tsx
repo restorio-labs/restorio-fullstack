@@ -764,12 +764,6 @@ describe("useTheme", () => {
     });
   });
 
-  it("should detect RTL from Arabic language", () => {
-    document.documentElement.removeAttribute("dir");
-    document.documentElement.setAttribute("lang", "ar");
-    expect(getSystemDirection()).toBe("rtl");
-  });
-
   it("should detect RTL from Hebrew language", () => {
     document.documentElement.removeAttribute("dir");
     document.documentElement.setAttribute("lang", "he");
@@ -791,7 +785,7 @@ describe("useTheme", () => {
   it("should fall back to navigator.language when html lang is missing", () => {
     document.documentElement.removeAttribute("lang");
     document.documentElement.setAttribute("dir", "ltr");
-    vi.spyOn(window.navigator, "language", "get").mockReturnValue("ar-SA");
+    vi.spyOn(window.navigator, "language", "get").mockReturnValue("he-IL");
 
     expect(getSystemDirection()).toBe("rtl");
   });

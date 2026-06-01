@@ -22,9 +22,9 @@ class MobileLandingContentDTO(BaseDTO):
         s = str(v).strip().lower()
         if s == "":
             return None
-        allowed = ("en", "pl", "es", "ar")
+        allowed = ("en", "pl")
         if s not in allowed:
-            msg = "uiLocale must be one of: en, pl, es, ar"
+            msg = "uiLocale must be one of: en, pl"
             raise ValueError(msg)
         return s
 
