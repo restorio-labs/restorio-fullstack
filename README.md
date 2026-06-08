@@ -1,311 +1,132 @@
 # Restorio Platform
 
-## Multi-tenant Restaurant Creation & Management System
+Restorio is a full-stack, multi-tenant restaurant management platform designed and implemented as a monorepo. The system comprises a RESTful backend built with the FastAPI framework, six specialised front-end applications developed in React and Next.js, a set of shared library packages, and an infrastructure layer orchestrated through Docker Compose and Cloudflare Workers. The project follows the monorepo pattern managed by Turborepo and Bun workspaces, which ensures consistent dependency resolution and unified build pipelines across all sub-projects.
 
-## 1. Project Overview
+## System Architecture
 
-### Project name
-
-**Restorio Platform**
-
-### Description
-
-Restorio is a cloud-hosted, multi-tenant SaaS platform designed for small and medium restaurant owners. It enables restaurant operators to create and customize their restaurant presence, manage menus, accept waiterless orders via QR codes or tablets, process payments, and analyze basic business metrics.
-
-The platform is designed with scalability, security, and cost-efficiency in mind, making it suitable both as a production-ready system and an academic engineer-degree project.
-
----
-
-## 2. Problem Statement
-
-Small restaurant owners often lack affordable, integrated digital tools that allow them to:
-
-- present a modern restaurant website and menu,
-- accept digital orders without waiter involvement,
-- manage staff workflows and kitchen operations,
-- integrate modern online payments,
-- analyze sales and customer behavior.
-
-Existing solutions are often expensive, closed-source, or overly complex for small businesses. Restorio aims to fill this gap.
-
----
-
-## 3. Project Goals
-
-- Provide an easy-to-use restaurant management platform
-- Enable waiterless ordering via QR codes and tablets
-- Support multi-location restaurants
-- Ensure secure, multi-tenant architecture
-- Offer extensible CMS and analytics features
-- Remain cost-efficient and deployable without vendor lock-in
-
----
-
-## 4. Target Users
-
-- **Primary users:** Small restaurant owners (single or multiple locations)
-- **Secondary users:** Waiters, kitchen staff
-- **End users:** Restaurant customers (no login required)
-- **Administrators:** Platform admins and super-admins
-
----
-
-## 5. Engineering Focus
-
-This project emphasizes:
-
-- Multi-tenant SaaS architecture
-- Distributed systems (async processing, WebSockets)
-- Modular backend design
-- CMS extensibility via shared packages
-- Security, RBAC, and regulatory compliance
-
----
-
-## 6. MVP Scope
-
-### Included Features
-
-#### Restaurant Management
-
-- Restaurant and venue creation
-- Multi-location support
-- Menu management (categories, items, modifiers)
-- Allergens and nutritional metadata
-- Table management with QR codes
-
-#### Ordering System
-
-- QR-based browser ordering (anonymous sessions)
-- PWA-based ordering
-- Tablet/kiosk ordering
-- Order modification and cancellation (time-limited)
-- Split bills
-- Payment processing (Przelewy24)
-
-#### Staff & Permissions
-
-- Role-Based Access Control (RBAC)
-- Roles: Owner, Manager, Waiter, Kitchen Staff, Admin, Super-Admin
-- Custom role creation
-
-#### CMS
-
-- Static pages (About, Contact)
-- Dynamic pages (Events, Promotions)
-- SEO metadata per page
-
-#### Analytics (Basic)
-
-- Orders per day
-- Revenue overview
-- Popular menu items
-- Table turnover time
-- Basic sales display
-
-#### Infrastructure
-
-- Dockerized services
-- Real-time order updates
-- Async task processing
-
----
-
-### Explicitly Out of Scope (MVP)
-
-- Offline mode
-- Fiscal printer integration
-- Inventory and stock management
-- Staff scheduling
-- Loyalty programs
-
-These features are intentionally excluded to control scope and complexity.
-
----
-
-## 7. System Architecture
-
-### High-Level Architecture
+The repository is organised into the following top-level directories, each fulfilling a distinct role within the overall system architecture:
 
 ```
-Client (Browser / Tablet / PWA)
-        |
-        v
-Cloudflare (DNS + CDN)
-        |
-        v
-NGINX (Mikrus VPS)
- ├─ Next.js (Public pages, SEO)
- ├─ React Apps (Admin, Kitchen, Tablet)
- └─ FastAPI (Backend API)
-        |
-        ├─ PostgreSQL (Transactional, relational data)
-        ├─ MongoDB (Order drafts, live sessions)
-        ├─ Redis (Sessions, Pub/Sub, Queues)
-        └─ Payment Providers (Przelewy24)
+restorio-fullstack/
+├── app/
+│   ├── api/                 # RESTful backend service (Python 3.12+, FastAPI)
+│   ├── apps/
+│   │   ├── admin-panel/     # Administration dashboard        (React 18, Vite – port 3001)
+│   │   ├── kitchen-panel/   # Kitchen order management panel  (React 19, Vite – port 3002)
+│   │   ├── mobile-app/      # Customer-facing mobile client   (React 18, Vite – port 3003)
+│   │   ├── public-web/      # Public website and ordering     (Next.js 19    – port 3000)
+│   │   ├── ui-demo/         # Component library showcase      (React 18, Vite – port 6767)
+│   │   └── waiter-panel/    # Waiter management interface     (React 18, Vite – port 3004)
+│   └── packages/
+│       ├── api-client/      # HTTP client abstraction layer (Axios)
+│       ├── auth/            # Authentication logic and context providers
+│       ├── types/           # Shared TypeScript type definitions
+│       ├── ui/              # Reusable component library with Tailwind CSS theming
+│       └── utils/           # Common utility functions
+├── e2e/                     # End-to-end test suite (Playwright)
+├── nginx/                   # Reverse proxy configuration and TLS termination
+├── worker/                  # Edge computing module (Cloudflare Workers)
+└── scripts/                 # Build automation and coverage reporting scripts
 ```
 
----
+## Technology Stack
 
-## 8. Frontend Architecture
+The following table summarises the principal technologies and frameworks employed at each layer of the system:
 
-### Hybrid Frontend Strategy
+| Layer | Technologies |
+|---|---|
+| **Backend** | FastAPI, SQLAlchemy 2.0 (asynchronous), Alembic, Motor (MongoDB), Redis, MinIO |
+| **Frontend** | React 18/19, Next.js 19, Vite, TypeScript, Tailwind CSS, Zustand, TanStack Query |
+| **Infrastructure** | Docker Compose, Nginx, Cloudflare Workers, PostgreSQL 16, MongoDB 7, MinIO |
+| **Quality Assurance** | Vitest, Playwright, pytest, React Testing Library |
+| **Development Tooling** | Turborepo, Bun, uv, Ruff, ESLint, Prettier, Husky |
 
-- **Next.js**
-  - Public restaurant websites
-  - SEO and metadata handling
-  - Marketplace and preview mode (Post-MVP)
+## Prerequisites
 
-- **React (Vite)**
-  - Admin dashboard
-  - Kitchen interface
-  - Tablet / kiosk UI
+The following software must be installed prior to running the platform:
 
-- **Shared Packages**
-  - UI components
-  - Type definitions
-  - API client
-  - Authentication utilities
+- [Bun](https://bun.sh/) >= 1.3.5 — JavaScript runtime and package manager
+- [Python](https://www.python.org/) >= 3.12 — required for the backend service
+- [uv](https://github.com/astral-sh/uv) — Python dependency management tool
+- [Docker](https://www.docker.com/) and Docker Compose — container orchestration
 
----
+## Environment Setup
 
-## 9. Backend Architecture
+The setup procedure consists of the following steps:
 
-### Backend Style
+### Step 1 — Install front-end dependencies
 
-**Modular Monolith (FastAPI)**
+```bash
+bun install
+```
 
-### Core Modules
+### Step 2 — Start infrastructure services
 
-- Authentication & RBAC
-- Tenant resolution
-- Restaurant management
-- Menu management
-- Orders
-- Payments
-- Analytics
-- CMS
+```bash
+# Development configuration (with automatic reloading)
+docker compose -f docker-compose.dev.yml up -d
 
-Each module is logically separated but deployed as a single service.
+# Production configuration
+docker compose up -d
+```
 
----
+This command initialises the PostgreSQL database server, MongoDB instance, MinIO object storage, and the API service.
 
-## 10. Multi-Tenancy Model
+### Step 3 — Install backend dependencies
 
-- Subdomain-based tenant resolution
-- Each request resolves a `tenant_id`
-- Data partitioned by tenant
-- Shared infrastructure with isolated data access
+```bash
+cd app/api
+uv sync --extra dev
+```
 
----
+### Step 4 — Apply database migrations
 
-## 11. Real-Time & Async Processing
+```bash
+cd app/api
+make migrate
+```
 
-### Real-Time
+### Step 5 — Launch development servers
 
-- WebSockets for kitchen order updates
-- Redis pub/sub for event fan-out
+```bash
+# Start all applications concurrently
+bun run dev
 
-### Async Tasks
+# Alternatively, start a specific application
+bun run dev:kitchen-panel
+```
 
-- Payment webhooks
-- Analytics aggregation
-- Backup processes
+## Available Scripts
 
----
+The root `package.json` exposes the following commands for build orchestration, testing, and code quality enforcement:
 
-## 12. Security & Compliance
+| Command | Description |
+|---|---|
+| `bun run dev` | Launch all applications in development mode with hot reloading |
+| `bun run build` | Execute production builds for all applications and packages |
+| `bun run test:unit` | Run the unit test suite via Vitest |
+| `bun run test:e2e` | Run the end-to-end test suite via Playwright |
+| `bun run check` | Perform static analysis and formatting verification |
+| `bun run format` | Apply automatic code formatting across the codebase |
+| `bun run clean` | Remove all build artefacts and cached outputs |
+| `bun run coverage:report` | Generate a consolidated test coverage report |
 
-### Authentication
+## Service Endpoints
 
-- JWT access tokens
-- Refresh tokens
-- Anonymous customer session tokens
+During local development, the individual services are accessible at the following addresses:
 
-### Authorization
+| Service | URL | Description |
+|---|---|---|
+| Public Web | http://localhost:3000 | Public-facing website with menu browsing and ordering |
+| Admin Panel | http://localhost:3001 | Tenant administration and configuration dashboard |
+| Kitchen Panel | http://localhost:3002 | Real-time order visualisation for kitchen personnel |
+| Mobile App | http://localhost:3003 | Mobile-optimised customer interface |
+| Waiter Panel | http://localhost:3004 | Order and table management for waiting staff |
+| UI Demo | http://localhost:6767 | Interactive component library documentation |
+| API | http://localhost:8000 | RESTful backend API |
+| API Documentation | http://localhost:8000/docs | Interactive API documentation (Swagger UI) |
+| MinIO Console | http://localhost:9001 | Object storage administration interface |
 
-- Role-Based Access Control (RBAC)
-- Custom roles and permission inheritance
+## Licence
 
-### GDPR Compliance
-
-- Minimal personal data storage
-- Consent handling
-- Data deletion mechanisms
-- Audit logging for administrative actions
-
----
-
-## 13. Deployment Strategy
-
-### Hosting
-
-- Mikrus VPS (Poland)
-
-### Deployment Stack
-
-- Docker & Docker Compose
-- NGINX reverse proxy
-- PostgreSQL (Transactional data)
-- MongoDB (Document-oriented data)
-- Redis (Sessions, Pub/Sub, Queues)
-- Cloudflare (DNS & CDN)
-
-### Benefits
-
-- Low operational cost
-- Predictable billing
-- No vendor lock-in
-- Production-grade setup
-
----
-
-## 14. Roadmap
-
-### Phase 0 – Foundation
-
-- Monorepo setup
-- CI/CD (GitHub Actions)
-- Docker environment
-- Authentication and tenancy
-- Core data models
-
-### Phase 1 – MVP
-
-- Restaurant onboarding wizard
-- Menu management
-- Ordering flow
-- Payment integration
-- Kitchen real-time UI
-- Basic analytics
-- Demo mode (7-day trial)
-
-### Phase 2 – Post-MVP
-
-- Multi-language support
-- Advanced analytics
-- Public marketplace
-- Preview mode
-- Custom domains
-
----
-
-## 15. Academic Justification
-
-### Architectural Decisions
-
-- Modular monolith reduces complexity while maintaining scalability
-- Hybrid frontend avoids future rewrites
-- NoSQL databases provide schema flexibility
-- Redis enables real-time and async features
-
-### Risks & Mitigation
-
-- Scope creep → strict MVP definition
-- Payment complexity → external providers
-
----
-
-## 16. Summary
-
-Restorio Platform is a scalable, secure, and cost-efficient restaurant management system that demonstrates advanced engineering concepts suitable for an engineer-degree project. The platform balances real-world applicability with academic rigor and controlled scope.
+Refer to the [LICENSE](LICENSE) file for licensing information.

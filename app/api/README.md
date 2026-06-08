@@ -1,83 +1,111 @@
 # Restorio API
 
-FastAPI backend for the Restorio Platform.
+The Restorio API constitutes the backend service layer of the Restorio Platform. It is implemented using the FastAPI framework and provides a RESTful interface for multi-tenant restaurant management operations, including authentication, order processing, payment handling, and tenant configuration.
 
-## Requirements
+## System Requirements
 
-- Python 3.12+
-- [uv](https://github.com/astral-sh/uv) - Fast Python package installer
+- Python >= 3.12
+- [uv](https://github.com/astral-sh/uv) — a high-performance Python dependency management tool
 
-## Setup
+## Installation and Configuration
 
-### Install uv
+### Installing the uv package manager
 
 ```bash
-# macOS/Linux
 curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Or with pip
-pip install uv
 ```
 
-### Install Dependencies
+### Installing project dependencies
 
 ```bash
-# Install dependencies from pyproject.toml
-uv pip install .
-
-# Or for development (editable install)
-uv pip install -e .
-
-# Generate requirements.txt for Docker (auto-generated, don't commit)
-uv pip compile pyproject.toml -o requirements.txt
+# Install all dependencies, including development extras
+uv sync --extra dev
 ```
 
-### Run Locally
+### Running the service locally
 
 ```bash
-# Development mode with auto-reload
-uvicorn main:app --reload --port 8000
-
-# Or using uv
+# Start the development server with automatic reloading
+make dev
+# Alternatively, invoke Uvicorn directly:
 uv run uvicorn main:app --reload --port 8000
 ```
 
-### Docker
+### Containerised deployment
 
 ```bash
-# Build and run
-docker compose up api
+# Start the API together with its dependent infrastructure services
+docker compose -f docker-compose.dev.yml up -d
 
-# Or build manually
-docker build -t restorio-api .
-docker run -p 8000:8000 restorio-api
+# Production deployment
+docker compose up api
 ```
 
 ## API Documentation
 
-Once running, visit:
+When the application is running in debug mode, interactive documentation is available at the following endpoints:
 
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
+- **Swagger UI** — http://localhost:8000/docs
+- **ReDoc** — http://localhost:8000/redoc
 
-## Development
+## Project Structure
 
-### Add a Dependency
+The backend codebase is organised according to a layered architecture pattern, separating concerns across routing, business logic, data access, and cross-cutting infrastructure:
 
-```bash
-# 1. Add to pyproject.toml dependencies list
-# 2. Regenerate requirements.txt (for Docker)
-uv pip compile pyproject.toml -o requirements.txt
-
-# Or use uv lock (alternative approach)
-uv lock
+```
+app/api/
+├── main.py              # Application factory, middleware registration, and route mounting
+├── routes/v1/           # Versioned API endpoint definitions
+│   ├── auth.py          # Authentication and authorisation endpoints
+│   ├── orders.py        # Order lifecycle management
+│   ├── users.py         # User account operations
+│   ├── tenants/         # Multi-tenant management endpoints
+│   ├── payments/        # Payment processing (Przelewy24 integration)
+│   ├── public/          # Publicly accessible endpoints (no authentication required)
+│   ├── kitchen_config.py # Kitchen display configuration
+│   ├── health.py        # Health check and readiness probes
+│   └── ws.py            # WebSocket connection handlers
+├── core/
+│   ├── models/          # SQLAlchemy ORM model definitions (17 entities)
+│   ├── middleware/       # HTTP middleware (rate limiting, CSRF protection, timing, auth)
+│   ├── dto/             # Data Transfer Object schemas (Pydantic models)
+│   ├── exceptions/      # Custom exception classes and global error handlers
+│   └── foundation/      # Database connections, application settings, base classes
+├── services/            # Business logic layer (20+ service modules)
+├── alembic/             # Database migration scripts and configuration
+├── tests/               # Automated test suite (pytest)
+└── docs/                # Supplementary API documentation and usage examples
 ```
 
-### Update Dependencies
+## Development Commands
 
-```bash
-# After modifying pyproject.toml, regenerate requirements.txt
-uv pip compile pyproject.toml -o requirements.txt
+The following Makefile targets are provided to streamline common development tasks:
 
-# This ensures Docker builds use the same resolved dependencies
-```
+| Command | Description |
+|---|---|
+| `make dev` | Start the development server with automatic reloading |
+| `make install` | Install all project dependencies |
+| `make test` | Execute the test suite with coverage measurement |
+| `make lint` | Run the Ruff static analyser in check-only mode |
+| `make lint-fix` | Run the Ruff static analyser and apply automatic fixes |
+| `make format` | Format the source code using Ruff |
+| `make check` | Perform all quality checks (linting and formatting verification) |
+| `make migrate` | Apply all pending database migrations |
+| `make migrate-create NAME=...` | Generate a new migration script from model changes |
+| `make migrate-history` | Display the complete migration history |
+| `make migrate-current` | Display the currently applied migration revision |
+| `make migrate-downgrade` | Revert the most recently applied migration |
+
+## Principal Technologies
+
+The backend service is built upon the following key technologies and libraries:
+
+- **FastAPI** — asynchronous web framework for building RESTful APIs
+- **SQLAlchemy 2.0** (asynchronous mode) with **Alembic** — object-relational mapping and schema migration management for PostgreSQL
+- **Motor** — asynchronous driver for MongoDB document storage
+- **MinIO** — S3-compatible object storage for media assets
+- **Redis** — in-memory data store used for caching and session management
+- **Pydantic v2** — data validation and serialisation
+- **PyJWT** with **passlib** — JSON Web Token authentication and password hashing
+- **Resend** — transactional email delivery service
+- **Ruff** — static analysis and code formatting tool for Python
