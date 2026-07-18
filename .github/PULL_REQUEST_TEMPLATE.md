@@ -2,13 +2,12 @@
 
 ### 📋 Summary
 
-~~ Provide a clear and concise description of what this PR changes ~~
 
 ---
 
 ### 📁 Changes Made
 
-- `packages/auth`
+- `packages/`
 
 ---
 
@@ -27,6 +26,10 @@
 - [ ] Error states handled
 - [ ] Loading states implemented
 - [ ] Accessibility basics respected
+- [ ] Server state uses TanStack Query or server components
+- [ ] Shared UI state uses Zustand and does not duplicate server state
+- [ ] Large unbounded lists use TanStack Virtual
+- [ ] Production forms use React Hook Form
 
 ### Backend Checklist (if applicable)
 

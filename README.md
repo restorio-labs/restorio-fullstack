@@ -20,6 +20,7 @@ restorio-fullstack/
 │   └── packages/
 │       ├── api-client/      # HTTP client abstraction layer (Axios)
 │       ├── auth/            # Authentication logic and context providers
+│       ├── mobile/          # Shared mobile runtime shell, screens, and view models
 │       ├── types/           # Shared TypeScript type definitions
 │       ├── ui/              # Reusable component library with Tailwind CSS theming
 │       └── utils/           # Common utility functions
@@ -36,7 +37,7 @@ The following table summarises the principal technologies and frameworks employe
 | Layer | Technologies |
 |---|---|
 | **Backend** | FastAPI, SQLAlchemy 2.0 (asynchronous), Alembic, Motor (MongoDB), Redis, MinIO |
-| **Frontend** | React 18/19, Next.js 19, Vite, TypeScript, Tailwind CSS, Zustand, TanStack Query |
+| **Frontend** | React 18/19, Next.js 19, Vite, TypeScript, Tailwind CSS, Zustand, TanStack Query, TanStack Virtual, React Hook Form |
 | **Infrastructure** | Docker Compose, Nginx, Cloudflare Workers, PostgreSQL 16, MongoDB 7, MinIO |
 | **Quality Assurance** | Vitest, Playwright, pytest, React Testing Library |
 | **Development Tooling** | Turborepo, Bun, uv, Ruff, ESLint, Prettier, Husky |

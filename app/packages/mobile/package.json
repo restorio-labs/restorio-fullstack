@@ -1,7 +1,8 @@
 {
-  "name": "@restorio/api-client",
-  "version": "1.0.0",
+  "name": "@restorio/mobile",
+  "version": "0.1.0",
   "type": "module",
+  "private": true,
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -10,45 +11,37 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
-    },
-    "./query": {
-      "types": "./dist/query.d.ts",
-      "import": "./dist/query.js",
-      "require": "./dist/query.cjs"
     }
   },
-  "private": true,
   "files": [
     "dist"
   ],
   "scripts": {
     "dev": "tsup --watch",
     "build": "tsup",
-    "clean": "rm -rf dist && rm -rf node_modules",
+    "clean": "rm -rf dist",
     "test": "vitest run",
     "test:unit": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" && eslint . --fix",
     "check": "prettier --check \"**/*.{ts,tsx,json,md}\" && eslint . --ext ts,tsx"
   },
-  "dependencies": {
-    "@restorio/types": "workspace:*",
-    "@restorio/utils": "workspace:*",
-    "axios": "^1.6.2"
-  },
   "peerDependencies": {
-    "@tanstack/react-query": "^5.90.21"
+    "react": "^18.2.0 || ^19.0.0",
+    "react-dom": "^18.2.0 || ^19.0.0"
   },
-  "peerDependenciesMeta": {
-    "@tanstack/react-query": {
-      "optional": true
-    }
+  "dependencies": {
+    "@restorio/ui": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.9",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitest/coverage-v8": "^4.0.16",
+    "jsdom": "^27.4.0",
     "tsup": "^8.5.1",
-    "vite": "^7.3.2",
-    "vitest": "^4.0.16",
-    "@vitest/coverage-v8": "^4.0.16"
+    "typescript": "^5.9",
+    "vitest": "^4.0.16"
   }
 }

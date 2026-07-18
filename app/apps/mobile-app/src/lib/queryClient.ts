@@ -1,16 +1,1 @@
-import { QueryClient } from "@tanstack/react-query";
-
-export const createQueryClient = (): QueryClient =>
-  new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 30 * 1000,
-        gcTime: 5 * 60 * 1000,
-        retry: 1,
-        refetchOnWindowFocus: false,
-      },
-      mutations: {
-        retry: 0,
-      },
-    },
-  });
+export { createFrontendQueryClient as createQueryClient } from "@restorio/api-client/query";
