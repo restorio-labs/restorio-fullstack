@@ -9,9 +9,9 @@ import type { ThemeOverride } from "../../../src/tokens/types";
 
 describe("parseGoogleFontFamiliesFromStylesheetUrl", () => {
   it("parses a single Google Fonts css2 family", () => {
-    expect(
-      parseGoogleFontFamiliesFromStylesheetUrl("https://fonts.googleapis.com/css2?family=Comic+Relief"),
-    ).toEqual(["Comic Relief"]);
+    expect(parseGoogleFontFamiliesFromStylesheetUrl("https://fonts.googleapis.com/css2?family=Comic+Relief")).toEqual([
+      "Comic Relief",
+    ]);
   });
 
   it("parses multiple families and strips weight axis", () => {

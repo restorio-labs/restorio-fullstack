@@ -44,5 +44,5 @@ export const resolveGoogleFontStylesheetHref = (override: ThemeOverride | null):
   const fontFamily = override?.typography?.fontFamily as Record<string, string | undefined> | undefined;
   const url = fontFamily?.googleFontUrl?.trim();
 
-  return url || undefined;
+  return url ?? undefined;
 };

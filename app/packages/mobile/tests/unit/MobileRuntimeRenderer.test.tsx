@@ -62,6 +62,12 @@ describe("MobileRuntimeRenderer", () => {
     expect(onPrimaryLandingAction).not.toHaveBeenCalled();
   });
 
+  it("disables navigation actions when no navigation handler is provided", () => {
+    render(<MobileRuntimeRenderer viewModel={landingViewModel} contained />);
+
+    expect(screen.getByRole("button", { name: "Menu" })).toBeDisabled();
+  });
+
   it("renders menu content from view models without router or API state", () => {
     const onOpenMenuItem = vi.fn();
     const menuViewModel: MobileRuntimeViewModel = {

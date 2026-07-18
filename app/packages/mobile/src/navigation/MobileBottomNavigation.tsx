@@ -34,7 +34,7 @@ export const MobileBottomNavigation = ({
           size="sm"
           disabled={disabled || item.disabled}
           aria-current={item.active ? "page" : undefined}
-          onClick={() => onNavigate?.(item.id)}
+          onClick={onNavigate ? (): void => onNavigate(item.id) : undefined}
         >
           {item.label}
         </Button>
