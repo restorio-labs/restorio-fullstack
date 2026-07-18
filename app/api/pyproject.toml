@@ -15,7 +15,7 @@ dependencies = [
     "motor==3.6.0",
     "asyncpg==0.30.0",
     "sqlalchemy[asyncio]==2.0.25",
-    "alembic==1.13.1",
+    "alembic==1.18.5",
     "redis==5.0.1",
     "httpx==0.28.1",
     "bcrypt==4.0.1",
