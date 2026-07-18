@@ -90,7 +90,6 @@ export const MenuCreatorPage = (): ReactElement => {
   const { selectedTenantId } = useCurrentTenant();
   const [categories, setCategories] = useState<MenuCategoryFormState[]>([]);
   const [didUserEdit, setDidUserEdit] = useState(false);
-  const [loadedTenantId, setLoadedTenantId] = useState<string | null>(null);
   const [imageUploadItemId, setImageUploadItemId] = useState<string | null>(null);
 
   const tenantId = selectedTenantId;
@@ -117,45 +116,17 @@ export const MenuCreatorPage = (): ReactElement => {
   });
 
   useEffect(() => {
-    if (!tenantId) {
-      setCategories([]);
-      setDidUserEdit(false);
-      setLoadedTenantId(null);
+    setCategories([]);
+    setDidUserEdit(false);
+  }, [tenantId]);
 
+  useEffect(() => {
+    if (!tenantId || isLoading || didUserEdit) {
       return;
     }
 
-    if (loadedTenantId !== tenantId) {
-      if (isLoading) {
-        return;
-      }
-
-      if (menuData?.categories) {
-        setCategories(toFormCategories(menuData.categories));
-      } else {
-        setCategories([]);
-      }
-
-      setDidUserEdit(false);
-      setLoadedTenantId(tenantId);
-
-      return;
-    }
-
-    if (didUserEdit) {
-      return;
-    }
-
-    if (menuData?.categories) {
-      setCategories(toFormCategories(menuData.categories));
-
-      return;
-    }
-
-    if (!isLoading && !menuData?.categories) {
-      setCategories([]);
-    }
-  }, [categories.length, didUserEdit, isLoading, loadedTenantId, menuData, tenantId]);
+    setCategories(menuData?.categories ? toFormCategories(menuData.categories) : []);
+  }, [didUserEdit, isLoading, menuData, tenantId]);
 
   const saveMutation = useMutation({
     mutationFn: async (payload: SaveTenantMenuPayload) => {
