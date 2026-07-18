@@ -11,12 +11,13 @@ from core.models.enums import TenantStatus
 from core.models.tenant import Tenant
 from core.models.transaction import Transaction
 from services.external_client_service import ExternalClient
-import services.payment_service as payment_service_module
 from services.payment_service import (
     P24Service,
     build_waiter_settlement_transaction,
+    p24_notification_status_url,
     resolve_mobile_payment_return_base_url,
     return_url_with_session_id,
+    settings,
 )
 
 EXPECTED_WAITER_SETTLEMENT_AMOUNT_MINOR = 1234
@@ -330,23 +331,17 @@ async def test_get_transactions_page_paginates() -> None:
 
 
 def test_p24_notification_status_url_uses_frontend_base(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(payment_service_module.settings, "API_BASE_URL", "")
-    monkeypatch.setattr(payment_service_module.settings, "FRONTEND_URL", "https://app.example.com")
-    monkeypatch.setattr(payment_service_module.settings, "API_V1_PREFIX", "/api/v1")
-    assert (
-        payment_service_module.p24_notification_status_url()
-        == "https://app.example.com/api/v1/payments/status"
-    )
+    monkeypatch.setattr(settings, "API_BASE_URL", "")
+    monkeypatch.setattr(settings, "FRONTEND_URL", "https://app.example.com")
+    monkeypatch.setattr(settings, "API_V1_PREFIX", "/api/v1")
+    assert p24_notification_status_url() == "https://app.example.com/api/v1/payments/status"
 
 
 def test_p24_notification_status_url_prefers_api_base_url(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(payment_service_module.settings, "API_BASE_URL", "https://api.restorio.org")
-    monkeypatch.setattr(payment_service_module.settings, "FRONTEND_URL", "https://restorio.org")
-    monkeypatch.setattr(payment_service_module.settings, "API_V1_PREFIX", "/api/v1")
-    assert (
-        payment_service_module.p24_notification_status_url()
-        == "https://api.restorio.org/api/v1/payments/status"
-    )
+    monkeypatch.setattr(settings, "API_BASE_URL", "https://api.restorio.org")
+    monkeypatch.setattr(settings, "FRONTEND_URL", "https://restorio.org")
+    monkeypatch.setattr(settings, "API_V1_PREFIX", "/api/v1")
+    assert p24_notification_status_url() == "https://api.restorio.org/api/v1/payments/status"
 
 
 def test_build_waiter_settlement_transaction_skips_non_positive_total() -> None:
