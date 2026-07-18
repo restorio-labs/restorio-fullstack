@@ -32,7 +32,7 @@ export const MobileBottomNavigation = ({
           type="button"
           variant={item.active ? "secondary" : "ghost"}
           size="sm"
-          disabled={disabled || item.disabled}
+          disabled={disabled || !onNavigate || item.disabled}
           aria-current={item.active ? "page" : undefined}
           onClick={onNavigate ? (): void => onNavigate(item.id) : undefined}
         >
