@@ -1,5 +1,11 @@
 import type { PublicTenantInfo } from "@restorio/types";
-import { resolveGoogleFontStylesheetHref, useGoogleFontStylesheet, useI18n, useTheme, type ThemeOverride } from "@restorio/ui";
+import {
+  resolveGoogleFontStylesheetHref,
+  useGoogleFontStylesheet,
+  useI18n,
+  useTheme,
+  type ThemeOverride,
+} from "@restorio/ui";
 import { useEffect, useMemo } from "react";
 
 import { API_BASE_URL } from "../config";

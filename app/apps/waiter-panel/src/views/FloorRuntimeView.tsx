@@ -286,15 +286,7 @@ export const FloorRuntimeView = ({
     }
 
     return true;
-  }, [
-    invoiceCity,
-    invoiceCompanyName,
-    invoiceNip,
-    invoicePostalCode,
-    invoiceStreet,
-    showErrorToast,
-    t,
-  ]);
+  }, [invoiceCity, invoiceCompanyName, invoiceNip, invoicePostalCode, invoiceStreet, showErrorToast, t]);
 
   const hasCanvases = venue.floorCanvases.length > 0;
 

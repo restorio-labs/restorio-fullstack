@@ -1,12 +1,11 @@
+import react from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
 import { resolve } from "path";
 
 import { monorepoResolveAliases } from "../../../vitest.monorepo";
 
 export default defineConfig({
-  esbuild: {
-    jsxInject: `import React from "react"`,
-  },
+  plugins: [react()],
   test: {
     globals: true,
     environment: "jsdom",

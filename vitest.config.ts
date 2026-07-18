@@ -35,6 +35,7 @@ export default defineConfig({
     alias: {
       "@restorio/types": resolve(__dirname, "./app/packages/types/src"),
       "@restorio/ui": resolve(__dirname, "./app/packages/ui/src"),
+      "@restorio/mobile": resolve(__dirname, "./app/packages/mobile/src"),
       "@restorio/api-client": resolve(__dirname, "./app/packages/api-client/src"),
       "@restorio/auth": resolve(__dirname, "./app/packages/auth/src"),
       "@restorio/utils": resolve(__dirname, "./app/packages/utils/src"),

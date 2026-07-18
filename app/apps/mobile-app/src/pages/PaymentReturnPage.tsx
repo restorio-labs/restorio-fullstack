@@ -30,8 +30,7 @@ const TX_STATUS_PAID = 1;
 const TX_STATUS_ACCEPTED = 2;
 const TX_STATUS_REFUNDED = 3;
 
-const isPaymentSettled = (status: number): boolean =>
-  status === TX_STATUS_PAID || status === TX_STATUS_ACCEPTED;
+const isPaymentSettled = (status: number): boolean => status === TX_STATUS_PAID || status === TX_STATUS_ACCEPTED;
 
 const paymentStatusPresentation = (
   status: number,
@@ -44,6 +43,7 @@ const paymentStatusPresentation = (
       tone: "success",
     };
   }
+
   if (status === TX_STATUS_REFUNDED) {
     return {
       title: t("paymentReturn.status.refunded.title"),
@@ -51,6 +51,7 @@ const paymentStatusPresentation = (
       tone: "error",
     };
   }
+
   if (status === TX_STATUS_UNPAID) {
     return {
       title: t("paymentReturn.status.pending.title"),
@@ -58,6 +59,7 @@ const paymentStatusPresentation = (
       tone: "warning",
     };
   }
+
   return {
     title: t("paymentReturn.status.unfinished.title"),
     description: t("paymentReturn.status.unfinished.description"),

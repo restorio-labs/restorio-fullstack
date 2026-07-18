@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import suppress
 from datetime import UTC, datetime
 from typing import Any
 
@@ -128,10 +129,8 @@ async def apply_mobile_payment_mongo_and_session_effects(
                 session_id_str=session_id_str,
                 now=now,
             )
-            try:
+            with suppress(DuplicateKeyError):
                 await db[KITCHEN_ORDERS_COLLECTION].insert_one(kitchen_order)
-            except DuplicateKeyError:
-                pass
 
         await table_session_service.mark_completed_by_session_id(
             pg_session,

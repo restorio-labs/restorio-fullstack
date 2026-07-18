@@ -3,13 +3,13 @@ const readHttpResponseStatus = (error: unknown): number | undefined => {
     return undefined;
   }
 
-  const response = (error as { response?: unknown }).response;
+  const { response } = error as { response?: unknown };
 
   if (typeof response !== "object" || response === null || !("status" in response)) {
     return undefined;
   }
 
-  const status = (response as { status?: unknown }).status;
+  const { status } = response as { status?: unknown };
 
   return typeof status === "number" ? status : undefined;
 };

@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import type { ReactElement } from "react";
 
-import { loadMessages } from "../../../../src/i18n/request";
-
 import AnimatedReveal from "@/components/legal/AnimatedReveal";
 import { LegalPageLayout } from "@/components/legal/LegalPageLayout";
 import { LegalSection } from "@/components/legal/LegalSection";
 import { TableOfContents } from "@/components/legal/TableOfContents";
+import { loadMessages } from "@/i18n/request";
 
 interface NestedMessages {
   [key: string]: string | NestedMessages;

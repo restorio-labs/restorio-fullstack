@@ -34,22 +34,15 @@ export const useTransactions = (): UseTransactionsResult => {
       return;
     }
 
-    let cancelled = false;
-
     void (async (): Promise<void> => {
       try {
         await api.payments.reconcilePendingTransactions(selectedTenantId);
       } catch {
         // stale listing still loads below
       }
-      if (!cancelled) {
-        await queryClient.invalidateQueries({ queryKey: ["transactions", selectedTenantId], exact: false });
-      }
-    })();
 
-    return (): void => {
-      cancelled = true;
-    };
+      await queryClient.invalidateQueries({ queryKey: ["transactions", selectedTenantId], exact: false });
+    })();
   }, [queryClient, selectedTenantId]);
 
   const { data, isPending, isFetching, isError } = useQuery<TransactionListData>({

@@ -1,13 +1,15 @@
 from datetime import UTC, datetime
 from decimal import Decimal
 from unittest.mock import AsyncMock, Mock
-from uuid import UUID, uuid4
+from uuid import UUID
 
 import pytest
 
 from core.models.enums import TenantStatus
 from core.models.tenant import Tenant
 from services.archive_service import ArchiveService, _resolve_order_amounts
+
+EXPECTED_PERSISTED_RECORD_COUNT = 2
 
 
 def _tenant_row() -> Tenant:
@@ -74,7 +76,7 @@ async def test_archive_order_persists_in_postgres_before_deleting_mongo() -> Non
         pg_tenant=_tenant_row(),
     )
 
-    assert session.add.call_count == 2
+    assert session.add.call_count == EXPECTED_PERSISTED_RECORD_COUNT
     session.commit.assert_awaited_once()
     session.refresh.assert_awaited_once()
     delete_one.assert_awaited_once_with({"_id": "K-ABC123"})
@@ -108,7 +110,7 @@ async def test_archive_order_parses_created_at_string() -> None:
         order_doc=order_doc,
         pg_tenant=_tenant_row(),
     )
-    assert session.add.call_count == 2
+    assert session.add.call_count == EXPECTED_PERSISTED_RECORD_COUNT
     assert archived.order_created_at.isoformat().startswith("2025-01-15T12:30:00+00:00")
     assert archived.original_order_id == "K-Z"
 
@@ -135,7 +137,7 @@ async def test_archive_order_default_created_at_when_invalid() -> None:
         order_doc=order_doc,
         pg_tenant=_tenant_row(),
     )
-    assert session.add.call_count == 2
+    assert session.add.call_count == EXPECTED_PERSISTED_RECORD_COUNT
     assert isinstance(archived.order_created_at, datetime)
     assert archived.original_order_id == "K-B"
 
@@ -227,7 +229,13 @@ async def test_archive_order_persists_total_from_items_when_order_total_is_zero(
         "tax": 0,
         "total": 0,
         "items": [
-            {"id": "item-1", "name": "Burger", "quantity": 2, "basePrice": 15.0, "totalPrice": 30.0},
+            {
+                "id": "item-1",
+                "name": "Burger",
+                "quantity": 2,
+                "basePrice": 15.0,
+                "totalPrice": 30.0,
+            },
             {"id": "item-2", "name": "Fries", "quantity": 1, "basePrice": 8.5, "totalPrice": 8.5},
         ],
         "createdAt": datetime(2026, 4, 8, 10, 0, tzinfo=UTC),

@@ -10,6 +10,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./query": {
+      "types": "./dist/query.d.ts",
+      "import": "./dist/query.js",
+      "require": "./dist/query.cjs"
     }
   },
   "private": true,
@@ -30,6 +35,14 @@
     "@restorio/types": "workspace:*",
     "@restorio/utils": "workspace:*",
     "axios": "^1.6.2"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "^5.90.21"
+  },
+  "peerDependenciesMeta": {
+    "@tanstack/react-query": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "typescript": "^5.9",

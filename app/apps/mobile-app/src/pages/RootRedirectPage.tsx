@@ -25,6 +25,7 @@ export const RootRedirectPage = (): ReactElement => {
 
     const base = getAppBaseUrl("public-web").replace(/\/$/, "");
     const pathLocale = resolvePublicWebLocale(locale);
+
     window.location.replace(`${base}/${pathLocale}`);
   }, [to, locale]);
 

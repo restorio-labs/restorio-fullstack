@@ -2,9 +2,9 @@ import type { CSSProperties, ReactElement, ReactNode } from "react";
 import { useId, useMemo } from "react";
 import { TbChevronDown as TbChevronDownIcon } from "react-icons/tb";
 
+import { useGoogleFontStylesheet } from "../hooks/useGoogleFontStylesheet";
 import { buildScopedThemeStyle } from "../theme/cssVariables";
 import { resolveGoogleFontStylesheetHref } from "../theme/googleFonts";
-import { useGoogleFontStylesheet } from "../hooks/useGoogleFontStylesheet";
 import type { ThemeOverride } from "../tokens/types";
 import { cn } from "../utils";
 
@@ -223,7 +223,7 @@ export const MobileGuestAppPreview = ({
     [appearance, themeOverride],
   );
 
-  const resolvedFontHref = googleFontStylesheetHref?.trim() || resolveGoogleFontStylesheetHref(themeOverride);
+  const resolvedFontHref = googleFontStylesheetHref?.trim() ?? resolveGoogleFontStylesheetHref(themeOverride);
 
   useGoogleFontStylesheet(resolvedFontHref);
 

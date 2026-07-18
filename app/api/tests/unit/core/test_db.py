@@ -21,9 +21,10 @@ class FakeMongoClient:
 
 @pytest.mark.asyncio
 async def test_get_mongo_client_singleton(monkeypatch: pytest.MonkeyPatch) -> None:
-    def fake_client(url: str) -> FakeMongoClient:
+    def fake_client(url: str, **_kwargs: int) -> FakeMongoClient:
         return FakeMongoClient(url)
 
+    monkeypatch.setattr(db.DatabaseConnections, "_mongo_client", None)
     monkeypatch.setattr(db, "AsyncIOMotorClient", fake_client)
 
     client1 = db.DatabaseConnections.get_mongo_client()

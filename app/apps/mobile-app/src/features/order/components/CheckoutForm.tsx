@@ -1,6 +1,7 @@
 import type { InvoiceData } from "@restorio/types";
 import { Button, Checkbox, Input, useI18n } from "@restorio/ui";
-import { type FormEvent, type ReactElement, useState } from "react";
+import type { ReactElement } from "react";
+import { useForm } from "react-hook-form";
 
 interface CheckoutFormProps {
   totalAmount: number;
@@ -38,217 +39,134 @@ const validatePostalCode = (code: string): boolean => {
   return /^\d{2}-?\d{3}$/.test(code.trim());
 };
 
+interface CheckoutFormValues {
+  email: string;
+  note: string;
+  wantsInvoice: boolean;
+  companyName: string;
+  nip: string;
+  street: string;
+  city: string;
+  postalCode: string;
+}
+
 export const CheckoutForm = ({ totalAmount, disabled, isSubmitting, onSubmit }: CheckoutFormProps): ReactElement => {
   const { t } = useI18n();
-  const [email, setEmail] = useState("");
-  const [note, setNote] = useState("");
-  const [emailError, setEmailError] = useState("");
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<CheckoutFormValues>({
+    mode: "onBlur",
+    defaultValues: {
+      email: "",
+      note: "",
+      wantsInvoice: false,
+      companyName: "",
+      nip: "",
+      street: "",
+      city: "",
+      postalCode: "",
+    },
+  });
+  const wantsInvoice = watch("wantsInvoice");
 
-  const [wantsInvoice, setWantsInvoice] = useState(false);
-  const [companyName, setCompanyName] = useState("");
-  const [nip, setNip] = useState("");
-  const [street, setStreet] = useState("");
-  const [city, setCity] = useState("");
-  const [postalCode, setPostalCode] = useState("");
-
-  const [companyNameError, setCompanyNameError] = useState("");
-  const [nipError, setNipError] = useState("");
-  const [streetError, setStreetError] = useState("");
-  const [cityError, setCityError] = useState("");
-  const [postalCodeError, setPostalCodeError] = useState("");
-
-  const validateEmail = (value: string): boolean => {
-    if (!value.trim()) {
-      setEmailError(t("checkout.emailRequired"));
-
-      return false;
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-      setEmailError(t("checkout.emailInvalid"));
-
-      return false;
-    }
-    setEmailError("");
-
-    return true;
-  };
-
-  const validateInvoiceFields = (): boolean => {
-    let isValid = true;
-
-    if (!companyName.trim()) {
-      setCompanyNameError(t("checkout.invoice.companyNameRequired"));
-      isValid = false;
-    } else {
-      setCompanyNameError("");
-    }
-
-    if (!nip.trim()) {
-      setNipError(t("checkout.invoice.nipRequired"));
-      isValid = false;
-    } else if (!validateNip(nip)) {
-      setNipError(t("checkout.invoice.nipInvalid"));
-      isValid = false;
-    } else {
-      setNipError("");
-    }
-
-    if (!street.trim()) {
-      setStreetError(t("checkout.invoice.streetRequired"));
-      isValid = false;
-    } else {
-      setStreetError("");
-    }
-
-    if (!city.trim()) {
-      setCityError(t("checkout.invoice.cityRequired"));
-      isValid = false;
-    } else {
-      setCityError("");
-    }
-
-    if (!postalCode.trim()) {
-      setPostalCodeError(t("checkout.invoice.postalCodeRequired"));
-      isValid = false;
-    } else if (!validatePostalCode(postalCode)) {
-      setPostalCodeError(t("checkout.invoice.postalCodeInvalid"));
-      isValid = false;
-    } else {
-      setPostalCodeError("");
-    }
-
-    return isValid;
-  };
-
-  const handleSubmit = (e: FormEvent): void => {
-    e.preventDefault();
-
-    if (!validateEmail(email)) {
-      return;
-    }
-
-    if (wantsInvoice && !validateInvoiceFields()) {
-      return;
-    }
-
-    const invoiceData: InvoiceData | undefined = wantsInvoice
+  const submit = (values: CheckoutFormValues): void => {
+    const invoiceData: InvoiceData | undefined = values.wantsInvoice
       ? {
-          companyName: companyName.trim(),
-          nip: nip.replace(/[\s-]/g, ""),
-          street: street.trim(),
-          city: city.trim(),
-          postalCode: postalCode.trim().includes("-")
-            ? postalCode.trim()
-            : `${postalCode.trim().slice(0, 2)}-${postalCode.trim().slice(2)}`,
+          companyName: values.companyName.trim(),
+          nip: values.nip.replace(/[\s-]/g, ""),
+          street: values.street.trim(),
+          city: values.city.trim(),
+          postalCode: values.postalCode.trim().includes("-")
+            ? values.postalCode.trim()
+            : `${values.postalCode.trim().slice(0, 2)}-${values.postalCode.trim().slice(2)}`,
           country: "PL",
         }
       : undefined;
 
-    onSubmit(email.trim(), note.trim(), invoiceData);
+    onSubmit(values.email.trim(), values.note.trim(), invoiceData);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+    <form onSubmit={(event) => void handleSubmit(submit)(event)} className="flex flex-col gap-3" noValidate>
       <Input
         label={t("checkout.emailLabel")}
         type="email"
         placeholder={t("checkout.emailPlaceholder")}
-        value={email}
-        onChange={(e) => {
-          setEmail(e.target.value);
-
-          if (emailError) {
-            validateEmail(e.target.value);
-          }
-        }}
-        error={emailError}
+        error={errors.email?.message}
+        {...register("email", {
+          required: t("checkout.emailRequired"),
+          pattern: {
+            value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+            message: t("checkout.emailInvalid"),
+          },
+        })}
         required
       />
-      <Input
-        label={t("checkout.noteLabel")}
-        placeholder={t("checkout.notePlaceholder")}
-        value={note}
-        onChange={(e) => setNote(e.target.value)}
-      />
+      <Input label={t("checkout.noteLabel")} placeholder={t("checkout.notePlaceholder")} {...register("note")} />
 
-      <Checkbox
-        label={t("checkout.invoice.wantInvoice")}
-        checked={wantsInvoice}
-        onChange={(e) => setWantsInvoice(e.target.checked)}
-      />
+      <Checkbox label={t("checkout.invoice.wantInvoice")} {...register("wantsInvoice")} />
 
       {wantsInvoice && (
         <div className="flex flex-col gap-3 rounded-lg border border-border-default bg-surface-secondary p-3">
           <Input
             label={t("checkout.invoice.companyNameLabel")}
             placeholder={t("checkout.invoice.companyNamePlaceholder")}
-            value={companyName}
-            onChange={(e) => {
-              setCompanyName(e.target.value);
-
-              if (companyNameError) {
-                setCompanyNameError("");
-              }
-            }}
-            error={companyNameError}
+            error={errors.companyName?.message}
+            {...register("companyName", {
+              validate: (value) => !!value.trim() || t("checkout.invoice.companyNameRequired"),
+            })}
             required
           />
           <Input
             label={t("checkout.invoice.nipLabel")}
             placeholder={t("checkout.invoice.nipPlaceholder")}
-            value={nip}
-            onChange={(e) => {
-              setNip(e.target.value);
+            error={errors.nip?.message}
+            {...register("nip", {
+              validate: (value) => {
+                if (!value.trim()) {
+                  return t("checkout.invoice.nipRequired");
+                }
 
-              if (nipError) {
-                setNipError("");
-              }
-            }}
-            error={nipError}
+                return validateNip(value) || t("checkout.invoice.nipInvalid");
+              },
+            })}
             required
           />
           <Input
             label={t("checkout.invoice.streetLabel")}
             placeholder={t("checkout.invoice.streetPlaceholder")}
-            value={street}
-            onChange={(e) => {
-              setStreet(e.target.value);
-
-              if (streetError) {
-                setStreetError("");
-              }
-            }}
-            error={streetError}
+            error={errors.street?.message}
+            {...register("street", {
+              validate: (value) => !!value.trim() || t("checkout.invoice.streetRequired"),
+            })}
             required
           />
           <div className="grid grid-cols-2 gap-3">
             <Input
               label={t("checkout.invoice.postalCodeLabel")}
               placeholder={t("checkout.invoice.postalCodePlaceholder")}
-              value={postalCode}
-              onChange={(e) => {
-                setPostalCode(e.target.value);
+              error={errors.postalCode?.message}
+              {...register("postalCode", {
+                validate: (value) => {
+                  if (!value.trim()) {
+                    return t("checkout.invoice.postalCodeRequired");
+                  }
 
-                if (postalCodeError) {
-                  setPostalCodeError("");
-                }
-              }}
-              error={postalCodeError}
+                  return validatePostalCode(value) || t("checkout.invoice.postalCodeInvalid");
+                },
+              })}
               required
             />
             <Input
               label={t("checkout.invoice.cityLabel")}
               placeholder={t("checkout.invoice.cityPlaceholder")}
-              value={city}
-              onChange={(e) => {
-                setCity(e.target.value);
-
-                if (cityError) {
-                  setCityError("");
-                }
-              }}
-              error={cityError}
+              error={errors.city?.message}
+              {...register("city", {
+                validate: (value) => !!value.trim() || t("checkout.invoice.cityRequired"),
+              })}
               required
             />
           </div>

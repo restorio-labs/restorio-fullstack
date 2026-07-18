@@ -46,7 +46,7 @@ export const LoginContent = (): ReactElement | null => {
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [fieldErrors, setFieldErrors] = useState<LoginFieldErrors>({});
-  const [view, setView] = useState<ViewState>("form");
+  const [view, _setView] = useState<ViewState>("form");
   const t = useTranslations();
   const locale = useLocale();
   const animatedFieldClassName = "onboarding-fade-up motion-reduce:animate-none";

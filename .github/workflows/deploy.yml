@@ -31,21 +31,21 @@ on:
           - minor
           - patch
         default: auto
-  push:
-    branches:
-      - main
-    tags:
-      - "v*"
-    paths:
-      - "app/api/**"
-      - "app/apps/**"
-      - "app/packages/**"
-      - "docker-compose.yml"
-      - "nginx/**"
-      - ".github/workflows/deploy.yml"
-      - ".github/workflows/deploy-docker.yml"
-      - ".github/workflows/deploy-static-frontend.yml"
-      - ".github/workflows/deploy-vinext-frontend.yml"
+  # push:
+  #   branches:
+  #     - main
+  #   tags:
+  #     - "v*"
+  #   paths:
+  #     - "app/api/**"
+  #     - "app/apps/**"
+  #     - "app/packages/**"
+  #     - "docker-compose.yml"
+  #     - "nginx/**"
+  #     - ".github/workflows/deploy.yml"
+  #     - ".github/workflows/deploy-docker.yml"
+  #     - ".github/workflows/deploy-static-frontend.yml"
+  #     - ".github/workflows/deploy-vinext-frontend.yml"
 
 concurrency:
   group: deploy-${{ github.ref }}-${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'production' }}

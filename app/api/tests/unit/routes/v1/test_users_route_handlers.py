@@ -14,6 +14,9 @@ from core.models.tenant import Tenant
 from core.models.user import User
 from routes.v1 import users as users_routes
 
+EXPECTED_ROLE_LOOKUP_COUNT = 2
+EXPECTED_DELETED_RECORD_COUNT = 2
+
 
 @pytest.mark.asyncio
 async def test_list_tenant_users_nonempty() -> None:
@@ -60,9 +63,9 @@ async def test_delete_user_success() -> None:
         session,  # type: ignore[arg-type]
     )
     assert "deleted" in r.message
-    assert session.scalar.await_count == 2
+    assert session.scalar.await_count == EXPECTED_ROLE_LOOKUP_COUNT
     session.get.assert_awaited_once()
-    assert session.delete.await_count == 2
+    assert session.delete.await_count == EXPECTED_DELETED_RECORD_COUNT
 
 
 @pytest.mark.asyncio
@@ -82,7 +85,7 @@ async def test_delete_user_keeps_account_when_other_roles_remain() -> None:
         session,  # type: ignore[arg-type]
     )
     assert "deleted" in r.message
-    assert session.scalar.await_count == 2
+    assert session.scalar.await_count == EXPECTED_ROLE_LOOKUP_COUNT
     session.get.assert_not_awaited()
     assert session.delete.await_count == 1
 

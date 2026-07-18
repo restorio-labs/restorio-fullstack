@@ -93,7 +93,9 @@ def test_build_list_orders_query_excludes_old_terminal_orders() -> None:
     terminal_clause = query["$or"][1]
     assert terminal_clause["status"]["$in"] == list(KITCHEN_TERMINAL_BOARD_STATUSES)
     cutoff = terminal_clause["updatedAt"]["$gte"]
-    assert datetime.now(UTC) - cutoff <= timedelta(hours=KITCHEN_TERMINAL_BOARD_VISIBILITY_HOURS + 1)
+    assert datetime.now(UTC) - cutoff <= timedelta(
+        hours=KITCHEN_TERMINAL_BOARD_VISIBILITY_HOURS + 1
+    )
 
 
 def test_build_list_orders_query_limits_rejected_status_by_updated_at() -> None:

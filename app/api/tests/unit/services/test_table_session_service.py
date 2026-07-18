@@ -150,7 +150,7 @@ async def test_resolve_table_identity_skips_non_list_and_bad_elements() -> None:
         "id": "t-x",
         "tableNumber": 1,
     }
-    session = _sql_session_from_elements("not-a-list", [], [el, "skip"], [el])
+    session = _sql_session_from_elements("not-a-list", [], [el, "skip"])
     tid = uuid4()
 
     svc = TableSessionService()

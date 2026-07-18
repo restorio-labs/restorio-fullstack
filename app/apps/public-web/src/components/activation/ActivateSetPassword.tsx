@@ -1,10 +1,10 @@
 import { Text, Button, PasswordInput } from "@restorio/ui";
 import type { FormEvent, ReactElement } from "react";
 
+import { useTranslations } from "@/i18n/useT";
+
 import { MIN_PASSWORD_LENGTH, type PasswordChecks } from "../../services/validation";
 import { PasswordRulesPin } from "../password/RulesPin";
-
-import { useTranslations } from "@/i18n/useT";
 
 interface ActivateSetPasswordViewProps {
   password: string;

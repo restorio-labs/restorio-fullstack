@@ -17,6 +17,7 @@ import { TbTrash } from "react-icons/tb";
 
 import { api } from "../api/client";
 import { useCurrentTenant } from "../context/TenantContext";
+import { VirtualizedStaffList } from "../features/staff/components/VirtualizedStaffList";
 import { PageLayout } from "../layouts/PageLayout";
 
 type AccessLevel = "kitchen" | "waiter";
@@ -743,10 +744,13 @@ export const StaffPage = (): ReactElement => {
             <div className="rounded-t-lg border-b border-border-default px-6 py-4 text-sm font-medium text-text-secondary">
               {t("staff.list.title")}
             </div>
-            <div className="rounded-b-lg px-6 pb-1 pt-0">
-              <ul className="m-0 list-none divide-y divide-border-default p-0">
-                {users.map((user) => (
-                  <li key={user.id} className="flex min-w-0 items-center justify-between gap-3 py-4">
+            <VirtualizedStaffList
+              count={users.length}
+              renderRow={(index) => {
+                const user = users[index];
+
+                return (
+                  <div className="flex min-w-0 items-center justify-between gap-3 py-4">
                     <div className="flex flex-col min-w-0 flex-1">
                       <span className="truncate text-sm text-text-primary">{user.email}</span>
                       {user.accessLevel === "waiter" && (
@@ -785,10 +789,10 @@ export const StaffPage = (): ReactElement => {
                           : t("staff.delete.button")}
                       </Button>
                     </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
+                  </div>
+                );
+              }}
+            />
           </div>
         )}
 

@@ -52,9 +52,7 @@ export const getEnvironmentFromEnv = (mode: string): EnvironmentType => {
 
 export const getEnvMode = (): string => {
   const viteMode =
-    typeof import.meta !== "undefined"
-      ? (import.meta as ImportMeta & { env?: { MODE?: string } }).env?.MODE
-      : undefined;
+    typeof import.meta !== "undefined" ? (import.meta as ImportMeta & { env?: { MODE?: string } }).env.MODE : undefined;
 
   if (viteMode === "production") {
     return "production";

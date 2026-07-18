@@ -3,7 +3,7 @@ import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import type { ReactNode, ReactElement } from "react";
 
-import { getRootMetadata } from "../../src/i18n/metadata";
+import { getRootMetadata, type MetadataParams } from "../../src/i18n/metadata";
 import { loadMessages, locales } from "../../src/i18n/request";
 import { AppProviders } from "../../src/wrappers/AppProviders";
 
@@ -14,10 +14,6 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
 };
-
-export interface MetadataParams {
-  params: Promise<{ locale: string }>;
-}
 
 export async function generateMetadata({ params }: MetadataParams): Promise<Metadata> {
   const { locale } = await params;
