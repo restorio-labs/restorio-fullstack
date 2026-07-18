@@ -2,7 +2,13 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 from core.models.transaction import Transaction
-from services.mobile_payment_sync import build_mobile_kitchen_order_document, mobile_order_dict_from_transaction
+from services.mobile_payment_sync import (
+    build_mobile_kitchen_order_document,
+    mobile_order_dict_from_transaction,
+)
+
+EXPECTED_TOTAL_AMOUNT_MINOR = 4200
+EXPECTED_TABLE_NUMBER = 7
 
 
 def test_mobile_order_dict_from_transaction_builds_payload() -> None:
@@ -12,7 +18,7 @@ def test_mobile_order_dict_from_transaction_builds_payload() -> None:
         tenant_id=uuid4(),
         merchant_id=1,
         pos_id=1,
-        amount=4200,
+        amount=EXPECTED_TOTAL_AMOUNT_MINOR,
         currency="PLN",
         description="d",
         email="a@b.com",
@@ -24,15 +30,15 @@ def test_mobile_order_dict_from_transaction_builds_payload() -> None:
     )
     tx.order = {
         "tableRef": "ref-1",
-        "tableNumber": 7,
+        "tableNumber": EXPECTED_TABLE_NUMBER,
         "items": [{"name": "Soup", "quantity": 1, "unitPrice": 42.0}],
         "note": "n",
         "invoiceData": {"companyName": "X", "nip": "1234563218"},
     }
     payload = mobile_order_dict_from_transaction(tx)
     assert payload is not None
-    assert payload["totalAmount"] == 4200
-    assert payload["tableNumber"] == 7
+    assert payload["totalAmount"] == EXPECTED_TOTAL_AMOUNT_MINOR
+    assert payload["tableNumber"] == EXPECTED_TABLE_NUMBER
     assert payload["items"][0]["name"] == "Soup"
 
 

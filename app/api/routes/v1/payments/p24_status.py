@@ -44,9 +44,7 @@ async def p24_status_webhook(
     statement: str = Form(...),  # noqa: ARG001
     sign: str = Form(...),  # noqa: ARG001
 ) -> SuccessResponse[dict[str, Any]]:
-    result = await session.execute(
-        select(Transaction).where(Transaction.session_id == sessionId)
-    )
+    result = await session.execute(select(Transaction).where(Transaction.session_id == sessionId))
     transaction = result.scalar_one_or_none()
     if transaction is None:
         raise NotFoundResponse(_RESOURCE_TRANSACTION, sessionId)

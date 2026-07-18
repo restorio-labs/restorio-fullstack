@@ -196,7 +196,9 @@ async def test_p24_status_webhook_creates_kitchen_order_on_paid() -> None:
 
 
 @pytest.mark.asyncio
-async def test_p24_status_webhook_creates_kitchen_order_from_transaction_when_mongo_order_missing() -> None:
+async def test_p24_status_webhook_creates_kitchen_order_from_transaction_when_mongo_order_missing() -> (
+    None
+):
     tenant = _tenant()
     sid = uuid4()
     tx = Transaction(

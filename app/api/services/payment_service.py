@@ -92,17 +92,23 @@ def _p24_api_url(path: str) -> str:
 
 def p24_notification_status_url() -> str:
     base = (settings.API_BASE_URL or settings.FRONTEND_URL).strip().rstrip("/")
-    prefix = settings.API_V1_PREFIX if settings.API_V1_PREFIX.startswith("/") else f"/{settings.API_V1_PREFIX}"
+    prefix = (
+        settings.API_V1_PREFIX
+        if settings.API_V1_PREFIX.startswith("/")
+        else f"/{settings.API_V1_PREFIX}"
+    )
     return f"{base}{prefix}/payments/status"
 
 
-def build_waiter_settlement_transaction(tenant: Tenant, order_doc: dict[str, Any]) -> Transaction | None:
+def build_waiter_settlement_transaction(
+    tenant: Tenant, order_doc: dict[str, Any]
+) -> Transaction | None:
     total_raw = order_doc.get("total", 0)
     try:
         total = float(total_raw)
     except (TypeError, ValueError):
         total = 0.0
-    amount_minor = int(round(total * 100))
+    amount_minor = round(total * 100)
     if amount_minor <= 0:
         return None
 

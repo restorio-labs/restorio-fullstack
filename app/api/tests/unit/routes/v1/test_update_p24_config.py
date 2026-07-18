@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from pydantic import ValidationError
 import pytest
 
@@ -158,7 +158,7 @@ class TestGetP24Config:
         with pytest.raises(HTTPException) as exc_info:
             await get_p24_config(MagicMock(), tenant_id, session)
 
-        assert exc_info.value.status_code == 404
+        assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
         assert str(tenant_id) in exc_info.value.detail
 
 
