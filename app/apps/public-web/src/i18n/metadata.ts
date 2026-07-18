@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 
 import { loadMessages, locales } from "./request";
 
+export interface MetadataParams {
+  params: Promise<{ locale: string }>;
+}
+
 const resolveMetadataBaseUrl = (): string => {
   const explicit = process.env.NEXT_PUBLIC_BASE_URL;
 
