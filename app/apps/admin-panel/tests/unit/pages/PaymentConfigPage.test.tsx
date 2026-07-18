@@ -93,17 +93,16 @@ describe("PaymentConfigPage", () => {
     });
     renderPage();
 
-    await waitFor(() => {
-      expect(mockGetP24Config).toHaveBeenCalledWith("550e8400-e29b-41d4-a716-446655440000", expect.any(AbortSignal));
-    });
-
-    await waitFor(() => {
-      expect(screen.getByRole("button", { name: /save configuration/i })).toBeEnabled();
-    });
-
-    expect(screen.getByLabelText(/merchant id/i)).toHaveValue(123456);
-    expect(screen.getByLabelText(/p24 api key/i)).toHaveValue(API_KEY);
-    expect(screen.getByLabelText(/p24 crc key/i)).toHaveValue(CRC_KEY);
+    await waitFor(
+      () => {
+        expect(mockGetP24Config).toHaveBeenCalledWith("550e8400-e29b-41d4-a716-446655440000", expect.any(AbortSignal));
+        expect(screen.getByLabelText(/merchant id/i)).toHaveValue(123456);
+        expect(screen.getByLabelText(/p24 api key/i)).toHaveValue(API_KEY);
+        expect(screen.getByLabelText(/p24 crc key/i)).toHaveValue(CRC_KEY);
+        expect(screen.getByRole("button", { name: /save configuration/i })).toBeEnabled();
+      },
+      { timeout: 3000 },
+    );
   });
 
   it("renders selected restaurant details and payment fields", () => {

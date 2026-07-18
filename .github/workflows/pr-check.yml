@@ -117,7 +117,7 @@ jobs:
           path: coverage-artifacts/coverage-${{ matrix.target }}.json
 
   typescript-coverage:
-    name: TypeScript — coverage report
+    name: TypeScript — Coverage Report
     runs-on: ubuntu-slim
     needs:
       - detect-changes
@@ -152,7 +152,7 @@ jobs:
           header: typescript-coverage
 
   api:
-    name: Python API Validation
+    name: PY API
     runs-on: ubuntu-slim
     needs: detect-changes
     if: needs.detect-changes.outputs.api == 'true'
