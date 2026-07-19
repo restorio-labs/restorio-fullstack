@@ -1,6 +1,27 @@
-from pydantic import Field
+from typing import Self
+
+from pydantic import Field, model_validator
 
 from core.dto.v1.common import BaseDTO
+from core.models.enums import GeocodingStatus, LocationPrecision, LocationSource
+
+
+class LocationFieldsDTO(BaseDTO):
+    latitude: float | None = Field(None, ge=-90, le=90, description="WGS84 latitude")
+    longitude: float | None = Field(None, ge=-180, le=180, description="WGS84 longitude")
+    geocoding_status: GeocodingStatus = Field(
+        GeocodingStatus.NOT_GEOCODED,
+        description="Current geocoding lifecycle status",
+    )
+    location_source: LocationSource | None = Field(
+        None, description="Source used to establish the coordinates"
+    )
+    location_precision: LocationPrecision | None = Field(
+        None, description="Precision of the stored coordinates"
+    )
+    is_location_public: bool = Field(
+        False, description="Whether the restaurant location may be exposed publicly"
+    )
 
 
 class TenantLogoUploadPresignRequestDTO(BaseDTO):
@@ -19,7 +40,7 @@ class TenantLogoUploadPresignRequestDTO(BaseDTO):
     )
 
 
-class CreateTenantProfileDTO(BaseDTO):
+class CreateTenantProfileDTO(LocationFieldsDTO):
     nip: str = Field(
         ...,
         min_length=10,
@@ -91,8 +112,32 @@ class CreateTenantProfileDTO(BaseDTO):
     social_tiktok: str | None = Field(None, max_length=512, description="TikTok profile URL")
     social_website: str | None = Field(None, max_length=512, description="Restaurant website URL")
 
+    @model_validator(mode="after")
+    def validate_location(self) -> Self:
+        has_latitude = self.latitude is not None
+        has_longitude = self.longitude is not None
+        if has_latitude != has_longitude:
+            msg = "Latitude and longitude must be provided together"
+            raise ValueError(msg)
 
-class UpdateTenantProfileDTO(BaseDTO):
+        has_coordinates = has_latitude and has_longitude
+        if self.is_location_public and not has_coordinates:
+            msg = "A public location requires coordinates"
+            raise ValueError(msg)
+        if self.location_source is not None and not has_coordinates:
+            msg = "Location source requires coordinates"
+            raise ValueError(msg)
+        if self.location_precision is not None and not has_coordinates:
+            msg = "Location precision requires coordinates"
+            raise ValueError(msg)
+        if self.geocoding_status == GeocodingStatus.GEOCODED and not has_coordinates:
+            msg = "Geocoded status requires coordinates"
+            raise ValueError(msg)
+
+        return self
+
+
+class UpdateTenantProfileDTO(LocationFieldsDTO):
     nip: str | None = Field(
         None,
         min_length=10,

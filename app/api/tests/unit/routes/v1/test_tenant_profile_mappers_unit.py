@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from decimal import Decimal
 from types import SimpleNamespace
 from uuid import uuid4
 
 from routes.v1.mappers.tenant_profile_mappers import tenant_profile_to_response
+
+LATITUDE = 52.2297
+LONGITUDE = 21.0122
 
 
 def test_tenant_profile_to_response() -> None:
@@ -23,6 +27,12 @@ def test_tenant_profile_to_response() -> None:
         address_city="W",
         address_postal_code="00-001",
         address_country="PL",
+        latitude=Decimal("52.229700"),
+        longitude=Decimal("21.012200"),
+        geocoding_status="geocoded",
+        location_source="manual",
+        location_precision="rooftop",
+        is_location_public=True,
         owner_first_name="A",
         owner_last_name="B",
         owner_email="o@e.com",
@@ -41,3 +51,7 @@ def test_tenant_profile_to_response() -> None:
     r = tenant_profile_to_response(p)
     assert r.tenant_id == tid
     assert r.company_name == "Co"
+    assert r.latitude == LATITUDE
+    assert r.longitude == LONGITUDE
+    assert r.geocoding_status == "geocoded"
+    assert r.is_location_public is True

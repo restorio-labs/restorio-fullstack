@@ -1,3 +1,9 @@
+export type GeocodingStatus = "not_geocoded" | "pending" | "geocoded" | "failed";
+
+export type LocationSource = "geocoder" | "manual" | "imported";
+
+export type LocationPrecision = "rooftop" | "interpolated" | "street" | "postal_code" | "city" | "approximate";
+
 export interface TenantProfile {
   id: string;
   tenantId: string;
@@ -14,6 +20,12 @@ export interface TenantProfile {
   addressCity: string;
   addressPostalCode: string;
   addressCountry: string;
+  latitude: number | null;
+  longitude: number | null;
+  geocodingStatus: GeocodingStatus;
+  locationSource: LocationSource | null;
+  locationPrecision: LocationPrecision | null;
+  isLocationPublic: boolean;
 
   ownerFirstName: string;
   ownerLastName: string;
@@ -85,6 +97,12 @@ export interface CreateTenantProfileRequest {
   address_city: string;
   address_postal_code: string;
   address_country?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  geocoding_status?: GeocodingStatus;
+  location_source?: LocationSource | null;
+  location_precision?: LocationPrecision | null;
+  is_location_public?: boolean;
 
   owner_first_name: string;
   owner_last_name: string;
