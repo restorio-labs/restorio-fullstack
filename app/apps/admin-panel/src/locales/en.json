@@ -656,6 +656,7 @@
       "company": "Company Details",
       "contact": "Restaurant Contact",
       "address": "Address",
+      "location": "Map location",
       "owner": "Owner Details",
       "contactPerson": "Contact Person",
       "socials": "Social Media"
@@ -721,6 +722,23 @@
         "placeholder": "Poland",
         "error": "Country is required"
       },
+      "latitude": {
+        "label": "Latitude",
+        "placeholder": "52.2297",
+        "helper": "Value from -90 to 90",
+        "error": "Enter a valid latitude from -90 to 90"
+      },
+      "longitude": {
+        "label": "Longitude",
+        "placeholder": "21.0122",
+        "helper": "Value from -180 to 180",
+        "error": "Enter a valid longitude from -180 to 180"
+      },
+      "isLocationPublic": {
+        "label": "Show this restaurant publicly",
+        "helper": "Public visibility is available only when valid coordinates are saved.",
+        "error": "A public restaurant requires a valid location"
+      },
       "ownerFirstName": {
         "label": "First Name",
         "placeholder": "John",
@@ -782,6 +800,11 @@
         "error": "Invalid website URL"
       }
     },
+    "location": {
+      "description": "Enter the exact coordinates of the restaurant entrance or its main customer-facing location.",
+      "legacyTitle": "This profile needs a location",
+      "legacyDescription": "This restaurant was created before locations were required. Add coordinates before saving or making it publicly visible."
+    },
     "errors": {
       "loadTenants": "Failed to load tenants. Please refresh and try again.",
       "selectTenant": "Select a tenant from the header dropdown.",
@@ -795,8 +818,53 @@
     }
   },
   "onboarding": {
-    "title": "Create your first restaurant",
-    "description": "To get started, add your first restaurant. You can always add more later.",
+    "title": "Set up a restaurant ready for service",
+    "description": "We will prepare the essentials now, so your team can move straight into floors, menus, and day-to-day service.",
+    "progressLabel": "About 4 minutes",
+    "steps": {
+      "0": {
+        "counter": "Step 1 of 4",
+        "title": "Start with your restaurant",
+        "description": "Give the location a recognizable name and the structured address used by guests and staff."
+      },
+      "1": {
+        "counter": "Step 2 of 4",
+        "title": "Pin the exact location",
+        "description": "Coordinates make the restaurant discoverable and prevent guests from being sent to the wrong entrance."
+      },
+      "2": {
+        "counter": "Step 3 of 4",
+        "title": "Add business details",
+        "description": "These details identify the company responsible for the restaurant and give guests a reliable contact."
+      },
+      "3": {
+        "counter": "Step 4 of 4",
+        "title": "Confirm ownership",
+        "description": "Finish the required owner details and review the restaurant before creating it."
+      }
+    },
+    "features": {
+      "0": {
+        "eyebrow": "One operating picture",
+        "title": "Your restaurant starts organized",
+        "description": "Floors, tables, menus, staff, and orders live under one restaurant profile from the first day."
+      },
+      "1": {
+        "eyebrow": "Accurate discovery",
+        "title": "Guide guests to the right place",
+        "description": "A precise location supports public discovery while visibility remains under your control."
+      },
+      "2": {
+        "eyebrow": "Trusted information",
+        "title": "Keep business data in one place",
+        "description": "The team works from a consistent company identity, address, and restaurant contact."
+      },
+      "3": {
+        "eyebrow": "Ready for the team",
+        "title": "Continue into daily operations",
+        "description": "Once setup is complete, you can build the floor, publish a menu, and invite staff."
+      }
+    },
     "fields": {
       "name": {
         "label": "Restaurant name",
@@ -820,8 +888,13 @@
       }
     },
     "actions": {
+      "back": "Back",
+      "continue": "Continue",
       "create": "Create restaurant",
       "creating": "Creating..."
+    },
+    "review": {
+      "title": "Restaurant summary"
     },
     "errors": {
       "createFailed": "Failed to create restaurant. Please try again."

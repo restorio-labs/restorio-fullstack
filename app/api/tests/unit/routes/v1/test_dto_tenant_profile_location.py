@@ -24,15 +24,9 @@ def _profile_data(**overrides: object) -> dict[str, object]:
     return data
 
 
-def test_location_defaults_are_safe_for_legacy_profiles() -> None:
-    dto = CreateTenantProfileDTO.model_validate(_profile_data())
-
-    assert dto.latitude is None
-    assert dto.longitude is None
-    assert dto.geocoding_status == "not_geocoded"
-    assert dto.location_source is None
-    assert dto.location_precision is None
-    assert dto.is_location_public is False
+def test_requires_location_for_new_profiles() -> None:
+    with pytest.raises(ValidationError):
+        CreateTenantProfileDTO.model_validate(_profile_data())
 
 
 def test_accepts_complete_public_location() -> None:
