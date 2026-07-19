@@ -17,6 +17,8 @@ down_revision: Union[str, None] = "20260503_password_reset"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
+__all__ = ["revision", "down_revision", "branch_labels", "depends_on"]
+
 geocoding_status_enum = postgresql.ENUM(
     "not_geocoded",
     "pending",
