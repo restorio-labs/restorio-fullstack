@@ -96,6 +96,18 @@ The following Makefile targets are provided to streamline common development tas
 | `make migrate-current` | Display the currently applied migration revision |
 | `make migrate-downgrade` | Revert the most recently applied migration |
 
+## Geolocation Storage
+
+Restaurant coordinates are stored on tenant profiles as validated numeric latitude and longitude values.
+PostgreSQL derives a `geography(Point, 4326)` value and maintains a partial GiST index for location-based queries.
+Existing profiles migrate with no coordinates, `not_geocoded` status, and private visibility, so the migration does not publish legacy restaurant locations.
+
+The Compose environments use the `postgis/postgis:16-3.5-alpine` image because the geolocation migration requires the PostGIS extension.
+Managed PostgreSQL environments must make PostGIS available before `make migrate` runs.
+
+To roll back the geolocation schema, run `make migrate-downgrade` while the geolocation revision is current.
+The downgrade removes the location columns, constraints, enums, and GiST index but intentionally leaves the shared PostGIS extension installed.
+
 ## Principal Technologies
 
 The backend service is built upon the following key technologies and libraries:

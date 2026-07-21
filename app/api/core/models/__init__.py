@@ -2,6 +2,9 @@ from core.models.activation_link import ActivationLink
 from core.models.archived_order import ArchivedOrder
 from core.models.audit_log import AuditLog
 from core.models.enums import (
+    GeocodingStatus,
+    LocationPrecision,
+    LocationSource,
     OrderStatus,
     PaymentProvider,
     PaymentStatus,
@@ -33,6 +36,9 @@ __all__ = [
     "AuditLog",
     "CreatePaymentRequest",
     "FloorCanvas",
+    "GeocodingStatus",
+    "LocationPrecision",
+    "LocationSource",
     "Order",
     "OrderDetails",
     "OrderStatus",

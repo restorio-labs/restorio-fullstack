@@ -10,8 +10,11 @@ from core.exceptions import NotFoundResponse
 from core.models.tenant_profile import TenantProfile
 from services.tenant_profile_service import TenantProfileService
 
+LATITUDE = 52.2297
+LONGITUDE = 21.0122
 
-def _create_dto(**overrides: str) -> CreateTenantProfileDTO:
+
+def _create_dto(**overrides: object) -> CreateTenantProfileDTO:
     data = {
         "nip": "1234563218",
         "company_name": "Co",
@@ -101,6 +104,8 @@ async def test_create() -> None:
     assert isinstance(p, TenantProfile)
     assert p.tenant_id == tid
     assert p.nip == dto.nip
+    assert p.geocoding_status == dto.geocoding_status
+    assert p.is_location_public is False
     assert p is out
     session.commit.assert_awaited_once()
     session.refresh.assert_awaited_once_with(out)
@@ -137,6 +142,33 @@ async def test_upsert_updates_existing() -> None:
     assert is_new is False
     assert p.company_name == "NewCo"
     session.commit.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_upsert_updates_location_fields() -> None:
+    svc = TenantProfileService()
+    tid = uuid4()
+    dto = _create_dto(
+        latitude=LATITUDE,
+        longitude=LONGITUDE,
+        geocoding_status="geocoded",
+        location_source="manual",
+        location_precision="rooftop",
+        is_location_public=True,
+    )
+    existing = _min_profile(tid)
+    session = MagicMock()
+    session.execute = AsyncMock(return_value=_result_one(existing))
+    session.commit = AsyncMock()
+    session.refresh = AsyncMock()
+
+    profile, is_new = await svc.upsert(session, tid, dto)
+
+    assert is_new is False
+    assert profile.latitude == LATITUDE
+    assert profile.longitude == LONGITUDE
+    assert profile.location_source == "manual"
+    assert profile.is_location_public is True
 
 
 @pytest.mark.asyncio

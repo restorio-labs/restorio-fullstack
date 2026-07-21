@@ -3,6 +3,7 @@ from datetime import datetime
 from pydantic import Field
 
 from core.dto.v1.common import BaseDTO, EntityId
+from core.models.enums import GeocodingStatus, LocationPrecision, LocationSource
 
 
 class TenantProfileResponseDTO(BaseDTO):
@@ -53,6 +54,32 @@ class TenantProfileResponseDTO(BaseDTO):
     )
     address_country: str = Field(
         ..., alias="addressCountry", serialization_alias="addressCountry", description="Country"
+    )
+    latitude: float | None = Field(None, description="WGS84 latitude")
+    longitude: float | None = Field(None, description="WGS84 longitude")
+    geocoding_status: GeocodingStatus = Field(
+        ...,
+        alias="geocodingStatus",
+        serialization_alias="geocodingStatus",
+        description="Current geocoding lifecycle status",
+    )
+    location_source: LocationSource | None = Field(
+        None,
+        alias="locationSource",
+        serialization_alias="locationSource",
+        description="Source used to establish the coordinates",
+    )
+    location_precision: LocationPrecision | None = Field(
+        None,
+        alias="locationPrecision",
+        serialization_alias="locationPrecision",
+        description="Precision of the stored coordinates",
+    )
+    is_location_public: bool = Field(
+        ...,
+        alias="isLocationPublic",
+        serialization_alias="isLocationPublic",
+        description="Whether the restaurant location may be exposed publicly",
     )
 
     owner_first_name: str = Field(

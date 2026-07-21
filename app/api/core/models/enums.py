@@ -9,6 +9,28 @@ class TenantStatus(StrEnum):
     INACTIVE = "inactive"
 
 
+class GeocodingStatus(StrEnum):
+    NOT_GEOCODED = "not_geocoded"
+    PENDING = "pending"
+    GEOCODED = "geocoded"
+    FAILED = "failed"
+
+
+class LocationSource(StrEnum):
+    GEOCODER = "geocoder"
+    MANUAL = "manual"
+    IMPORTED = "imported"
+
+
+class LocationPrecision(StrEnum):
+    ROOFTOP = "rooftop"
+    INTERPOLATED = "interpolated"
+    STREET = "street"
+    POSTAL_CODE = "postal_code"
+    CITY = "city"
+    APPROXIMATE = "approximate"
+
+
 class OrderStatus(StrEnum):
     PLACED = "placed"
     PAID = "paid"
