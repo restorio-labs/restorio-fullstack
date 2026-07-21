@@ -10,7 +10,13 @@ import { useNavigate } from "react-router-dom";
 
 import { api } from "../api/client";
 import { tenantDetailsQueryKey, useCurrentTenant } from "../context/TenantContext";
-import { CompanyFieldset, ContactFieldset, OwnerFieldset } from "../features/profile/TenantProfileFieldsets";
+import { hasValidCoordinates } from "../features/profile/profileForm";
+import {
+  CompanyFieldset,
+  ContactFieldset,
+  LocationFieldset,
+  OwnerFieldset,
+} from "../features/profile/TenantProfileFieldsets";
 import { tenantsQueryKey } from "../hooks/useTenants";
 import { useValidationErrors } from "../hooks/useValidationErrors";
 import { PageLayout } from "../layouts/PageLayout";
@@ -28,6 +34,9 @@ type CreateTenantFormValues = {
   | "addressCity"
   | "addressPostalCode"
   | "addressCountry"
+  | "latitude"
+  | "longitude"
+  | "isLocationPublic"
   | "ownerFirstName"
   | "ownerLastName"
 >;
@@ -72,6 +81,9 @@ export const RestaurantCreatorPage = (): ReactElement => {
       addressCity: "",
       addressPostalCode: "",
       addressCountry: "Polska",
+      latitude: "",
+      longitude: "",
+      isLocationPublic: false,
       ownerFirstName: "",
       ownerLastName: "",
     },
@@ -83,6 +95,8 @@ export const RestaurantCreatorPage = (): ReactElement => {
   const watchedAddressStreetName = watch("addressStreetName");
   const watchedAddressStreetNumber = watch("addressStreetNumber");
   const watchedAddressCity = watch("addressCity");
+  const watchedLatitude = watch("latitude");
+  const watchedLongitude = watch("longitude");
   const generatedSlug = slugify(
     `${watchedName}-${watchedAddressStreetName}-${watchedAddressStreetNumber}-${watchedAddressCity}`,
   );
@@ -108,6 +122,12 @@ export const RestaurantCreatorPage = (): ReactElement => {
             address_city: values.addressCity.trim(),
             address_postal_code: values.addressPostalCode.trim(),
             address_country: values.addressCountry.trim() || "Polska",
+            latitude: Number(values.latitude),
+            longitude: Number(values.longitude),
+            geocoding_status: "not_geocoded",
+            location_source: "manual",
+            location_precision: "approximate",
+            is_location_public: values.isLocationPublic,
             owner_first_name: values.ownerFirstName.trim(),
             owner_last_name: values.ownerLastName.trim(),
             owner_email: null,
@@ -157,6 +177,9 @@ export const RestaurantCreatorPage = (): ReactElement => {
         addressCity: "",
         addressPostalCode: "",
         addressCountry: "Polska",
+        latitude: "",
+        longitude: "",
+        isLocationPublic: false,
         ownerFirstName: "",
         ownerLastName: "",
       });
@@ -234,6 +257,14 @@ export const RestaurantCreatorPage = (): ReactElement => {
 
     if (field === "ownerLastName" && errors.ownerLastName) {
       return t("tenantProfile.fields.ownerLastName.error");
+    }
+
+    if (field === "latitude" && errors.latitude) {
+      return t("tenantProfile.fields.latitude.error");
+    }
+
+    if (field === "longitude" && errors.longitude) {
+      return t("tenantProfile.fields.longitude.error");
     }
 
     return undefined;
@@ -322,6 +353,12 @@ export const RestaurantCreatorPage = (): ReactElement => {
                     t={t}
                   />
                   <ContactFieldset getFieldError={getCombinedFieldError} register={profileRegister} t={t} />
+                  <LocationFieldset
+                    canPublish={hasValidCoordinates(watchedLatitude, watchedLongitude)}
+                    getFieldError={getCombinedFieldError}
+                    register={profileRegister}
+                    t={t}
+                  />
                   <OwnerFieldset getFieldError={getCombinedFieldError} register={profileRegister} t={t} />
                   <fieldset className="h-fit rounded-xl border border-border-default bg-surface-secondary/60 p-6 shadow-sm">
                     <legend className="mb-0 text-sm font-semibold text-text-primary">

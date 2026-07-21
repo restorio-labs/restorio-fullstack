@@ -661,6 +661,7 @@
       "company": "Dane firmy",
       "contact": "Kontakt z restauracją",
       "address": "Adres",
+      "location": "Lokalizacja na mapie",
       "owner": "Dane właściciela",
       "contactPerson": "Osoba kontaktowa",
       "socials": "Media społecznościowe"
@@ -726,6 +727,23 @@
         "placeholder": "Polska",
         "error": "Kraj jest wymagany"
       },
+      "latitude": {
+        "label": "Szerokość geograficzna",
+        "placeholder": "52.2297",
+        "helper": "Wartość od -90 do 90",
+        "error": "Wpisz prawidłową szerokość od -90 do 90"
+      },
+      "longitude": {
+        "label": "Długość geograficzna",
+        "placeholder": "21.0122",
+        "helper": "Wartość od -180 do 180",
+        "error": "Wpisz prawidłową długość od -180 do 180"
+      },
+      "isLocationPublic": {
+        "label": "Pokaż tę restaurację publicznie",
+        "helper": "Widoczność publiczna jest dostępna dopiero po zapisaniu prawidłowych współrzędnych.",
+        "error": "Publiczna restauracja wymaga prawidłowej lokalizacji"
+      },
       "ownerFirstName": {
         "label": "Imię",
         "placeholder": "Jan",
@@ -787,6 +805,11 @@
         "error": "Nieprawidłowy URL strony www"
       }
     },
+    "location": {
+      "description": "Wpisz dokładne współrzędne wejścia do restauracji lub głównej lokalizacji dostępnej dla gości.",
+      "legacyTitle": "Ten profil wymaga lokalizacji",
+      "legacyDescription": "Restauracja powstała zanim lokalizacja była wymagana. Dodaj współrzędne przed zapisem lub włączeniem widoczności publicznej."
+    },
     "errors": {
       "loadTenants": "Nie udało się wczytać najemców. Odśwież i spróbuj ponownie.",
       "selectTenant": "Wybierz najemcę z rozwijanego menu w nagłówku.",
@@ -805,8 +828,53 @@
     "title": "Stolik {{table}}"
   },
   "onboarding": {
-    "title": "Utwórz swoją pierwszą restaurację",
-    "description": "Aby rozpocząć, dodaj swoją pierwszą restaurację!",
+    "title": "Przygotuj restaurację do obsługi",
+    "description": "Ustawimy teraz najważniejsze dane, aby zespół mógł od razu przejść do sal, menu i codziennej obsługi.",
+    "progressLabel": "Około 4 minut",
+    "steps": {
+      "0": {
+        "counter": "Krok 1 z 4",
+        "title": "Zacznij od restauracji",
+        "description": "Podaj rozpoznawalną nazwę lokalu i uporządkowany adres używany przez gości oraz zespół."
+      },
+      "1": {
+        "counter": "Krok 2 z 4",
+        "title": "Wskaż dokładną lokalizację",
+        "description": "Współrzędne pomagają znaleźć restaurację i chronią gości przed trafieniem pod niewłaściwe wejście."
+      },
+      "2": {
+        "counter": "Krok 3 z 4",
+        "title": "Dodaj dane firmy",
+        "description": "Te dane wskazują firmę odpowiedzialną za restaurację i zapewniają gościom wiarygodny kontakt."
+      },
+      "3": {
+        "counter": "Krok 4 z 4",
+        "title": "Potwierdź właściciela",
+        "description": "Uzupełnij wymagane dane właściciela i sprawdź restaurację przed utworzeniem."
+      }
+    },
+    "features": {
+      "0": {
+        "eyebrow": "Jeden obraz działania",
+        "title": "Restauracja od początku jest uporządkowana",
+        "description": "Sale, stoliki, menu, personel i zamówienia działają w ramach jednego profilu restauracji."
+      },
+      "1": {
+        "eyebrow": "Dokładne wyszukiwanie",
+        "title": "Poprowadź gości we właściwe miejsce",
+        "description": "Precyzyjna lokalizacja wspiera publiczne wyszukiwanie, a widoczność pozostaje pod Twoją kontrolą."
+      },
+      "2": {
+        "eyebrow": "Wiarygodne informacje",
+        "title": "Trzymaj dane firmy w jednym miejscu",
+        "description": "Zespół korzysta ze spójnej nazwy firmy, adresu i kontaktu do restauracji."
+      },
+      "3": {
+        "eyebrow": "Gotowe dla zespołu",
+        "title": "Przejdź do codziennej pracy",
+        "description": "Po konfiguracji możesz przygotować salę, opublikować menu i zaprosić personel."
+      }
+    },
     "fields": {
       "name": {
         "label": "Nazwa restauracji",
@@ -830,8 +898,13 @@
       }
     },
     "actions": {
+      "back": "Wstecz",
+      "continue": "Dalej",
       "create": "Utwórz restaurację",
       "creating": "Tworzenie..."
+    },
+    "review": {
+      "title": "Podsumowanie restauracji"
     },
     "errors": {
       "createFailed": "Nie udało się utworzyć restauracji. Spróbuj ponownie."

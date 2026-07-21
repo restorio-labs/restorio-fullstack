@@ -94,6 +94,8 @@ const fillRequiredProfileFields = (): void => {
   setInputValue("addressPostalCode", "00-001");
   setInputValue("ownerFirstName", "John");
   setInputValue("ownerLastName", "Smith");
+  setInputValue("latitude", "52.2297");
+  setInputValue("longitude", "21.0122");
 };
 
 describe("RestaurantCreatorPage", () => {
