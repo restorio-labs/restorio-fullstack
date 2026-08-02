@@ -1,6 +1,4 @@
-from typing import Self
-
-from pydantic import Field, model_validator
+from pydantic import Field
 
 from core.dto.v1.common import BaseDTO
 from core.models.enums import GeocodingStatus, LocationPrecision, LocationSource
