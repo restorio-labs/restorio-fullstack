@@ -1,22 +1,21 @@
 /* eslint-disable no-console */
 interface ViteEnv {
   readonly DEV?: boolean;
-  readonly MODE?: string;
 }
 
 const isDevelopment = (): boolean => {
-  if (typeof process !== "undefined" && process.env.NODE_ENV === "development") {
-    return true;
+  if (typeof process !== "undefined") {
+    const mode = process.env.ENV ?? process.env.NODE_ENV;
+
+    if (mode === "development") {
+      return true;
+    }
   }
 
   if (typeof import.meta !== "undefined" && "env" in import.meta) {
     const env = import.meta.env as ViteEnv;
 
     if (env.DEV === true) {
-      return true;
-    }
-
-    if (env.MODE === "development") {
       return true;
     }
   }

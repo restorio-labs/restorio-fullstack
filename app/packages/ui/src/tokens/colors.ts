@@ -1,3 +1,13 @@
+import type { AppSlug } from "@restorio/types";
+
+export const appBrandColors = {
+  "public-web": "#4da6ff",
+  "admin-panel": "#ff355e",
+  "waiter-panel": "#f6cf00",
+  "kitchen-panel": "#5fb35c",
+  "mobile-app": "#ce85e1",
+} as const satisfies Record<AppSlug, string>;
+
 export const colorTokens = {
   light: {
     background: {

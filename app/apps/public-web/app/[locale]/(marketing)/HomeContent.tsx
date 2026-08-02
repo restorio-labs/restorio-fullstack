@@ -1,6 +1,15 @@
 "use client";
 
-import { Button, cn, ContentContainer, Loader, Text, useAuthRoute, type AuthRouteStatus } from "@restorio/ui";
+import {
+  appBrandColors,
+  Button,
+  cn,
+  ContentContainer,
+  Loader,
+  Text,
+  useAuthRoute,
+  type AuthRouteStatus,
+} from "@restorio/ui";
 import { goToApp } from "@restorio/utils";
 import Link from "next/link";
 import type { ReactElement } from "react";
@@ -130,12 +139,17 @@ export const HomeContent = (): ReactElement => {
           className={animatedSectionClassName}
           style={{ animationDelay: "680ms" }}
         >
-          <div className="mb-14 text-center">
-            <Text variant="h2" weight="bold" className="text-center mb-4 text-3xl font-black md:text-5xl">
+          <div className="mx-auto mb-14 max-w-3xl text-center">
+            <Text variant="h2" weight="bold" className="text-center text-3xl font-black leading-tight md:text-5xl">
               {t("landing.pillars.title")}
             </Text>
+            <div
+              className="mx-auto mt-6 h-1 w-12 rounded-full"
+              style={{ backgroundColor: appBrandColors["public-web"] }}
+              aria-hidden
+            />
           </div>
-          <div className="grid gap-10 lg:grid-cols-3 lg:gap-8">
+          <div className="grid gap-6 lg:grid-cols-3 lg:gap-8">
             {(
               [
                 {
@@ -146,21 +160,15 @@ export const HomeContent = (): ReactElement => {
                     t("landing.pillars.ownersB2"),
                     t("landing.pillars.ownersB3"),
                   ],
-                  ring: "border-border-default/30",
-                  accent: "text-interactive-primary",
-                  iconBg: "bg-interactive-primary/15",
+                  accent: appBrandColors["admin-panel"],
                   IconComponent: FaChartLine,
-                  featured: false,
                 },
                 {
                   title: t("landing.pillars.staffTitle"),
                   body: t("landing.pillars.staffBody"),
                   bullets: [t("landing.pillars.staffB1"), t("landing.pillars.staffB2"), t("landing.pillars.staffB3")],
-                  ring: "border-interactive-primary/25",
-                  accent: "text-interactive-secondary",
-                  iconBg: "bg-interactive-secondary/15",
+                  accent: appBrandColors["kitchen-panel"],
                   IconComponent: FaUtensils,
-                  featured: true,
                 },
                 {
                   title: t("landing.pillars.guestsTitle"),
@@ -170,42 +178,47 @@ export const HomeContent = (): ReactElement => {
                     t("landing.pillars.guestsB2"),
                     t("landing.pillars.guestsB3"),
                   ],
-                  ring: "border-border-default/30",
-                  accent: "text-pink-500",
-                  iconBg: "bg-pink-500/15",
+                  accent: appBrandColors["mobile-app"],
                   IconComponent: FaHeart,
-                  featured: false,
                 },
               ] as const
             ).map((card) => (
               <div
                 key={card.title}
-                className={cn(
-                  "flex flex-col rounded-[2rem] border bg-surface-primary/80 p-10 text-center transition-transform duration-500 hover:-translate-y-1",
-                  card.ring,
-                  card.featured ? "hearth-glow scale-[1.02] shadow-2xl lg:scale-105" : "shadow-lg",
-                )}
+                className="group flex flex-col rounded-[2rem] border border-border-default/30 bg-surface-primary/80 p-8 shadow-lg transition duration-500 hover:-translate-y-1 hover:border-border-default/50 hover:shadow-xl sm:p-10"
               >
-                <div
-                  className={cn(
-                    "mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full",
-                    card.iconBg,
-                    card.accent,
-                  )}
-                >
-                  <card.IconComponent className="h-8 w-8" aria-hidden />
+                <div className="relative mb-6 w-fit">
+                  <div
+                    className="flex h-14 w-14 items-center justify-center rounded-xl transition-transform duration-500 group-hover:scale-105"
+                    style={{
+                      backgroundColor: `${card.accent}1f`,
+                      color: card.accent,
+                    }}
+                  >
+                    <card.IconComponent className="h-6 w-6" aria-hidden />
+                  </div>
                 </div>
+
                 <Text variant="h3" weight="bold" className="mb-3 text-xl font-black">
                   {card.title}
                 </Text>
-                <Text variant="body-md" className="mb-6 text-text-secondary">
+                <Text
+                  variant="body-md"
+                  className="mb-7 leading-relaxed text-text-secondary lg:min-h-[96px] xl:min-h-[72px]"
+                >
                   {card.body}
                 </Text>
-                <ul className="mt-auto space-y-3 border-t border-border-default/25 pt-6 text-left text-sm">
+
+                <ul className="mt-auto space-y-4 border-t border-border-default/25 pt-6 text-sm">
                   {card.bullets.map((line) => (
                     <li key={line} className="flex items-center gap-3">
-                      <FaCheck className={cn("h-4 w-4 shrink-0", card.accent)} aria-hidden />
-                      <span className="text-text-secondary">{line}</span>
+                      <span
+                        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
+                        style={{ backgroundColor: `${card.accent}1f`, color: card.accent }}
+                      >
+                        <FaCheck className="h-2.5 w-2.5" aria-hidden />
+                      </span>
+                      <span className="font-medium text-text-secondary">{line}</span>
                     </li>
                   ))}
                 </ul>
@@ -281,14 +294,14 @@ export const HomeContent = (): ReactElement => {
               >
                 {t("landing.community.github")}
               </a>
-              <a
+              {/* <a
                 href="https://discord.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-lg font-bold transition-colors hover:text-text-primary"
               >
                 {t("landing.community.discord")}
-              </a>
+              </a> */}
               <a
                 href="mailto:contact@restorio.org"
                 className="flex items-center gap-2 text-lg font-bold transition-colors hover:text-text-primary"
@@ -319,15 +332,23 @@ export const HomeContent = (): ReactElement => {
               <Text variant="h2" weight="bold" className="mb-4 text-2xl text-slate-900 dark:text-white md:text-3xl">
                 {authStatus === "authenticated" ? t("landing.finalCta.loggedTitle") : t("landing.finalCta.title")}
               </Text>
-              <Text variant="body-lg" className="mb-8 text-slate-900/80 dark:text-white/85">
+              <Text
+                variant="body-lg"
+                className={cn("text-slate-900/80 dark:text-white/85", authStatus === "anonymous" ? "mb-2" : "mb-8")}
+              >
                 {authStatus === "authenticated" ? t("landing.finalCta.loggedSubtitle") : t("landing.finalCta.subtitle")}
               </Text>
+              {authStatus === "anonymous" ? (
+                <Text variant="body-sm" className="mb-8 text-slate-900/65 dark:text-white/70">
+                  {t("landing.finalCta.note")}
+                </Text>
+              ) : null}
               {authStatus === "anonymous" ? (
                 <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
                   <Link href={`/${locale}/register`}>
                     <Button
                       size="lg"
-                      className="min-w-[200px] border-0 bg-background-inverse font-bold text-text-inverse hover:opacity-90 dark:bg-background-primary dark:text-text-primary dark:hover:bg-background-secondary"
+                      className="min-w-[200px] border border-slate-950 bg-slate-950 font-bold text-white shadow-lg hover:bg-slate-800 dark:border-white dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
                     >
                       {t("landing.finalCta.primary")}
                     </Button>
@@ -335,8 +356,8 @@ export const HomeContent = (): ReactElement => {
                   <Link href={`/${locale}/about`}>
                     <Button
                       size="lg"
-                      variant="primary"
-                      className="min-w-[200px] border-0 bg-background-inverse font-bold text-text-inverse hover:opacity-90 dark:bg-background-primary dark:text-text-primary dark:hover:bg-background-secondary"
+                      variant="outline"
+                      className="min-w-[200px] border border-slate-900/40 bg-white/80 font-bold text-slate-950 shadow-sm backdrop-blur hover:bg-white dark:border-white/60 dark:bg-transparent dark:text-white dark:hover:bg-white/10"
                     >
                       {t("landing.finalCta.secondary")}
                     </Button>
@@ -356,11 +377,6 @@ export const HomeContent = (): ReactElement => {
                 >
                   {t("chooseApp.labels.adminPanel")}
                 </Button>
-              ) : null}
-              {authStatus === "anonymous" ? (
-                <Text variant="body-sm" className="mt-6 text-background-primary/70">
-                  {t("landing.finalCta.note")}
-                </Text>
               ) : null}
             </div>
           </div>
