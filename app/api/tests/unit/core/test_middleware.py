@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.testclient import TestClient
+from httpx import ASGITransport, AsyncClient
 import pytest
 
 from core.foundation.infra.config import Settings
@@ -19,7 +19,8 @@ def test_setup_cors_adds_middleware() -> None:
     assert any(isinstance(m.cls, type) and m.cls is CORSMiddleware for m in app.user_middleware)
 
 
-def test_setup_cors_always_includes_local_admin_origin() -> None:
+@pytest.mark.asyncio
+async def test_setup_cors_always_includes_local_admin_origin() -> None:
     app = FastAPI()
     settings = Settings(CORS_ORIGINS=["http://example.com"], DEBUG=True)
     setup_cors(app=app, settings=settings)
@@ -28,13 +29,14 @@ def test_setup_cors_always_includes_local_admin_origin() -> None:
     async def root() -> Response:
         return Response(content="ok")
 
-    client = TestClient(app)
-    response = client.get("/", headers={"Origin": "http://localhost:3001"})
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.get("/", headers={"Origin": "http://localhost:3001"})
 
     assert response.headers.get("access-control-allow-origin") == "http://localhost:3001"
 
 
-def test_cors_headers_present_on_unauthorized_response() -> None:
+@pytest.mark.asyncio
+async def test_cors_headers_present_on_unauthorized_response() -> None:
     app = FastAPI()
     settings = Settings(CORS_ORIGINS=["http://localhost:3001"])
     app.add_middleware(UnauthorizedMiddleware)
@@ -44,8 +46,8 @@ def test_cors_headers_present_on_unauthorized_response() -> None:
     async def protected_route() -> Response:
         return Response(content="ok")
 
-    client = TestClient(app)
-    response = client.get("/private", headers={"Origin": "http://localhost:3001"})
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.get("/private", headers={"Origin": "http://localhost:3001"})
 
     assert response.status_code == 401  # noqa: PLR2004
     assert response.headers.get("access-control-allow-origin") == "http://localhost:3001"
@@ -265,6 +267,16 @@ async def test_unauthorized_middleware_includes_request_id_when_token_invalid() 
 def test_build_allowed_origins_deduplicates_entries() -> None:
     origins = _build_allowed_origins(["http://example.com", "http://example.com"], debug=False)
     assert origins == ["http://example.com"]
+
+
+def test_setup_cors_allows_cloudflare_preview_when_enabled() -> None:
+    app = FastAPI()
+    settings = Settings(CORS_ALLOW_CF_PAGES_PREVIEWS=True)
+
+    setup_cors(app=app, settings=settings)
+
+    options = app.user_middleware[0].kwargs
+    assert "pages\\.dev" in options["allow_origin_regex"]
 
 
 def test_is_origin_allowed_handles_none_and_restorio_hosts() -> None:

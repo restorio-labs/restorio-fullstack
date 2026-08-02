@@ -52,12 +52,8 @@ def _resolve_order_amounts(order_doc: dict[str, Any]) -> tuple[Decimal, Decimal,
     if subtotal <= 0 and items_total > 0:
         subtotal = items_total
 
-    if total <= 0:
-        if subtotal > 0:
-            total = subtotal + tax
-        elif items_total > 0:
-            subtotal = items_total
-            total = items_total + tax
+    if total <= 0 and subtotal > 0:
+        total = subtotal + tax
 
     return subtotal, tax, total
 

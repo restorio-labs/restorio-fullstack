@@ -1,12 +1,16 @@
 from datetime import UTC, date, datetime
-from unittest.mock import AsyncMock, Mock
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 from uuid import uuid4
 
 import pytest
 
 from core.dto.v1.payments import TransactionListItemDTO, TransactionListQueryDTO
 from core.foundation.http.responses import PaginatedResponse
-from routes.v1.payments.transactions import list_transactions
+from routes.v1.payments.transactions import list_transactions, reconcile_pending_transactions
+
+EXPECTED_RECONCILE_SCANNED = 3
+EXPECTED_RECONCILE_FAILED = 2
 
 
 def _make_transaction(**overrides):
@@ -211,3 +215,72 @@ async def test_list_transactions_nullable_fields(tenant_id, mock_session, mock_p
     assert item.p24_order_id is None
     assert item.order is None
     assert item.note is None
+
+
+@pytest.mark.asyncio
+async def test_reconcile_pending_transactions_tracks_success_missing_and_failure() -> None:
+    tenant_id = uuid4()
+    missing_id = uuid4()
+    success_id = uuid4()
+    failed_id = uuid4()
+    success_transaction = SimpleNamespace(session_id=success_id, tenant_id=tenant_id)
+    failed_transaction = SimpleNamespace(session_id=failed_id, tenant_id=tenant_id)
+
+    def result(value: object | None) -> MagicMock:
+        row = MagicMock()
+        row.scalar_one_or_none.return_value = value
+        return row
+
+    session = MagicMock()
+    session.execute = AsyncMock(
+        side_effect=[result(None), result(success_transaction), result(failed_transaction)]
+    )
+    session.flush = AsyncMock()
+    session.commit = AsyncMock()
+    session.rollback = AsyncMock()
+    p24_service = MagicMock()
+    p24_service.get_transactions_pending_reconcile = AsyncMock(
+        return_value=[
+            SimpleNamespace(session_id=missing_id),
+            SimpleNamespace(session_id=success_id),
+            SimpleNamespace(session_id=failed_id),
+        ]
+    )
+    p24_service.apply_p24_lookup_to_transaction = AsyncMock(
+        side_effect=[None, RuntimeError("lookup failed")]
+    )
+    tenant = SimpleNamespace(id=tenant_id)
+    tenant_service = MagicMock()
+    tenant_service.get_tenant = AsyncMock(return_value=tenant)
+    table_session_service = MagicMock()
+    external_client = MagicMock()
+    db = MagicMock()
+
+    with patch(
+        "routes.v1.payments.transactions.apply_mobile_payment_mongo_and_session_effects",
+        new_callable=AsyncMock,
+    ) as apply_effects:
+        response = await reconcile_pending_transactions(
+            tenant_id=tenant_id,
+            session=session,
+            db=db,
+            p24_service=p24_service,
+            tenant_service=tenant_service,
+            external_client=external_client,
+            table_session_service=table_session_service,
+        )
+
+    assert response.data.scanned == EXPECTED_RECONCILE_SCANNED
+    assert response.data.updated == 1
+    assert response.data.failed == EXPECTED_RECONCILE_FAILED
+    session.flush.assert_awaited_once()
+    session.commit.assert_awaited_once()
+    session.rollback.assert_awaited_once()
+    apply_effects.assert_awaited_once_with(
+        db,
+        session,
+        table_session_service,
+        tenant=tenant,
+        transaction=success_transaction,
+        session_id_str=str(success_id),
+    )

@@ -151,6 +151,22 @@ async def test_create_tenant_order_rejects_unauthenticated() -> None:
 
 
 @pytest.mark.asyncio
+async def test_create_tenant_order_rejects_non_string_subject() -> None:
+    request = MagicMock()
+    request.state.user = {"sub": 123}
+    body = CreateOrderDTO(tableId="t1", items=[])
+
+    with pytest.raises(UnauthenticatedResponse):
+        await tenant_orders.create_tenant_order(
+            "pub1",
+            uuid4(),
+            request,
+            body,
+            MagicMock(),
+        )  # type: ignore[arg-type]
+
+
+@pytest.mark.asyncio
 async def test_create_tenant_order_rejects_invalid_sub_uuid() -> None:
     req = MagicMock()
     req.state.user = {"sub": "bad"}
@@ -290,3 +306,83 @@ async def test_update_tenant_order_success() -> None:
     )
     assert "updated" in r.message
     assert r.data.items
+
+
+@pytest.mark.asyncio
+async def test_update_tenant_order_creates_details_and_updates_scalar_fields() -> None:
+    tenant_id, order_id = uuid4(), uuid4()
+    timestamp = datetime.now(UTC)
+    order = Order(
+        id=order_id,
+        tenant_id=tenant_id,
+        table_ref="t1",
+        waiter_user_id=None,
+        status=OrderStatus.NEW,
+        total_amount=Decimal("1.00"),
+        currency="PLN",
+    )
+    order.created_at = timestamp
+    order.updated_at = timestamp
+    result = MagicMock()
+    result.scalar_one_or_none.return_value = order
+    session = MagicMock()
+    session.execute = AsyncMock(return_value=result)
+    session.get = AsyncMock(return_value=None)
+    session.flush = AsyncMock()
+    session.commit = AsyncMock()
+    session.refresh = AsyncMock()
+
+    response = await tenant_orders.update_tenant_order(
+        "p",
+        tenant_id,
+        order_id,
+        UpdateOrderDTO(
+            status=OrderStatus.READY,
+            currency="EUR",
+            notes="Ready now",
+            total=Decimal("12.50"),
+        ),
+        session,
+    )  # type: ignore[call-arg]
+
+    assert order.status == OrderStatus.READY
+    assert order.currency == "EUR"
+    assert order.total_amount == Decimal("12.50")
+    assert response.data.notes == "Ready now"
+    session.add.assert_called_once()
+    session.flush.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_update_tenant_order_clears_explicit_null_notes() -> None:
+    tenant_id, order_id = uuid4(), uuid4()
+    timestamp = datetime.now(UTC)
+    order = Order(
+        id=order_id,
+        tenant_id=tenant_id,
+        table_ref="t1",
+        waiter_user_id=None,
+        status=OrderStatus.NEW,
+        total_amount=Decimal("1.00"),
+        currency="PLN",
+    )
+    order.created_at = timestamp
+    order.updated_at = timestamp
+    details = OrderDetails(order_id=order_id, notes="old", items_snapshot=[])
+    result = MagicMock()
+    result.scalar_one_or_none.return_value = order
+    session = MagicMock()
+    session.execute = AsyncMock(return_value=result)
+    session.get = AsyncMock(return_value=details)
+    session.commit = AsyncMock()
+    session.refresh = AsyncMock()
+
+    await tenant_orders.update_tenant_order(
+        "p",
+        tenant_id,
+        order_id,
+        UpdateOrderDTO(notes=None),
+        session,
+    )  # type: ignore[call-arg]
+
+    assert details.notes is None

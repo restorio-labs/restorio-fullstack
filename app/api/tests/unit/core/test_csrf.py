@@ -85,6 +85,25 @@ async def test_csrf_middleware_options_passthrough() -> None:
 
 
 @pytest.mark.asyncio
+async def test_csrf_middleware_get_sets_cookie_on_response() -> None:
+    async def call_next(_: Request) -> Response:
+        return Response(content="ok")
+
+    middleware = CSRFMiddleware(call_next)
+    scope = {
+        "type": "http",
+        "method": "GET",
+        "path": "/api/v1/private",
+        "headers": [],
+        "server": ("localhost", 8000),
+    }
+
+    response = await middleware.dispatch(Request(scope), call_next)
+
+    assert CSRF_TOKEN_COOKIE_NAME in response.headers.get("set-cookie", "")
+
+
+@pytest.mark.asyncio
 async def test_csrf_middleware_blocks_cookie_post_without_csrf_header() -> None:
     async def call_next(_: Request) -> Response:
         return Response(content="ok")

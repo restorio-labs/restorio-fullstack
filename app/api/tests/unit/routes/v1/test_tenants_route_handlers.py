@@ -52,6 +52,15 @@ async def test_list_tenants_unauthenticated() -> None:
 
 
 @pytest.mark.asyncio
+async def test_list_tenants_rejects_non_string_subject() -> None:
+    request = Request({"type": "http", "method": "GET", "path": "/", "headers": []})
+    request.state.user = {"sub": 123}
+
+    with pytest.raises(UnauthenticatedResponse):
+        await tenants_routes.list_tenants(request, MagicMock(), MagicMock())  # type: ignore[arg-type]
+
+
+@pytest.mark.asyncio
 async def test_list_tenants_rejects_non_uuid_sub() -> None:
     with pytest.raises(ValueError, match="badly formed hexadecimal"):
         await tenants_routes.list_tenants(_req_sub_invalid(), MagicMock(), MagicMock())  # type: ignore[arg-type]
@@ -90,6 +99,48 @@ async def test_create_tenant() -> None:
         )
     assert "created" in r.message
     assert r.data.id == "pub"
+
+
+@pytest.mark.asyncio
+async def test_create_tenant_adds_existing_role_tenants_to_token() -> None:
+    user_id = uuid4()
+    related_tenant_id = uuid4()
+    request = Request({"type": "http", "method": "POST", "path": "/", "headers": []})
+    request.state.user = {"sub": str(user_id), "email": "owner@example.com"}
+    tenant = SimpleNamespace(
+        public_id="pub",
+        name="B",
+        slug="b",
+        status=TenantStatus.ACTIVE,
+        active_layout_version_id=None,
+        floor_canvases=[],
+        created_at=datetime.now(UTC),
+    )
+    service = MagicMock()
+    service.create_tenant = AsyncMock(return_value=tenant)
+    role = SimpleNamespace(account_type=AccountType.OWNER)
+    rows = MagicMock()
+    rows.all.return_value = [("related-public-id",)]
+    session = MagicMock()
+    session.scalars = AsyncMock(return_value=[related_tenant_id])
+    session.execute = AsyncMock(return_value=rows)
+    session.scalar = AsyncMock(return_value=role)
+    security = MagicMock()
+    security.create_access_token.return_value = "token"
+
+    with patch("routes.v1.tenants.tenants.set_auth_cookies"):
+        await tenants_routes.create_tenant(
+            AccountType.OWNER,
+            request,
+            Response(),
+            CreateTenantDTO(name="B", slug="b", status=TenantStatus.ACTIVE),
+            session,
+            service,
+            security,
+        )
+
+    access_token_data = security.create_access_token.call_args_list[0].args[0]
+    assert access_token_data["tenant_ids"] == ["related-public-id"]
 
 
 @pytest.mark.asyncio

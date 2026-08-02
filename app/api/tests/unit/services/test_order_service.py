@@ -160,6 +160,24 @@ async def test_create_order_inserts_and_returns() -> None:
 
 
 @pytest.mark.asyncio
+async def test_create_order_preserves_invoice_data() -> None:
+    collection = _mongo_orders_coll()
+    collection.insert_one = AsyncMock()
+    db = _db_with_coll(collection)
+    invoice_data = {"companyName": "Acme", "nip": "1234563218"}
+
+    result = await OrderService().create_order(
+        db,
+        "r1",
+        {"invoiceData": invoice_data},
+    )
+
+    assert result["invoiceData"] == invoice_data
+    inserted = collection.insert_one.await_args.args[0]
+    assert inserted["invoiceData"] == invoice_data
+
+
+@pytest.mark.asyncio
 async def test_update_order_not_found() -> None:
     coll = _mongo_orders_coll()
     coll.find_one = AsyncMock(return_value=None)
@@ -242,6 +260,35 @@ async def test_update_order_sets_status_when_present() -> None:
     await OrderService().update_order(db, "r1", "K-1", {"status": "preparing"})
     call = coll.update_one.await_args
     assert call[0][1]["$set"]["status"] == "preparing"
+
+
+@pytest.mark.asyncio
+async def test_update_order_sets_invoice_data() -> None:
+    existing = {
+        "_id": "K-1",
+        "restaurantId": "r1",
+        "status": "new",
+        "createdAt": datetime.now(UTC),
+        "updatedAt": datetime.now(UTC),
+    }
+    invoice_data = {"companyName": "Acme", "nip": "1234563218"}
+    collection = _mongo_orders_coll()
+    collection.find_one = AsyncMock(
+        side_effect=[existing, {**existing, "invoiceData": invoice_data}]
+    )
+    collection.update_one = AsyncMock()
+    db = _db_with_coll(collection)
+
+    result = await OrderService().update_order(
+        db,
+        "r1",
+        "K-1",
+        {"invoiceData": invoice_data},
+    )
+
+    assert result["invoiceData"] == invoice_data
+    update = collection.update_one.await_args.args[1]["$set"]
+    assert update["invoiceData"] == invoice_data
 
 
 @pytest.mark.asyncio

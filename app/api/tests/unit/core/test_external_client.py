@@ -202,6 +202,19 @@ async def test_external_get_http_error_raises() -> None:
 
 
 @pytest.mark.asyncio
+async def test_external_get_request_error_raises_service_unavailable() -> None:
+    with patch("services.external_client_service.httpx.AsyncClient") as mock_client_cls:
+        mock_get = AsyncMock(side_effect=httpx.ConnectError("connection refused"))
+        mock_client_cls.return_value.__aenter__.return_value.get = mock_get
+        mock_client_cls.return_value.__aexit__ = AsyncMock(return_value=None)
+
+        with pytest.raises(ServiceUnavailableError, match="Failed to connect to Example API"):
+            await ExternalClient().external_get(
+                "https://api.example.com/x", service_name="Example API"
+            )
+
+
+@pytest.mark.asyncio
 async def test_external_get_json_not_dict() -> None:
     mock_response = MagicMock()
     mock_response.raise_for_status = MagicMock()
@@ -211,6 +224,51 @@ async def test_external_get_json_not_dict() -> None:
         mock_client_cls.return_value.__aenter__.return_value.get = mock_get
         mock_client_cls.return_value.__aexit__ = AsyncMock(return_value=None)
         with pytest.raises(ExternalAPIError, match="invalid response"):
+            await ExternalClient().external_get_json("https://api.example.com/x")
+
+
+@pytest.mark.asyncio
+async def test_external_get_json_success_returns_mapping() -> None:
+    mock_response = MagicMock()
+    mock_response.raise_for_status = MagicMock()
+    mock_response.json.return_value = {"ok": True}
+    with patch("services.external_client_service.httpx.AsyncClient") as mock_client_cls:
+        mock_client_cls.return_value.__aenter__.return_value.get = AsyncMock(
+            return_value=mock_response
+        )
+        mock_client_cls.return_value.__aexit__ = AsyncMock(return_value=None)
+
+        result = await ExternalClient().external_get_json("https://api.example.com/x")
+
+    assert result == {"ok": True}
+
+
+@pytest.mark.asyncio
+async def test_external_get_json_http_error_raises_external_api_error() -> None:
+    mock_response = MagicMock()
+    mock_response.json.return_value = {"error": "bad response"}
+    mock_response.text = "bad response"
+    with patch("services.external_client_service.httpx.AsyncClient") as mock_client_cls:
+        mock_client_cls.return_value.__aenter__.return_value.get = AsyncMock(
+            side_effect=httpx.HTTPStatusError(
+                "bad response", request=MagicMock(), response=mock_response
+            )
+        )
+        mock_client_cls.return_value.__aexit__ = AsyncMock(return_value=None)
+
+        with pytest.raises(ExternalAPIError, match="bad response"):
+            await ExternalClient().external_get_json("https://api.example.com/x")
+
+
+@pytest.mark.asyncio
+async def test_external_get_json_request_error_raises_service_unavailable() -> None:
+    with patch("services.external_client_service.httpx.AsyncClient") as mock_client_cls:
+        mock_client_cls.return_value.__aenter__.return_value.get = AsyncMock(
+            side_effect=httpx.ConnectError("connection refused")
+        )
+        mock_client_cls.return_value.__aexit__ = AsyncMock(return_value=None)
+
+        with pytest.raises(ServiceUnavailableError, match="Failed to connect to External API"):
             await ExternalClient().external_get_json("https://api.example.com/x")
 
 

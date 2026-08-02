@@ -26,6 +26,8 @@ def _create_dto(**overrides: object) -> CreateTenantProfileDTO:
         "address_postal_code": "00-001",
         "owner_first_name": "A",
         "owner_last_name": "B",
+        "latitude": LATITUDE,
+        "longitude": LONGITUDE,
     }
     data.update(overrides)
     return CreateTenantProfileDTO.model_validate(data)

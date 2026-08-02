@@ -67,10 +67,7 @@ def resolve_mobile_payment_return_base_url(request: Request | None = None) -> st
             continue
         if not _is_local_dev_host(parsed.hostname):
             continue
-        netloc = parsed.netloc or parsed.hostname or ""
-        if not netloc:
-            continue
-        return f"{parsed.scheme}://{netloc}".rstrip("/")
+        return f"{parsed.scheme}://{parsed.netloc}".rstrip("/")
 
     return configured
 
