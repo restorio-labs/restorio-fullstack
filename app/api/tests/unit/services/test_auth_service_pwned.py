@@ -37,6 +37,17 @@ async def test_check_password_pwned_rejects_breached_password() -> None:
 
 
 @pytest.mark.asyncio
+async def test_check_password_pwned_ignores_malformed_response_lines() -> None:
+    ext = AsyncMock(spec=ExternalClient)
+    ext.external_get = AsyncMock(return_value="malformed response line")
+    service = _service_with_hibp_ext(ext)
+
+    await service.check_password_pwned("unique-test-password-xyz")
+
+    ext.external_get.assert_awaited_once()
+
+
+@pytest.mark.asyncio
 async def test_check_password_pwned_ignores_external_api_errors() -> None:
     ext = AsyncMock(spec=ExternalClient)
     ext.external_get = AsyncMock(side_effect=ExternalAPIError(message="x"))

@@ -7,7 +7,12 @@ import pytest
 
 from core.models.enums import TenantStatus
 from core.models.tenant import Tenant
-from services.archive_service import ArchiveService, _resolve_order_amounts
+from services.archive_service import (
+    ArchiveService,
+    _decimal_from,
+    _resolve_order_amounts,
+    _sum_items_total,
+)
 
 EXPECTED_PERSISTED_RECORD_COUNT = 2
 
@@ -203,6 +208,16 @@ def test_resolve_order_amounts_computes_from_items_when_total_is_zero() -> None:
     assert subtotal == Decimal("22.5")
     assert tax == Decimal("0")
     assert total == Decimal("22.5")
+
+
+@pytest.mark.parametrize("value", [None, "", "not-a-number", object()])
+def test_decimal_from_returns_default_for_missing_or_invalid_values(value: object) -> None:
+    assert _decimal_from(value, Decimal("7")) == Decimal("7")
+
+
+def test_sum_items_total_ignores_non_lists_and_invalid_entries() -> None:
+    assert _sum_items_total(None) == Decimal("0")
+    assert _sum_items_total(["invalid", {"basePrice": 2, "quantity": 3}]) == Decimal("6")
 
 
 @pytest.mark.asyncio

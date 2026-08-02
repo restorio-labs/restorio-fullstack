@@ -22,8 +22,48 @@ def _profile_dto() -> CreateTenantProfileDTO:
         address_street_number="1",
         address_city="W",
         address_postal_code="00-001",
+        latitude=52.2297,
+        longitude=21.0122,
         owner_first_name="A",
         owner_last_name="B",
+    )
+
+
+def _profile_row(tenant_id, dto: CreateTenantProfileDTO) -> SimpleNamespace:
+    now = datetime.now(UTC)
+    return SimpleNamespace(
+        id=uuid4(),
+        tenant_id=tenant_id,
+        nip=dto.nip,
+        company_name=dto.company_name,
+        logo="https://logo",
+        contact_email=dto.contact_email,
+        phone=dto.phone,
+        address_street_name=dto.address_street_name,
+        address_street_number=dto.address_street_number,
+        address_city=dto.address_city,
+        address_postal_code=dto.address_postal_code,
+        address_country="Polska",
+        latitude=dto.latitude,
+        longitude=dto.longitude,
+        geocoding_status="not_geocoded",
+        location_source=None,
+        location_precision=None,
+        is_location_public=False,
+        owner_first_name=dto.owner_first_name,
+        owner_last_name=dto.owner_last_name,
+        owner_email=None,
+        owner_phone=None,
+        contact_person_first_name=None,
+        contact_person_last_name=None,
+        contact_person_email=None,
+        contact_person_phone=None,
+        social_facebook=None,
+        social_instagram=None,
+        social_tiktok=None,
+        social_website=None,
+        created_at=now,
+        updated_at=now,
     )
 
 
@@ -58,6 +98,19 @@ async def test_get_tenant_profile_missing() -> None:
 
 
 @pytest.mark.asyncio
+async def test_get_tenant_profile_found() -> None:
+    tenant_id = uuid4()
+    row = _profile_row(tenant_id, _profile_dto())
+    service = MagicMock()
+    service.get_by_tenant = AsyncMock(return_value=row)
+
+    response = await profile_routes.get_tenant_profile(tenant_id, MagicMock(), service)  # type: ignore[arg-type]
+
+    assert response.data is not None
+    assert response.data.company_name == row.company_name
+
+
+@pytest.mark.asyncio
 async def test_upsert_tenant_profile_with_logo_key() -> None:
     tid = uuid4()
     p = _profile_dto()
@@ -76,8 +129,8 @@ async def test_upsert_tenant_profile_with_logo_key() -> None:
         address_city=p.address_city,
         address_postal_code=p.address_postal_code,
         address_country="Polska",
-        latitude=None,
-        longitude=None,
+        latitude=p.latitude,
+        longitude=p.longitude,
         geocoding_status="not_geocoded",
         location_source=None,
         location_precision=None,
@@ -105,3 +158,23 @@ async def test_upsert_tenant_profile_with_logo_key() -> None:
     r = await profile_routes.upsert_tenant_profile(AccountType.OWNER, tid, p, session, st, svc)  # type: ignore[arg-type]
     assert "created" in r.message
     st.finalize_upload.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_upsert_tenant_profile_returns_updated_response() -> None:
+    tenant_id = uuid4()
+    dto = _profile_dto()
+    row = _profile_row(tenant_id, dto)
+    service = MagicMock()
+    service.upsert = AsyncMock(return_value=(row, False))
+
+    response = await profile_routes.upsert_tenant_profile(
+        AccountType.OWNER,
+        tenant_id,
+        dto,
+        MagicMock(),
+        MagicMock(),
+        service,
+    )  # type: ignore[arg-type]
+
+    assert "updated" in response.message

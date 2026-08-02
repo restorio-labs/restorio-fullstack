@@ -1,5 +1,5 @@
 import type { ProfileFormData } from "@restorio/types";
-import { Input } from "@restorio/ui";
+import { Input, Switch } from "@restorio/ui";
 import type { ChangeEventHandler, ReactNode, ReactElement } from "react";
 import type { UseFormRegister } from "react-hook-form";
 
@@ -22,6 +22,11 @@ interface CompanyFieldsetProps extends FormFieldsetProps {
   isSaving?: boolean;
   logoFieldError: string | undefined;
   showLogoField?: boolean;
+}
+
+interface LocationFieldsetProps extends FormFieldsetProps {
+  canPublish?: boolean;
+  isLegacyLocationMissing?: boolean;
 }
 
 const FieldsetCard = ({ children, title }: BaseFieldsetProps): ReactElement => {
@@ -157,6 +162,67 @@ export const AddressFieldset = ({ getFieldError, register, t }: FormFieldsetProp
         error={getFieldError("addressCountry")}
         {...register("addressCountry")}
       />
+    </FieldsetCard>
+  );
+};
+
+export const LocationFieldset = ({
+  canPublish = false,
+  getFieldError,
+  isLegacyLocationMissing = false,
+  register,
+  t,
+}: LocationFieldsetProps): ReactElement => {
+  return (
+    <FieldsetCard title={t("tenantProfile.sections.location")}>
+      {isLegacyLocationMissing ? (
+        <div
+          className="rounded-lg border border-status-warning-border bg-status-warning-background px-4 py-3 text-sm text-status-warning-text"
+          role="status"
+        >
+          <p className="font-semibold">{t("tenantProfile.location.legacyTitle")}</p>
+          <p className="mt-1">{t("tenantProfile.location.legacyDescription")}</p>
+        </div>
+      ) : null}
+      <p className="text-sm text-text-secondary">{t("tenantProfile.location.description")}</p>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Input
+          label={t("tenantProfile.fields.latitude.label")}
+          placeholder={t("tenantProfile.fields.latitude.placeholder")}
+          helperText={t("tenantProfile.fields.latitude.helper")}
+          type="number"
+          min={-90}
+          max={90}
+          step="any"
+          error={getFieldError("latitude")}
+          {...register("latitude", {
+            required: true,
+            validate: (value) =>
+              value.trim() !== "" && Number.isFinite(Number(value)) && Number(value) >= -90 && Number(value) <= 90,
+          })}
+        />
+        <Input
+          label={t("tenantProfile.fields.longitude.label")}
+          placeholder={t("tenantProfile.fields.longitude.placeholder")}
+          helperText={t("tenantProfile.fields.longitude.helper")}
+          type="number"
+          min={-180}
+          max={180}
+          step="any"
+          error={getFieldError("longitude")}
+          {...register("longitude", {
+            required: true,
+            validate: (value) =>
+              value.trim() !== "" && Number.isFinite(Number(value)) && Number(value) >= -180 && Number(value) <= 180,
+          })}
+        />
+      </div>
+      <Switch
+        label={t("tenantProfile.fields.isLocationPublic.label")}
+        disabled={!canPublish}
+        {...register("isLocationPublic")}
+      />
+      <p className="text-xs text-text-tertiary">{t("tenantProfile.fields.isLocationPublic.helper")}</p>
     </FieldsetCard>
   );
 };

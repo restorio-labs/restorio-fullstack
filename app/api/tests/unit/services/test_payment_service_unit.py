@@ -12,8 +12,11 @@ from core.models.tenant import Tenant
 from core.models.transaction import Transaction
 from services.external_client_service import ExternalClient
 from services.payment_service import (
+    MONGO_PAYMENT_STATUS_PENDING,
     P24Service,
+    _is_local_dev_host,
     build_waiter_settlement_transaction,
+    mongo_payment_status_from_transaction,
     p24_notification_status_url,
     resolve_mobile_payment_return_base_url,
     return_url_with_session_id,
@@ -65,6 +68,27 @@ def test_resolve_mobile_payment_return_base_url_falls_back_without_origin() -> N
         assert resolve_mobile_payment_return_base_url(req) == "http://localhost:3003"
 
 
+def test_resolve_mobile_payment_return_base_url_ignores_unsafe_headers() -> None:
+    req = _http_request_with_headers(
+        [
+            (b"origin", b"ftp://localhost:3003"),
+            (b"referer", b"https://example.com/payment"),
+        ]
+    )
+    with (
+        patch.dict("os.environ", {"ENV": "test"}, clear=False),
+        patch("services.payment_service.settings") as mock_settings,
+    ):
+        mock_settings.MOBILE_APP_URL = "https://mobile.restorio.org"
+        assert resolve_mobile_payment_return_base_url(req) == "https://mobile.restorio.org"
+
+
+def test_is_local_dev_host_handles_missing_case_and_local_suffix() -> None:
+    assert _is_local_dev_host(None) is False
+    assert _is_local_dev_host("LOCALHOST") is True
+    assert _is_local_dev_host("tenant.local") is True
+
+
 def test_return_url_with_session_id_merges_query() -> None:
     url = return_url_with_session_id("https://example.com/pay?return=1", "sess-abc")
     assert "sessionId=sess-abc" in url
@@ -80,6 +104,11 @@ def test_map_p24_status_maps_known_and_refund() -> None:
 def test_map_p24_status_rejects_unknown() -> None:
     with pytest.raises(BadRequestError, match="Unsupported"):
         P24Service.map_p24_status_to_db(99)
+
+
+@pytest.mark.parametrize("status", [0, 99])
+def test_mongo_payment_status_defaults_to_pending(status: int) -> None:
+    assert mongo_payment_status_from_transaction(status) == MONGO_PAYMENT_STATUS_PENDING
 
 
 def test_validate_tenant_p24_credentials_requires_all() -> None:
@@ -303,6 +332,55 @@ async def test_apply_p24_lookup_currency_mismatch() -> None:
 
 
 @pytest.mark.asyncio
+async def test_apply_p24_lookup_rejects_invalid_amount() -> None:
+    ext = AsyncMock(spec=ExternalClient)
+    ext.external_get_json = AsyncMock(
+        return_value={
+            "responseCode": 0,
+            "data": {"amount": "invalid", "currency": "PLN", "status": 1},
+        }
+    )
+    tx = MagicMock(spec=Transaction)
+    tx.amount = 5
+    tx.currency = "PLN"
+    tenant = MagicMock(spec=Tenant)
+    tenant.p24_merchantid = 1
+    tenant.p24_api = "api"
+    tenant.p24_crc = "crc"
+
+    with pytest.raises(BadRequestError, match="Invalid Przelewy24 transaction payload"):
+        await P24Service().apply_p24_lookup_to_transaction(ext, transaction=tx, tenant=tenant)
+
+
+@pytest.mark.asyncio
+async def test_apply_p24_lookup_updates_transaction() -> None:
+    ext = AsyncMock(spec=ExternalClient)
+    ext.external_get_json = AsyncMock(
+        return_value={
+            "responseCode": 0,
+            "data": {"amount": 500, "currency": "PLN", "status": 2, "orderId": 42},
+        }
+    )
+    tx = MagicMock(spec=Transaction)
+    tx.session_id = uuid4()
+    tx.amount = 500
+    tx.currency = "PLN"
+    tenant = MagicMock(spec=Tenant)
+    tenant.p24_merchantid = 1
+    tenant.p24_api = "api"
+    tenant.p24_crc = "crc"
+
+    data, response_code = await P24Service().apply_p24_lookup_to_transaction(
+        ext, transaction=tx, tenant=tenant
+    )
+
+    assert data["orderId"] == 42  # noqa: PLR2004
+    assert response_code == 0
+    assert tx.status == 2  # noqa: PLR2004
+    assert tx.p24_order_id == 42  # noqa: PLR2004
+
+
+@pytest.mark.asyncio
 async def test_get_transactions_page_paginates() -> None:
     tenant_id = uuid4()
     tx = MagicMock(spec=Transaction)
@@ -328,6 +406,25 @@ async def test_get_transactions_page_paginates() -> None:
 
     assert total == 1
     assert items == [tx]
+
+
+@pytest.mark.asyncio
+async def test_get_transactions_pending_reconcile_returns_rows() -> None:
+    transaction = MagicMock(spec=Transaction)
+    result = MagicMock(spec=Result)
+    result.scalars.return_value.all.return_value = [transaction]
+    session = AsyncMock()
+    session.execute = AsyncMock(return_value=result)
+
+    transactions = await P24Service().get_transactions_pending_reconcile(
+        session,
+        uuid4(),
+        hours_max_age=24,
+        limit=10,
+    )
+
+    assert transactions == [transaction]
+    session.execute.assert_awaited_once()
 
 
 def test_p24_notification_status_url_uses_frontend_base(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -356,6 +453,18 @@ def test_build_waiter_settlement_transaction_skips_non_positive_total() -> None:
         p24_crc="crc",
     )
     assert build_waiter_settlement_transaction(tenant, {"_id": "K1", "total": 0}) is None
+
+
+def test_build_waiter_settlement_transaction_handles_invalid_total() -> None:
+    tenant = Tenant(
+        id=uuid4(),
+        public_id="pub",
+        name="N",
+        slug="sl",
+        status=TenantStatus.ACTIVE,
+    )
+
+    assert build_waiter_settlement_transaction(tenant, {"_id": "K1", "total": "bad"}) is None
 
 
 def test_build_waiter_settlement_transaction_builds_paid_row() -> None:

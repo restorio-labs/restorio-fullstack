@@ -70,6 +70,9 @@ export interface ProfileFormData {
   addressCity: string;
   addressPostalCode: string;
   addressCountry: string;
+  latitude: string;
+  longitude: string;
+  isLocationPublic: boolean;
   ownerFirstName: string;
   ownerLastName: string;
   ownerEmail: string;
@@ -97,8 +100,8 @@ export interface CreateTenantProfileRequest {
   address_city: string;
   address_postal_code: string;
   address_country?: string;
-  latitude?: number | null;
-  longitude?: number | null;
+  latitude: number;
+  longitude: number;
   geocoding_status?: GeocodingStatus;
   location_source?: LocationSource | null;
   location_precision?: LocationPrecision | null;

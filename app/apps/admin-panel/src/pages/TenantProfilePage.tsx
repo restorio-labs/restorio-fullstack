@@ -7,12 +7,13 @@ import { useForm } from "react-hook-form";
 
 import { api } from "../api/client";
 import { useCurrentTenant } from "../context/TenantContext";
-import { EMPTY_FORM, toFormData } from "../features/profile/profileForm";
+import { EMPTY_FORM, hasValidCoordinates, toFormData, toProfileRequest } from "../features/profile/profileForm";
 import {
   AddressFieldset,
   CompanyFieldset,
   ContactFieldset,
   ContactPersonFieldset,
+  LocationFieldset,
   OwnerFieldset,
   SocialsFieldset,
 } from "../features/profile/TenantProfileFieldsets";
@@ -45,7 +46,8 @@ export const TenantProfilePage = (): ReactElement => {
   const {
     register,
     handleSubmit,
-    formState: { isValid },
+    watch,
+    formState: { errors, isValid },
     reset,
   } = useForm<ProfileFormData>({
     defaultValues: EMPTY_FORM,
@@ -123,28 +125,8 @@ export const TenantProfilePage = (): ReactElement => {
       }
 
       return api.tenantProfiles.save(tenantId, {
-        nip: values.nip.trim(),
-        company_name: values.companyName.trim(),
+        ...toProfileRequest(values),
         logo_upload_key: logoUploadKey,
-        contact_email: values.contactEmail.trim(),
-        phone: values.phone.trim(),
-        address_street_name: values.addressStreetName.trim(),
-        address_street_number: values.addressStreetNumber.trim(),
-        address_city: values.addressCity.trim(),
-        address_postal_code: values.addressPostalCode.trim(),
-        address_country: values.addressCountry.trim() || "Polska",
-        owner_first_name: values.ownerFirstName.trim(),
-        owner_last_name: values.ownerLastName.trim(),
-        owner_email: values.ownerEmail.trim() || null,
-        owner_phone: values.ownerPhone.trim() || null,
-        contact_person_first_name: values.contactPersonFirstName.trim() || null,
-        contact_person_last_name: values.contactPersonLastName.trim() || null,
-        contact_person_email: values.contactPersonEmail.trim() || null,
-        contact_person_phone: values.contactPersonPhone.trim() || null,
-        social_facebook: values.socialFacebook.trim() || null,
-        social_instagram: values.socialInstagram.trim() || null,
-        social_tiktok: values.socialTiktok.trim() || null,
-        social_website: values.socialWebsite.trim() || null,
       });
     },
     onSuccess: (_savedProfile) => {
@@ -216,7 +198,22 @@ export const TenantProfilePage = (): ReactElement => {
   };
 
   const effectiveLogo = logoPreviewUrl ?? logoViewUrl ?? null;
+  const latitude = watch("latitude");
+  const longitude = watch("longitude");
   const logoFieldError = logoUploadError || getFieldError("logo");
+  const getFormFieldError = (field: string): string | undefined => {
+    const serverError = getFieldError(field);
+
+    if (serverError) {
+      return serverError;
+    }
+
+    if (field in errors) {
+      return t(`tenantProfile.fields.${field}.error`);
+    }
+
+    return undefined;
+  };
   const isFormDisabled = !tenantId || !isValid || isLoadingProfile || saveMutation.isPending;
 
   return (
@@ -254,18 +251,25 @@ export const TenantProfilePage = (): ReactElement => {
           <div className="mt-2 grid items-start gap-6 [grid-template-columns:repeat(auto-fit,minmax(320px,1fr))]">
             <CompanyFieldset
               effectiveLogo={effectiveLogo}
-              getFieldError={getFieldError}
+              getFieldError={getFormFieldError}
               handleLogoChange={handleLogoChange}
               isSaving={saveMutation.isPending}
               logoFieldError={logoFieldError}
               register={register}
               t={t}
             />
-            <ContactFieldset getFieldError={getFieldError} register={register} t={t} />
-            <AddressFieldset getFieldError={getFieldError} register={register} t={t} />
-            <OwnerFieldset getFieldError={getFieldError} register={register} t={t} />
-            <ContactPersonFieldset getFieldError={getFieldError} register={register} t={t} />
-            <SocialsFieldset getFieldError={getFieldError} register={register} t={t} />
+            <ContactFieldset getFieldError={getFormFieldError} register={register} t={t} />
+            <AddressFieldset getFieldError={getFormFieldError} register={register} t={t} />
+            <LocationFieldset
+              canPublish={hasValidCoordinates(latitude, longitude)}
+              getFieldError={getFormFieldError}
+              isLegacyLocationMissing={Boolean(profile && (profile.latitude === null || profile.longitude === null))}
+              register={register}
+              t={t}
+            />
+            <OwnerFieldset getFieldError={getFormFieldError} register={register} t={t} />
+            <ContactPersonFieldset getFieldError={getFormFieldError} register={register} t={t} />
+            <SocialsFieldset getFieldError={getFormFieldError} register={register} t={t} />
           </div>
 
           {submitStatus === "success" && (

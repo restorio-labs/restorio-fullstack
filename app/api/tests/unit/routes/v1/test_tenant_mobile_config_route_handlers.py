@@ -88,6 +88,46 @@ async def test_update_tenant_mobile_config_with_page_title() -> None:
 
 
 @pytest.mark.asyncio
+async def test_update_tenant_mobile_config_with_theme_and_landing_content() -> None:
+    tenant_id = uuid4()
+    landing_content = {
+        "headline": "Welcome",
+        "subtitle": "Order here",
+    }
+    row = SimpleNamespace(
+        page_title=None,
+        theme_override={"primary": "#000000"},
+        landing_content=landing_content,
+        favicon_object_key=None,
+    )
+    service = MagicMock()
+    service.upsert = AsyncMock(return_value=row)
+    session = MagicMock()
+    session.commit = AsyncMock()
+    body = UpdateTenantMobileConfigDTO.model_validate(
+        {
+            "themeOverride": {"primary": "#000000"},
+            "landingContent": landing_content,
+        }
+    )
+
+    await mobile_routes.update_tenant_mobile_config(
+        AccountType.OWNER,
+        tenant_id,
+        body,
+        session,
+        service,
+    )  # type: ignore[arg-type]
+
+    service.upsert.assert_awaited_once_with(
+        session,
+        tenant_id,
+        theme_override={"primary": "#000000"},
+        landing_content=landing_content,
+    )
+
+
+@pytest.mark.asyncio
 async def test_presign_tenant_mobile_favicon() -> None:
     tid = uuid4()
     st = MagicMock()

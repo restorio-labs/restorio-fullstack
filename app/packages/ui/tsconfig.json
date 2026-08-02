@@ -21,7 +21,6 @@
 
     "noEmit": false,
 
-    "baseUrl": ".",
     "paths": {
       "@components/*": ["./src/components/*"],
       "@utils": ["./src/utils/*", "./src/utils/index.ts"]

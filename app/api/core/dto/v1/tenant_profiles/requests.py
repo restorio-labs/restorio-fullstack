@@ -1,6 +1,4 @@
-from typing import Self
-
-from pydantic import Field, model_validator
+from pydantic import Field
 
 from core.dto.v1.common import BaseDTO
 from core.models.enums import GeocodingStatus, LocationPrecision, LocationSource
@@ -41,6 +39,8 @@ class TenantLogoUploadPresignRequestDTO(BaseDTO):
 
 
 class CreateTenantProfileDTO(LocationFieldsDTO):
+    latitude: float = Field(..., ge=-90, le=90, description="WGS84 latitude")
+    longitude: float = Field(..., ge=-180, le=180, description="WGS84 longitude")
     nip: str = Field(
         ...,
         min_length=10,
@@ -111,30 +111,6 @@ class CreateTenantProfileDTO(LocationFieldsDTO):
     social_instagram: str | None = Field(None, max_length=512, description="Instagram profile URL")
     social_tiktok: str | None = Field(None, max_length=512, description="TikTok profile URL")
     social_website: str | None = Field(None, max_length=512, description="Restaurant website URL")
-
-    @model_validator(mode="after")
-    def validate_location(self) -> Self:
-        has_latitude = self.latitude is not None
-        has_longitude = self.longitude is not None
-        if has_latitude != has_longitude:
-            msg = "Latitude and longitude must be provided together"
-            raise ValueError(msg)
-
-        has_coordinates = has_latitude and has_longitude
-        if self.is_location_public and not has_coordinates:
-            msg = "A public location requires coordinates"
-            raise ValueError(msg)
-        if self.location_source is not None and not has_coordinates:
-            msg = "Location source requires coordinates"
-            raise ValueError(msg)
-        if self.location_precision is not None and not has_coordinates:
-            msg = "Location precision requires coordinates"
-            raise ValueError(msg)
-        if self.geocoding_status == GeocodingStatus.GEOCODED and not has_coordinates:
-            msg = "Geocoded status requires coordinates"
-            raise ValueError(msg)
-
-        return self
 
 
 class UpdateTenantProfileDTO(LocationFieldsDTO):

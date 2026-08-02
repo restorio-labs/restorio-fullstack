@@ -1,5 +1,7 @@
 import type { ReactElement } from "react";
 
+import { appBrandColors } from "../../tokens/colors";
+
 const R =
   "M2622 6498 c197 -29 291 -117 305 -289 7 -88 -10 -161 -53 -216 l-33 -44 29 -65 c32 -69 80 -225 80 -257 0 -18 -11 -19 -215 -19 l-215 0 0 33 c0 36 -15 129 -31 190 -6 21 -16 37 -24 37 -12 0 -15 -23 -15 -130 l0 -130 -225 0 -225 0 0 450 0 450 278 0 c152 0 307 -5 344 -10z";
 
@@ -65,7 +67,7 @@ export const RestorioLogo = ({
   width = 420,
   height = 120,
   background = "#000000",
-  color = "#4da6ff",
+  color = appBrandColors["public-web"],
   fillContainer = false,
   wink = false,
   winking = false,

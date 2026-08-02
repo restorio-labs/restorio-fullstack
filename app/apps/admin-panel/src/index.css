@@ -9,6 +9,30 @@
     animation: onboarding-fade-up 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
     will-change: opacity, transform;
   }
+
+  .onboarding-step-enter {
+    animation: onboarding-step-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .onboarding-feature-copy {
+    animation: onboarding-feature-copy 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .onboarding-feature-card {
+    animation: onboarding-feature-float 5s ease-in-out infinite;
+  }
+
+  .onboarding-overlay-card {
+    animation: onboarding-overlay-float 6s ease-in-out infinite;
+  }
+
+  .onboarding-overlay-card-reverse {
+    animation: onboarding-overlay-float-reverse 7s ease-in-out infinite;
+  }
+
+  .onboarding-orbit {
+    animation: onboarding-orbit-pulse 4s ease-in-out infinite;
+  }
 }
 
 @keyframes onboarding-fade-in {
@@ -33,9 +57,85 @@
   }
 }
 
+@keyframes onboarding-step-enter {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes onboarding-feature-copy {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes onboarding-feature-float {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) rotate(-2deg);
+  }
+
+  50% {
+    transform: translate(-50%, calc(-50% - 10px)) rotate(2deg);
+  }
+}
+
+@keyframes onboarding-overlay-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+
+  50% {
+    transform: translateY(-9px) rotate(1deg);
+  }
+}
+
+@keyframes onboarding-overlay-float-reverse {
+  0%,
+  100% {
+    transform: translateY(0) rotate(2deg);
+  }
+
+  50% {
+    transform: translateY(8px) rotate(-1deg);
+  }
+}
+
+@keyframes onboarding-orbit-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .onboarding-fade-in,
-  .onboarding-fade-up {
+  .onboarding-fade-up,
+  .onboarding-step-enter,
+  .onboarding-feature-copy,
+  .onboarding-feature-card,
+  .onboarding-overlay-card,
+  .onboarding-overlay-card-reverse,
+  .onboarding-orbit {
     animation: none;
   }
 }
