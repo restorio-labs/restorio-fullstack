@@ -23,11 +23,6 @@ const mockClient: AuthClient = {
   },
 };
 
-const ROUTER_FUTURE_FLAGS = {
-  v7_startTransition: true,
-  v7_relativeSplatPath: true,
-} as const;
-
 describe("AuthGuard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -39,7 +34,7 @@ describe("AuthGuard", () => {
     (TokenStorage.isAccessTokenValid as Mock).mockReturnValue(true);
 
     render(
-      <MemoryRouter future={ROUTER_FUTURE_FLAGS}>
+      <MemoryRouter>
         <AuthGuard client={mockClient} revalidateOnFocus={false}>
           <div>Protected Content</div>
         </AuthGuard>
@@ -56,7 +51,7 @@ describe("AuthGuard", () => {
     (mockClient.auth.refresh as Mock).mockRejectedValue(new Error("unauthorized"));
 
     render(
-      <MemoryRouter future={ROUTER_FUTURE_FLAGS} initialEntries={["/protected"]}>
+      <MemoryRouter initialEntries={["/protected"]}>
         <AuthGuard client={mockClient} revalidateOnFocus={false}>
           <div>Protected Content</div>
         </AuthGuard>
@@ -74,7 +69,7 @@ describe("AuthGuard", () => {
     (mockClient.auth.refresh as Mock).mockRejectedValue(new Error("unauthorized"));
 
     render(
-      <MemoryRouter future={ROUTER_FUTURE_FLAGS} initialEntries={["/protected"]}>
+      <MemoryRouter initialEntries={["/protected"]}>
         <AuthGuard client={mockClient} revalidateOnFocus={false}>
           <div>Protected Content</div>
         </AuthGuard>
@@ -91,7 +86,7 @@ describe("AuthGuard", () => {
     (mockClient.auth.refresh as Mock).mockRejectedValue(new Error("unauthorized"));
 
     render(
-      <MemoryRouter future={ROUTER_FUTURE_FLAGS} initialEntries={["/protected"]}>
+      <MemoryRouter initialEntries={["/protected"]}>
         <AuthGuard loginPath="/custom-login" client={mockClient} revalidateOnFocus={false}>
           <div>Protected Content</div>
         </AuthGuard>
@@ -106,7 +101,7 @@ describe("AuthGuard", () => {
     (TokenStorage.isAccessTokenValid as Mock).mockReturnValue(true);
 
     render(
-      <MemoryRouter future={ROUTER_FUTURE_FLAGS}>
+      <MemoryRouter>
         <AuthGuard client={mockClient} revalidateOnFocus={false}>
           <div>Protected Content</div>
         </AuthGuard>

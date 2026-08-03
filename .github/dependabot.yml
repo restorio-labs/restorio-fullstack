@@ -4,21 +4,105 @@ updates:
   - package-ecosystem: "uv"
     directory: "/app/api"
     schedule:
+      interval: "monthly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Warsaw"
+    open-pull-requests-limit: 12
+    groups:
+      python-security:
+        applies-to: "security-updates"
+        patterns:
+          - "*"
+      python-minor-and-patch:
+        applies-to: "version-updates"
+        update-types:
+          - "minor"
+          - "patch"
+        patterns:
+          - "*"
+    labels:
+      - "dependencies"
+      - "backend"
+    commit-message:
+      prefix: "deps(api)"
+
+  - package-ecosystem: "bun"
+    directories:
+      - "/"
+      - "/e2e"
+    schedule:
       interval: "weekly"
       day: "monday"
       time: "06:00"
       timezone: "Europe/Warsaw"
-
+    open-pull-requests-limit: 10
     groups:
-      python-security:
-        applies-to: security-updates
+      bun-security:
+        applies-to: "security-updates"
         patterns:
           - "*"
-
+      bun-minor-and-patch:
+        applies-to: "version-updates"
+        update-types:
+          - "minor"
+          - "patch"
+        patterns:
+          - "*"
     labels:
       - "dependencies"
-      - "security"
-      - "backend"
-
+      - "frontend"
     commit-message:
-      prefix: "security"
+      prefix: "deps(web)"
+
+  - package-ecosystem: "docker"
+    directories:
+      - "/app/api"
+      - "/app/apps/public-web"
+      - "/nginx"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Warsaw"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "infrastructure"
+    commit-message:
+      prefix: "deps(docker)"
+
+  - package-ecosystem: "docker-compose"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Warsaw"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "infrastructure"
+    commit-message:
+      prefix: "deps(compose)"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Warsaw"
+    open-pull-requests-limit: 5
+    groups:
+      actions-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+        patterns:
+          - "*"
+    labels:
+      - "dependencies"
+      - "ci"
+    commit-message:
+      prefix: "deps(actions)"

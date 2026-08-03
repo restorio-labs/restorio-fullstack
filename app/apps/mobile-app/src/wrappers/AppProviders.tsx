@@ -31,7 +31,7 @@ export const AppProviders = ({ children }: AppProvidersProps): ReactNode => {
         fallbackMessages={messagesByLocale.en}
         setLocale={setI18nLocale}
       >
-        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <BrowserRouter>
           <ThemeProvider defaultMode="system" storageKey={THEME_STORAGE_KEY}>
             {children}
           </ThemeProvider>

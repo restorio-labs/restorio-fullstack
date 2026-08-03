@@ -18,7 +18,7 @@ export const AppProviders = ({ children }: AppProvidersProps): ReactNode => {
   return (
     <QueryClientProvider client={queryClient}>
       <I18nProvider locale="pl" messages={plMessages}>
-        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <BrowserRouter>
           <ThemeProvider defaultMode="system" storageKey={THEME_STORAGE_KEY}>
             <ToastProvider position="top-left">{children}</ToastProvider>
           </ThemeProvider>

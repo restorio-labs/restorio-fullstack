@@ -54,7 +54,7 @@ export const AppProviders = ({ children }: AppProvidersProps): ReactNode => {
         messages={messages}
         fallbackMessages={fallbackMessages}
       >
-        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <BrowserRouter>
           <ThemeProvider defaultMode="system" storageKey={THEME_STORAGE_KEY}>
             <ToastProvider>
               <TenantProvider>{children}</TenantProvider>
