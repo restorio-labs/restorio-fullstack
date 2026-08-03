@@ -88,7 +88,7 @@ services:
       start_period: 60s
 
   mongo:
-    image: mongo:7
+    image: mongo:8
     container_name: restorio-mongo
     environment:
       - MONGO_INITDB_ROOT_USERNAME=${MONGODB_USERNAME:-restorio}
