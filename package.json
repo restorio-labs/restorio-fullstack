@@ -44,7 +44,7 @@
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-unused-imports": "^3.2.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.4.0",
+    "lint-staged": "^17.3.0",
     "prettier": "^3.9.6",
     "tailwind-merge": "^3.6.0",
     "tsup": "^8.5.1",
