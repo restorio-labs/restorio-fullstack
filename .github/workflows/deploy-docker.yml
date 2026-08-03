@@ -48,7 +48,7 @@ jobs:
       MIKRUS_DOCKER_COMPOSE_DIR: ${{ vars.MIKRUS_DOCKER_COMPOSE_DIR }}
       SSHPASS: ${{ secrets.MIKRUS_PASSWORD }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: ./.github/actions/set-restorio-app-version
         with:

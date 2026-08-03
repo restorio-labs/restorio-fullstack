@@ -24,7 +24,7 @@ jobs:
       packages-and-apps: ${{ steps.filter.outputs.packages-and-apps }}
       api: ${{ steps.filter.outputs.api }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Path filter
@@ -65,7 +65,7 @@ jobs:
             kind: app
             package: '@restorio/waiter-panel'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: ./.github/actions/setup-bun
 
@@ -124,7 +124,7 @@ jobs:
       - typescript-matrix
     if: needs.detect-changes.outputs.packages-and-apps == 'true' && needs.typescript-matrix.result == 'success'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: ./.github/actions/setup-bun
 
@@ -157,7 +157,7 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.api == 'true'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Validate Python Code
         uses: ./.github/actions/pr-validate/python
