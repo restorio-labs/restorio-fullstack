@@ -146,7 +146,7 @@ jobs:
           bun run coverage:report
 
       - name: Comment coverage on PR
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           path: coverage-summary.md
           header: typescript-coverage
@@ -163,7 +163,7 @@ jobs:
         uses: ./.github/actions/pr-validate/python
 
       - name: Comment coverage on PR
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           path: app/api/coverage-summary.md
           header: python-api-coverage
