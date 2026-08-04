@@ -1,4 +1,11 @@
-import type { CreatedResponse, SuccessResponse, Tenant, TenantSummary, UpdatedResponse } from "@restorio/types";
+import type {
+  CreatedResponse,
+  SuccessResponse,
+  Tenant,
+  TenantCapabilitiesData,
+  TenantSummary,
+  UpdatedResponse,
+} from "@restorio/types";
 
 import { BaseResource } from "./base";
 
@@ -13,6 +20,15 @@ export class TenantsResource extends BaseResource {
     const { data } = await this.client.get<SuccessResponse<Tenant>>(`/tenants/${tenantId}`, {
       signal,
     });
+
+    return data;
+  }
+
+  async capabilities(tenantId: string, signal?: AbortSignal): Promise<TenantCapabilitiesData> {
+    const { data } = await this.client.get<SuccessResponse<TenantCapabilitiesData>>(
+      `/tenants/${tenantId}/capabilities`,
+      { signal },
+    );
 
     return data;
   }

@@ -1,10 +1,10 @@
 from fastapi import APIRouter, status
 from pydantic import Field
 
+from core.authorization.dependencies import KitchenConfigReadTenantId, KitchenConfigWriteTenantId
 from core.dto.v1.common import BaseDTO
-from core.foundation.dependencies import AuthorizedTenantId, MongoDB
+from core.foundation.dependencies import MongoDB
 from core.foundation.http.responses import SuccessResponse, UpdatedResponse
-from core.foundation.role_guard import RequireAnyStaff, RequireOwnerOrManager
 from services.kitchen_config_service import KitchenConfigService
 
 router = APIRouter()
@@ -31,8 +31,7 @@ class UpdateRejectionLabelsDTO(BaseDTO):
 async def get_kitchen_config(
     restaurant_id: str,
     db: MongoDB,
-    _tenant_id: AuthorizedTenantId,
-    _role: RequireAnyStaff,
+    _tenant_id: KitchenConfigReadTenantId,
 ) -> SuccessResponse[KitchenConfigResponseDTO]:
     config = await _service.get_config(db, restaurant_id)
     return SuccessResponse(
@@ -50,8 +49,7 @@ async def update_rejection_labels(
     restaurant_id: str,
     payload: UpdateRejectionLabelsDTO,
     db: MongoDB,
-    _tenant_id: AuthorizedTenantId,
-    _role: RequireOwnerOrManager,
+    _tenant_id: KitchenConfigWriteTenantId,
 ) -> UpdatedResponse[KitchenConfigResponseDTO]:
     config = await _service.update_rejection_labels(db, restaurant_id, payload.rejection_labels)
     return UpdatedResponse(

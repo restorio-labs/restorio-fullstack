@@ -1,38 +1,18 @@
-import { UserRole } from "@restorio/types";
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
-import { hasAllPermissions, hasAnyPermission, hasPermission, Permissions } from "@restorio/auth";
+import { hasAllCapabilities, hasAnyCapability, hasCapability } from "../../src/permissions";
 
-describe("Permissions", () => {
-  it("hasAnyPermission", () => {
-    expect(hasAnyPermission(UserRole.SUPER_ADMIN, [Permissions.MANAGE_RESTAURANTS, Permissions.MANAGE_MENUS])).toBe(
-      true,
-    );
+const capabilities = ["menu.read", "menu.write", "order.read"];
+
+describe("capability helpers", () => {
+  it("checks one capability", () => {
+    expect(hasCapability(capabilities, "menu.write")).toBe(true);
+    expect(hasCapability(capabilities, "staff.create")).toBe(false);
   });
 
-  it("hasAllPermissions", () => {
-    expect(hasAllPermissions(UserRole.SUPER_ADMIN, [Permissions.MANAGE_RESTAURANTS, Permissions.MANAGE_MENUS])).toBe(
-      true,
-    );
-  });
-
-  it("should allow super admin to manage restaurants", () => {
-    expect(hasPermission(UserRole.SUPER_ADMIN, Permissions.MANAGE_RESTAURANTS)).toBe(true);
-  });
-
-  it("should allow owner to manage menus", () => {
-    expect(hasPermission(UserRole.OWNER, Permissions.MANAGE_MENUS)).toBe(true);
-  });
-
-  it("should not allow waiter to manage users", () => {
-    expect(hasPermission(UserRole.WAITER, Permissions.MANAGE_USERS)).toBe(false);
-  });
-
-  it("should allow kitchen staff to view orders", () => {
-    expect(hasPermission(UserRole.KITCHEN_STAFF, Permissions.VIEW_ORDERS)).toBe(true);
-  });
-
-  it("should not allow kitchen staff to manage orders", () => {
-    expect(hasPermission(UserRole.KITCHEN_STAFF, Permissions.MANAGE_ORDERS)).toBe(false);
+  it("checks any and all capability requirements", () => {
+    expect(hasAnyCapability(capabilities, ["staff.create", "order.read"])).toBe(true);
+    expect(hasAllCapabilities(capabilities, ["menu.read", "menu.write"])).toBe(true);
+    expect(hasAllCapabilities(capabilities, ["menu.read", "staff.create"])).toBe(false);
   });
 });

@@ -2,11 +2,11 @@ from typing import Any
 
 from fastapi import APIRouter, status
 
+from core.authorization.dependencies import PaymentCreateTenantId
 from core.dto.v1.payments import (
     CreateTransactionDTO,
 )
 from core.foundation.dependencies import (
-    AuthorizedTenantId,
     ExternalClientDep,
     P24ServiceDep,
     PostgresSession,
@@ -30,7 +30,7 @@ async def create_payment(
     tenant_service: TenantServiceDep,
     p24_service: P24ServiceDep,
     external_client: ExternalClientDep,
-    authorized_tenant_id: AuthorizedTenantId,
+    authorized_tenant_id: PaymentCreateTenantId,
 ) -> CreatedResponse[dict[str, Any]]:
     tenant = await tenant_service.get_tenant(session, authorized_tenant_id)
     p24_service.validate_tenant_p24_credentials(tenant)

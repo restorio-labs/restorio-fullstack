@@ -1,11 +1,13 @@
-import { TokenStorage } from "@restorio/auth";
+import { TokenStorage, useCan } from "@restorio/auth";
 import type {
+  AccessGroup,
   BulkCreateStaffUserResponse,
   BulkCreateStaffUserResult,
   CreateStaffUserRequest,
   CreateStaffUserResponse,
   StaffInviteNotification,
 } from "@restorio/types";
+import { AuthorizationActions } from "@restorio/types";
 import { Button, FormActions, Input, Modal, Dropdown, useI18n, useToast, Loader } from "@restorio/ui";
 import { isEmailValid } from "@restorio/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -13,7 +15,7 @@ import { type ReactElement, useCallback, useLayoutEffect, useMemo, useRef, useSt
 import { createPortal } from "react-dom";
 import { BiSolidSave } from "react-icons/bi";
 import { FaCirclePlus } from "react-icons/fa6";
-import { TbTrash } from "react-icons/tb";
+import { TbTrash, TbUsersGroup } from "react-icons/tb";
 
 import { api } from "../api/client";
 import { useCurrentTenant } from "../context/TenantContext";
@@ -37,6 +39,17 @@ interface FormRow {
   name?: string;
   surname?: string;
   accessLevel: AccessLevel;
+  groupIds: string[];
+}
+
+interface SingleCreateInput {
+  request: CreateStaffUserRequest;
+  groupIds: string[];
+}
+
+interface BulkCreateInput {
+  users: CreateStaffUserRequest[];
+  groupIdsByEmail: Record<string, string[]>;
 }
 
 const toAccessLevel = (value: unknown): AccessLevel | null => {
@@ -102,6 +115,7 @@ const createEmptyRow = (): FormRow => ({
   name: "",
   surname: "",
   accessLevel: "kitchen",
+  groupIds: [],
 });
 
 const parseUsers = (
@@ -183,6 +197,8 @@ export const StaffPage = (): ReactElement => {
   const { t } = useI18n();
   const { showToast } = useToast();
   const { selectedTenantId } = useCurrentTenant();
+  const canCreateStaff = useCan(AuthorizationActions.STAFF_CREATE);
+  const canAssignGroups = useCan(AuthorizationActions.ACCESS_GROUP_ASSIGN);
   const queryClient = useQueryClient();
   const refreshStaffUsers = useCallback(async (): Promise<void> => {
     await queryClient.refetchQueries({
@@ -230,6 +246,12 @@ export const StaffPage = (): ReactElement => {
     enabled: selectedTenantId !== null,
   });
 
+  const { data: accessGroups = [] } = useQuery<AccessGroup[]>({
+    queryKey: ["access-groups", selectedTenantId ?? ""],
+    queryFn: () => api.accessGroups.list(selectedTenantId!),
+    enabled: selectedTenantId !== null && canAssignGroups,
+  });
+
   const accessOptions = useMemo(
     () => [
       { value: "kitchen", label: t("staff.accessLevels.kitchen") },
@@ -243,17 +265,45 @@ export const StaffPage = (): ReactElement => {
     setShowForm(false);
   }, []);
 
-  const bulkMutation = useMutation<BulkCreateStaffUserResponse, Error, { users: CreateStaffUserRequest[] }>({
-    mutationFn: async (payload) => {
+  const assignGroups = useCallback(
+    async (userId: string, groupIds: string[]): Promise<boolean> => {
+      if (!selectedTenantId || groupIds.length === 0) {
+        return true;
+      }
+
+      const results = await Promise.allSettled(
+        groupIds.map((groupId) => api.accessGroups.assign(selectedTenantId, groupId, userId)),
+      );
+
+      await queryClient.invalidateQueries({ queryKey: ["access-groups", selectedTenantId] });
+
+      return results.every((result) => result.status === "fulfilled");
+    },
+    [queryClient, selectedTenantId],
+  );
+
+  const bulkMutation = useMutation<BulkCreateStaffUserResponse, Error, BulkCreateInput>({
+    mutationFn: async ({ users: staffUsers }) => {
       if (!selectedTenantId) {
         throw new Error("No tenant selected");
       }
 
-      const result: BulkCreateStaffUserResponse = await api.users.bulkCreate(selectedTenantId, payload);
+      const result: BulkCreateStaffUserResponse = await api.users.bulkCreate(selectedTenantId, { users: staffUsers });
 
       return result;
     },
-    onSuccess: async (response) => {
+    onSuccess: async (response, input) => {
+      const assignmentResults = await Promise.all(
+        response.results.map(async (result): Promise<boolean> => {
+          if (result.status !== "created" || !result.data?.user_id) {
+            return true;
+          }
+
+          return assignGroups(result.data.user_id, input.groupIdsByEmail[result.email.trim().toLowerCase()] ?? []);
+        }),
+      );
+      const assignmentsSucceeded = assignmentResults.every(Boolean);
+
       await refreshStaffUsers();
       resetForm();
 
@@ -273,6 +323,14 @@ export const StaffPage = (): ReactElement => {
           t("staff.toast.bulkPartialDescription", { created: String(created), total: String(total) }),
         );
       }
+
+      if (!assignmentsSucceeded) {
+        showToast(
+          "warning",
+          t("staff.toast.groupAssignmentWarningTitle"),
+          t("staff.toast.groupAssignmentWarningDescription"),
+        );
+      }
     },
     onError: (error: unknown) => {
       const message =
@@ -282,15 +340,17 @@ export const StaffPage = (): ReactElement => {
     },
   });
 
-  const singleCreateMutation = useMutation<CreateStaffUserResponse, Error, CreateStaffUserRequest>({
-    mutationFn: (payload: CreateStaffUserRequest) => {
+  const singleCreateMutation = useMutation<CreateStaffUserResponse, Error, SingleCreateInput>({
+    mutationFn: ({ request: staffRequest }) => {
       if (!selectedTenantId) {
         throw new Error("No tenant selected");
       }
 
-      return api.users.create(selectedTenantId, payload);
+      return api.users.create(selectedTenantId, staffRequest);
     },
-    onSuccess: async (response) => {
+    onSuccess: async (response, input) => {
+      const assignmentsSucceeded = await assignGroups(response.data.user_id, input.groupIds);
+
       await refreshStaffUsers();
 
       if (savingRowKey !== null) {
@@ -300,7 +360,15 @@ export const StaffPage = (): ReactElement => {
       setSavingRowKey(null);
       const notification = normalizeStaffInviteNotification(response.data.notification);
 
-      showToast("success", t("staff.toast.singleSuccessTitle"), describeStaffSingleSuccess(notification, t));
+      if (assignmentsSucceeded) {
+        showToast("success", t("staff.toast.singleSuccessTitle"), describeStaffSingleSuccess(notification, t));
+      } else {
+        showToast(
+          "warning",
+          t("staff.toast.groupAssignmentWarningTitle"),
+          t("staff.toast.groupAssignmentWarningDescription"),
+        );
+      }
     },
     onError: (error: unknown) => {
       setSavingRowKey(null);
@@ -347,9 +415,12 @@ export const StaffPage = (): ReactElement => {
 
     setSavingRowKey(row.key);
     singleCreateMutation.mutate({
-      email: trimmed,
-      access_level: row.accessLevel,
-      ...(isWaiter ? { name: normalizedName, surname: normalizedSurname } : {}),
+      request: {
+        email: trimmed,
+        access_level: row.accessLevel,
+        ...(isWaiter ? { name: normalizedName, surname: normalizedSurname } : {}),
+      },
+      groupIds: row.groupIds,
     });
   };
 
@@ -374,7 +445,7 @@ export const StaffPage = (): ReactElement => {
     },
   });
 
-  const updateRow = (key: number, field: keyof Omit<FormRow, "key">, value: string): void => {
+  const updateRow = (key: number, field: Exclude<keyof Omit<FormRow, "key">, "groupIds">, value: string): void => {
     setRows((current) =>
       current.map((row) => {
         if (row.key !== key) {
@@ -399,6 +470,22 @@ export const StaffPage = (): ReactElement => {
         }
 
         return { ...row, [field]: value };
+      }),
+    );
+  };
+
+  const toggleRowGroup = (key: number, groupId: string): void => {
+    setRows((current) =>
+      current.map((row) => {
+        if (row.key !== key) {
+          return row;
+        }
+
+        const groupIds = row.groupIds.includes(groupId)
+          ? row.groupIds.filter((id) => id !== groupId)
+          : [...row.groupIds, groupId];
+
+        return { ...row, groupIds };
       }),
     );
   };
@@ -512,7 +599,10 @@ export const StaffPage = (): ReactElement => {
       };
     });
 
-    bulkMutation.mutate({ users: payload });
+    bulkMutation.mutate({
+      users: payload,
+      groupIdsByEmail: Object.fromEntries(rows.map((row) => [row.email.trim().toLowerCase(), row.groupIds])),
+    });
   };
 
   const handleDeleteUser = (userId: string): void => {
@@ -587,7 +677,7 @@ export const StaffPage = (): ReactElement => {
       );
     }
 
-    if (showEmptyState || hasUsers) {
+    if (canCreateStaff && (showEmptyState || hasUsers)) {
       return (
         <FormActions>
           <Button type="button" onClick={openForm}>
@@ -608,10 +698,6 @@ export const StaffPage = (): ReactElement => {
             <Loader size="sm" />
             <span>{t("staff.list.loading")}</span>
           </div>
-        )}
-
-        {showEmptyState && !showForm && (
-          <h1 className="text-2xl mt-4 font-semibold text-center text-text-primary">{t("staff.emptyState.heading")}</h1>
         )}
 
         {showFormCard && (
@@ -659,30 +745,78 @@ export const StaffPage = (): ReactElement => {
                     </>
                   )}
 
-                  <div className="w-full md:w-48 shrink-0">
+                  <div className="w-full shrink-0 md:w-64">
                     <div className="flex flex-col gap-1.5">
                       <label className="text-sm font-medium text-text-primary">{t("staff.form.accessLabel")}</label>
                       <Dropdown
                         trigger={
                           <Button variant="outline" className="w-full justify-between font-normal">
-                            {accessOptions.find((opt) => opt.value === row.accessLevel)?.label}
+                            <span className="truncate">
+                              {accessOptions.find((opt) => opt.value === row.accessLevel)?.label}
+                              {row.groupIds.length > 0
+                                ? ` · ${t("staff.form.selectedGroups", { count: row.groupIds.length })}`
+                                : ""}
+                            </span>
                           </Button>
                         }
                         placement="bottom-start"
-                        className="w-full md:w-48"
+                        className="w-64"
+                        triggerClassName="block w-full"
                         closeOnSelect
+                        portal
                       >
                         <div className="flex flex-col p-1">
+                          <div className="px-2 py-1.5 text-xs font-medium uppercase tracking-wide text-text-tertiary">
+                            {t("staff.form.baseAccess")}
+                          </div>
                           {accessOptions.map((option) => (
                             <button
                               key={option.value}
                               type="button"
-                              className="w-full md:w-12 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-surface-secondary"
+                              role="menuitemradio"
+                              aria-checked={row.accessLevel === option.value}
+                              className="flex w-full items-center justify-between rounded-sm px-3 py-2 text-left text-sm text-text-primary hover:bg-surface-secondary focus-visible:bg-surface-secondary focus-visible:outline-none"
                               onClick={() => updateRow(row.key, "accessLevel", option.value)}
                             >
-                              {option.label}
+                              <span>{option.label}</span>
+                              {row.accessLevel === option.value && <span aria-hidden>✓</span>}
                             </button>
                           ))}
+                          {accessGroups.length > 0 && (
+                            <>
+                              <div className="my-1 border-t border-border-default" />
+                              <div className="px-2 py-1.5 text-xs font-medium uppercase tracking-wide text-text-tertiary">
+                                {t("staff.form.additionalGroups")}
+                              </div>
+                              {accessGroups.map((group) => {
+                                const selected = row.groupIds.includes(group.id);
+
+                                return (
+                                  <button
+                                    key={group.id}
+                                    type="button"
+                                    role="menuitemcheckbox"
+                                    aria-checked={selected}
+                                    data-dropdown-prevent-close="true"
+                                    className="flex w-full items-center gap-2 rounded-sm px-3 py-2 text-left text-sm text-text-primary hover:bg-surface-secondary focus-visible:bg-surface-secondary focus-visible:outline-none"
+                                    onClick={() => toggleRowGroup(row.key, group.id)}
+                                  >
+                                    <span
+                                      className={`flex size-4 shrink-0 items-center justify-center rounded-sm border text-xs ${
+                                        selected
+                                          ? "border-interactive-primary bg-interactive-primary text-interactive-primaryForeground"
+                                          : "border-border-default bg-surface-primary"
+                                      }`}
+                                      aria-hidden
+                                    >
+                                      {selected ? "✓" : ""}
+                                    </span>
+                                    <span className="truncate">{group.name}</span>
+                                  </button>
+                                );
+                              })}
+                            </>
+                          )}
                         </div>
                       </Dropdown>
                     </div>
@@ -739,30 +873,43 @@ export const StaffPage = (): ReactElement => {
           </div>
         )}
 
-        {hasUsers && (
-          <div className="relative min-w-0 rounded-lg border border-border-default">
-            <div className="rounded-t-lg border-b border-border-default px-6 py-4 text-sm font-medium text-text-secondary">
-              {t("staff.list.title")}
+        {!isLoadingUsers && (
+          <div className="relative min-w-0 overflow-hidden rounded-lg border border-border-default bg-surface-primary">
+            <div className="flex items-center justify-between border-b border-border-default px-6 py-4">
+              <span className="text-sm font-medium text-text-primary">{t("staff.list.title")}</span>
+              <span className="rounded-full bg-surface-secondary px-2.5 py-1 text-xs font-medium text-text-secondary">
+                {users.length}
+              </span>
             </div>
-            <VirtualizedStaffList
-              count={users.length}
-              renderRow={(index) => {
-                const user = users[index];
+            <div className="hidden grid-cols-[minmax(0,2fr)_minmax(8rem,1fr)_minmax(8rem,1fr)_auto] gap-4 border-b border-border-default bg-surface-secondary px-6 py-3 text-xs font-medium uppercase tracking-wide text-text-tertiary md:grid">
+              <span>{t("staff.list.columns.employee")}</span>
+              <span>{t("staff.list.columns.access")}</span>
+              <span>{t("staff.list.columns.status")}</span>
+              <span className="text-end">{t("staff.list.columns.actions")}</span>
+            </div>
 
-                return (
-                  <div className="flex min-w-0 items-center justify-between gap-3 py-4">
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <span className="truncate text-sm text-text-primary">{user.email}</span>
-                      {user.accessLevel === "waiter" && (
-                        <span className="text-xs text-text-secondary truncate">
-                          {t("staff.list.personLabel", {
-                            name: user.name ?? t("staff.list.notProvided"),
-                            surname: user.surname ?? t("staff.list.notProvided"),
-                          })}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex shrink-0 items-center gap-3">
+            {hasUsers ? (
+              <VirtualizedStaffList
+                count={users.length}
+                renderRow={(index) => {
+                  const user = users[index];
+
+                  return (
+                    <div className="grid min-w-0 gap-3 py-4 md:grid-cols-[minmax(0,2fr)_minmax(8rem,1fr)_minmax(8rem,1fr)_auto] md:items-center md:gap-4">
+                      <div className="flex min-w-0 flex-col">
+                        <span className="truncate text-sm font-medium text-text-primary">{user.email}</span>
+                        {user.accessLevel === "waiter" && (
+                          <span className="truncate text-xs text-text-secondary">
+                            {t("staff.list.personLabel", {
+                              name: user.name ?? t("staff.list.notProvided"),
+                              surname: user.surname ?? t("staff.list.notProvided"),
+                            })}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs uppercase tracking-wide text-text-tertiary">
+                        {t(`staff.accessLevels.${user.accessLevel}`)}
+                      </span>
                       <span
                         className={`text-xs font-medium ${
                           user.isActive ? "text-green-700 dark:text-green-400" : "text-amber-700 dark:text-amber-400"
@@ -770,29 +917,35 @@ export const StaffPage = (): ReactElement => {
                       >
                         {user.isActive ? t("staff.status.active") : t("staff.status.inactive")}
                       </span>
-                      <span className="text-xs uppercase tracking-wide text-text-tertiary">
-                        {t(`staff.accessLevels.${user.accessLevel}`)}
-                      </span>
-                      <Button
-                        ref={registerDeleteButton(user.id)}
-                        type="button"
-                        size="sm"
-                        variant="danger"
-                        className="shadow-none"
-                        disabled={deleteMutation.isPending && deleteMutation.variables === user.id}
-                        onClick={() => {
-                          setPendingDeleteUserId((current) => (current === user.id ? null : user.id));
-                        }}
-                      >
-                        {deleteMutation.isPending && deleteMutation.variables === user.id
-                          ? t("staff.delete.deleting")
-                          : t("staff.delete.button")}
-                      </Button>
+                      <div className="flex justify-start md:justify-end">
+                        <Button
+                          ref={registerDeleteButton(user.id)}
+                          type="button"
+                          size="sm"
+                          variant="danger"
+                          className="shadow-none"
+                          disabled={deleteMutation.isPending && deleteMutation.variables === user.id}
+                          onClick={() => {
+                            setPendingDeleteUserId((current) => (current === user.id ? null : user.id));
+                          }}
+                        >
+                          {deleteMutation.isPending && deleteMutation.variables === user.id
+                            ? t("staff.delete.deleting")
+                            : t("staff.delete.button")}
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                );
-              }}
-            />
+                  );
+                }}
+              />
+            ) : (
+              <div className="flex min-h-44 flex-col items-center justify-center gap-3 px-6 py-10 text-center">
+                <div className="rounded-full bg-surface-secondary p-3 text-text-tertiary">
+                  <TbUsersGroup className="size-6" aria-hidden />
+                </div>
+                <p className="text-sm text-text-secondary">{t("staff.list.empty")}</p>
+              </div>
+            )}
           </div>
         )}
 

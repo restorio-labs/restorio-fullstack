@@ -3,6 +3,12 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
 
+from core.authorization.dependencies import (
+    MenuAssetWriteTenantId,
+    MenuAvailabilityTenantId,
+    MenuReadTenantId,
+    MenuWriteTenantId,
+)
 from core.dto.v1 import (
     TenantMenuResponseDTO,
     ToggleItemAvailabilityDTO,
@@ -15,7 +21,6 @@ from core.dto.v1.tenants.mobile_config import (
     MenuImagePresignResponseDTO,
 )
 from core.foundation.dependencies import (
-    AuthorizedTenantId,
     MongoDB,
     TenantMenuImageStorageServiceDep,
 )
@@ -23,7 +28,6 @@ from core.foundation.http.responses import (
     SuccessResponse,
     UpdatedResponse,
 )
-from core.foundation.role_guard import RequireAnyStaff, RequireOwnerOrManager
 from services.mongo_menu_service import (
     CATEGORY_META_KEY,
     MENU_COLLECTION,
@@ -82,7 +86,7 @@ def _build_raw_menu(data: UpsertTenantMenuDTO) -> dict[str, dict]:
 async def get_tenant_menu(
     tenant_public_id: str,
     db: MongoDB,
-    _tenant_id: AuthorizedTenantId,
+    _tenant_id: MenuReadTenantId,
 ) -> SuccessResponse[TenantMenuResponseDTO]:
     document = await db[MENU_COLLECTION].find_one({"tenantPublicId": tenant_public_id})
     if document is None:
@@ -118,8 +122,7 @@ async def upsert_tenant_menu(
     tenant_public_id: str,
     payload: UpsertTenantMenuDTO,
     db: MongoDB,
-    _tenant_id: AuthorizedTenantId,
-    _role: RequireOwnerOrManager,
+    _tenant_id: MenuWriteTenantId,
 ) -> UpdatedResponse[TenantMenuResponseDTO]:
     _validate_payload(payload)
 
@@ -153,8 +156,7 @@ async def toggle_item_availability(
     item_name: str,
     payload: ToggleItemAvailabilityDTO,
     db: MongoDB,
-    _tenant_id: AuthorizedTenantId,
-    _role: RequireAnyStaff,
+    _tenant_id: MenuAvailabilityTenantId,
 ) -> UpdatedResponse[TenantMenuResponseDTO]:
     document = await db[MENU_COLLECTION].find_one({"tenantPublicId": tenant_public_id})
     if document is None:
@@ -198,8 +200,7 @@ async def toggle_item_availability(
     response_model=SuccessResponse[MenuImagePresignResponseDTO],
 )
 async def presign_menu_item_image(
-    _role: RequireOwnerOrManager,
-    tenant_id: AuthorizedTenantId,
+    tenant_id: MenuAssetWriteTenantId,
     body: MenuImagePresignRequestDTO,
     storage: TenantMenuImageStorageServiceDep,
 ) -> SuccessResponse[MenuImagePresignResponseDTO]:
@@ -217,8 +218,7 @@ async def presign_menu_item_image(
     response_model=SuccessResponse[MenuImageFinalizeResponseDTO],
 )
 async def finalize_menu_item_image(
-    _role: RequireOwnerOrManager,
-    tenant_id: AuthorizedTenantId,
+    tenant_id: MenuAssetWriteTenantId,
     body: MenuImageFinalizeRequestDTO,
     storage: TenantMenuImageStorageServiceDep,
 ) -> SuccessResponse[MenuImageFinalizeResponseDTO]:

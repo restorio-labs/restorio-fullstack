@@ -18,6 +18,7 @@ def _generate_public_id() -> str:
 
 
 if TYPE_CHECKING:
+    from core.models.access_group import AccessGroup
     from core.models.audit_log import AuditLog
     from core.models.floor_canvas import FloorCanvas
     from core.models.order import Order
@@ -61,6 +62,9 @@ class Tenant(Base):
 
     tenant_roles: Mapped[list[TenantRole]] = relationship(
         "TenantRole", back_populates="tenant", cascade="all, delete-orphan"
+    )
+    access_groups: Mapped[list[AccessGroup]] = relationship(
+        "AccessGroup", back_populates="tenant", cascade="all, delete-orphan"
     )
     orders: Mapped[list[Order]] = relationship(
         "Order", back_populates="tenant", cascade="all, delete-orphan"

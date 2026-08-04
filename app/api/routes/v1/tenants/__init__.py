@@ -1,3 +1,4 @@
+from routes.v1.tenants.access_groups import router as access_groups_router
 from routes.v1.tenants.canvases import router as canvases_router
 from routes.v1.tenants.menu import router as menu_router
 from routes.v1.tenants.mobile_config import router as mobile_config_router
@@ -6,6 +7,7 @@ from routes.v1.tenants.profile import router as profile_router
 from routes.v1.tenants.tenants import router as tenants_router
 
 __all__ = [
+    "access_groups_router",
     "canvases_router",
     "menu_router",
     "mobile_config_router",

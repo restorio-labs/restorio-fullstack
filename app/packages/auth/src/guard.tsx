@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
 
 import { AuthProvider } from "./AuthContext";
-import type { UserRole } from "./RoleGuard";
 import { TokenStorage } from "./storage";
 
 interface AuthClient {
@@ -45,27 +44,26 @@ const REVALIDATION_COOLDOWN_MS = 2000;
 
 interface AuthCheckResult {
   authorized: boolean;
-  role: UserRole | null;
 }
 
 const createDefaultCheckAuth = (client: AuthClient | undefined): (() => AuthCheckResult | Promise<AuthCheckResult>) => {
   if (typeof window === "undefined" || !client) {
-    return (): AuthCheckResult => ({ authorized: fallbackTokenCheck(), role: null });
+    return (): AuthCheckResult => ({ authorized: fallbackTokenCheck() });
   }
 
   return async (): Promise<AuthCheckResult> => {
     try {
       const meData = await client.auth.me();
 
-      return { authorized: true, role: meData.account_type as UserRole | null };
+      return { authorized: meData.authenticated };
     } catch {
       try {
         await client.auth.refresh();
         const meData = await client.auth.me();
 
-        return { authorized: true, role: meData.account_type as UserRole | null };
+        return { authorized: meData.authenticated };
       } catch {
-        return { authorized: false, role: null };
+        return { authorized: false };
       }
     }
   };
@@ -82,7 +80,6 @@ export const AuthGuard = ({
   revalidateOnFocus = true,
 }: AuthGuardProps): ReactElement | null => {
   const [status, setStatus] = useState<AuthStatus>("pending");
-  const [role, setRole] = useState<UserRole | null>(null);
 
   const redirectTarget = redirectTo ?? loginPath;
   const shouldPoll = useMemo(() => Boolean(revalidateIntervalMs && revalidateIntervalMs > 0), [revalidateIntervalMs]);
@@ -101,7 +98,6 @@ export const AuthGuard = ({
 
       isChecking = true;
       let authorized = false;
-      let fetchedRole: UserRole | null = null;
 
       try {
         const result = await effectiveCheckAuth();
@@ -109,7 +105,7 @@ export const AuthGuard = ({
         if (typeof result === "boolean") {
           authorized = result;
         } else {
-          ({ authorized, role: fetchedRole } = result);
+          ({ authorized } = result);
         }
       } catch {
         authorized = false;
@@ -122,7 +118,6 @@ export const AuthGuard = ({
       }
 
       if (authorized) {
-        setRole(fetchedRole);
         setStatus("allowed");
 
         if (intervalId !== undefined) {
@@ -193,7 +188,7 @@ export const AuthGuard = ({
   }, [effectiveCheckAuth, revalidateIntervalMs, shouldPoll, shouldRevalidateOnFocus]);
 
   if (status === "allowed") {
-    return <AuthProvider role={role}>{children}</AuthProvider>;
+    return <AuthProvider>{children}</AuthProvider>;
   }
 
   if (status === "unauthorized") {

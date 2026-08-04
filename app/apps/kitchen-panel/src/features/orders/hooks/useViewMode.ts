@@ -14,11 +14,9 @@ const useViewModeStore = create<ViewModeState>()(
     (set): ViewModeState => ({
       viewModes: {},
       setViewMode: (tenantId: string, mode: ViewMode): void => {
-        set(
-          (state): Pick<ViewModeState, "viewModes"> => ({
-            viewModes: { ...state.viewModes, [tenantId]: mode },
-          }),
-        );
+        set((state): Pick<ViewModeState, "viewModes"> => ({
+          viewModes: { ...state.viewModes, [tenantId]: mode },
+        }));
       },
     }),
     {

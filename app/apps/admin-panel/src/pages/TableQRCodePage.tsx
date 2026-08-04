@@ -40,7 +40,7 @@ export const TableQRCodePage = (): ReactElement => {
   };
 
   const handleGoBack = (): void => {
-    navigate("/qr-code-generator");
+    void navigate("/qr-code-generator");
   };
 
   const showLoadingError = isLoading || tenantsState === "error" || !tenant || !tableNumber;

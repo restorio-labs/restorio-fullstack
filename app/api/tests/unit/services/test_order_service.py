@@ -297,7 +297,7 @@ async def test_update_status_not_found() -> None:
     coll.find_one = AsyncMock(return_value=None)
     db = _db_with_coll(coll)
     with pytest.raises(NotFoundResponse):
-        await OrderService().update_status(db, "r1", "K-1", "preparing")
+        await OrderService().update_status(db, "r1", "K-1", new_status="preparing")
 
 
 @pytest.mark.asyncio
@@ -315,7 +315,7 @@ async def test_update_status_invalid_transition() -> None:
 
     svc = OrderService()
     with pytest.raises(BadRequestError) as exc:
-        await svc.update_status(db, "r1", "K-1", "paid")
+        await svc.update_status(db, "r1", "K-1", new_status="paid")
 
     assert exc.value.details["code"] == INVALID_ORDER_STATUS_TRANSITION_CODE
 
@@ -335,7 +335,7 @@ async def test_update_status_rejected_with_reason_sets_field() -> None:
     coll.update_one = AsyncMock()
     db = _db_with_coll(coll)
     result = await OrderService().update_status(
-        db, "r1", "K-1", "rejected", rejection_reason="No stock"
+        db, "r1", "K-1", new_status="rejected", rejection_reason="No stock"
     )
     assert result["status"] == "rejected"
     set_arg = coll.update_one.await_args[0][1]["$set"]
@@ -357,7 +357,13 @@ async def test_update_status_rejected_requires_reason() -> None:
 
     svc = OrderService()
     with pytest.raises(BadRequestError, match="Rejection reason"):
-        await svc.update_status(db, "r1", "K-1", "rejected", rejection_reason=None)
+        await svc.update_status(
+            db,
+            "r1",
+            "K-1",
+            new_status="rejected",
+            rejection_reason=None,
+        )
 
 
 @pytest.mark.asyncio
@@ -376,7 +382,7 @@ async def test_update_status_valid_transition() -> None:
     db = _db_with_coll(coll)
 
     svc = OrderService()
-    result = await svc.update_status(db, "r1", "K-1", "preparing")
+    result = await svc.update_status(db, "r1", "K-1", new_status="preparing")
 
     assert result["status"] == "preparing"
 

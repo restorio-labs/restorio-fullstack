@@ -24,7 +24,13 @@ const profileQueryKey = (tenantId: string): readonly string[] => ["tenant-profil
 const MAX_LOGO_BYTES = 5 * 1024 * 1024;
 const ALLOWED_LOGO_TYPES = ["image/png", "image/jpeg", "image/webp"];
 
-export const TenantProfilePage = (): ReactElement => {
+export type TenantProfileSection = "company-contact" | "address-location" | "owner-contact" | "social-media";
+
+interface TenantProfilePageProps {
+  section: TenantProfileSection;
+}
+
+export const TenantProfilePage = ({ section }: TenantProfilePageProps): ReactElement => {
   const { t } = useI18n();
   const { selectedTenant } = useCurrentTenant();
   const queryClient = useQueryClient();
@@ -47,11 +53,13 @@ export const TenantProfilePage = (): ReactElement => {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isValid },
     reset,
   } = useForm<ProfileFormData>({
     defaultValues: EMPTY_FORM,
     mode: "onChange",
+    shouldUnregister: true,
   });
 
   useEffect(() => {
@@ -160,7 +168,11 @@ export const TenantProfilePage = (): ReactElement => {
     setSubmitStatus("idle");
     setLogoUploadError("");
     clearErrors();
-    saveMutation.mutate(values);
+    saveMutation.mutate({
+      ...EMPTY_FORM,
+      ...(profile ? toFormData(profile) : {}),
+      ...values,
+    });
   };
 
   const handleLogoChange = (event: ChangeEvent<HTMLInputElement>): void => {
@@ -218,8 +230,8 @@ export const TenantProfilePage = (): ReactElement => {
 
   return (
     <PageLayout
-      title={t("tenantProfile.title")}
-      description={t("tenantProfile.description")}
+      title={t(`tenantProfile.pages.${section}.title`)}
+      description={t(`tenantProfile.pages.${section}.description`)}
       headerActions={
         <FormActions>
           <Button type="submit" form="tenant-profile-form" disabled={isFormDisabled}>
@@ -248,28 +260,50 @@ export const TenantProfilePage = (): ReactElement => {
             <div className="text-xs text-status-error-text">{t("tenantProfile.errors.validationFailed")}</div>
           )}
 
-          <div className="mt-2 grid items-start gap-6 [grid-template-columns:repeat(auto-fit,minmax(320px,1fr))]">
-            <CompanyFieldset
-              effectiveLogo={effectiveLogo}
-              getFieldError={getFormFieldError}
-              handleLogoChange={handleLogoChange}
-              isSaving={saveMutation.isPending}
-              logoFieldError={logoFieldError}
-              register={register}
-              t={t}
-            />
-            <ContactFieldset getFieldError={getFormFieldError} register={register} t={t} />
-            <AddressFieldset getFieldError={getFormFieldError} register={register} t={t} />
-            <LocationFieldset
-              canPublish={hasValidCoordinates(latitude, longitude)}
-              getFieldError={getFormFieldError}
-              isLegacyLocationMissing={Boolean(profile && (profile.latitude === null || profile.longitude === null))}
-              register={register}
-              t={t}
-            />
-            <OwnerFieldset getFieldError={getFormFieldError} register={register} t={t} />
-            <ContactPersonFieldset getFieldError={getFormFieldError} register={register} t={t} />
-            <SocialsFieldset getFieldError={getFormFieldError} register={register} t={t} />
+          <div className="mt-2 grid items-stretch gap-6 [grid-template-columns:repeat(auto-fit,minmax(320px,1fr))]">
+            {section === "company-contact" ? (
+              <>
+                <CompanyFieldset
+                  effectiveLogo={effectiveLogo}
+                  getFieldError={getFormFieldError}
+                  handleLogoChange={handleLogoChange}
+                  isSaving={saveMutation.isPending}
+                  logoFieldError={logoFieldError}
+                  register={register}
+                  t={t}
+                />
+                <ContactFieldset getFieldError={getFormFieldError} register={register} t={t} />
+              </>
+            ) : null}
+            {section === "address-location" ? (
+              <>
+                <AddressFieldset getFieldError={getFormFieldError} register={register} t={t} />
+                <LocationFieldset
+                  canPublish={hasValidCoordinates(latitude, longitude)}
+                  getFieldError={getFormFieldError}
+                  isLegacyLocationMissing={Boolean(
+                    profile && (profile.latitude === null || profile.longitude === null),
+                  )}
+                  latitude={latitude}
+                  longitude={longitude}
+                  onLocationChange={(nextLatitude, nextLongitude) => {
+                    setValue("latitude", nextLatitude.toFixed(6), { shouldDirty: true, shouldValidate: true });
+                    setValue("longitude", nextLongitude.toFixed(6), { shouldDirty: true, shouldValidate: true });
+                  }}
+                  register={register}
+                  t={t}
+                />
+              </>
+            ) : null}
+            {section === "owner-contact" ? (
+              <>
+                <OwnerFieldset getFieldError={getFormFieldError} register={register} t={t} />
+                <ContactPersonFieldset getFieldError={getFormFieldError} register={register} t={t} />
+              </>
+            ) : null}
+            {section === "social-media" ? (
+              <SocialsFieldset getFieldError={getFormFieldError} register={register} t={t} />
+            ) : null}
           </div>
 
           {submitStatus === "success" && (

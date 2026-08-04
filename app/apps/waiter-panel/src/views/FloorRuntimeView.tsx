@@ -346,29 +346,27 @@ export const FloorRuntimeView = ({
         const response = await ordersApi.list(venue.id);
         const orders = "data" in response ? response.data : [];
 
-        return orders.map(
-          (order): KitchenOrder => ({
-            id: order.id,
-            restaurantId: order.restaurantId,
-            tableId: order.tableId,
-            table: order.table,
-            status: order.status,
-            items: order.items.map((item) => ({
-              id: item.id,
-              menuItemId: item.menuItemId,
-              name: item.name,
-              quantity: item.quantity,
-              basePrice: item.basePrice,
-              selectedModifiers: [],
-              totalPrice: item.totalPrice,
-            })),
-            notes: order.notes,
-            rejectionReason: order.rejectionReason,
-            invoiceData: order.invoiceData,
-            createdAt: String(order.createdAt),
-            updatedAt: String(order.updatedAt),
-          }),
-        );
+        return orders.map((order): KitchenOrder => ({
+          id: order.id,
+          restaurantId: order.restaurantId,
+          tableId: order.tableId,
+          table: order.table,
+          status: order.status,
+          items: order.items.map((item) => ({
+            id: item.id,
+            menuItemId: item.menuItemId,
+            name: item.name,
+            quantity: item.quantity,
+            basePrice: item.basePrice,
+            selectedModifiers: [],
+            totalPrice: item.totalPrice,
+          })),
+          notes: order.notes,
+          rejectionReason: order.rejectionReason,
+          invoiceData: order.invoiceData,
+          createdAt: String(order.createdAt),
+          updatedAt: String(order.updatedAt),
+        }));
       } catch {
         return [];
       }

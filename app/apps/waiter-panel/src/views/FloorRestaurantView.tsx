@@ -135,7 +135,7 @@ export const FloorRestaurantView = (): ReactElement => {
           variant="ghost"
           size="sm"
           onClick={() => {
-            navigate("/");
+            void navigate("/");
           }}
         >
           <RiArrowGoBackFill className="size-5" />

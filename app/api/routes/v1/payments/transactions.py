@@ -3,13 +3,13 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from sqlalchemy import select
 
+from core.authorization.dependencies import PaymentReconcileTenantId, PaymentTransactionReadTenantId
 from core.dto.v1.payments import (
     TransactionListItemDTO,
     TransactionListQueryDTO,
     TransactionsReconcileResponseDTO,
 )
 from core.foundation.dependencies import (
-    AuthorizedTenantId,
     ExternalClientDep,
     MongoDB,
     P24ServiceDep,
@@ -30,7 +30,7 @@ router = APIRouter()
     response_model=PaginatedResponse[TransactionListItemDTO],
 )
 async def list_transactions(
-    tenant_id: AuthorizedTenantId,
+    tenant_id: PaymentTransactionReadTenantId,
     session: PostgresSession,
     p24_service: P24ServiceDep,
     query: Annotated[TransactionListQueryDTO, Depends()],
@@ -60,7 +60,7 @@ async def list_transactions(
     response_model=SuccessResponse[TransactionsReconcileResponseDTO],
 )
 async def reconcile_pending_transactions(
-    tenant_id: AuthorizedTenantId,
+    tenant_id: PaymentReconcileTenantId,
     session: PostgresSession,
     db: MongoDB,
     p24_service: P24ServiceDep,

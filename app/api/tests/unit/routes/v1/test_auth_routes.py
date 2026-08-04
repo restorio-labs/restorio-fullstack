@@ -202,13 +202,13 @@ def test_auth_me_route() -> None:
 
     @app.middleware("http")
     async def inject_user(request: Request, call_next) -> object:
-        request.state.user = {"sub": "user-1", "account_type": "owner"}
+        request.state.user = {"sub": "user-1"}
         return await call_next(request)
 
     client = TestClient(app)
     r = client.get(f"{settings.API_V1_PREFIX}/auth/me")
     assert r.status_code == status.HTTP_200_OK
-    assert r.json()["data"]["account_type"] == "owner"
+    assert r.json()["data"] == {"authenticated": True}
 
 
 def test_auth_me_unauthenticated_uses_unauthenticated_response() -> None:

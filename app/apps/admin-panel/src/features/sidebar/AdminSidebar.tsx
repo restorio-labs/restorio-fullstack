@@ -5,11 +5,17 @@ import type { ReactElement } from "react";
 import { useCallback } from "react";
 import { IoFastFoodSharp } from "react-icons/io5";
 import {
+  TbAddressBook,
+  TbBrandInstagram,
+  TbBuilding,
   TbBuildingStore,
   TbCreditCard,
   TbDeviceMobile,
   TbLayoutDashboardFilled,
+  TbMapPin,
   TbQrcode,
+  TbShieldLock,
+  TbUsers,
   TbUsersGroup,
   TbTransactionDollar,
 } from "react-icons/tb";
@@ -25,6 +31,7 @@ const NAV_ITEM_ROW_CLASS =
 
 const NAV_ITEM_ICON_SIZE = "8";
 const NAV_ITEM_ICON_CLASS = `h-${NAV_ITEM_ICON_SIZE} w-${NAV_ITEM_ICON_SIZE}`;
+const SUB_NAV_ITEM_ICON_CLASS = "h-5 w-5";
 
 export const AdminSidebar = (): ReactElement => {
   const { t } = useI18n();
@@ -59,7 +66,7 @@ export const AdminSidebar = (): ReactElement => {
         }
       }
 
-      navigate(path);
+      void navigate(path);
     },
     [navigate, pathname],
   );
@@ -134,7 +141,7 @@ export const AdminSidebar = (): ReactElement => {
           </NavItem> */}
           <NavItem
             as={Link}
-            to="/profile"
+            to="/profile/company-contact"
             active={isActive("/profile")}
             role="menuitem"
             className={NAV_ITEM_ROW_CLASS}
@@ -143,10 +150,78 @@ export const AdminSidebar = (): ReactElement => {
                 <TbBuildingStore className={NAV_ITEM_ICON_CLASS} />
               </NavIcon>
             }
-            onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/profile")}
+            onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/profile/company-contact")}
           >
             {t("sidebar.items.tenantProfile")}
           </NavItem>
+          {isActive("/profile") && (
+            <div className="ms-4 flex flex-col gap-1 border-s border-border-default ps-3" role="group">
+              <NavItem
+                as={Link}
+                to="/profile/company-contact"
+                active={pathname === "/profile/company-contact"}
+                role="menuitem"
+                variant="link"
+                className={NAV_ITEM_ROW_CLASS}
+                icon={
+                  <NavIcon className={SUB_NAV_ITEM_ICON_CLASS}>
+                    <TbBuilding className={SUB_NAV_ITEM_ICON_CLASS} />
+                  </NavIcon>
+                }
+                onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/profile/company-contact")}
+              >
+                {t("sidebar.items.profileCompanyContact")}
+              </NavItem>
+              <NavItem
+                as={Link}
+                to="/profile/address-location"
+                active={pathname === "/profile/address-location"}
+                role="menuitem"
+                variant="link"
+                className={NAV_ITEM_ROW_CLASS}
+                icon={
+                  <NavIcon className={SUB_NAV_ITEM_ICON_CLASS}>
+                    <TbMapPin className={SUB_NAV_ITEM_ICON_CLASS} />
+                  </NavIcon>
+                }
+                onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/profile/address-location")}
+              >
+                {t("sidebar.items.profileAddressLocation")}
+              </NavItem>
+              <NavItem
+                as={Link}
+                to="/profile/owner-contact"
+                active={pathname === "/profile/owner-contact"}
+                role="menuitem"
+                variant="link"
+                className={NAV_ITEM_ROW_CLASS}
+                icon={
+                  <NavIcon className={SUB_NAV_ITEM_ICON_CLASS}>
+                    <TbAddressBook className={SUB_NAV_ITEM_ICON_CLASS} />
+                  </NavIcon>
+                }
+                onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/profile/owner-contact")}
+              >
+                {t("sidebar.items.profileOwnerContact")}
+              </NavItem>
+              <NavItem
+                as={Link}
+                to="/profile/social-media"
+                active={pathname === "/profile/social-media"}
+                role="menuitem"
+                variant="link"
+                className={NAV_ITEM_ROW_CLASS}
+                icon={
+                  <NavIcon className={SUB_NAV_ITEM_ICON_CLASS}>
+                    <TbBrandInstagram className={SUB_NAV_ITEM_ICON_CLASS} />
+                  </NavIcon>
+                }
+                onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/profile/social-media")}
+              >
+                {t("sidebar.items.profileSocialMedia")}
+              </NavItem>
+            </div>
+          )}
           <NavItem
             as={Link}
             to="/payment-config"
@@ -177,6 +252,42 @@ export const AdminSidebar = (): ReactElement => {
           >
             {t("sidebar.items.staff")}
           </NavItem>
+          {isActive("/staff") && (
+            <div className="ms-4 flex flex-col gap-1 border-s border-border-default ps-3" role="group">
+              <NavItem
+                as={Link}
+                to="/staff"
+                active={pathname === "/staff"}
+                role="menuitem"
+                variant="link"
+                className={NAV_ITEM_ROW_CLASS}
+                icon={
+                  <NavIcon className={SUB_NAV_ITEM_ICON_CLASS}>
+                    <TbUsers className={SUB_NAV_ITEM_ICON_CLASS} />
+                  </NavIcon>
+                }
+                onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/staff")}
+              >
+                {t("sidebar.items.staffMembers")}
+              </NavItem>
+              <NavItem
+                as={Link}
+                to="/staff/access-groups"
+                active={pathname === "/staff/access-groups"}
+                role="menuitem"
+                variant="link"
+                className={NAV_ITEM_ROW_CLASS}
+                icon={
+                  <NavIcon className={SUB_NAV_ITEM_ICON_CLASS}>
+                    <TbShieldLock className={SUB_NAV_ITEM_ICON_CLASS} />
+                  </NavIcon>
+                }
+                onClick={(event: React.MouseEvent) => handleRouteNavigation(event, "/staff/access-groups")}
+              >
+                {t("sidebar.items.accessGroups")}
+              </NavItem>
+            </div>
+          )}
           <NavItem
             as={Link}
             to="/transactions"

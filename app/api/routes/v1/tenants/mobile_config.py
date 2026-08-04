@@ -1,5 +1,11 @@
 from fastapi import APIRouter, Request, status
 
+from core.authorization.actions import AuthorizationAction
+from core.authorization.dependencies import (
+    MobileConfigReadTenantId,
+    MobileConfigWriteTenantId,
+    authorize_tenant_action,
+)
 from core.dto.v1.tenants.mobile_config import (
     CopyMobileThemeFromDTO,
     TenantMobileConfigResponseDTO,
@@ -10,14 +16,11 @@ from core.dto.v1.tenants.mobile_config import (
 )
 from core.exceptions import BadRequestError
 from core.foundation.dependencies import (
-    AuthorizedTenantId,
     PostgresSession,
     TenantMobileConfigServiceDep,
     TenantMobileFaviconStorageServiceDep,
 )
 from core.foundation.http.responses import SuccessResponse, UpdatedResponse
-from core.foundation.role_guard import RequireOwnerOrManager
-from core.foundation.tenant_guard import get_authorized_tenant_uuid
 from routes.v1.mappers.tenant_mobile_config_mappers import tenant_mobile_config_to_response
 
 router = APIRouter()
@@ -29,8 +32,7 @@ router = APIRouter()
     response_model=SuccessResponse[TenantMobileConfigResponseDTO],
 )
 async def get_tenant_mobile_config(
-    _role: RequireOwnerOrManager,
-    tenant_id: AuthorizedTenantId,
+    tenant_id: MobileConfigReadTenantId,
     session: PostgresSession,
     service: TenantMobileConfigServiceDep,
 ) -> SuccessResponse[TenantMobileConfigResponseDTO]:
@@ -48,8 +50,7 @@ async def get_tenant_mobile_config(
     response_model=UpdatedResponse[TenantMobileConfigResponseDTO],
 )
 async def update_tenant_mobile_config(
-    _role: RequireOwnerOrManager,
-    tenant_id: AuthorizedTenantId,
+    tenant_id: MobileConfigWriteTenantId,
     body: UpdateTenantMobileConfigDTO,
     session: PostgresSession,
     service: TenantMobileConfigServiceDep,
@@ -86,8 +87,7 @@ async def update_tenant_mobile_config(
     response_model=SuccessResponse[TenantMobileFaviconPresignResponseDTO],
 )
 async def presign_tenant_mobile_favicon(
-    _role: RequireOwnerOrManager,
-    tenant_id: AuthorizedTenantId,
+    tenant_id: MobileConfigWriteTenantId,
     body: TenantMobileFaviconPresignRequestDTO,
     storage: TenantMobileFaviconStorageServiceDep,
 ) -> SuccessResponse[TenantMobileFaviconPresignResponseDTO]:
@@ -105,8 +105,7 @@ async def presign_tenant_mobile_favicon(
     response_model=UpdatedResponse[TenantMobileConfigResponseDTO],
 )
 async def finalize_tenant_mobile_favicon(
-    _role: RequireOwnerOrManager,
-    tenant_id: AuthorizedTenantId,
+    tenant_id: MobileConfigWriteTenantId,
     body: TenantMobileFaviconFinalizeRequestDTO,
     session: PostgresSession,
     storage: TenantMobileFaviconStorageServiceDep,
@@ -128,14 +127,19 @@ async def finalize_tenant_mobile_favicon(
     response_model=UpdatedResponse[TenantMobileConfigResponseDTO],
 )
 async def copy_mobile_theme_from_tenant(
-    _role: RequireOwnerOrManager,
-    tenant_id: AuthorizedTenantId,
+    tenant_id: MobileConfigWriteTenantId,
     body: CopyMobileThemeFromDTO,
     request: Request,
     session: PostgresSession,
     service: TenantMobileConfigServiceDep,
 ) -> UpdatedResponse[TenantMobileConfigResponseDTO]:
-    source_uuid = await get_authorized_tenant_uuid(session, request, body.source_tenant_public_id)
+    source_grant = await authorize_tenant_action(
+        action=AuthorizationAction.MOBILE_CONFIG_READ,
+        tenant_public_id=body.source_tenant_public_id,
+        request=request,
+        session=session,
+    )
+    source_uuid = source_grant.tenant_id
 
     if source_uuid == tenant_id:
         raise BadRequestError(message="Source tenant must differ from target")

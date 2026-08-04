@@ -46,9 +46,15 @@
       "pageConfigurator": "Konfigurator strony",
       "qrCodeGenerator": "Generator kodów QR",
       "tenantProfile": "Profil lokalu",
+      "profileCompanyContact": "Dane firmy i kontakt z restauracją",
+      "profileAddressLocation": "Adres i lokalizacja na mapie",
+      "profileOwnerContact": "Dane właściciela i osoba kontaktowa",
+      "profileSocialMedia": "Media społecznościowe",
       "paymentConfig": "Konfiguracja płatności",
       "transactions": "Transakcje",
-      "staff": "Personel"
+      "staff": "Personel",
+      "staffMembers": "Pracownicy",
+      "accessGroups": "Grupy dostępu"
     },
     "mobile": {
       "openMenu": "Otwórz menu nawigacji",
@@ -581,19 +587,25 @@
       "nameLabel": "Imię",
       "surnameLabel": "Nazwisko",
       "accessLabel": "Poziom dostępu",
+      "baseAccess": "Podstawowy poziom dostępu",
+      "additionalGroups": "Grupy dodatkowe",
+      "selectedGroups": "Grupy: {{count}}",
       "addRow": "Dodaj kolejnego",
       "removeRow": "Usuń",
       "saveSingle": "Zapisz tego użytkownika",
       "submit": "Zapisz wszystkich",
       "submitting": "Zapisywanie..."
     },
-    "emptyState": {
-      "heading": "Zacznijmy od dodania nowych członków zespołu 🚀"
-    },
     "list": {
       "title": "Wszyscy użytkownicy",
       "loading": "Ładowanie użytkowników...",
       "empty": "Brak użytkowników.",
+      "columns": {
+        "employee": "Pracownik",
+        "access": "Poziom dostępu",
+        "status": "Status",
+        "actions": "Akcje"
+      },
       "personLabel": "Imię i nazwisko: {{name}} {{surname}}",
       "notProvided": "-"
     },
@@ -622,6 +634,8 @@
       "deleteSuccessDescription": "Użytkownik został usunięty.",
       "deleteErrorTitle": "Nie udało się usunąć",
       "deleteErrorDescription": "Nie udało się usunąć użytkownika.",
+      "groupAssignmentWarningTitle": "Dodano użytkownika z niepełnym dostępem",
+      "groupAssignmentWarningDescription": "Użytkownik został utworzony, ale nie udało się przypisać co najmniej jednej grupy. Przypisz ją w sekcji Grupy dostępu.",
       "invalidEmail": "Podaj prawidłowy adres e-mail.",
       "waiterNameRequired": "Imię i nazwisko są wymagane dla konta kelnera."
     },
@@ -646,11 +660,97 @@
       "alreadyMemberDescription": "Ten adres e-mail jest już powiązany z tym lokalem - nie możesz dodać go ponownie jako personelu.",
       "ok": "OK",
       "closeAria": "Zamknij"
+    },
+    "accessGroups": {
+      "title": "Grupy dostępu",
+      "description": "Twórz zestawy uprawnień wielokrotnego użytku i przypisuj je pracownikom.",
+      "create": "Utwórz grupę",
+      "edit": "Edytuj",
+      "delete": "Usuń",
+      "loading": "Ładowanie grup dostępu...",
+      "empty": "Nie ma jeszcze własnych grup dostępu.",
+      "members": "Pracownicy",
+      "noEmployees": "Dodaj pracownika, aby przypisać tę grupę.",
+      "noCapabilities": "Brak dodatkowych uprawnień",
+      "capabilityLabels": {
+        "app_kitchen_access": "Dostęp do panelu kuchni",
+        "app_waiter_access": "Dostęp do panelu kelnera",
+        "floor_canvas_read": "Wyświetlanie układu sali",
+        "floor_canvas_version_read": "Wyświetlanie wersji układu sali",
+        "floor_canvas_write": "Zarządzanie układem sali",
+        "kitchen_config_read": "Wyświetlanie konfiguracji kuchni",
+        "kitchen_config_write": "Zarządzanie konfiguracją kuchni",
+        "menu_asset_write": "Zarządzanie zasobami menu",
+        "menu_availability_update": "Zmiana dostępności pozycji menu",
+        "menu_read": "Wyświetlanie menu",
+        "menu_write": "Zarządzanie menu",
+        "mobile_config_read": "Wyświetlanie konfiguracji mobilnej",
+        "mobile_config_write": "Zarządzanie konfiguracją mobilną",
+        "order_archive": "Archiwizowanie zamówień",
+        "order_create": "Tworzenie zamówień",
+        "order_delete": "Usuwanie zamówień",
+        "order_read": "Wyświetlanie zamówień",
+        "order_refund": "Zwracanie płatności za zamówienia",
+        "order_transition": "Zmiana statusu zamówień",
+        "order_update": "Aktualizowanie zamówień",
+        "payment_create": "Tworzenie płatności",
+        "payment_reconcile": "Uzgadnianie płatności",
+        "payment_transaction_read": "Wyświetlanie transakcji płatniczych",
+        "payment_verify": "Weryfikowanie płatności",
+        "profile_logo_read": "Wyświetlanie logo profilu",
+        "profile_logo_write": "Zarządzanie logo profilu",
+        "profile_update": "Aktualizowanie profilu restauracji",
+        "profile_view": "Wyświetlanie profilu restauracji",
+        "staff_read": "Wyświetlanie personelu",
+        "table_session_read": "Wyświetlanie sesji stolików",
+        "table_session_unlock": "Odblokowywanie sesji stolików",
+        "tenant_view": "Wyświetlanie restauracji"
+      },
+      "form": {
+        "name": "Nazwa grupy",
+        "description": "Opis",
+        "capabilities": "Uprawnienia",
+        "capabilitiesHelp": "Te uprawnienia są dodawane do podstawowego poziomu dostępu każdego pracownika.",
+        "cancel": "Anuluj",
+        "save": "Zapisz grupę",
+        "saving": "Zapisywanie..."
+      },
+      "deleteConfirm": {
+        "title": "Usunąć grupę dostępu?",
+        "description": "Usunąć grupę {{name}} i odpiąć ją od wszystkich przypisanych pracowników?",
+        "cancel": "Anuluj",
+        "confirm": "Usuń grupę"
+      },
+      "toast": {
+        "savedTitle": "Zapisano grupę dostępu",
+        "savedDescription": "Zestaw uprawnień jest gotowy do użycia.",
+        "deletedTitle": "Usunięto grupę dostępu",
+        "deletedDescription": "Grupa została odpięta od wszystkich pracowników.",
+        "errorTitle": "Nie udało się zmienić grup dostępu"
+      }
     }
   },
   "tenantProfile": {
     "title": "Profil lokalu",
     "description": "Zarządzaj danymi firmowymi, kontaktowymi i mediami społecznościowymi najemcy",
+    "pages": {
+      "company-contact": {
+        "title": "Dane firmy i kontakt z restauracją",
+        "description": "Uzupełnij dane rejestrowe, logo oraz główne dane kontaktowe restauracji."
+      },
+      "address-location": {
+        "title": "Adres i lokalizacja na mapie",
+        "description": "Uzupełnij adres restauracji i ustaw jej dokładne położenie."
+      },
+      "owner-contact": {
+        "title": "Dane właściciela i osoba kontaktowa",
+        "description": "Uzupełnij dane właściciela oraz osoby odpowiedzialnej za bieżący kontakt."
+      },
+      "social-media": {
+        "title": "Media społecznościowe",
+        "description": "Dodaj odnośniki do strony internetowej i profili restauracji."
+      }
+    },
     "loadingTenants": "Wczytywanie najemców...",
     "loadingProfile": "Wczytywanie profilu...",
     "selectedTenant": {
@@ -807,6 +907,10 @@
     },
     "location": {
       "description": "Wpisz dokładne współrzędne wejścia do restauracji lub głównej lokalizacji dostępnej dla gości.",
+      "loadingMap": "Wczytywanie mapy...",
+      "mapHint": "Kliknij mapę lub przeciągnij znacznik, aby ustawić dokładną lokalizację.",
+      "mapLabel": "Wybór lokalizacji restauracji na mapie",
+      "markerTitle": "Lokalizacja restauracji",
       "legacyTitle": "Ten profil wymaga lokalizacji",
       "legacyDescription": "Restauracja powstała zanim lokalizacja była wymagana. Dodaj współrzędne przed zapisem lub włączeniem widoczności publicznej."
     },

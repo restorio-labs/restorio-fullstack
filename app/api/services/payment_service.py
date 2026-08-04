@@ -256,7 +256,7 @@ class P24Service:
         raw = f"{merchant_id}:{api_key}"
         return f"Basic {base64.b64encode(raw.encode('utf-8')).decode('utf-8')}"
 
-    async def register_transaction(
+    async def register_transaction(  # noqa: PLR0913
         self,
         external_client: ExternalClient,
         *,

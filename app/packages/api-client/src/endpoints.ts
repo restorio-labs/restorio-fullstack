@@ -1,5 +1,6 @@
 import type { ApiClient } from "./client";
 import {
+  AccessGroupsResource,
   RestaurantsResource,
   TenantProfilesResource,
   TablesResource,
@@ -21,6 +22,7 @@ import {
  * Provides typed methods for all API endpoints.
  */
 export class RestorioApi {
+  public readonly accessGroups: AccessGroupsResource;
   public readonly auth: AuthResource;
   public readonly health: HealthResource;
   public readonly payments: PaymentsResource;
@@ -37,6 +39,7 @@ export class RestorioApi {
   public readonly users: UserResource;
 
   constructor(private client: ApiClient) {
+    this.accessGroups = new AccessGroupsResource(this.client);
     this.auth = new AuthResource(this.client);
     this.health = new HealthResource(this.client);
     this.payments = new PaymentsResource(this.client);

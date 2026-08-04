@@ -7,7 +7,6 @@ import {
   getApiValidationFieldLeafs,
   goToApp,
   LAST_VISITED_APP_STORAGE_KEY,
-  resolveAuthenticatedAppRedirect,
 } from "@restorio/utils";
 import Link from "next/link";
 import type { ReactElement } from "react";
@@ -16,6 +15,7 @@ import { useEffect, useMemo, useState } from "react";
 import { api } from "@/api/client";
 import { useLocale, useTranslations } from "@/i18n/useT";
 import { translateLoginApiMessage } from "@/services/authApiMessages";
+import { resolveSessionAppRedirect } from "@/services/resolveSessionAppRedirect";
 import { isEmailValid } from "@/services/validation";
 
 type ViewState = "form" | "redirecting";
@@ -93,10 +93,9 @@ export const LoginContent = (): ReactElement | null => {
 
       await refreshAuth();
 
-      const meData = await api.auth.me();
       const rlvp = localStorage.getItem(LAST_VISITED_APP_STORAGE_KEY);
 
-      goToApp(resolveAuthenticatedAppRedirect(meData.account_type, rlvp));
+      goToApp(await resolveSessionAppRedirect(rlvp));
     } catch (err: unknown) {
       const data = getApiErrorData(err);
       const extractedFieldErrors = extractFieldErrors(data, t);
@@ -121,10 +120,9 @@ export const LoginContent = (): ReactElement | null => {
 
     const fetchRoleAndRedirect = async (): Promise<void> => {
       try {
-        const meData = await api.auth.me();
         const rlvp = localStorage.getItem(LAST_VISITED_APP_STORAGE_KEY);
 
-        goToApp(resolveAuthenticatedAppRedirect(meData.account_type, rlvp));
+        goToApp(await resolveSessionAppRedirect(rlvp));
       } catch {
         goToApp("admin-panel");
       }

@@ -1,34 +1,32 @@
-from datetime import timedelta
-from uuid import UUID
+from fastapi import APIRouter, Request, status
 
-from fastapi import APIRouter, Request, Response, status
-from sqlalchemy import select
-
+from core.authorization.actions import AuthorizationAction
+from core.authorization.dependencies import (
+    TenantCreateAccountId,
+    TenantDeleteId,
+    TenantListAccountId,
+    TenantUpdateId,
+    TenantViewId,
+    authorize_tenant_action,
+)
+from core.authorization.engine import authorization_engine
 from core.dto.v1 import (
     CreateTenantDTO,
     TenantResponseDTO,
     TenantSummaryResponseDTO,
     UpdateTenantDTO,
 )
-from core.foundation.auth_cookies import set_auth_cookies
+from core.dto.v1.authorization import TenantCapabilitiesDTO
 from core.foundation.dependencies import (
-    AuthorizedTenantId,
     PostgresSession,
-    SecurityServiceDep,
     TenantServiceDep,
 )
 from core.foundation.http.responses import (
     CreatedResponse,
     DeletedResponse,
     SuccessResponse,
-    UnauthenticatedResponse,
     UpdatedResponse,
 )
-from core.foundation.infra.config import settings
-from core.foundation.role_guard import RequireOwner, RequireOwnerOrNoRole
-from core.foundation.token_store import generate_family, generate_jti
-from core.models.tenant import Tenant
-from core.models.tenant_role import TenantRole
 from routes.v1.mappers.tenant_mappers import (
     tenant_to_response,
     tenant_to_summary,
@@ -43,19 +41,10 @@ router = APIRouter()
     response_model=SuccessResponse[list[TenantSummaryResponseDTO]],
 )
 async def list_tenants(
-    request: Request,
+    user_id: TenantListAccountId,
     session: PostgresSession,
     service: TenantServiceDep,
 ) -> SuccessResponse[list[TenantSummaryResponseDTO]]:
-    user = getattr(request.state, "user", None)
-    if not isinstance(user, dict):
-        raise UnauthenticatedResponse(message="Unauthorized")
-
-    subject = user.get("sub")
-    if not isinstance(subject, str):
-        raise UnauthenticatedResponse(message="Unauthorized")
-
-    user_id = UUID(subject)
     tenants = await service.list_tenants(session, user_id)
     return SuccessResponse(
         message="Tenants retrieved successfully",
@@ -69,23 +58,11 @@ async def list_tenants(
     response_model=CreatedResponse[TenantResponseDTO],
 )
 async def create_tenant(
-    _role: RequireOwnerOrNoRole,
-    request: Request,
-    response: Response,
+    user_id: TenantCreateAccountId,
     body: CreateTenantDTO,
     session: PostgresSession,
     service: TenantServiceDep,
-    security_service: SecurityServiceDep,
 ) -> CreatedResponse[TenantResponseDTO]:
-    user = getattr(request.state, "user", None)
-    if not isinstance(user, dict):
-        raise UnauthenticatedResponse(message="Unauthorized")
-
-    subject = user.get("sub")
-    if not isinstance(subject, str):
-        raise UnauthenticatedResponse(message="Unauthorized")
-
-    user_id = UUID(subject)
     data = CreateTenantDTO(
         name=body.name,
         slug=body.slug,
@@ -93,42 +70,40 @@ async def create_tenant(
     )
     tenant = await service.create_tenant(session, data, user_id)
 
-    tenant_role_ids = list(
-        await session.scalars(select(TenantRole.tenant_id).where(TenantRole.account_id == user_id))
-    )
-    tenant_ids: list[str] = []
-    if tenant_role_ids:
-        rows = await session.execute(select(Tenant.public_id).where(Tenant.id.in_(tenant_role_ids)))
-        tenant_ids = [row[0] for row in rows.all()]
-
-    role = await session.scalar(select(TenantRole).where(TenantRole.account_id == user_id).limit(1))
-    email = user.get("email")
-    token_data: dict[str, str | list[str] | None] = {
-        "sub": str(user_id),
-        "tenant_ids": tenant_ids,
-        "account_type": role.account_type.value if role is not None else None,
-        "email": email if isinstance(email, str) else None,
-    }
-    access_token = security_service.create_access_token(token_data)
-    refresh_token = security_service.create_access_token(
-        {
-            **token_data,
-            "type": "refresh",
-            "jti": generate_jti(),
-            "family": generate_family(),
-        },
-        expires_delta=timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
-    )
-    set_auth_cookies(
-        response=response,
-        request=request,
-        access_token=access_token,
-        refresh_token=refresh_token,
-    )
-
     return CreatedResponse(
         message="Tenant created successfully",
         data=tenant_to_response(tenant),
+    )
+
+
+@router.get(
+    "/{tenant_public_id}/capabilities",
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessResponse[TenantCapabilitiesDTO],
+)
+async def get_tenant_capabilities(
+    tenant_public_id: str,
+    request: Request,
+    session: PostgresSession,
+) -> SuccessResponse[TenantCapabilitiesDTO]:
+    grant = await authorize_tenant_action(
+        action=AuthorizationAction.TENANT_VIEW,
+        tenant_public_id=tenant_public_id,
+        request=request,
+        session=session,
+    )
+    capabilities = authorization_engine.capabilities(
+        subject=grant.subject,
+        resource=grant.resource,
+        environment=grant.environment,
+    )
+    return SuccessResponse(
+        message="Tenant capabilities retrieved successfully",
+        data=TenantCapabilitiesDTO(
+            tenant_id=tenant_public_id,
+            policy_version=authorization_engine.policy_version,
+            capabilities=sorted(action.value for action in capabilities),
+        ),
     )
 
 
@@ -141,7 +116,7 @@ async def create_tenant(
     response_description="Tenant retrieved successfully",
 )
 async def get_tenant(
-    tenant_id: AuthorizedTenantId,
+    tenant_id: TenantViewId,
     session: PostgresSession,
     service: TenantServiceDep,
 ) -> SuccessResponse[TenantResponseDTO]:
@@ -161,8 +136,7 @@ async def get_tenant(
     response_description="Tenant updated successfully",
 )
 async def update_tenant(
-    _role: RequireOwner,
-    tenant_id: AuthorizedTenantId,
+    tenant_id: TenantUpdateId,
     request: UpdateTenantDTO,
     session: PostgresSession,
     service: TenantServiceDep,
@@ -189,8 +163,7 @@ async def update_tenant(
     response_description="Tenant deleted successfully",
 )
 async def delete_tenant(
-    _role: RequireOwner,
-    tenant_id: AuthorizedTenantId,
+    tenant_id: TenantDeleteId,
     session: PostgresSession,
     service: TenantServiceDep,
 ) -> DeletedResponse:

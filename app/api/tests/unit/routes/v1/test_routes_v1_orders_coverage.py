@@ -65,7 +65,7 @@ async def test_list_orders(_bc: AsyncMock) -> None:
     svc = MagicMock()
     svc.list_orders = AsyncMock(return_value=[_kitchen_order()])
     db = MagicMock()
-    r = await orders_routes.list_orders("tp1", _req(), db, svc, uuid4(), object())  # type: ignore[arg-type]
+    r = await orders_routes.list_orders("tp1", _req(), db, svc, uuid4())  # type: ignore[arg-type]
     assert "retrieved" in r.message
     svc.list_orders.assert_awaited_once()
     a = svc.list_orders.await_args
@@ -105,7 +105,7 @@ async def test_list_archived_orders_with_since() -> None:
     session = MagicMock()
     session.execute = ex
     out = await orders_routes.list_archived_orders(
-        "tp1", session, uuid4(), object(), page=1, page_size=10, since_hours=1
+        "tp1", session, uuid4(), page=1, page_size=10, since_hours=1
     )  # type: ignore[arg-type]
     assert out.total == 2  # noqa: PLR2004
 
@@ -140,7 +140,7 @@ async def test_list_archived_orders_without_since_returns_all() -> None:
     session = MagicMock()
     session.execute = ex
     out = await orders_routes.list_archived_orders(
-        "tp1", session, uuid4(), object(), page=1, page_size=10, since_hours=None
+        "tp1", session, uuid4(), page=1, page_size=10, since_hours=None
     )  # type: ignore[arg-type]
     assert out.total == 1
     assert out.items[0].original_order_id == "old"
@@ -151,7 +151,7 @@ async def test_get_order() -> None:
     svc = MagicMock()
     svc.get_order = AsyncMock(return_value=_kitchen_order())
     db = MagicMock()
-    r = await orders_routes.get_order("tp", "o-1", _req(), db, svc, uuid4(), object())  # type: ignore[arg-type]
+    r = await orders_routes.get_order("tp", "o-1", _req(), db, svc, uuid4())  # type: ignore[arg-type]
     assert "retrieved" in r.message
     assert r.data.id == "o-1"
 
@@ -203,7 +203,6 @@ async def test_create_order_with_table_and_waiter(_bc: AsyncMock) -> None:
         ts,
         tss,
         tid,
-        object(),  # type: ignore[arg-type]
     )
     tss.acquire_waiter_session.assert_awaited_once()
     wargs = tss.acquire_waiter_session.call_args[1]
@@ -253,7 +252,6 @@ async def test_create_order_invalid_sub_skips_waiter(_bc: AsyncMock) -> None:
         ts,
         tss,
         tid,
-        object(),  # type: ignore[arg-type]
     )
     assert tss.acquire_waiter_session.call_args[1]["waiter_user_id"] is None
 
@@ -272,7 +270,6 @@ async def test_update_order(_bc: AsyncMock) -> None:
         MagicMock(),
         svc,
         uuid4(),
-        object(),  # type: ignore[arg-type]
     )
     assert "updated" in r.message
 
@@ -291,7 +288,6 @@ async def test_update_order_status(_bc: AsyncMock) -> None:
         MagicMock(),
         svc,
         uuid4(),
-        object(),  # type: ignore[arg-type]
     )
     assert "status" in r.message
 
@@ -315,7 +311,6 @@ async def test_delete_order(_bc: AsyncMock) -> None:
         MagicMock(),
         tss,
         tid,
-        object(),  # type: ignore[arg-type]
     )
     tss.release_by_table_ref.assert_awaited_once()
 
@@ -354,7 +349,6 @@ async def test_archive_order(_bc: AsyncMock) -> None:
             tss,
             tsvc,
             tid,
-            object(),  # type: ignore[arg-type]
         )
     assert "archived" in r.message
     tsvc.get_tenant.assert_awaited_once()
@@ -378,7 +372,7 @@ async def test_refund_order_rejected(_bc: AsyncMock) -> None:
     with patch.object(orders_routes, "_refund_service") as rf:
         rf.process_refund = AsyncMock(return_value={"ok": True})
         r = await orders_routes.refund_order(  # type: ignore[call-arg]
-            "tp", "o1", MagicMock(), svc, MagicMock(), tss, tid, object()
+            "tp", "o1", MagicMock(), svc, MagicMock(), tss, tid
         )
     assert r.data.get("ok") is True
     rf.process_refund.assert_awaited_once()
@@ -390,7 +384,7 @@ async def test_refund_order_not_rejected() -> None:
     svc.get_order = AsyncMock(return_value={"status": "ready", "total": 1})
     with pytest.raises(BadRequestError, match="Only rejected"):
         await orders_routes.refund_order(  # type: ignore[call-arg]
-            "tp", "o1", MagicMock(), svc, MagicMock(), MagicMock(), uuid4(), object()
+            "tp", "o1", MagicMock(), svc, MagicMock(), MagicMock(), uuid4()
         )
 
 
@@ -413,7 +407,7 @@ async def test_list_table_sessions() -> None:
     tss = MagicMock()
     tss.list_active_sessions = AsyncMock(return_value=[srow])
     r = await orders_routes.list_table_sessions(  # type: ignore[call-arg]
-        "tp", MagicMock(), tss, tid, object()
+        "tp", MagicMock(), tss, tid
     )
     assert "sessions" in r.message
     assert len(r.data) == 1
@@ -428,7 +422,7 @@ async def test_unlock_table_session(_bc: AsyncMock) -> None:
     req = Request(_scope())
     req.state.user = {"sub": str(uuid4())}
     r = await orders_routes.unlock_table_session(  # type: ignore[call-arg]
-        "tp", "tref", req, MagicMock(), tss, tid, object()
+        "tp", "tref", req, MagicMock(), tss, tid
     )
     assert "unlocked" in r.message
     assert r.data.get("tableRef") == "tref"
@@ -443,7 +437,7 @@ async def test_unlock_table_session_invalid_sub_uuid(_bc: AsyncMock) -> None:
     req = Request(_scope())
     req.state.user = {"sub": "not-a-uuid"}
     r = await orders_routes.unlock_table_session(  # type: ignore[call-arg]
-        "tp", "tref", req, MagicMock(), tss, tid, object()
+        "tp", "tref", req, MagicMock(), tss, tid
     )
     tss.release_waiter_table.assert_awaited_once()
     assert r.data.get("released") is False

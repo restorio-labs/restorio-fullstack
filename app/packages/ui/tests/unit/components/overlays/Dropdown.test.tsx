@@ -174,13 +174,13 @@ describe("Dropdown", () => {
       </Dropdown>,
     );
 
-    const trigger = screen.getByText("Open").closest("div");
+    const trigger = screen.getByRole("button", { name: "Open" });
 
-    expect(trigger?.getAttribute("aria-haspopup")).toBe("true");
-    expect(trigger?.getAttribute("aria-expanded")).toBe("false");
+    expect(trigger.getAttribute("aria-haspopup")).toBe("menu");
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
 
-    await user.click(screen.getByText("Open"));
-    expect(trigger?.getAttribute("aria-expanded")).toBe("true");
+    await user.click(trigger);
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
   });
 
   it("should open dropdown with Enter key", async () => {
@@ -192,14 +192,12 @@ describe("Dropdown", () => {
       </Dropdown>,
     );
 
-    const trigger = screen.getByText("Open").closest("div");
+    const trigger = screen.getByRole("button", { name: "Open" });
 
     expect(screen.queryByRole("menu")).toBeNull();
 
-    if (trigger) {
-      trigger.focus();
-      await user.keyboard("{Enter}");
-    }
+    trigger.focus();
+    await user.keyboard("{Enter}");
 
     expect(screen.getByRole("menu")).toBeDefined();
   });
@@ -213,14 +211,12 @@ describe("Dropdown", () => {
       </Dropdown>,
     );
 
-    const trigger = screen.getByText("Open").closest("div");
+    const trigger = screen.getByRole("button", { name: "Open" });
 
     expect(screen.queryByRole("menu")).toBeNull();
 
-    if (trigger) {
-      trigger.focus();
-      await user.keyboard(" ");
-    }
+    trigger.focus();
+    await user.keyboard(" ");
 
     expect(screen.getByRole("menu")).toBeDefined();
   });

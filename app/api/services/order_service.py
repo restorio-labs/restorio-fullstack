@@ -149,6 +149,7 @@ class OrderService:
         db: AsyncIOMotorDatabase,
         restaurant_id: str,
         order_id: str,
+        *,
         new_status: str,
         rejection_reason: str | None = None,
         timezone_name: str | None = None,

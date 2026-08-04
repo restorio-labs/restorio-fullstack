@@ -1,4 +1,5 @@
-import { AUTH_LOGIN_REDIRECT_URL, AppWrapper, useCurrentRole, type UserRole } from "@restorio/auth";
+import { AUTH_LOGIN_REDIRECT_URL, AppWrapper, CapabilityGuard } from "@restorio/auth";
+import { AuthorizationActions, type AuthorizationAction } from "@restorio/types";
 import { lazy, Suspense, type ReactElement, useEffect } from "react";
 import { Navigate, Outlet, Route, Routes, useNavigate, useLocation } from "react-router-dom";
 
@@ -38,6 +39,9 @@ const TenantProfilePage = lazy(async () =>
   import("./pages/TenantProfilePage").then((module) => ({ default: module.TenantProfilePage })),
 );
 const StaffPage = lazy(async () => import("./pages/StaffPage").then((module) => ({ default: module.StaffPage })));
+const AccessGroupsPage = lazy(async () =>
+  import("./pages/AccessGroupsPage").then((module) => ({ default: module.AccessGroupsPage })),
+);
 const TableQRCodePage = lazy(async () =>
   import("./pages/TableQRCodePage").then((module) => ({ default: module.TableQRCodePage })),
 );
@@ -60,9 +64,13 @@ const AdminShell = (): ReactElement => {
     const showOnboarding = tenantsState === "loaded" && tenants.length === 0;
 
     if (showOnboarding && location.pathname !== "/onboarding") {
-      navigate("/onboarding", { replace: true });
+      void navigate("/onboarding", { replace: true });
     }
   }, [tenantsState, tenants.length, location.pathname, navigate]);
+
+  if (tenantsState === "loaded" && tenants.length === 0) {
+    return <Navigate to="/onboarding" replace />;
+  }
 
   return (
     <AppLayout sidebar={<AdminSidebar />}>
@@ -71,20 +79,25 @@ const AdminShell = (): ReactElement => {
   );
 };
 
-const ADMIN_ALLOWED_ROLES: UserRole[] = ["owner", "manager", "admin", "super_admin"];
+const AdminCapabilityRoute = ({
+  action,
+  children,
+}: {
+  action: AuthorizationAction;
+  children: ReactElement;
+}): ReactElement => {
+  const { selectedTenantId } = useCurrentTenant();
 
-const AdminRoleGate = (): ReactElement => {
-  const role = useCurrentRole();
-
-  if (role === null) {
-    return <Navigate to="/onboarding" replace />;
-  }
-
-  if (!ADMIN_ALLOWED_ROLES.includes(role)) {
-    return <PublicWebLoginRedirect />;
-  }
-
-  return <AdminShell />;
+  return (
+    <CapabilityGuard
+      client={api}
+      tenantId={selectedTenantId}
+      require={[AuthorizationActions.APP_ADMIN_ACCESS, action]}
+      fallback={<PublicWebLoginRedirect />}
+    >
+      {children}
+    </CapabilityGuard>
+  );
 };
 
 export const App = (): ReactElement => {
@@ -93,17 +106,113 @@ export const App = (): ReactElement => {
       <Suspense fallback={<div />}>
         <Routes>
           <Route path="/onboarding" element={<OnboardingPage />} />
-          <Route element={<AdminRoleGate />}>
-            <Route index element={<FloorEditorPage />} />
-            <Route path="restaurant-creator" element={<RestaurantCreatorPage />} />
-            <Route path="menu-creator" element={<MenuCreatorPage />} />
-            <Route path="mobile-configuration" element={<MobileConfigurationPage />} />
+          <Route element={<AdminShell />}>
+            <Route
+              index
+              element={
+                <AdminCapabilityRoute action={AuthorizationActions.FLOOR_CANVAS_WRITE}>
+                  <FloorEditorPage />
+                </AdminCapabilityRoute>
+              }
+            />
+            <Route
+              path="restaurant-creator"
+              element={
+                <AdminCapabilityRoute action={AuthorizationActions.TENANT_UPDATE}>
+                  <RestaurantCreatorPage />
+                </AdminCapabilityRoute>
+              }
+            />
+            <Route
+              path="menu-creator"
+              element={
+                <AdminCapabilityRoute action={AuthorizationActions.MENU_WRITE}>
+                  <MenuCreatorPage />
+                </AdminCapabilityRoute>
+              }
+            />
+            <Route
+              path="mobile-configuration"
+              element={
+                <AdminCapabilityRoute action={AuthorizationActions.MOBILE_CONFIG_WRITE}>
+                  <MobileConfigurationPage />
+                </AdminCapabilityRoute>
+              }
+            />
             {/* <Route path="main-page-configurator" element={<MenuPageConfiguratorPage />} /> */}
-            <Route path="qr-code-generator" element={<QRCodeGeneratorPage />} />
-            <Route path="payment-config" element={<PaymentConfigPage />} />
-            <Route path="profile" element={<TenantProfilePage />} />
-            <Route path="staff" element={<StaffPage />} />
-            <Route path="transactions" element={<TransactionListPage />} />
+            <Route
+              path="qr-code-generator"
+              element={
+                <AdminCapabilityRoute action={AuthorizationActions.FLOOR_CANVAS_READ}>
+                  <QRCodeGeneratorPage />
+                </AdminCapabilityRoute>
+              }
+            />
+            <Route
+              path="payment-config"
+              element={
+                <AdminCapabilityRoute action={AuthorizationActions.PAYMENT_CONFIG_READ}>
+                  <PaymentConfigPage />
+                </AdminCapabilityRoute>
+              }
+            />
+            <Route path="profile" element={<Navigate to="/profile/company-contact" replace />} />
+            <Route
+              path="profile/company-contact"
+              element={
+                <AdminCapabilityRoute action={AuthorizationActions.PROFILE_UPDATE}>
+                  <TenantProfilePage section="company-contact" />
+                </AdminCapabilityRoute>
+              }
+            />
+            <Route
+              path="profile/address-location"
+              element={
+                <AdminCapabilityRoute action={AuthorizationActions.PROFILE_UPDATE}>
+                  <TenantProfilePage section="address-location" />
+                </AdminCapabilityRoute>
+              }
+            />
+            <Route
+              path="profile/owner-contact"
+              element={
+                <AdminCapabilityRoute action={AuthorizationActions.PROFILE_UPDATE}>
+                  <TenantProfilePage section="owner-contact" />
+                </AdminCapabilityRoute>
+              }
+            />
+            <Route
+              path="profile/social-media"
+              element={
+                <AdminCapabilityRoute action={AuthorizationActions.PROFILE_UPDATE}>
+                  <TenantProfilePage section="social-media" />
+                </AdminCapabilityRoute>
+              }
+            />
+            <Route
+              path="staff"
+              element={
+                <AdminCapabilityRoute action={AuthorizationActions.STAFF_READ}>
+                  <StaffPage />
+                </AdminCapabilityRoute>
+              }
+            />
+            <Route
+              path="staff/access-groups"
+              element={
+                <AdminCapabilityRoute action={AuthorizationActions.ACCESS_GROUP_READ}>
+                  <AccessGroupsPage />
+                </AdminCapabilityRoute>
+              }
+            />
+            <Route
+              path="transactions"
+              element={
+                <AdminCapabilityRoute action={AuthorizationActions.PAYMENT_TRANSACTION_READ}>
+                  <TransactionListPage />
+                </AdminCapabilityRoute>
+              }
+            />
           </Route>
           <Route path="/qr-code/table/:tableId" element={<TableQRCodePage />} />
           <Route path="/qr-code/restaurant" element={<RestaurantQRCodePage />} />

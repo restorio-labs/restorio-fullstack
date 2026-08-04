@@ -1,9 +1,13 @@
 import type { ProfileFormData } from "@restorio/types";
-import { Input, Switch } from "@restorio/ui";
-import type { ChangeEventHandler, ReactNode, ReactElement } from "react";
+import { Input, Loader, Switch } from "@restorio/ui";
+import { lazy, Suspense, type ChangeEventHandler, type ReactNode, type ReactElement } from "react";
 import type { UseFormRegister } from "react-hook-form";
 
 import { FilePickerField } from "../../components/file-picker";
+
+const LocationPickerMap = lazy(async () =>
+  import("./LocationPickerMap").then((module) => ({ default: module.LocationPickerMap })),
+);
 
 interface BaseFieldsetProps {
   children: ReactNode;
@@ -27,13 +31,16 @@ interface CompanyFieldsetProps extends FormFieldsetProps {
 interface LocationFieldsetProps extends FormFieldsetProps {
   canPublish?: boolean;
   isLegacyLocationMissing?: boolean;
+  latitude?: string;
+  longitude?: string;
+  onLocationChange?: (latitude: number, longitude: number) => void;
 }
 
 const FieldsetCard = ({ children, title }: BaseFieldsetProps): ReactElement => {
   return (
-    <fieldset className="h-fit rounded-xl border border-border-default bg-surface-secondary/60 p-4 shadow-sm p-6">
+    <fieldset className="flex h-full min-h-0 flex-col rounded-xl border border-border-default bg-surface-secondary/60 p-6 shadow-sm">
       <legend className="mb-0 text-sm font-semibold text-text-primary">{title}</legend>
-      <div className="space-y-4">{children}</div>
+      <div className="flex flex-1 flex-col justify-start gap-4">{children}</div>
     </fieldset>
   );
 };
@@ -170,6 +177,9 @@ export const LocationFieldset = ({
   canPublish = false,
   getFieldError,
   isLegacyLocationMissing = false,
+  latitude = "",
+  longitude = "",
+  onLocationChange,
   register,
   t,
 }: LocationFieldsetProps): ReactElement => {
@@ -185,6 +195,30 @@ export const LocationFieldset = ({
         </div>
       ) : null}
       <p className="text-sm text-text-secondary">{t("tenantProfile.location.description")}</p>
+      {onLocationChange ? (
+        <div className="space-y-2">
+          <p className="text-sm text-text-secondary">{t("tenantProfile.location.mapHint")}</p>
+          <Suspense
+            fallback={
+              <div
+                className="flex h-72 items-center justify-center gap-2 rounded-lg border border-border-default bg-surface-primary text-sm text-text-secondary"
+                role="status"
+              >
+                <Loader size="sm" />
+                <span>{t("tenantProfile.location.loadingMap")}</span>
+              </div>
+            }
+          >
+            <LocationPickerMap
+              latitude={latitude}
+              longitude={longitude}
+              label={t("tenantProfile.location.mapLabel")}
+              markerTitle={t("tenantProfile.location.markerTitle")}
+              onLocationChange={onLocationChange}
+            />
+          </Suspense>
+        </div>
+      ) : null}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Input
           label={t("tenantProfile.fields.latitude.label")}
