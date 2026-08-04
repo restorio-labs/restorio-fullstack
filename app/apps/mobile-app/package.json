@@ -21,7 +21,7 @@
     "@restorio/utils": "workspace:*",
     "@tanstack/react-query": "^5.90.21",
     "@tanstack/react-virtual": "^3.13.21",
-    "@types/node": "^22",
+    "@types/node": "^26",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.71.2",

@@ -12,7 +12,7 @@
     "check": "prettier --check \"**/*.{ts,tsx,json,md}\" && eslint . --ext ts,tsx"
   },
   "dependencies": {
-    "@types/node": "^22",
+    "@types/node": "^26",
     "@restorio/types": "workspace:*",
     "@restorio/ui": "workspace:*",
     "@restorio/utils": "workspace:*",
