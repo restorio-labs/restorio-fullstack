@@ -37,16 +37,16 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
                 "transition-colors duration-200",
                 error && "border-status-error-border peer-focus:ring-status-error-border",
               )}
-            >
-              <div
-                className={cn(
-                  "absolute top-0.5 start-0.5 bg-surface-primary border border-border-default rounded-full h-5 w-5",
-                  "peer-checked:translate-x-5 rtl:peer-checked:-translate-x-5",
-                  "transition-transform duration-200",
-                  "peer-disabled:opacity-50",
-                )}
-              />
-            </div>
+            />
+            <div
+              className={cn(
+                "pointer-events-none absolute top-0.5 start-0.5 h-5 w-5 rounded-full border border-border-default bg-surface-primary",
+                "peer-checked:translate-x-5 rtl:peer-checked:-translate-x-5",
+                "transition-transform duration-200",
+                "peer-disabled:opacity-50",
+              )}
+              aria-hidden="true"
+            />
           </label>
           {label && (
             <label htmlFor={switchId} className="text-sm font-medium text-text-primary cursor-pointer">

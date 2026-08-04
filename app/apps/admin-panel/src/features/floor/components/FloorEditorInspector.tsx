@@ -2,7 +2,7 @@ import type { FloorCanvas as FloorCanvasType, FloorElement } from "@restorio/typ
 import { Button, cn, Dropdown, useI18n } from "@restorio/ui";
 import type { Dispatch, ReactElement } from "react";
 import { useEffect, useRef, useState } from "react";
-import { TbTrash } from "react-icons/tb";
+import { TbChevronDown, TbTrash } from "react-icons/tb";
 
 import { getMaxZIndex, getMinZIndex } from "../editorShared";
 import type { FloorEditorHistoryAction } from "../floorLayoutState";
@@ -12,7 +12,6 @@ interface FloorEditorInspectorProps {
   selectedElement: FloorElement | null;
   selectedIds: string[];
   zoneColors: string[];
-  isMultiSelectModifierPressed: boolean;
   dispatch: Dispatch<FloorEditorHistoryAction>;
   onRemoveSelected: () => void;
   className?: string;
@@ -23,7 +22,6 @@ export const FloorEditorInspector = ({
   selectedElement,
   selectedIds,
   zoneColors,
-  isMultiSelectModifierPressed,
   dispatch,
   onRemoveSelected,
   className,
@@ -33,10 +31,9 @@ export const FloorEditorInspector = ({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const [contentScale, setContentScale] = useState(1);
-  const [isMoveOpen, setIsMoveOpen] = useState<boolean>(false);
   const minScale = 0.5;
   const moveMenuItemClassName =
-    "w-full rounded-none px-3 py-2 pr-4 text-left text-sm text-text-primary hover:bg-surface-secondary first:rounded-t-md first:last:rounded-md last:rounded-b-md";
+    "flex w-full items-center rounded-sm px-3 py-2 text-left text-sm text-text-primary hover:bg-surface-secondary focus-visible:bg-surface-secondary focus-visible:outline-none";
 
   useEffect(() => {
     const container = containerRef.current;
@@ -81,7 +78,7 @@ export const FloorEditorInspector = ({
       resizeObserver.disconnect();
       window.removeEventListener("resize", updateScale);
     };
-  }, [selectedElement, selectedIds.length, isMultiSelectModifierPressed, minScale]);
+  }, [selectedElement, selectedIds.length, minScale]);
 
   return (
     <aside
@@ -90,34 +87,12 @@ export const FloorEditorInspector = ({
         className,
       )}
     >
-      <div className="flex shrink-0 items-center justify-between gap-2">
-        <h3 className="min-w-0 flex-1 truncate text-sm font-semibold text-text-primary">
-          {t("floorEditor.panel.title")}
-        </h3>
-        <div className="flex h-8 shrink-0 items-center justify-end">
-          {selectedElement ? (
-            <Button
-              variant="danger"
-              size="sm"
-              className="shrink-0 px-2"
-              aria-label={t("floorEditor.panel.delete")}
-              onClick={onRemoveSelected}
-            >
-              <TbTrash className="size-5" aria-hidden />
-            </Button>
-          ) : hasMultiSelection ? (
-            <Button
-              variant="danger"
-              size="sm"
-              className="shrink-0 px-2"
-              aria-label={t("floorEditor.panel.deleteSelected")}
-              onClick={onRemoveSelected}
-            >
-              <TbTrash className="size-5" aria-hidden />
-            </Button>
-          ) : null}
+      {!selectedElement && !hasMultiSelection ? (
+        <div className="flex shrink-0 flex-col gap-2">
+          <h3 className="text-sm font-semibold text-text-primary">{t("floorEditor.panel.title")}</h3>
+          <p className="text-sm text-text-tertiary">{t("floorEditor.panel.multiSelectHint")}</p>
         </div>
-      </div>
+      ) : null}
       <div ref={containerRef} className="flex min-h-0 min-w-0 flex-1 flex-col overflow-visible">
         <div
           ref={contentRef}
@@ -129,19 +104,24 @@ export const FloorEditorInspector = ({
               <div className="flex flex-wrap items-end gap-2">
                 <Dropdown
                   trigger={
-                    <Button variant="primary" size="sm">
-                      {t("floorEditor.panel.move")}
+                    <Button variant="outline" size="sm" className="min-w-36 justify-between font-normal">
+                      <span>{t("floorEditor.panel.move")}</span>
+                      <TbChevronDown className="size-4 text-text-tertiary" aria-hidden />
                     </Button>
                   }
-                  placement="top-start"
+                  placement="bottom-start"
                   portal
-                  isOpen={isMoveOpen}
-                  onOpenChange={setIsMoveOpen}
-                  className="p-0"
+                  closeOnSelect
+                  className="w-52"
+                  triggerClassName="block"
                 >
-                  <div className="flex flex-col gap-px">
+                  <div className="flex flex-col p-1">
+                    <div className="px-2 py-1.5 text-xs font-medium uppercase tracking-wide text-text-tertiary">
+                      {t("floorEditor.panel.layer")}
+                    </div>
                     <button
                       type="button"
+                      role="menuitem"
                       className={moveMenuItemClassName}
                       onClick={() => {
                         const maxZIndex = getMaxZIndex(layout.elements);
@@ -150,13 +130,13 @@ export const FloorEditorInspector = ({
                           type: "UPDATE_ELEMENT",
                           payload: { id: selectedElement.id, zIndex: maxZIndex + 1 },
                         });
-                        setIsMoveOpen(false);
                       }}
                     >
                       {t("floorEditor.panel.bringToFront")}
                     </button>
                     <button
                       type="button"
+                      role="menuitem"
                       className={moveMenuItemClassName}
                       onClick={() => {
                         const minZIndex = getMinZIndex(layout.elements);
@@ -165,33 +145,32 @@ export const FloorEditorInspector = ({
                           type: "UPDATE_ELEMENT",
                           payload: { id: selectedElement.id, zIndex: minZIndex - 1 },
                         });
-                        setIsMoveOpen(false);
                       }}
                     >
                       {t("floorEditor.panel.sendToBack")}
                     </button>
                     <button
                       type="button"
+                      role="menuitem"
                       className={moveMenuItemClassName}
                       onClick={() => {
                         dispatch({
                           type: "UPDATE_ELEMENT",
                           payload: { id: selectedElement.id, zIndex: Number(selectedElement.zIndex ?? 0) + 1 },
                         });
-                        setIsMoveOpen(false);
                       }}
                     >
                       {t("floorEditor.panel.forward")}
                     </button>
                     <button
                       type="button"
+                      role="menuitem"
                       className={moveMenuItemClassName}
                       onClick={() => {
                         dispatch({
                           type: "UPDATE_ELEMENT",
                           payload: { id: selectedElement.id, zIndex: Number(selectedElement.zIndex ?? 0) - 1 },
                         });
-                        setIsMoveOpen(false);
                       }}
                     >
                       {t("floorEditor.panel.backward")}
@@ -305,19 +284,33 @@ export const FloorEditorInspector = ({
                     </label>
                   )}
                 </div>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  className="shrink-0 px-2"
+                  aria-label={t("floorEditor.panel.delete")}
+                  onClick={onRemoveSelected}
+                >
+                  <TbTrash className="size-5" aria-hidden />
+                </Button>
               </div>
             </>
           ) : hasMultiSelection ? (
-            <>
+            <div className="flex items-center justify-between gap-3">
               <p className="text-sm text-text-tertiary">
                 {t("floorEditor.panel.multiSelected", { count: selectedIds.length })}
               </p>
-            </>
-          ) : isMultiSelectModifierPressed ? (
-            <p className="text-sm text-text-tertiary">{t("floorEditor.panel.multiSelectHint")}</p>
-          ) : (
-            <p className="text-sm text-text-tertiary">{t("floorEditor.panel.selectHint")}</p>
-          )}
+              <Button
+                variant="danger"
+                size="sm"
+                className="shrink-0 px-2"
+                aria-label={t("floorEditor.panel.deleteSelected")}
+                onClick={onRemoveSelected}
+              >
+                <TbTrash className="size-5" aria-hidden />
+              </Button>
+            </div>
+          ) : null}
         </div>
       </div>
     </aside>

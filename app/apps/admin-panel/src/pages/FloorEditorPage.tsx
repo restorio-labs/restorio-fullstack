@@ -197,7 +197,7 @@ export const FloorEditorPage = (): ReactElement => {
 
     setPendingNavigationPath(null);
     setIsDirty(false);
-    navigate(nextPath);
+    void navigate(nextPath);
   }, [navigate, pendingNavigationPath]);
 
   const handleSetActiveCanvas = useCallback(
@@ -373,7 +373,7 @@ export const FloorEditorPage = (): ReactElement => {
           type="text"
           value={floorNameDraft}
           onChange={(event) => setFloorNameDraft(event.target.value)}
-          className="min-w-[180px] rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary"
+          className="min-w-[180px] rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary transition-colors focus:border-border-focus focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:bg-surface-secondary disabled:opacity-50"
           disabled={!canManageFloor}
         />
       </label>

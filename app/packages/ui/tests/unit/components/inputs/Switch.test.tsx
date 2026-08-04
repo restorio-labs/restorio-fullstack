@@ -35,6 +35,17 @@ describe("Switch", () => {
     expect(screen.getByRole("switch")).toBeChecked();
   });
 
+  it("should render the moving thumb as a peer sibling", () => {
+    render(<Switch checked onChange={vi.fn()} />);
+    const switchElement = screen.getByRole("switch");
+    const thumb = switchElement.parentElement?.lastElementChild;
+
+    expect(thumb).not.toBeNull();
+    expect(thumb).not.toBe(switchElement.nextElementSibling);
+    expect(thumb).toHaveClass("peer-checked:translate-x-5");
+    expect(thumb?.parentElement).toBe(switchElement.parentElement);
+  });
+
   it("should toggle when clicked", async () => {
     const user = userEvent.setup();
 

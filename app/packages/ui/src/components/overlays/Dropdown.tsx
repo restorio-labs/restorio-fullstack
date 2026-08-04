@@ -1,10 +1,13 @@
 import {
+  cloneElement,
+  isValidElement,
   useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
+  type MouseEvent as ReactMouseEvent,
   type ReactNode,
   type ReactElement,
 } from "react";
@@ -13,12 +16,7 @@ import { createPortal } from "react-dom";
 import { cn } from "../../utils";
 
 export type DropdownPlacement =
-  | "bottom-start"
-  | "bottom-center"
-  | "bottom-end"
-  | "top-start"
-  | "top-center"
-  | "top-end";
+  "bottom-start" | "bottom-center" | "bottom-end" | "top-start" | "top-center" | "top-end";
 
 export interface DropdownProps {
   trigger: ReactNode;
@@ -27,12 +25,19 @@ export interface DropdownProps {
   isOpen?: boolean;
   onOpenChange?: (isOpen: boolean) => void;
   className?: string;
+  triggerClassName?: string;
   closeOnSelect?: boolean;
   portal?: boolean;
 }
 
 const MENU_GAP_PX = 4;
 const VIEWPORT_PAD_PX = 8;
+
+interface DropdownTriggerElementProps {
+  onClick?: (event: ReactMouseEvent<HTMLElement>) => void;
+  "aria-haspopup"?: "menu";
+  "aria-expanded"?: boolean;
+}
 
 export const Dropdown = ({
   trigger,
@@ -41,6 +46,7 @@ export const Dropdown = ({
   isOpen: controlledIsOpen,
   onOpenChange,
   className,
+  triggerClassName,
   closeOnSelect = false,
   portal = false,
 }: DropdownProps): ReactElement => {
@@ -263,18 +269,34 @@ export const Dropdown = ({
     </div>
   ) : null;
 
+  const renderedTrigger = isValidElement(trigger) ? (
+    cloneElement(trigger as ReactElement<DropdownTriggerElementProps>, {
+      onClick: (event): void => {
+        (trigger as ReactElement<DropdownTriggerElementProps>).props.onClick?.(event);
+
+        if (!event.defaultPrevented) {
+          setIsOpen(!isOpen);
+        }
+      },
+      "aria-haspopup": "menu",
+      "aria-expanded": isOpen,
+    })
+  ) : (
+    <div
+      onClick={(): void => setIsOpen(!isOpen)}
+      onKeyDown={handleTriggerKeyDown}
+      role="button"
+      tabIndex={0}
+      aria-haspopup="menu"
+      aria-expanded={isOpen}
+    >
+      {trigger}
+    </div>
+  );
+
   return (
-    <div className="relative inline-block" ref={triggerRef}>
-      <div
-        onClick={(): void => setIsOpen(!isOpen)}
-        onKeyDown={handleTriggerKeyDown}
-        role="button"
-        tabIndex={0}
-        aria-haspopup="true"
-        aria-expanded={isOpen}
-      >
-        {trigger}
-      </div>
+    <div className={cn("relative inline-block", triggerClassName)} ref={triggerRef}>
+      {renderedTrigger}
       {portal && menu ? createPortal(menu, document.body) : menu}
     </div>
   );

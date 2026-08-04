@@ -370,7 +370,6 @@ export const FloorLayoutEditorView = ({
             selectedElement={selectedElement}
             selectedIds={selectedIds}
             zoneColors={zoneColors}
-            isMultiSelectModifierPressed={isMultiSelectModifierPressed}
             dispatch={dispatch}
             onRemoveSelected={removeSelectedElements}
             className="flex h-full min-h-0 w-full flex-col gap-3 overflow-visible rounded-none border-0 p-6"
