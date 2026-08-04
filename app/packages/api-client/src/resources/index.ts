@@ -12,3 +12,4 @@ export * from "./menus";
 export * from "./tenant-mobile-config";
 export * from "./orders";
 export * from "./public";
+export * from "./access-groups";

@@ -94,6 +94,6 @@ export class AuthResource extends BaseResource {
       ...(headers ? { headers } : {}),
     });
 
-    return { authenticated: data.authenticated, account_type: data.account_type };
+    return { authenticated: data.authenticated };
   }
 }
