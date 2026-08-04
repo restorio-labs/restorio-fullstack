@@ -57,7 +57,7 @@ class TestUpdateP24Config:
             p24_crc=self.EXAMPLE_CRC_KEY,
         )
 
-        await update_p24_config(MagicMock(), tenant.id, request, session)
+        await update_p24_config(tenant.id, request, session)
 
         assert tenant.p24_merchantid == self.EXAMPLE_MERCHANT_ID
         assert tenant.p24_api == self.EXAMPLE_API_KEY
@@ -73,7 +73,7 @@ class TestUpdateP24Config:
             p24_crc=self.EXAMPLE_CRC_KEY,
         )
 
-        await update_p24_config(MagicMock(), tenant.id, request, session)
+        await update_p24_config(tenant.id, request, session)
 
         session.commit.assert_awaited_once()
         session.refresh.assert_awaited_once_with(tenant)
@@ -84,7 +84,7 @@ class TestUpdateP24Config:
         session = _make_session(tenant)
         request = UpdateP24ConfigDTO(p24_merchantid=999, p24_api="k" * 32, p24_crc="c" * 16)
 
-        result = await update_p24_config(MagicMock(), tenant.id, request, session)
+        result = await update_p24_config(tenant.id, request, session)
 
         assert isinstance(result, UpdatedResponse)
         assert result.message == "P24 config updated successfully"
@@ -101,7 +101,7 @@ class TestUpdateP24Config:
         request = UpdateP24ConfigDTO(p24_merchantid=1, p24_api="k" * 32, p24_crc="c" * 16)
 
         with pytest.raises(HTTPException) as exc_info:
-            await update_p24_config(MagicMock(), tenant_id, request, session)
+            await update_p24_config(tenant_id, request, session)
 
         assert exc_info.value.status_code == status_code
         assert str(tenant_id) in exc_info.value.detail
@@ -112,7 +112,7 @@ class TestUpdateP24Config:
         session = _make_session(tenant)
         request = UpdateP24ConfigDTO(p24_merchantid=222, p24_api="n" * 32, p24_crc="m" * 16)
 
-        await update_p24_config(MagicMock(), tenant.id, request, session)
+        await update_p24_config(tenant.id, request, session)
 
         assert tenant.p24_merchantid == request.p24_merchantid
         assert tenant.p24_api == request.p24_api
@@ -133,7 +133,7 @@ class TestGetP24Config:
         )
         session = _make_session(tenant)
 
-        result = await get_p24_config(MagicMock(), tenant.id, session)
+        result = await get_p24_config(tenant.id, session)
 
         assert result.p24_merchantid == self.EXAMPLE_MERCHANT_ID
         assert result.p24_api == self.EXAMPLE_API_KEY
@@ -144,7 +144,7 @@ class TestGetP24Config:
         tenant = _make_tenant()
         session = _make_session(tenant)
 
-        result = await get_p24_config(MagicMock(), tenant.id, session)
+        result = await get_p24_config(tenant.id, session)
 
         assert result.p24_merchantid is None
         assert result.p24_api is None
@@ -156,7 +156,7 @@ class TestGetP24Config:
         tenant_id = uuid4()
 
         with pytest.raises(HTTPException) as exc_info:
-            await get_p24_config(MagicMock(), tenant_id, session)
+            await get_p24_config(tenant_id, session)
 
         assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
         assert str(tenant_id) in exc_info.value.detail

@@ -8,7 +8,6 @@ from uuid import uuid4
 import pytest
 
 from core.dto.v1 import CreateTenantProfileDTO, TenantLogoUploadPresignRequestDTO
-from core.models.enums import AccountType
 from routes.v1.tenants import profile as profile_routes
 
 
@@ -72,7 +71,6 @@ async def test_create_tenant_logo_upload() -> None:
     st = MagicMock()
     st.create_presigned_upload.return_value = ("https://u", "k")
     r = await profile_routes.create_tenant_logo_upload(
-        AccountType.OWNER,
         uuid4(),
         st,
         TenantLogoUploadPresignRequestDTO(content_type="image/png"),
@@ -155,7 +153,7 @@ async def test_upsert_tenant_profile_with_logo_key() -> None:
     svc = MagicMock()
     svc.upsert = AsyncMock(return_value=(row, True))
     session = MagicMock()
-    r = await profile_routes.upsert_tenant_profile(AccountType.OWNER, tid, p, session, st, svc)  # type: ignore[arg-type]
+    r = await profile_routes.upsert_tenant_profile(tid, p, session, st, svc)  # type: ignore[arg-type]
     assert "created" in r.message
     st.finalize_upload.assert_called_once()
 
@@ -169,7 +167,6 @@ async def test_upsert_tenant_profile_returns_updated_response() -> None:
     service.upsert = AsyncMock(return_value=(row, False))
 
     response = await profile_routes.upsert_tenant_profile(
-        AccountType.OWNER,
         tenant_id,
         dto,
         MagicMock(),

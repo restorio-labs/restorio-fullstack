@@ -4,13 +4,18 @@ from uuid import NAMESPACE_URL, UUID, uuid5
 from fastapi import APIRouter, HTTPException, Request, status
 from sqlalchemy import select
 
+from core.authorization.dependencies import (
+    OrderCreateTenantId,
+    OrderReadTenantId,
+    OrderUpdateTenantId,
+)
 from core.dto.v1.orders import (
     CreateOrderDTO,
     OrderItemResponseDTO,
     OrderResponseDTO,
     UpdateOrderDTO,
 )
-from core.foundation.dependencies import AuthorizedTenantId, PostgresSession
+from core.foundation.dependencies import PostgresSession
 from core.foundation.http.responses import (
     CreatedResponse,
     SuccessResponse,
@@ -65,7 +70,7 @@ def _build_order_response(
 )
 async def list_tenant_orders(
     tenant_public_id: str,
-    _tenant_id: AuthorizedTenantId,
+    _tenant_id: OrderReadTenantId,
     session: PostgresSession,
 ) -> SuccessResponse[list[OrderResponseDTO]]:
     del tenant_public_id
@@ -106,7 +111,7 @@ async def list_tenant_orders(
 )
 async def create_tenant_order(
     tenant_public_id: str,
-    tenant_id: AuthorizedTenantId,
+    tenant_id: OrderCreateTenantId,
     request_context: Request,
     request: CreateOrderDTO,
     session: PostgresSession,
@@ -166,7 +171,7 @@ async def create_tenant_order(
 )
 async def update_tenant_order(
     tenant_public_id: str,
-    tenant_id: AuthorizedTenantId,
+    tenant_id: OrderUpdateTenantId,
     order_id: UUID,
     request: UpdateOrderDTO,
     session: PostgresSession,

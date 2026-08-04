@@ -2,13 +2,17 @@ from uuid import UUID
 
 from fastapi import APIRouter, status
 
+from core.authorization.dependencies import (
+    FloorCanvasReadTenantId,
+    FloorCanvasVersionReadTenantId,
+    FloorCanvasWriteTenantId,
+)
 from core.dto.v1 import (
     CreateFloorCanvasDTO,
     FloorCanvasResponseDTO,
     UpdateFloorCanvasDTO,
 )
 from core.foundation.dependencies import (
-    AuthorizedTenantId,
     FloorCanvasServiceDep,
     PostgresSession,
 )
@@ -34,7 +38,7 @@ router = APIRouter()
     response_description="Floor canvases retrieved successfully",
 )
 async def list_floor_canvases(
-    tenant_id: AuthorizedTenantId,
+    tenant_id: FloorCanvasReadTenantId,
     session: PostgresSession,
     service: FloorCanvasServiceDep,
 ) -> SuccessResponse[list[FloorCanvasResponseDTO]]:
@@ -54,7 +58,7 @@ async def list_floor_canvases(
     response_description="Floor canvas retrieved successfully",
 )
 async def get_floor_canvas(
-    tenant_id: AuthorizedTenantId,
+    tenant_id: FloorCanvasReadTenantId,
     canvas_id: UUID,
     session: PostgresSession,
     service: FloorCanvasServiceDep,
@@ -75,7 +79,7 @@ async def get_floor_canvas(
     response_description="Floor canvas created successfully",
 )
 async def create_floor_canvas(
-    tenant_id: AuthorizedTenantId,
+    tenant_id: FloorCanvasWriteTenantId,
     request: CreateFloorCanvasDTO,
     session: PostgresSession,
     service: FloorCanvasServiceDep,
@@ -103,7 +107,7 @@ async def create_floor_canvas(
     response_description="Floor canvas updated successfully",
 )
 async def update_floor_canvas(
-    tenant_id: AuthorizedTenantId,
+    tenant_id: FloorCanvasWriteTenantId,
     canvas_id: UUID,
     request: UpdateFloorCanvasDTO,
     session: PostgresSession,
@@ -137,7 +141,7 @@ async def update_floor_canvas(
     response_description="Floor canvas deleted successfully",
 )
 async def delete_floor_canvas(
-    tenant_id: AuthorizedTenantId,
+    tenant_id: FloorCanvasWriteTenantId,
     canvas_id: UUID,
     session: PostgresSession,
     service: FloorCanvasServiceDep,
@@ -155,7 +159,7 @@ async def delete_floor_canvas(
     response_description="Canvas versions retrieved successfully",
 )
 async def list_canvas_versions(
-    tenant_id: AuthorizedTenantId,
+    tenant_id: FloorCanvasVersionReadTenantId,
     canvas_id: UUID,
     session: PostgresSession,
     service: FloorCanvasServiceDep,
@@ -177,7 +181,7 @@ async def list_canvas_versions(
     response_description="Canvas version retrieved successfully",
 )
 async def get_canvas_version(
-    tenant_id: AuthorizedTenantId,
+    tenant_id: FloorCanvasVersionReadTenantId,
     canvas_id: UUID,
     version: int,
     session: PostgresSession,

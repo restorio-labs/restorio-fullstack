@@ -18,7 +18,6 @@ async def test_get_kitchen_config_returns_success_response(
         "rid-a",
         MagicMock(),
         MagicMock(),
-        MagicMock(),
     )
 
     assert response.message == "Kitchen config retrieved successfully"
@@ -39,7 +38,6 @@ async def test_update_rejection_labels_returns_updated_response(
     response = await kitchen_config_routes.update_rejection_labels(
         "rid-b",
         payload,
-        MagicMock(),
         MagicMock(),
         MagicMock(),
     )

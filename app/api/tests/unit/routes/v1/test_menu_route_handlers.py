@@ -19,7 +19,6 @@ from core.dto.v1.tenants.mobile_config import (
     MenuImageFinalizeRequestDTO,
     MenuImagePresignRequestDTO,
 )
-from core.models.enums import AccountType
 from routes.v1.tenants import menu as menu_routes
 from services.mongo_menu_service import (
     CATEGORY_META_KEY,
@@ -172,7 +171,6 @@ async def test_upsert_tenant_menu() -> None:
             payload,
             db,  # type: ignore[arg-type]
             uuid4(),
-            AccountType.OWNER,
         )
     assert "saved" in r.message
     assert r.data.menu
@@ -192,7 +190,6 @@ async def test_toggle_item_availability_404_no_menu() -> None:
             ToggleItemAvailabilityDTO(is_available=True),  # type: ignore[call-arg]
             db,  # type: ignore[arg-type]
             uuid4(),
-            AccountType.WAITER,
         )
     assert e.value.status_code == http_status.HTTP_404_NOT_FOUND
 
@@ -219,7 +216,6 @@ async def test_toggle_item_availability_404_item_missing() -> None:
             ToggleItemAvailabilityDTO(is_available=True),  # type: ignore[call-arg]
             db,  # type: ignore[arg-type]
             uuid4(),
-            AccountType.WAITER,
         )
     assert e.value.status_code == http_status.HTTP_404_NOT_FOUND
 
@@ -260,7 +256,6 @@ async def test_toggle_item_availability_success() -> None:
             ToggleItemAvailabilityDTO(is_available=False),  # type: ignore[call-arg]
             db,  # type: ignore[arg-type]
             uuid4(),
-            AccountType.WAITER,
         )
     assert "updated" in r.message
 
@@ -272,7 +267,6 @@ async def test_presign_and_finalize_image_routes() -> None:
     storage.finalize_upload.return_value = SimpleNamespace(public_url="https://img")
 
     pr = await menu_routes.presign_menu_item_image(
-        AccountType.OWNER,
         uuid4(),
         MenuImagePresignRequestDTO(content_type="image/png"),  # type: ignore[call-arg]
         storage,
@@ -280,7 +274,6 @@ async def test_presign_and_finalize_image_routes() -> None:
     assert pr.data.upload_url == "u"
 
     fr = await menu_routes.finalize_menu_item_image(
-        AccountType.OWNER,
         uuid4(),
         MenuImageFinalizeRequestDTO(object_key="k1"),  # type: ignore[call-arg]
         storage,

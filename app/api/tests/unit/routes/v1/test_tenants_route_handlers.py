@@ -7,24 +7,11 @@ from uuid import uuid4
 
 import pytest
 from starlette.requests import Request
-from starlette.responses import Response
 
+from core.authorization.actions import AuthorizationAction
 from core.dto.v1 import CreateTenantDTO, UpdateTenantDTO
-from core.foundation.http.responses import UnauthenticatedResponse
-from core.models.enums import AccountType, TenantStatus
+from core.models.enums import TenantStatus
 from routes.v1.tenants import tenants as tenants_routes
-
-
-def _req_with_user() -> Request:
-    r = Request({"type": "http", "method": "GET", "path": "/", "headers": []})
-    r.state.user = {"sub": str(uuid4()), "account_type": AccountType.OWNER.value}
-    return r
-
-
-def _req_sub_invalid() -> Request:
-    r = Request({"type": "http", "method": "GET", "path": "/", "headers": []})
-    r.state.user = {"sub": "not-uuid", "account_type": AccountType.OWNER.value}
-    return r
 
 
 @pytest.mark.asyncio
@@ -40,30 +27,8 @@ async def test_list_tenants_success() -> None:
     )
     svc = MagicMock()
     svc.list_tenants = AsyncMock(return_value=[t])
-    r = await tenants_routes.list_tenants(_req_with_user(), MagicMock(), svc)  # type: ignore[arg-type]
+    r = await tenants_routes.list_tenants(uuid4(), MagicMock(), svc)  # type: ignore[arg-type]
     assert len(r.data) == 1
-
-
-@pytest.mark.asyncio
-async def test_list_tenants_unauthenticated() -> None:
-    r = Request({"type": "http", "method": "GET", "path": "/", "headers": []})
-    with pytest.raises(UnauthenticatedResponse):
-        await tenants_routes.list_tenants(r, MagicMock(), MagicMock())  # type: ignore[arg-type]
-
-
-@pytest.mark.asyncio
-async def test_list_tenants_rejects_non_string_subject() -> None:
-    request = Request({"type": "http", "method": "GET", "path": "/", "headers": []})
-    request.state.user = {"sub": 123}
-
-    with pytest.raises(UnauthenticatedResponse):
-        await tenants_routes.list_tenants(request, MagicMock(), MagicMock())  # type: ignore[arg-type]
-
-
-@pytest.mark.asyncio
-async def test_list_tenants_rejects_non_uuid_sub() -> None:
-    with pytest.raises(ValueError, match="badly formed hexadecimal"):
-        await tenants_routes.list_tenants(_req_sub_invalid(), MagicMock(), MagicMock())  # type: ignore[arg-type]
 
 
 @pytest.mark.asyncio
@@ -80,67 +45,34 @@ async def test_create_tenant() -> None:
     svc = MagicMock()
     svc.create_tenant = AsyncMock(return_value=out)
     body = CreateTenantDTO(name="B", slug="b", status=TenantStatus.ACTIVE)
-    session = MagicMock()
-    session.scalars = AsyncMock(return_value=[])
-    session.execute = AsyncMock(return_value=MagicMock(all=MagicMock(return_value=[])))
-    session.scalar = AsyncMock(return_value=None)
-    security = MagicMock()
-    security.create_access_token = MagicMock(return_value="t")
-
-    with patch("routes.v1.tenants.tenants.set_auth_cookies"):
-        r = await tenants_routes.create_tenant(
-            AccountType.OWNER,
-            _req_with_user(),
-            Response(),
-            body,
-            session,
-            svc,
-            security,
-        )
+    r = await tenants_routes.create_tenant(uuid4(), body, MagicMock(), svc)
     assert "created" in r.message
     assert r.data.id == "pub"
 
 
 @pytest.mark.asyncio
-async def test_create_tenant_adds_existing_role_tenants_to_token() -> None:
-    user_id = uuid4()
-    related_tenant_id = uuid4()
-    request = Request({"type": "http", "method": "POST", "path": "/", "headers": []})
-    request.state.user = {"sub": str(user_id), "email": "owner@example.com"}
-    tenant = SimpleNamespace(
-        public_id="pub",
-        name="B",
-        slug="b",
-        status=TenantStatus.ACTIVE,
-        active_layout_version_id=None,
-        floor_canvases=[],
-        created_at=datetime.now(UTC),
-    )
-    service = MagicMock()
-    service.create_tenant = AsyncMock(return_value=tenant)
-    role = SimpleNamespace(account_type=AccountType.OWNER)
-    rows = MagicMock()
-    rows.all.return_value = [("related-public-id",)]
-    session = MagicMock()
-    session.scalars = AsyncMock(return_value=[related_tenant_id])
-    session.execute = AsyncMock(return_value=rows)
-    session.scalar = AsyncMock(return_value=role)
-    security = MagicMock()
-    security.create_access_token.return_value = "token"
+async def test_get_tenant_capabilities_returns_policy_projection() -> None:
+    grant = SimpleNamespace(subject=object(), resource=object(), environment=object())
+    request = Request({"type": "http", "method": "GET", "path": "/", "headers": []})
 
-    with patch("routes.v1.tenants.tenants.set_auth_cookies"):
-        await tenants_routes.create_tenant(
-            AccountType.OWNER,
-            request,
-            Response(),
-            CreateTenantDTO(name="B", slug="b", status=TenantStatus.ACTIVE),
-            session,
-            service,
-            security,
+    with (
+        patch(
+            "routes.v1.tenants.tenants.authorize_tenant_action",
+            new=AsyncMock(return_value=grant),
+        ) as authorize,
+        patch.object(
+            tenants_routes.authorization_engine,
+            "capabilities",
+            return_value={AuthorizationAction.MENU_READ, AuthorizationAction.MENU_WRITE},
+        ),
+    ):
+        response = await tenants_routes.get_tenant_capabilities(
+            "tenant-public-id", request, MagicMock()
         )
 
-    access_token_data = security.create_access_token.call_args_list[0].args[0]
-    assert access_token_data["tenant_ids"] == ["related-public-id"]
+    authorize.assert_awaited_once()
+    assert response.data.tenant_id == "tenant-public-id"
+    assert response.data.capabilities == ["menu.read", "menu.write"]
 
 
 @pytest.mark.asyncio
@@ -176,7 +108,6 @@ async def test_update_tenant() -> None:
     svc = MagicMock()
     svc.update_tenant = AsyncMock(return_value=t)
     r = await tenants_routes.update_tenant(  # type: ignore[call-arg]
-        AccountType.OWNER,
         tid,
         UpdateTenantDTO(name="N", slug="n", status=TenantStatus.ACTIVE),
         MagicMock(),
@@ -190,5 +121,5 @@ async def test_delete_tenant() -> None:
     tid = uuid4()
     svc = MagicMock()
     svc.delete_tenant = AsyncMock()
-    r = await tenants_routes.delete_tenant(AccountType.OWNER, tid, MagicMock(), svc)  # type: ignore[arg-type]
+    r = await tenants_routes.delete_tenant(tid, MagicMock(), svc)  # type: ignore[arg-type]
     assert "deleted" in r.message

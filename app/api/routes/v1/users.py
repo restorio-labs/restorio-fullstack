@@ -3,6 +3,11 @@ from uuid import UUID
 from fastapi import APIRouter, Request, status
 from sqlalchemy import func, select
 
+from core.authorization.dependencies import (
+    StaffCreateTenantId,
+    StaffDeleteTenantId,
+    StaffReadTenantId,
+)
 from core.dto.v1.auth import (
     BulkCreateUsersDTO,
     CreateUserDTO,
@@ -11,7 +16,6 @@ from core.dto.v1.auth import (
 )
 from core.exceptions import ConflictError, NotFoundResponse
 from core.foundation.dependencies import (
-    AuthorizedTenantId,
     AuthServiceDep,
     EmailServiceDep,
     PostgresSession,
@@ -19,7 +23,6 @@ from core.foundation.dependencies import (
 )
 from core.foundation.http.responses import CreatedResponse, SuccessResponse, UnauthenticatedResponse
 from core.foundation.infra.config import settings
-from core.foundation.role_guard import RequireOwner
 from core.models.enums import AccountType
 from core.models.tenant import Tenant
 from core.models.tenant_role import TenantRole
@@ -49,10 +52,9 @@ def _staff_invite_notification(
     ),
 )
 async def bulk_create_users(
-    _role: RequireOwner,
     data: BulkCreateUsersDTO,
     request: Request,
-    tenant_id: AuthorizedTenantId,
+    tenant_id: StaffCreateTenantId,
     session: PostgresSession,
     auth_service: AuthServiceDep,
     user_service: UserServiceDep,
@@ -184,10 +186,9 @@ async def bulk_create_users(
     ),
 )
 async def create_user(
-    _role: RequireOwner,
     data: CreateUserDTO,
     request: Request,
-    tenant_id: AuthorizedTenantId,
+    tenant_id: StaffCreateTenantId,
     session: PostgresSession,
     auth_service: AuthServiceDep,
     user_service: UserServiceDep,
@@ -267,7 +268,7 @@ async def create_user(
     description="List waiter and kitchen users for current tenant",
 )
 async def list_tenant_users(
-    tenant_id: AuthorizedTenantId,
+    tenant_id: StaffReadTenantId,
     session: PostgresSession,
 ) -> SuccessResponse[list[dict[str, str | bool | None]]]:
     stmt = (
@@ -314,8 +315,7 @@ async def list_tenant_users(
     description="Remove a staff user from the current tenant",
 )
 async def delete_user(
-    _role: RequireOwner,
-    tenant_id: AuthorizedTenantId,
+    tenant_id: StaffDeleteTenantId,
     user_id: UUID,
     session: PostgresSession,
 ) -> SuccessResponse[dict[str, str]]:

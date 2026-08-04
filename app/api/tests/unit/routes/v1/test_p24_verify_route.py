@@ -8,7 +8,7 @@ import pytest
 
 from core.dto.v1.payments import VerifyP24TransactionDTO
 from core.exceptions import NotFoundResponse
-from core.models.enums import AccountType, TenantStatus
+from core.models.enums import TenantStatus
 from core.models.tenant import Tenant
 from routes.v1.payments import p24_verify
 
@@ -38,7 +38,6 @@ async def test_verify_p24_transaction_success() -> None:
     ext = MagicMock()
 
     out = await p24_verify.verify_p24_transaction(
-        AccountType.OWNER,
         VerifyP24TransactionDTO(session_id=sid),
         tid,
         session,  # type: ignore[arg-type]
@@ -60,7 +59,6 @@ async def test_verify_p24_transaction_missing() -> None:
 
     with pytest.raises(NotFoundResponse):
         await p24_verify.verify_p24_transaction(
-            AccountType.OWNER,
             VerifyP24TransactionDTO(session_id=missing_sid),
             uuid4(),
             session,  # type: ignore[arg-type]

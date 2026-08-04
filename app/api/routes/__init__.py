@@ -7,6 +7,7 @@ from routes.v1.orders import router as orders_restaurant_router
 from routes.v1.payments import router as payments_router
 from routes.v1.public import router as public_router
 from routes.v1.tenants import (
+    access_groups_router,
     canvases_router,
     menu_router,
     mobile_config_router,
@@ -22,6 +23,7 @@ api_router.include_router(health_router, prefix="/health", tags=["health"])
 api_router.include_router(auth_router, prefix="/auth", tags=["authentication"])
 
 api_router.include_router(tenants_router, prefix="/tenants", tags=["tenants"])
+api_router.include_router(access_groups_router, prefix="/tenants", tags=["access-groups"])
 api_router.include_router(canvases_router, prefix="/tenants", tags=["canvases"])
 api_router.include_router(profile_router, prefix="/tenants", tags=["profile"])
 api_router.include_router(menu_router, prefix="/tenants", tags=["menu"])

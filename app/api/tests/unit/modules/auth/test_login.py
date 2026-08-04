@@ -11,7 +11,7 @@ from tests.unit.modules.auth.conftest import FakeAsyncSession, auth_service
 
 
 @pytest.mark.asyncio
-async def test_login_success_returns_jwt_with_claims() -> None:
+async def test_login_success_returns_identity_only_jwt() -> None:
     session = FakeAsyncSession()
     tenant = Tenant(
         id=uuid4(),
@@ -44,7 +44,8 @@ async def test_login_success_returns_jwt_with_claims() -> None:
     assert decoded is not None
     assert decoded["sub"] == str(user.id)
     assert decoded["email"] == user.email
-    assert decoded["tenant_ids"] == [tenant.public_id]
+    assert "tenant_ids" not in decoded
+    assert "account_type" not in decoded
 
 
 @pytest.mark.asyncio
@@ -104,7 +105,7 @@ async def test_login_user_not_found() -> None:
 
 
 @pytest.mark.asyncio
-async def test_login_uses_tenant_id_when_no_roles() -> None:
+async def test_login_does_not_embed_legacy_tenant_id() -> None:
     session = FakeAsyncSession()
     tenant = Tenant(
         id=uuid4(),
@@ -129,4 +130,5 @@ async def test_login_uses_tenant_id_when_no_roles() -> None:
     )
     decoded = auth_service.security.decode_access_token(access_token)
     assert decoded is not None
-    assert decoded["tenant_ids"] == [tenant.public_id]
+    assert "tenant_ids" not in decoded
+    assert "account_type" not in decoded

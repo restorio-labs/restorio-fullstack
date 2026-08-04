@@ -13,7 +13,6 @@ from core.dto.v1.tenants.mobile_config import (
     UpdateTenantMobileConfigDTO,
 )
 from core.exceptions import BadRequestError
-from core.models.enums import AccountType
 from routes.v1.tenants import mobile_config as mobile_routes
 
 
@@ -29,7 +28,6 @@ async def test_get_tenant_mobile_config() -> None:
     svc = MagicMock()
     svc.get_by_tenant_id = AsyncMock(return_value=row)
     r = await mobile_routes.get_tenant_mobile_config(
-        AccountType.OWNER,
         tid,
         MagicMock(),
         svc,
@@ -52,7 +50,6 @@ async def test_update_tenant_mobile_config_no_fields_upsert_when_none() -> None:
     session = MagicMock()
     session.commit = AsyncMock()
     r = await mobile_routes.update_tenant_mobile_config(
-        AccountType.OWNER,
         tid,
         UpdateTenantMobileConfigDTO(),
         session,
@@ -76,7 +73,6 @@ async def test_update_tenant_mobile_config_with_page_title() -> None:
     session = MagicMock()
     session.commit = AsyncMock()
     r = await mobile_routes.update_tenant_mobile_config(
-        AccountType.OWNER,
         tid,
         UpdateTenantMobileConfigDTO.model_validate(
             {"pageTitle": "N"},
@@ -112,7 +108,6 @@ async def test_update_tenant_mobile_config_with_theme_and_landing_content() -> N
     )
 
     await mobile_routes.update_tenant_mobile_config(
-        AccountType.OWNER,
         tenant_id,
         body,
         session,
@@ -133,7 +128,6 @@ async def test_presign_tenant_mobile_favicon() -> None:
     st = MagicMock()
     st.create_presigned_upload.return_value = ("https://u", "key-1")
     r = await mobile_routes.presign_tenant_mobile_favicon(
-        AccountType.OWNER,
         tid,
         TenantMobileFaviconPresignRequestDTO(content_type="image/png"),
         st,
@@ -157,7 +151,6 @@ async def test_finalize_tenant_mobile_favicon() -> None:
     session = MagicMock()
     session.commit = AsyncMock()
     r = await mobile_routes.finalize_tenant_mobile_favicon(
-        AccountType.OWNER,
         tid,
         TenantMobileFaviconFinalizeRequestDTO(object_key="f/k"),
         session,
@@ -173,13 +166,12 @@ async def test_copy_mobile_theme_from_rejects_same_tenant() -> None:
     session = MagicMock()
     with (
         patch(
-            "routes.v1.tenants.mobile_config.get_authorized_tenant_uuid",
-            new=AsyncMock(return_value=tid),
+            "routes.v1.tenants.mobile_config.authorize_tenant_action",
+            new=AsyncMock(return_value=SimpleNamespace(tenant_id=tid)),
         ),
         pytest.raises(BadRequestError, match="Source tenant must differ"),
     ):
         await mobile_routes.copy_mobile_theme_from_tenant(
-            AccountType.OWNER,
             tid,
             CopyMobileThemeFromDTO.model_validate(  # type: ignore[call-arg]
                 {"sourceTenantPublicId": "p1"}
@@ -204,11 +196,10 @@ async def test_copy_mobile_theme_from_success() -> None:
     svc = MagicMock()
     svc.copy_theme_override_from = AsyncMock(return_value=row)
     with patch(
-        "routes.v1.tenants.mobile_config.get_authorized_tenant_uuid",
-        new=AsyncMock(return_value=source),
+        "routes.v1.tenants.mobile_config.authorize_tenant_action",
+        new=AsyncMock(return_value=SimpleNamespace(tenant_id=source)),
     ):
         r = await mobile_routes.copy_mobile_theme_from_tenant(
-            AccountType.OWNER,
             tid,
             CopyMobileThemeFromDTO.model_validate(  # type: ignore[call-arg]
                 {"sourceTenantPublicId": "p1"}

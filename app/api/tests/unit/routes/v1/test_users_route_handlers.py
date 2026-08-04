@@ -57,7 +57,6 @@ async def test_delete_user_success() -> None:
     session.flush = AsyncMock()
 
     r = await users_routes.delete_user(
-        AccountType.OWNER,
         tid,
         uid,
         session,  # type: ignore[arg-type]
@@ -79,7 +78,6 @@ async def test_delete_user_keeps_account_when_other_roles_remain() -> None:
     session.flush = AsyncMock()
 
     r = await users_routes.delete_user(
-        AccountType.OWNER,
         tid,
         uid,
         session,  # type: ignore[arg-type]
@@ -98,7 +96,6 @@ async def test_delete_user_not_found() -> None:
 
     with pytest.raises(NotFoundResponse):
         await users_routes.delete_user(
-            AccountType.OWNER,
             tid,
             uid,
             session,  # type: ignore[arg-type]
@@ -123,7 +120,6 @@ async def test_bulk_create_rejects_self() -> None:
         users=[CreateUserDTO(email="Me@e.com", access_level=AccountType.KITCHEN)]
     )
     r = await users_routes.bulk_create_users(
-        AccountType.OWNER,
         data,
         req,  # type: ignore[arg-type]
         tid,
@@ -158,7 +154,6 @@ async def test_bulk_create_duplicate_in_payload() -> None:
         ]
     )
     r = await users_routes.bulk_create_users(
-        AccountType.OWNER,
         data,
         req,  # type: ignore[arg-type]
         tid,
@@ -179,7 +174,6 @@ async def test_bulk_create_tenant_missing() -> None:
     )
     with pytest.raises(UnauthenticatedResponse):
         await users_routes.bulk_create_users(
-            AccountType.OWNER,
             data,
             MagicMock(),
             uuid4(),
@@ -213,7 +207,6 @@ async def test_bulk_create_conflict_error() -> None:
         side_effect=ConflictError(message="Email already exists")
     )
     r = await users_routes.bulk_create_users(
-        AccountType.OWNER,
         data,
         req,
         tid,
@@ -248,7 +241,6 @@ async def test_bulk_create_unexpected_error() -> None:
     m_user.create_user_for_tenant = AsyncMock(side_effect=RuntimeError())
 
     r = await users_routes.bulk_create_users(
-        AccountType.OWNER,
         data,
         req,
         tid,
@@ -293,7 +285,6 @@ async def test_bulk_create_sends_activation_email() -> None:
     m_email = AsyncMock()
     with patch.object(users_routes.settings, "FRONTEND_URL", "https://app.test"):
         r = await users_routes.bulk_create_users(
-            AccountType.OWNER,
             data,
             req,
             tid,
@@ -324,7 +315,6 @@ async def test_create_user_conflicts_with_requester() -> None:
     data = CreateUserDTO(email="me@e.com", access_level=AccountType.KITCHEN)
     with pytest.raises(ConflictError, match="yourself"):
         await users_routes.create_user(
-            AccountType.OWNER,
             data,
             req,
             tid,
@@ -342,7 +332,6 @@ async def test_create_user_tenant_missing() -> None:
     data = CreateUserDTO(email="a@b.com", access_level=AccountType.KITCHEN)
     with pytest.raises(UnauthenticatedResponse):
         await users_routes.create_user(
-            AccountType.OWNER,
             data,
             MagicMock(),
             uuid4(),
@@ -388,7 +377,6 @@ async def test_create_user_with_activation_email() -> None:
     )
     with patch.object(users_routes.settings, "FRONTEND_URL", "https://app.test"):
         r = await users_routes.create_user(
-            AccountType.OWNER,
             data,
             req,
             tid,
@@ -434,7 +422,6 @@ async def test_create_user_existing_waiter_sends_notice_email() -> None:
     )
     with patch.object(users_routes.settings, "WAITER_PANEL_URL", "https://waiter.test"):
         r = await users_routes.create_user(
-            AccountType.OWNER,
             data,
             req,
             tid,
@@ -480,7 +467,6 @@ async def test_create_user_existing_kitchen_no_notice_email() -> None:
     m_email = AsyncMock()
     data = CreateUserDTO(email="k@e.com", access_level=AccountType.KITCHEN)
     r = await users_routes.create_user(
-        AccountType.OWNER,
         data,
         req,
         tid,
@@ -531,7 +517,6 @@ async def test_bulk_create_existing_waiter_sends_notice_email() -> None:
     m_email = AsyncMock()
     with patch.object(users_routes.settings, "WAITER_PANEL_URL", "https://waiter.test"):
         r = await users_routes.bulk_create_users(
-            AccountType.OWNER,
             data,
             req,
             tid,
