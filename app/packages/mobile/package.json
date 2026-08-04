@@ -34,7 +34,7 @@
     "@restorio/ui": "workspace:*"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/jest-dom": "^7.0.0",
     "@testing-library/react": "^14.1.2",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
