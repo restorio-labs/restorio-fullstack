@@ -41,8 +41,11 @@ async def test_legacy_tenant_claims_are_not_inspected() -> None:
     session = AsyncMock()
     error = PermissionError("denied by ABAC")
 
-    with patch(
-        "core.foundation.tenant_guard.authorize_tenant_action",
-        new=AsyncMock(side_effect=error),
-    ), pytest.raises(PermissionError, match="denied by ABAC"):
+    with (
+        patch(
+            "core.foundation.tenant_guard.authorize_tenant_action",
+            new=AsyncMock(side_effect=error),
+        ),
+        pytest.raises(PermissionError, match="denied by ABAC"),
+    ):
         await resolve_and_authorize_tenant("attacker-controlled-tenant", request, session)

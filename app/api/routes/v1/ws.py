@@ -57,12 +57,12 @@ async def _authorize_tenant_access(user: dict, tenant_public_id: str) -> bool:
     async with AsyncSessionLocal() as session:
         row = (
             await session.execute(
-            select(Tenant, TenantRole)
-            .join(TenantRole, TenantRole.tenant_id == Tenant.id)
-            .where(
-                Tenant.public_id == tenant_public_id,
-                TenantRole.account_id == account_id,
-            )
+                select(Tenant, TenantRole)
+                .join(TenantRole, TenantRole.tenant_id == Tenant.id)
+                .where(
+                    Tenant.public_id == tenant_public_id,
+                    TenantRole.account_id == account_id,
+                )
             )
         ).one_or_none()
         if row is None:

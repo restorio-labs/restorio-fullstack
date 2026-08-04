@@ -1,14 +1,7 @@
 export type TableRuntimeState = "free" | "occupied" | "reserved" | "dirty";
 
 export type OrderStatusDisplay =
-  | "browsing"
-  | "ordering"
-  | "ordered"
-  | "preparing"
-  | "ready_to_serve"
-  | "served"
-  | "bill_requested"
-  | "rejected";
+  "browsing" | "ordering" | "ordered" | "preparing" | "ready_to_serve" | "served" | "bill_requested" | "rejected";
 
 export interface TableDisplayInfo {
   guestCount?: number;

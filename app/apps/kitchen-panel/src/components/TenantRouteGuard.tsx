@@ -1,5 +1,5 @@
-import { Loader } from "@restorio/ui";
 import { AuthorizationActions } from "@restorio/types";
+import { Loader } from "@restorio/ui";
 import { useQuery } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 import { useEffect, useRef } from "react";

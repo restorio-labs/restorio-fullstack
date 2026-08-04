@@ -29,9 +29,11 @@ export interface CapabilityGuardProps {
 
 export const useCapabilities = (): CapabilityContextValue => {
   const context = useContext(CapabilityContext);
+
   if (context === null) {
     throw new Error("useCapabilities must be used within a CapabilityGuard");
   }
+
   return context;
 };
 
@@ -54,10 +56,13 @@ export const CapabilityGuard = ({
 
   useEffect(() => {
     const controller = new AbortController();
+
     setData(null);
     setDenied(false);
+
     if (!tenantId) {
       setDenied(true);
+
       return () => controller.abort();
     }
     void client.tenants
@@ -68,12 +73,14 @@ export const CapabilityGuard = ({
           setDenied(true);
         }
       });
+
     return () => controller.abort();
   }, [client, tenantId]);
 
   if (denied) {
     return fallback === null ? <Navigate to={redirectTo} replace /> : <>{fallback}</>;
   }
+
   if (data === null || !tenantId) {
     return null;
   }
@@ -83,6 +90,7 @@ export const CapabilityGuard = ({
     match === "all"
       ? required.every((action) => capabilities.has(action))
       : required.some((action) => capabilities.has(action));
+
   if (!allowed) {
     return fallback === null ? <Navigate to={redirectTo} replace /> : <>{fallback}</>;
   }

@@ -98,7 +98,7 @@ export const TenantMenuPage = (): ReactElement => {
     <div className="min-h-[100dvh] bg-background-primary pb-24">
       <header className="sticky top-0 z-10 border-b border-border-default bg-surface-primary px-4 py-3 text-center">
         <div className="mx-auto flex max-w-2xl flex-col items-center gap-1">
-          <Button variant="ghost" size="sm" type="button" onClick={() => navigate(`/${tenantSlug}`)}>
+          <Button variant="ghost" size="sm" type="button" onClick={() => void navigate(`/${tenantSlug}`)}>
             {t("menuBrowse.back")}
           </Button>
           <Text as="h1" variant="h4" weight="bold" className="w-full text-balance text-center">
@@ -130,10 +130,10 @@ export const TenantMenuPage = (): ReactElement => {
       </main>
 
       <GuestBottomNav ariaLabel={t("landing.quickNavAria")}>
-        <Button variant="ghost" size="sm" type="button" onClick={() => navigate(`/${tenantSlug}`)}>
+        <Button variant="ghost" size="sm" type="button" onClick={() => void navigate(`/${tenantSlug}`)}>
           {t("landing.navHome")}
         </Button>
-        <Button variant="ghost" size="sm" type="button" onClick={() => navigate(`/${tenantSlug}/tables`)}>
+        <Button variant="ghost" size="sm" type="button" onClick={() => void navigate(`/${tenantSlug}/tables`)}>
           {t("landing.navTables")}
         </Button>
       </GuestBottomNav>

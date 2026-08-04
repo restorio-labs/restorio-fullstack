@@ -2,15 +2,7 @@ import type { CanvasBounds } from "@restorio/types";
 import { useCallback, useRef, useState } from "react";
 
 export type DragResizeMode =
-  | "move"
-  | "resize-n"
-  | "resize-s"
-  | "resize-e"
-  | "resize-w"
-  | "resize-ne"
-  | "resize-nw"
-  | "resize-se"
-  | "resize-sw";
+  "move" | "resize-n" | "resize-s" | "resize-e" | "resize-w" | "resize-ne" | "resize-nw" | "resize-se" | "resize-sw";
 
 interface DragState {
   id: string;

@@ -26,9 +26,9 @@ class TenantMobileConfigService:
         session: AsyncSession,
         tenant_id: UUID,
         *,
-        page_title: str | None | object = _MISSING,
-        theme_override: dict[str, Any] | None | object = _MISSING,
-        landing_content: dict[str, Any] | None | object = _MISSING,
+        page_title: str | object | None = _MISSING,
+        theme_override: dict[str, Any] | object | None = _MISSING,
+        landing_content: dict[str, Any] | object | None = _MISSING,
     ) -> TenantMobileConfig:
         existing = await self.get_by_tenant_id(session, tenant_id)
 

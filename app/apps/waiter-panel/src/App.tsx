@@ -15,6 +15,7 @@ const FloorRestaurantView = lazy(async () =>
 
 const WaiterTenantRoute = (): ReactElement => {
   const { restaurantId } = useParams<{ restaurantId: string }>();
+
   return (
     <CapabilityGuard client={api} tenantId={restaurantId} require={AuthorizationActions.APP_WAITER_ACCESS}>
       <FloorRestaurantView />

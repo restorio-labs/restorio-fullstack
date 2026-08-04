@@ -9,5 +9,6 @@ export const resolveSessionAppRedirect = async (lastVisitedApp?: string | null):
   const capabilities = new Set(
     projections.flatMap((projection) => (projection.status === "fulfilled" ? projection.value.capabilities : [])),
   );
+
   return resolveAuthenticatedAppRedirect(capabilities, lastVisitedApp);
 };

@@ -26,8 +26,12 @@ def upgrade() -> None:
         sa.Column("name_normalized", sa.String(length=200), nullable=False),
         sa.Column("description", sa.String(length=500), nullable=True),
         sa.Column("capabilities", sa.JSON(), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False
+        ),
+        sa.Column(
+            "updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False
+        ),
         sa.ForeignKeyConstraint(["tenant_id"], ["tenants.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint(
@@ -42,7 +46,9 @@ def upgrade() -> None:
         sa.Column("group_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("account_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("tenant_id", postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False
+        ),
         sa.ForeignKeyConstraint(["account_id"], ["users.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(
             ["account_id", "tenant_id"],

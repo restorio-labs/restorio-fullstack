@@ -184,7 +184,7 @@ export const RestaurantCreatorPage = (): ReactElement => {
         ownerLastName: "",
       });
 
-      navigate("/", { replace: true });
+      void navigate("/", { replace: true });
     },
     onError: (error: unknown) => {
       const sourceError = isWrappedProfileError(error) ? error.cause : error;

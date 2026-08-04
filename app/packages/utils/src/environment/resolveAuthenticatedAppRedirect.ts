@@ -12,20 +12,25 @@ const isAppSlug = (value: string): value is AppSlug => {
 
 export const canAccessApp = (capabilities: Iterable<string>, appSlug: AppSlug): boolean => {
   const required = APP_REQUIRED_CAPABILITY[appSlug];
+
   return required !== undefined && new Set(capabilities).has(required);
 };
 
 export const resolveDefaultAppForCapabilities = (capabilities: Iterable<string>): AppSlug => {
   const granted = new Set(capabilities);
+
   if (canAccessApp(granted, "admin-panel")) {
     return "admin-panel";
   }
+
   if (canAccessApp(granted, "waiter-panel")) {
     return "waiter-panel";
   }
+
   if (canAccessApp(granted, "kitchen-panel")) {
     return "kitchen-panel";
   }
+
   return "admin-panel";
 };
 
@@ -34,6 +39,7 @@ export const resolveAuthenticatedAppRedirect = (
   lastVisitedApp?: string | null,
 ): AppSlug => {
   const granted = new Set(capabilities);
+
   if (
     typeof lastVisitedApp === "string" &&
     isAppSlug(lastVisitedApp) &&
@@ -42,5 +48,6 @@ export const resolveAuthenticatedAppRedirect = (
   ) {
     return lastVisitedApp;
   }
+
   return resolveDefaultAppForCapabilities(granted);
 };

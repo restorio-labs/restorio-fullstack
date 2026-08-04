@@ -83,7 +83,7 @@ export const useUnsavedChangesGuard = ({
 
     setPendingNavigationPath(null);
     onDiscard?.();
-    navigate(nextPath);
+    void navigate(nextPath);
   }, [navigate, onDiscard, pendingNavigationPath]);
 
   return {
