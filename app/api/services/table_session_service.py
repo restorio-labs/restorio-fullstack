@@ -121,7 +121,7 @@ class TableSessionService:
         )
         return list(result.scalars().all())
 
-    async def acquire_mobile_session(
+    async def acquire_mobile_session(  # noqa: PLR0913
         self,
         session: AsyncSession,
         db: AsyncIOMotorDatabase,

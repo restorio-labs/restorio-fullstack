@@ -87,6 +87,7 @@ class UserService:
     async def create_user_for_tenant(
         self,
         session: AsyncSession,
+        *,
         email: str,
         password: str,
         tenant_id: UUID,

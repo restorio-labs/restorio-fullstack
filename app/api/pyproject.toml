@@ -79,11 +79,7 @@ select = [
     "RUF", # ruff-specific rules
 ]
 ignore = [
-    "E501",  # line too long (handled by formatter)
-    "B008",  # do not perform function calls in argument defaults
-    "PLR0913", # too many arguments
-    "PLR0917", # too many positional arguments
-    "TRY003", # avoid specifying long messages outside exception class
+    "E501",  # Long comments and strings are not safely auto-wrapped
 ]
 
 [tool.ruff.format]
@@ -96,11 +92,18 @@ line-ending = "auto"
 known-first-party = ["core", "api", "modules"]
 force-sort-within-sections = true
 
+[tool.ruff.lint.pylint]
+max-args = 8
+
 [tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401"]  # Allow unused imports in __init__.py
-"**/alembic/versions/*.py" = ["ALL"]  # Ignore all rules in migration files
+"__init__.py" = ["F401"]  # Public re-exports
+"**/alembic/versions/*.py" = ["F401", "I001", "RUF022", "UP007", "UP035"]  # Preserve historical migrations
+"core/authorization/dependencies.py" = ["B008"]  # FastAPI dependency defaults
+"core/foundation/dependencies.py" = ["B008"]  # FastAPI dependency defaults
+"core/foundation/tenant_guard.py" = ["B008"]  # FastAPI dependency defaults
 "docs/examples/route_template.py" = ["ARG001", "ERA001"]
-"tests/**" = ["ARG001", "PT019"]  # Unused test fixtures; patch-injected mock parameters
+"routes/**/*.py" = ["PLR0913", "PLR0917"]  # FastAPI injects route parameters from signatures
+"tests/**" = ["ARG001", "PLR0917", "PT019"]  # Fixtures and patch-injected parameters
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

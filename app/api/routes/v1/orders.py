@@ -253,7 +253,7 @@ async def update_order_status(
         db,
         tenant_public_id,
         order_id,
-        payload.status,
+        new_status=payload.status,
         rejection_reason=payload.rejection_reason,
         timezone_name=request.headers.get("X-Timezone"),
     )
@@ -355,7 +355,12 @@ async def refund_order(
         order.get("rejectionReason", ""),
     )
 
-    updated = await service.update_status(db, tenant_public_id, order_id, "refunded")
+    updated = await service.update_status(
+        db,
+        tenant_public_id,
+        order_id,
+        new_status="refunded",
+    )
     await table_session_service.release_by_table_ref(
         session,
         tenant_id=tenant_id,
