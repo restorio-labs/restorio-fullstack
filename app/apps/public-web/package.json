@@ -43,7 +43,7 @@
     "@vitejs/plugin-react": "^6.0.5",
     "@vitejs/plugin-rsc": "^0.5.32",
     "autoprefixer": "^10.5.4",
-    "eslint": "^8.56.0",
+    "eslint": "^10.8.0",
     "jsdom": "^30.0.1",
     "next": "16.2.12",
     "postcss": "^8.5.25",
