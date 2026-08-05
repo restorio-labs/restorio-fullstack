@@ -1,4 +1,4 @@
-ARG PYTHON_IMAGE=python:3.12.13-slim-trixie
+ARG PYTHON_IMAGE=python:3.14-slim
 
 FROM ${PYTHON_IMAGE} AS dependencies
 
