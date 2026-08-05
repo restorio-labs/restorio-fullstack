@@ -4,6 +4,8 @@ Restorio is a full-stack, multi-tenant restaurant management platform designed a
 
 ## System Architecture
 
+Production topology and deployment boundaries are defined in [ADR 0001](docs/adr/0001-production-topology.md).
+
 The repository is organised into the following top-level directories, each fulfilling a distinct role within the overall system architecture:
 
 ```
