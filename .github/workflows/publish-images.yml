@@ -1,0 +1,171 @@
+name: Publish OCI Images
+
+on:
+  pull_request:
+    paths:
+      - "app/api/**"
+      - "app/apps/admin-panel/**"
+      - "app/apps/kitchen-panel/**"
+      - "app/apps/mobile-app/**"
+      - "app/apps/waiter-panel/**"
+      - "app/packages/**"
+      - "infra/images/**"
+      - ".github/workflows/publish-images.yml"
+      - "bun.lock"
+      - "package.json"
+  push:
+    branches:
+      - main
+    tags:
+      - "api-v*"
+      - "admin-panel-v*"
+      - "kitchen-panel-v*"
+      - "mobile-app-v*"
+      - "waiter-panel-v*"
+    paths:
+      - "app/api/**"
+      - "app/apps/admin-panel/**"
+      - "app/apps/kitchen-panel/**"
+      - "app/apps/mobile-app/**"
+      - "app/apps/waiter-panel/**"
+      - "app/packages/**"
+      - "infra/images/**"
+      - ".github/workflows/publish-images.yml"
+      - "bun.lock"
+      - "package.json"
+  workflow_dispatch:
+
+concurrency:
+  group: publish-images-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+  security-events: write
+  id-token: write
+
+jobs:
+  publish:
+    name: Publish ${{ matrix.component }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - component: api
+            context: app/api
+            dockerfile: app/api/Dockerfile
+            app_name: ""
+          - component: admin-panel
+            context: .
+            dockerfile: infra/images/frontend.Dockerfile
+            app_name: admin-panel
+          - component: kitchen-panel
+            context: .
+            dockerfile: infra/images/frontend.Dockerfile
+            app_name: kitchen-panel
+          - component: mobile-app
+            context: .
+            dockerfile: infra/images/frontend.Dockerfile
+            app_name: mobile-app
+          - component: waiter-panel
+            context: .
+            dockerfile: infra/images/frontend.Dockerfile
+            app_name: waiter-panel
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Resolve component metadata
+        id: component
+        env:
+          COMPONENT: ${{ matrix.component }}
+        run: |
+          set -euo pipefail
+
+          if [ "$COMPONENT" = "api" ]; then
+            VERSION=$(python -c 'import tomllib; print(tomllib.load(open("app/api/pyproject.toml", "rb"))["project"]["version"])')
+          else
+            VERSION=$(jq -r .version "app/apps/$COMPONENT/package.json")
+          fi
+
+          test -n "$VERSION"
+          test "$VERSION" != "null"
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_OUTPUT"
+          echo "image=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/restorio-$COMPONENT" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-qemu-action@v3
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Sign in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate image metadata
+        id: metadata
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.component.outputs.image }}
+          labels: |
+            org.opencontainers.image.created=${{ steps.component.outputs.created }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.version=${{ steps.component.outputs.version }}
+          tags: |
+            type=raw,value=${{ steps.component.outputs.version }}
+            type=raw,value=sha-${{ github.sha }}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and publish immutable image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          build-args: |
+            APP_NAME=${{ matrix.app_name }}
+            BUILD_DATE=${{ steps.component.outputs.created }}
+            VCS_REF=${{ github.sha }}
+            VERSION=${{ steps.component.outputs.version }}
+          cache-from: type=gha,scope=${{ matrix.component }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.component }}
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          labels: ${{ steps.metadata.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
+          provenance: mode=max
+          push: ${{ github.event_name != 'pull_request' }}
+          sbom: true
+          tags: ${{ steps.metadata.outputs.tags }}
+
+      - name: Scan published digest
+        if: github.event_name != 'pull_request'
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          exit-code: "1"
+          format: sarif
+          image-ref: ${{ steps.component.outputs.image }}@${{ steps.build.outputs.digest }}
+          ignore-unfixed: true
+          output: trivy-${{ matrix.component }}.sarif
+          severity: HIGH,CRITICAL
+
+      - name: Upload vulnerability report
+        if: github.event_name != 'pull_request' && always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          category: container-${{ matrix.component }}
+          sarif_file: trivy-${{ matrix.component }}.sarif
+
+      - name: Record immutable digest
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "### ${{ matrix.component }}" >> "$GITHUB_STEP_SUMMARY"
+          echo '```text' >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.component.outputs.image }}@${{ steps.build.outputs.digest }}" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
