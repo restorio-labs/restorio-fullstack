@@ -48,7 +48,7 @@
     "next": "16.2.12",
     "postcss": "^8.5.25",
     "react-server-dom-webpack": "^19.2.8",
-    "tailwindcss": "^3.4.1",
+    "tailwindcss": "^4.3.3",
     "typescript": "^5.9",
     "vinext": "^0.2.1",
     "vite": "^8.2.0",
