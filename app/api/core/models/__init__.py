@@ -1,3 +1,4 @@
+from core.models.access_group import AccessGroup, AccessGroupAssignment
 from core.models.activation_link import ActivationLink
 from core.models.archived_order import ArchivedOrder
 from core.models.audit_log import AuditLog
@@ -31,6 +32,8 @@ from core.models.transaction import Transaction
 from core.models.user import User
 
 __all__ = [
+    "AccessGroup",
+    "AccessGroupAssignment",
     "ActivationLink",
     "ArchivedOrder",
     "AuditLog",

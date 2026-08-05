@@ -7,6 +7,9 @@ import pytest
 from starlette import status
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
+from core.models.enums import AccountType, TenantStatus
+from core.models.tenant import Tenant
+from core.models.tenant_role import TenantRole
 import routes.v1.ws as ws_mod
 
 
@@ -70,24 +73,37 @@ async def test_authenticate_decode_failure() -> None:
 
 
 @pytest.mark.asyncio
-async def test_authorize_tenant_by_list_claim() -> None:
+async def test_authorize_tenant_rejects_list_claim_without_identity() -> None:
     u = {"tenant_ids": ["tp1", "tp2"]}
-    assert await ws_mod._authorize_tenant_access(u, "tp1") is True
+    assert await ws_mod._authorize_tenant_access(u, "tp1") is False
     assert await ws_mod._authorize_tenant_access(u, "other") is False
 
 
 @pytest.mark.asyncio
-async def test_authorize_tenant_by_single_id_claim() -> None:
+async def test_authorize_tenant_rejects_single_claim_without_identity() -> None:
     u = {"tenant_id": "tp1"}
-    assert await ws_mod._authorize_tenant_access(u, "tp1") is True
+    assert await ws_mod._authorize_tenant_access(u, "tp1") is False
     assert await ws_mod._authorize_tenant_access(u, "tp2") is False
 
 
 @pytest.mark.asyncio
 async def test_authorize_tenant_by_db_match() -> None:
-    u = {"sub": str(uuid4())}
+    account_id = uuid4()
+    tenant = Tenant(
+        id=uuid4(),
+        public_id="pub-tenant-1",
+        name="Tenant",
+        slug="tenant",
+        status=TenantStatus.ACTIVE,
+    )
+    role = TenantRole(
+        account_id=account_id,
+        tenant_id=tenant.id,
+        account_type=AccountType.KITCHEN,
+    )
+    u = {"sub": str(account_id), "account_type": "owner", "tenant_ids": ["other"]}
     fake_result = MagicMock()
-    fake_result.scalar_one_or_none = MagicMock(return_value=1)
+    fake_result.one_or_none = MagicMock(return_value=(tenant, role))
 
     class _Sess:
         async def execute(self, _q: object) -> object:

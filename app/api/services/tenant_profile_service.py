@@ -79,7 +79,11 @@ class TenantProfileService:
     ) -> tuple[TenantProfile, bool]:
         existing = await self.get_by_tenant(session, tenant_id)
         if existing:
-            update_data = data.model_dump(exclude={"logo_upload_key"})
+            excluded_fields = {"logo_upload_key"}
+            if data.logo is None:
+                excluded_fields.add("logo")
+
+            update_data = data.model_dump(exclude=excluded_fields)
             for field, value in update_data.items():
                 setattr(existing, field, value)
             await session.commit()

@@ -10,3 +10,4 @@ export * from "./common";
 export * from "./environment";
 export * from "./tenantProfile";
 export * from "./mobileConfig";
+export * from "./accessGroup";

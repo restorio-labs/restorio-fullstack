@@ -26,7 +26,7 @@ const mockClient: AuthClient = {
 describe("AuthGuard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (mockClient.auth.me as Mock).mockResolvedValue({ authenticated: true, account_type: null });
+    (mockClient.auth.me as Mock).mockResolvedValue({ authenticated: true });
   });
 
   it("should render children when authenticated with valid token", async () => {

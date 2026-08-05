@@ -1,68 +1,20 @@
-import { UserRole } from "@restorio/types";
+import type { AuthorizationAction } from "@restorio/types";
 
-export const Permissions = {
-  MANAGE_RESTAURANTS: "manage_restaurants",
-  MANAGE_MENUS: "manage_menus",
-  MANAGE_ORDERS: "manage_orders",
-  VIEW_ORDERS: "view_orders",
-  MANAGE_TABLES: "manage_tables",
-  MANAGE_USERS: "manage_users",
-  VIEW_ANALYTICS: "view_analytics",
-  MANAGE_SETTINGS: "manage_settings",
-} as const;
-
-export type Permission = (typeof Permissions)[keyof typeof Permissions];
-
-const rolePermissions: Record<UserRole, Permission[]> = {
-  [UserRole.SUPER_ADMIN]: [
-    Permissions.MANAGE_RESTAURANTS,
-    Permissions.MANAGE_MENUS,
-    Permissions.MANAGE_ORDERS,
-    Permissions.VIEW_ORDERS,
-    Permissions.MANAGE_TABLES,
-    Permissions.MANAGE_USERS,
-    Permissions.VIEW_ANALYTICS,
-    Permissions.MANAGE_SETTINGS,
-  ],
-  [UserRole.ADMIN]: [
-    Permissions.MANAGE_RESTAURANTS,
-    Permissions.MANAGE_MENUS,
-    Permissions.MANAGE_ORDERS,
-    Permissions.VIEW_ORDERS,
-    Permissions.MANAGE_TABLES,
-    Permissions.MANAGE_USERS,
-    Permissions.VIEW_ANALYTICS,
-    Permissions.MANAGE_SETTINGS,
-  ],
-  [UserRole.OWNER]: [
-    Permissions.MANAGE_RESTAURANTS,
-    Permissions.MANAGE_MENUS,
-    Permissions.MANAGE_ORDERS,
-    Permissions.VIEW_ORDERS,
-    Permissions.MANAGE_TABLES,
-    Permissions.MANAGE_USERS,
-    Permissions.VIEW_ANALYTICS,
-    Permissions.MANAGE_SETTINGS,
-  ],
-  [UserRole.MANAGER]: [
-    Permissions.MANAGE_MENUS,
-    Permissions.MANAGE_ORDERS,
-    Permissions.VIEW_ORDERS,
-    Permissions.MANAGE_TABLES,
-    Permissions.VIEW_ANALYTICS,
-  ],
-  [UserRole.WAITER]: [Permissions.VIEW_ORDERS, Permissions.MANAGE_ORDERS],
-  [UserRole.KITCHEN_STAFF]: [Permissions.VIEW_ORDERS],
+export const hasCapability = (capabilities: Iterable<string>, capability: AuthorizationAction): boolean => {
+  return new Set(capabilities).has(capability);
 };
 
-export const hasPermission = (role: UserRole, permission: Permission): boolean => {
-  return rolePermissions[role].includes(permission);
+export const hasAnyCapability = (capabilities: Iterable<string>, required: readonly AuthorizationAction[]): boolean => {
+  const granted = new Set(capabilities);
+
+  return required.some((capability) => granted.has(capability));
 };
 
-export const hasAnyPermission = (role: UserRole, permissions: Permission[]): boolean => {
-  return permissions.some((permission) => hasPermission(role, permission));
-};
+export const hasAllCapabilities = (
+  capabilities: Iterable<string>,
+  required: readonly AuthorizationAction[],
+): boolean => {
+  const granted = new Set(capabilities);
 
-export const hasAllPermissions = (role: UserRole, permissions: Permission[]): boolean => {
-  return permissions.every((permission) => hasPermission(role, permission));
+  return required.every((capability) => granted.has(capability));
 };

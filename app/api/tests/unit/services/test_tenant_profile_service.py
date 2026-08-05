@@ -147,6 +147,24 @@ async def test_upsert_updates_existing() -> None:
 
 
 @pytest.mark.asyncio
+async def test_upsert_preserves_existing_logo_without_a_new_upload() -> None:
+    svc = TenantProfileService()
+    tid = uuid4()
+    dto = _create_dto(company_name="NewCo")
+    existing = _min_profile(tid)
+    existing.logo = "tenant/logo.webp"
+    session = MagicMock()
+    session.execute = AsyncMock(return_value=_result_one(existing))
+    session.commit = AsyncMock()
+    session.refresh = AsyncMock()
+
+    profile, is_new = await svc.upsert(session, tid, dto)
+
+    assert is_new is False
+    assert profile.logo == "tenant/logo.webp"
+
+
+@pytest.mark.asyncio
 async def test_upsert_updates_location_fields() -> None:
     svc = TenantProfileService()
     tid = uuid4()

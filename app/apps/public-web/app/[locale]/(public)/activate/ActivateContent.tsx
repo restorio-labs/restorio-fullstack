@@ -1,7 +1,7 @@
 "use client";
 
 import { ContentContainer } from "@restorio/ui";
-import { goToApp, resolveAuthenticatedAppRedirect } from "@restorio/utils";
+import { goToApp } from "@restorio/utils";
 import { useRouter } from "next/navigation";
 import type { FormEvent, ReactElement } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -18,6 +18,7 @@ import {
 } from "@/components/activation";
 import { useLocale } from "@/i18n/useT";
 import { getPasswordFieldsValidation } from "@/services/passwordFieldsValidation";
+import { resolveSessionAppRedirect } from "@/services/resolveSessionAppRedirect";
 
 type Result = "loading" | "success" | "already_activated" | "expired" | "error" | "resend_sent" | "set_password";
 
@@ -200,9 +201,7 @@ export function ActivateContent(): ReactElement {
 
   const handleRoleBasedRedirect = useCallback(async (): Promise<void> => {
     try {
-      const meData = await api.auth.me();
-
-      goToApp(resolveAuthenticatedAppRedirect(meData.account_type));
+      goToApp(await resolveSessionAppRedirect());
     } catch {
       goToApp("admin-panel");
     }

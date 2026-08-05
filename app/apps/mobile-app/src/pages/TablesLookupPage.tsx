@@ -178,7 +178,7 @@ export const TablesLookupPage = (): ReactElement => {
       if (now >= reservedModal.untilMs) {
         setReservedModal(null);
         void queryClient.invalidateQueries({ queryKey: ["public-tables-overview", tenantSlug] });
-        navigate(`/${tenantSlug}/tables`, { replace: true });
+        void navigate(`/${tenantSlug}/tables`, { replace: true });
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
     }, 1000);
@@ -192,7 +192,7 @@ export const TablesLookupPage = (): ReactElement => {
         return;
       }
 
-      navigate(`/${tenantSlug}/table/${tbl.tableNumber}?ref=${encodeURIComponent(tbl.id)}`);
+      void navigate(`/${tenantSlug}/table/${tbl.tableNumber}?ref=${encodeURIComponent(tbl.id)}`);
 
       return;
     }
@@ -275,7 +275,7 @@ export const TablesLookupPage = (): ReactElement => {
             size="sm"
             type="button"
             className={cn("my-2 py-2 px-4")}
-            onClick={() => navigate(`/${tenantSlug}`)}
+            onClick={() => void navigate(`/${tenantSlug}`)}
           >
             {t("tables.back")}
           </Button>
@@ -367,10 +367,10 @@ export const TablesLookupPage = (): ReactElement => {
       </div>
 
       <GuestBottomNav ariaLabel={t("landing.quickNavAria")}>
-        <Button variant="ghost" size="sm" type="button" onClick={() => navigate(`/${tenantSlug}`)}>
+        <Button variant="ghost" size="sm" type="button" onClick={() => void navigate(`/${tenantSlug}`)}>
           {t("landing.navHome")}
         </Button>
-        <Button variant="ghost" size="sm" type="button" onClick={() => navigate(`/${tenantSlug}/menu`)}>
+        <Button variant="ghost" size="sm" type="button" onClick={() => void navigate(`/${tenantSlug}/menu`)}>
           {t("landing.navMenu")}
         </Button>
       </GuestBottomNav>

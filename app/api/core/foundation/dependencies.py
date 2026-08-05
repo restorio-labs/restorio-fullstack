@@ -1,5 +1,4 @@
 from typing import Annotated
-from uuid import UUID
 
 from fastapi import Depends
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -8,7 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.foundation.database.connection import get_mongo_db
 from core.foundation.database.database import get_db_session
 from core.foundation.security import SecurityService, security_service
-from core.foundation.tenant_guard import resolve_and_authorize_tenant
 from services.auth_service import AuthService
 from services.email_service import EmailService
 from services.external_client_service import ExternalClient
@@ -129,5 +127,3 @@ UserServiceDep = Annotated[UserService, Depends(get_user_service)]
 
 MongoDB = Annotated[AsyncIOMotorDatabase, Depends(get_mongo_database)]
 PostgresSession = Annotated[AsyncSession, Depends(get_db_session)]
-
-AuthorizedTenantId = Annotated[UUID, Depends(resolve_and_authorize_tenant)]

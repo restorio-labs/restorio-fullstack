@@ -41,6 +41,22 @@ describe("TenantsResource", () => {
     expect(result).toEqual({ id: "tenant-1", name: "Main" });
   });
 
+  it("loads the tenant capability projection", async () => {
+    const projection = {
+      tenant_id: "tenant-1",
+      policy_version: "policy-v1",
+      capabilities: ["menu.read"],
+    };
+    client.get = vi.fn().mockResolvedValue({ data: projection });
+
+    const result = await resource.capabilities("tenant-1");
+
+    expect(client.get).toHaveBeenCalledWith("/tenants/tenant-1/capabilities", {
+      signal: undefined,
+    });
+    expect(result).toEqual(projection);
+  });
+
   it("create calls POST /tenants and returns data", async () => {
     const body = { name: "New", slug: "new" };
     client.post = vi.fn().mockResolvedValue({ data: { id: "tenant-2", ...body } });

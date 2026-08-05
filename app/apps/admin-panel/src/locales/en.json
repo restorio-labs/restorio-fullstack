@@ -46,9 +46,15 @@
       "pageConfigurator": "Page Configurator",
       "qrCodeGenerator": "QR Code Generator",
       "tenantProfile": "Profile",
+      "profileCompanyContact": "Company and contact",
+      "profileAddressLocation": "Address and location",
+      "profileOwnerContact": "Owner and contact person",
+      "profileSocialMedia": "Social media",
       "paymentConfig": "Payment Config",
       "transactions": "Transactions",
-      "staff": "Staff"
+      "staff": "Staff",
+      "staffMembers": "Employees",
+      "accessGroups": "Access groups"
     },
     "mobile": {
       "openMenu": "Open navigation menu",
@@ -576,19 +582,25 @@
       "nameLabel": "Name",
       "surnameLabel": "Surname",
       "accessLabel": "Access level",
+      "baseAccess": "Base access level",
+      "additionalGroups": "Additional groups",
+      "selectedGroups": "{{count}} groups",
       "addRow": "Add another",
       "removeRow": "Remove",
       "saveSingle": "Save this user",
       "submit": "Save all",
       "submitting": "Saving..."
     },
-    "emptyState": {
-      "heading": "Let's start by adding new members to the team 🚀"
-    },
     "list": {
       "title": "All users",
       "loading": "Loading users...",
       "empty": "No users yet.",
+      "columns": {
+        "employee": "Employee",
+        "access": "Access level",
+        "status": "Status",
+        "actions": "Actions"
+      },
       "personLabel": "Name: {{name}} {{surname}}",
       "notProvided": "-"
     },
@@ -617,6 +629,8 @@
       "deleteSuccessDescription": "User deleted successfully.",
       "deleteErrorTitle": "Could not remove user",
       "deleteErrorDescription": "Unable to delete user.",
+      "groupAssignmentWarningTitle": "User added with incomplete access",
+      "groupAssignmentWarningDescription": "The user was created, but one or more access groups could not be assigned. Assign them from Access groups.",
       "invalidEmail": "Enter a valid email address.",
       "waiterNameRequired": "Name and surname are required for waiter."
     },
@@ -641,11 +655,97 @@
       "alreadyMemberDescription": "This email is already linked to this restaurant, so you can't add it again as staff.",
       "ok": "OK",
       "closeAria": "Close"
+    },
+    "accessGroups": {
+      "title": "Access groups",
+      "description": "Build reusable permission sets and assign them to employees.",
+      "create": "Create group",
+      "edit": "Edit",
+      "delete": "Delete",
+      "loading": "Loading access groups...",
+      "empty": "No custom access groups yet.",
+      "members": "Employees",
+      "noEmployees": "Add an employee before assigning this group.",
+      "noCapabilities": "No additional capabilities",
+      "capabilityLabels": {
+        "app_kitchen_access": "Kitchen application access",
+        "app_waiter_access": "Waiter application access",
+        "floor_canvas_read": "View floor layout",
+        "floor_canvas_version_read": "View floor layout versions",
+        "floor_canvas_write": "Manage floor layout",
+        "kitchen_config_read": "View kitchen configuration",
+        "kitchen_config_write": "Manage kitchen configuration",
+        "menu_asset_write": "Manage menu assets",
+        "menu_availability_update": "Update menu availability",
+        "menu_read": "View menu",
+        "menu_write": "Manage menu",
+        "mobile_config_read": "View mobile configuration",
+        "mobile_config_write": "Manage mobile configuration",
+        "order_archive": "Archive orders",
+        "order_create": "Create orders",
+        "order_delete": "Delete orders",
+        "order_read": "View orders",
+        "order_refund": "Refund orders",
+        "order_transition": "Change order status",
+        "order_update": "Update orders",
+        "payment_create": "Create payments",
+        "payment_reconcile": "Reconcile payments",
+        "payment_transaction_read": "View payment transactions",
+        "payment_verify": "Verify payments",
+        "profile_logo_read": "View profile logo",
+        "profile_logo_write": "Manage profile logo",
+        "profile_update": "Update restaurant profile",
+        "profile_view": "View restaurant profile",
+        "staff_read": "View staff",
+        "table_session_read": "View table sessions",
+        "table_session_unlock": "Unlock table sessions",
+        "tenant_view": "View restaurant"
+      },
+      "form": {
+        "name": "Group name",
+        "description": "Description",
+        "capabilities": "Capabilities",
+        "capabilitiesHelp": "These permissions are added to each employee's base access level.",
+        "cancel": "Cancel",
+        "save": "Save group",
+        "saving": "Saving..."
+      },
+      "deleteConfirm": {
+        "title": "Delete access group?",
+        "description": "Delete {{name}} and remove it from every assigned employee?",
+        "cancel": "Cancel",
+        "confirm": "Delete group"
+      },
+      "toast": {
+        "savedTitle": "Access group saved",
+        "savedDescription": "The permission set is ready to use.",
+        "deletedTitle": "Access group deleted",
+        "deletedDescription": "The group was removed from all employees.",
+        "errorTitle": "Could not update access groups"
+      }
     }
   },
   "tenantProfile": {
     "title": "Tenant Profile",
     "description": "Manage company details, contact information, and social media for your tenant",
+    "pages": {
+      "company-contact": {
+        "title": "Company details and restaurant contact",
+        "description": "Manage registration details, the logo, and the restaurant's primary contact information."
+      },
+      "address-location": {
+        "title": "Address and map location",
+        "description": "Manage the restaurant address and set its exact location."
+      },
+      "owner-contact": {
+        "title": "Owner details and contact person",
+        "description": "Manage the owner details and the person responsible for day-to-day contact."
+      },
+      "social-media": {
+        "title": "Social media",
+        "description": "Add links to the restaurant website and social profiles."
+      }
+    },
     "loadingTenants": "Loading tenants...",
     "loadingProfile": "Loading profile...",
     "selectedTenant": {
@@ -802,6 +902,10 @@
     },
     "location": {
       "description": "Enter the exact coordinates of the restaurant entrance or its main customer-facing location.",
+      "loadingMap": "Loading map...",
+      "mapHint": "Click the map or drag the marker to set the exact location.",
+      "mapLabel": "Select the restaurant location on the map",
+      "markerTitle": "Restaurant location",
       "legacyTitle": "This profile needs a location",
       "legacyDescription": "This restaurant was created before locations were required. Add coordinates before saving or making it publicly visible."
     },

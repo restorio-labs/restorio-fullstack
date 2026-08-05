@@ -2,7 +2,6 @@ from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from fastapi import APIRouter, Request, Response, status
-from sqlalchemy import select
 
 from core.dto.v1.auth import (
     ActivateResponseData,
@@ -39,9 +38,7 @@ from core.foundation.token_store import (
     refresh_token_store,
 )
 from core.models.activation_link import ActivationLink
-from core.models.enums import AccountType
 from core.models.tenant import Tenant
-from core.models.tenant_role import TenantRole
 from core.models.user import User
 
 router = APIRouter()
@@ -76,8 +73,6 @@ async def login(
     token_data = {
         "sub": payload.get("sub"),
         "email": payload.get("email"),
-        "tenant_ids": payload.get("tenant_ids"),
-        "account_type": payload.get("account_type"),
     }
     family = generate_family()
     jti = generate_jti()
@@ -236,13 +231,9 @@ async def activate(
     if activation_link is not None:
         activated_user = await session.get(User, activation_link.user_id)
         if activated_user is not None:
-            tenant_ids = [tenant.public_id] if tenant is not None else []
-            account_type = AccountType.OWNER.value if tenant is not None else None
-            token_data: dict[str, str | list[str] | None] = {
+            token_data: dict[str, str] = {
                 "sub": str(user.id),
                 "email": user.email,
-                "tenant_ids": tenant_ids,
-                "account_type": account_type,
             }
             access_token = auth_service.security.create_access_token(token_data)
             act_family = generate_family()
@@ -323,8 +314,6 @@ async def set_password(
     token_data = {
         "sub": payload.get("sub"),
         "email": payload.get("email"),
-        "tenant_ids": payload.get("tenant_ids"),
-        "account_type": payload.get("account_type"),
     }
     sp_family = generate_family()
     sp_jti = generate_jti()
@@ -418,28 +407,17 @@ async def refresh_token(
     if family and old_jti:
         refresh_token_store.revoke(family, old_jti)
 
-    user_uuid = UUID(user_id)
-    tenant_role_ids = list(
-        await session.scalars(
-            select(TenantRole.tenant_id).where(TenantRole.account_id == user_uuid)
-        )
-    )
+    try:
+        user_uuid = UUID(user_id)
+    except ValueError:
+        raise UnauthorizedError(message="Unauthorized") from None
+    account = await session.get(User, user_uuid)
+    if account is None or not account.is_active:
+        raise UnauthorizedError(message="Unauthorized")
 
-    tenant_ids: list[str] = []
-    if tenant_role_ids:
-        rows = await session.execute(select(Tenant.public_id).where(Tenant.id.in_(tenant_role_ids)))
-        tenant_ids = [row[0] for row in rows.all()]
-
-    role = await session.scalar(
-        select(TenantRole).where(TenantRole.account_id == user_uuid).limit(1)
-    )
-
-    email = payload.get("email")
-    token_data: dict[str, str | list[str] | None] = {
+    token_data: dict[str, str] = {
         "sub": user_id,
-        "tenant_ids": tenant_ids,
-        "account_type": role.account_type.value if role is not None else None,
-        "email": email if isinstance(email, str) else None,
+        "email": account.email,
     }
     access_token = security_service.create_access_token(token_data)
     new_jti = generate_jti()
@@ -505,9 +483,7 @@ async def me(request: Request) -> SuccessResponse[AuthMeSessionData]:
     if not isinstance(subject, str):
         raise UnauthenticatedResponse(message="Unauthorized")
 
-    account_type = user.get("account_type")
-
     return SuccessResponse(
-        data=AuthMeSessionData(account_type=account_type),
+        data=AuthMeSessionData(),
         message="Authenticated",
     )

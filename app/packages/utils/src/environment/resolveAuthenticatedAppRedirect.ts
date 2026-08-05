@@ -1,53 +1,53 @@
 import { APP_SLUGS, type AppSlug } from "@restorio/types";
 
-const APP_ALLOWED_ROLES: Partial<Record<AppSlug, readonly string[]>> = {
-  "admin-panel": ["super_admin", "admin", "owner", "manager"],
-  "waiter-panel": ["super_admin", "admin", "owner", "manager", "waiter"],
-  "kitchen-panel": ["super_admin", "admin", "owner", "manager", "kitchen"],
+const APP_REQUIRED_CAPABILITY: Partial<Record<AppSlug, string>> = {
+  "admin-panel": "app.admin.access",
+  "waiter-panel": "app.waiter.access",
+  "kitchen-panel": "app.kitchen.access",
 };
 
 const isAppSlug = (value: string): value is AppSlug => {
   return (APP_SLUGS as readonly string[]).includes(value);
 };
 
-export const canAccessApp = (accountType: string | null, appSlug: AppSlug): boolean => {
-  const allowedRoles = APP_ALLOWED_ROLES[appSlug];
+export const canAccessApp = (capabilities: Iterable<string>, appSlug: AppSlug): boolean => {
+  const required = APP_REQUIRED_CAPABILITY[appSlug];
 
-  if (allowedRoles === undefined) {
-    return false;
-  }
-
-  if (accountType === null || accountType === "") {
-    return appSlug === "admin-panel";
-  }
-
-  return allowedRoles.includes(accountType);
+  return required !== undefined && new Set(capabilities).has(required);
 };
 
-export const resolveDefaultAppForAccountType = (accountType: string | null): AppSlug => {
-  if (accountType === "kitchen") {
-    return "kitchen-panel";
+export const resolveDefaultAppForCapabilities = (capabilities: Iterable<string>): AppSlug => {
+  const granted = new Set(capabilities);
+
+  if (canAccessApp(granted, "admin-panel")) {
+    return "admin-panel";
   }
 
-  if (accountType === "waiter") {
+  if (canAccessApp(granted, "waiter-panel")) {
     return "waiter-panel";
+  }
+
+  if (canAccessApp(granted, "kitchen-panel")) {
+    return "kitchen-panel";
   }
 
   return "admin-panel";
 };
 
 export const resolveAuthenticatedAppRedirect = (
-  accountType: string | null,
+  capabilities: Iterable<string>,
   lastVisitedApp?: string | null,
 ): AppSlug => {
+  const granted = new Set(capabilities);
+
   if (
     typeof lastVisitedApp === "string" &&
     isAppSlug(lastVisitedApp) &&
     lastVisitedApp !== "public-web" &&
-    canAccessApp(accountType, lastVisitedApp)
+    canAccessApp(granted, lastVisitedApp)
   ) {
     return lastVisitedApp;
   }
 
-  return resolveDefaultAppForAccountType(accountType);
+  return resolveDefaultAppForCapabilities(granted);
 };

@@ -3,17 +3,16 @@ from typing import Any
 from fastapi import APIRouter, status
 from sqlalchemy import select
 
+from core.authorization.dependencies import PaymentVerifyTenantId
 from core.dto.v1.payments import VerifyP24TransactionDTO
 from core.exceptions import NotFoundResponse
 from core.foundation.dependencies import (
-    AuthorizedTenantId,
     ExternalClientDep,
     P24ServiceDep,
     PostgresSession,
     TenantServiceDep,
 )
 from core.foundation.http.responses import SuccessResponse
-from core.foundation.role_guard import RequireAnyStaff
 from core.models.transaction import Transaction
 
 router = APIRouter()
@@ -27,9 +26,8 @@ _RESOURCE_TRANSACTION = "Transaction"
     response_model=SuccessResponse[dict[str, Any]],
 )
 async def verify_p24_transaction(
-    _staff: RequireAnyStaff,
     request: VerifyP24TransactionDTO,
-    tenant_id: AuthorizedTenantId,
+    tenant_id: PaymentVerifyTenantId,
     session: PostgresSession,
     tenant_service: TenantServiceDep,
     p24_service: P24ServiceDep,

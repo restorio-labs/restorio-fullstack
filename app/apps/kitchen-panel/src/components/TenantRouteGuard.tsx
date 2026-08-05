@@ -1,3 +1,4 @@
+import { AuthorizationActions } from "@restorio/types";
 import { Loader } from "@restorio/ui";
 import { useQuery } from "@tanstack/react-query";
 import type { ReactElement } from "react";
@@ -26,8 +27,8 @@ export const TenantRouteGuard = (): ReactElement => {
   }, [tenantId]);
 
   const query = useQuery({
-    queryKey: ["kitchen-tenant-access", tenantId],
-    queryFn: () => api.tenants.get(tenantId ?? ""),
+    queryKey: ["kitchen-tenant-capabilities", tenantId],
+    queryFn: () => api.tenants.capabilities(tenantId ?? ""),
     retry: false,
     enabled: typeof tenantId === "string" && tenantId.trim() !== "",
   });
@@ -71,6 +72,10 @@ export const TenantRouteGuard = (): ReactElement => {
     }
 
     return <div />;
+  }
+
+  if (!query.data?.capabilities.includes(AuthorizationActions.APP_KITCHEN_ACCESS)) {
+    return <Navigate to="/" replace />;
   }
 
   return <Outlet />;

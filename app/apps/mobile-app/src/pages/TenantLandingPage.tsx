@@ -92,19 +92,19 @@ export const TenantLandingPage = (): ReactElement => {
       </header>
 
       <div className="mx-auto mt-10 flex w-full max-w-md flex-col gap-3">
-        <Button variant="primary" size="lg" fullWidth onClick={() => navigate(`/${tenantSlug}/tables`)}>
+        <Button variant="primary" size="lg" fullWidth onClick={() => void navigate(`/${tenantSlug}/tables`)}>
           {tablesCtaLabel}
         </Button>
-        <Button variant="secondary" size="lg" fullWidth onClick={() => navigate(`/${tenantSlug}/menu`)}>
+        <Button variant="secondary" size="lg" fullWidth onClick={() => void navigate(`/${tenantSlug}/menu`)}>
           {menuCtaLabel}
         </Button>
       </div>
 
       <GuestBottomNav ariaLabel={t("landing.quickNavAria")}>
-        <Button variant="ghost" size="sm" onClick={() => navigate(`/${tenantSlug}/tables`)}>
+        <Button variant="ghost" size="sm" onClick={() => void navigate(`/${tenantSlug}/tables`)}>
           {t("landing.navTables")}
         </Button>
-        <Button variant="ghost" size="sm" onClick={() => navigate(`/${tenantSlug}/menu`)}>
+        <Button variant="ghost" size="sm" onClick={() => void navigate(`/${tenantSlug}/menu`)}>
           {t("landing.navMenu")}
         </Button>
       </GuestBottomNav>

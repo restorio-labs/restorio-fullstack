@@ -196,12 +196,7 @@ class TestAuthMeSessionData:
     def test_defaults(self) -> None:
         dto = AuthMeSessionData()
         assert dto.authenticated is True
-        assert dto.account_type is None
-
-    def test_with_account_type(self) -> None:
-        dto = AuthMeSessionData(account_type="owner")
-        assert dto.authenticated is True
-        assert dto.account_type == "owner"
+        assert dto.model_dump() == {"authenticated": True}
 
 
 class TestBulkCreateUsersDTO:

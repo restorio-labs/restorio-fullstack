@@ -63,7 +63,7 @@ export const TenantSwitcher = (): ReactElement | null => {
         <div className="text-sm text-text-tertiary">{t("tenantSwitcher.empty")}</div>
         <button
           type="button"
-          onClick={() => navigate("/restaurant-creator")}
+          onClick={() => void navigate("/restaurant-creator")}
           className="text-sm font-medium text-interactive-primary hover:underline"
         >
           {t("tenantSwitcher.addRestaurant")}
@@ -119,7 +119,7 @@ export const TenantSwitcher = (): ReactElement | null => {
             type="button"
             className="w-full whitespace-normal break-words rounded-sm px-4 py-2 text-left text-base font-semibold text-interactive-primary hover:bg-surface-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-border-focus"
             onClick={() => {
-              navigate("/restaurant-creator");
+              void navigate("/restaurant-creator");
               setIsOpen(false);
             }}
           >

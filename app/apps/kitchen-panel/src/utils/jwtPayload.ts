@@ -2,8 +2,7 @@ import { TokenStorage } from "@restorio/auth";
 
 interface JwtPayload {
   readonly sub?: string;
-  readonly tenant_ids?: unknown;
-  readonly account_type?: string;
+  readonly email?: string;
 }
 
 export const decodeAccessTokenPayload = (): JwtPayload | null => {
@@ -33,18 +32,4 @@ export const decodeAccessTokenPayload = (): JwtPayload | null => {
   } catch {
     return null;
   }
-};
-
-export const getPublicTenantIdsFromAccessToken = (): string[] => {
-  const raw = decodeAccessTokenPayload()?.tenant_ids;
-
-  if (!Array.isArray(raw)) {
-    return [];
-  }
-
-  return raw.filter((id): id is string => typeof id === "string" && id.length > 0);
-};
-
-export const isAdminPanelAccountType = (accountType: string | undefined): boolean => {
-  return accountType === "owner" || accountType === "manager";
 };

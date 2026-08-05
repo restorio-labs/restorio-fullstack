@@ -72,10 +72,20 @@ def test_audit_logger_methods_emit_json(monkeypatch) -> None:
     logger.register(request=req, email="a@b.com")
     logger.password_reset_email_sent(request=req, user_id="u1")
     logger.password_reset_completed(request=req, user_id="u1")
+    logger.authorization_decision(
+        request=req,
+        user_id="u1",
+        tenant_id="t1",
+        action="menu.write",
+        allowed=False,
+        policy_id="capability.required",
+        reason="not granted",
+    )
 
-    expected_audit_events_count = 11
+    expected_audit_events_count = 12
     assert len(emitted) == expected_audit_events_count
     parsed = [json.loads(item) for item in emitted]
     assert parsed[0]["event"] == "login_success"
     assert parsed[1]["reason"] == "invalid_credentials"
-    assert parsed[-1]["event"] == "password_reset_completed"
+    assert parsed[-1]["event"] == "authorization_decision"
+    assert parsed[-1]["allowed"] is False

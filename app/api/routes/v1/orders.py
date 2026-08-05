@@ -5,6 +5,17 @@ from uuid import UUID
 from fastapi import APIRouter, Query, Request, status
 from sqlalchemy import func, select
 
+from core.authorization.dependencies import (
+    OrderArchiveTenantId,
+    OrderCreateTenantId,
+    OrderDeleteTenantId,
+    OrderReadTenantId,
+    OrderRefundTenantId,
+    OrderTransitionTenantId,
+    OrderUpdateTenantId,
+    TableSessionReadTenantId,
+    TableSessionUnlockTenantId,
+)
 from core.dto.v1.orders import (
     ArchivedOrderResponseDTO,
     CreateOrderDTO,
@@ -15,7 +26,6 @@ from core.dto.v1.orders import (
 )
 from core.exceptions import BadRequestError
 from core.foundation.dependencies import (
-    AuthorizedTenantId,
     MongoDB,
     OrderServiceDep,
     PostgresSession,
@@ -29,7 +39,6 @@ from core.foundation.http.responses import (
     SuccessResponse,
     UpdatedResponse,
 )
-from core.foundation.role_guard import RequireAnyStaff
 from core.models.archived_order import ArchivedOrder
 from core.models.enums import TableSessionStatus
 from services.archive_service import ArchiveService
@@ -52,8 +61,7 @@ async def list_orders(
     request: Request,
     db: MongoDB,
     service: OrderServiceDep,
-    _tenant_id: AuthorizedTenantId,
-    _role: RequireAnyStaff,
+    _tenant_id: OrderReadTenantId,
     order_status: Annotated[str | None, Query(alias="status")] = None,
 ) -> SuccessResponse[list[KitchenOrderResponseDTO]]:
     orders = await service.list_orders(
@@ -76,8 +84,7 @@ async def list_orders(
 async def list_archived_orders(
     tenant_public_id: str,
     session: PostgresSession,
-    _tenant_id: AuthorizedTenantId,
-    _role: RequireAnyStaff,
+    _tenant_id: OrderReadTenantId,
     page: Annotated[int, Query(ge=1)] = 1,
     page_size: Annotated[int, Query(ge=1, le=100)] = 20,
     since_hours: Annotated[int | None, Query(alias="sinceHours", ge=1)] = None,
@@ -138,8 +145,7 @@ async def get_order(
     request: Request,
     db: MongoDB,
     service: OrderServiceDep,
-    _tenant_id: AuthorizedTenantId,
-    _role: RequireAnyStaff,
+    _tenant_id: OrderReadTenantId,
 ) -> SuccessResponse[KitchenOrderResponseDTO]:
     order = await service.get_order(
         db,
@@ -167,8 +173,7 @@ async def create_order(
     session: PostgresSession,
     tenant_service: TenantServiceDep,
     table_session_service: TableSessionServiceDep,
-    _tenant_id: AuthorizedTenantId,
-    _role: RequireAnyStaff,
+    _tenant_id: OrderCreateTenantId,
 ) -> CreatedResponse[KitchenOrderResponseDTO]:
     data = payload.model_dump(by_alias=True)
     tenant = await tenant_service.get_tenant_by_public_id(session, tenant_public_id)
@@ -213,8 +218,7 @@ async def update_order(
     request: Request,
     db: MongoDB,
     service: OrderServiceDep,
-    _tenant_id: AuthorizedTenantId,
-    _role: RequireAnyStaff,
+    _tenant_id: OrderUpdateTenantId,
 ) -> UpdatedResponse[KitchenOrderResponseDTO]:
     data = payload.model_dump(by_alias=True, exclude_none=True)
     order = await service.update_order(
@@ -243,14 +247,13 @@ async def update_order_status(
     request: Request,
     db: MongoDB,
     service: OrderServiceDep,
-    _tenant_id: AuthorizedTenantId,
-    _role: RequireAnyStaff,
+    _tenant_id: OrderTransitionTenantId,
 ) -> UpdatedResponse[KitchenOrderResponseDTO]:
     order = await service.update_status(
         db,
         tenant_public_id,
         order_id,
-        payload.status,
+        new_status=payload.status,
         rejection_reason=payload.rejection_reason,
         timezone_name=request.headers.get("X-Timezone"),
     )
@@ -274,8 +277,7 @@ async def delete_order(
     service: OrderServiceDep,
     session: PostgresSession,
     table_session_service: TableSessionServiceDep,
-    tenant_id: AuthorizedTenantId,
-    _role: RequireAnyStaff,
+    tenant_id: OrderDeleteTenantId,
 ) -> DeletedResponse:
     order = await service.delete_order(
         db,
@@ -305,8 +307,7 @@ async def archive_order(
     service: OrderServiceDep,
     table_session_service: TableSessionServiceDep,
     tenant_service: TenantServiceDep,
-    _tenant_id: AuthorizedTenantId,
-    _role: RequireAnyStaff,
+    _tenant_id: OrderArchiveTenantId,
 ) -> SuccessResponse[dict]:
     order_doc = await service.get_order_for_archive(db, tenant_public_id, order_id)
     tenant_id = order_doc.get("restaurantId", tenant_public_id)
@@ -341,8 +342,7 @@ async def refund_order(
     service: OrderServiceDep,
     session: PostgresSession,
     table_session_service: TableSessionServiceDep,
-    tenant_id: AuthorizedTenantId,
-    _role: RequireAnyStaff,
+    tenant_id: OrderRefundTenantId,
 ) -> SuccessResponse[dict]:
     order = await service.get_order(db, tenant_public_id, order_id)
     if order["status"] != "rejected":
@@ -355,7 +355,12 @@ async def refund_order(
         order.get("rejectionReason", ""),
     )
 
-    updated = await service.update_status(db, tenant_public_id, order_id, "refunded")
+    updated = await service.update_status(
+        db,
+        tenant_public_id,
+        order_id,
+        new_status="refunded",
+    )
     await table_session_service.release_by_table_ref(
         session,
         tenant_id=tenant_id,
@@ -378,8 +383,7 @@ async def list_table_sessions(
     tenant_public_id: str,  # noqa: ARG001
     session: PostgresSession,
     table_session_service: TableSessionServiceDep,
-    tenant_id: AuthorizedTenantId,
-    _role: RequireAnyStaff,
+    tenant_id: TableSessionReadTenantId,
 ) -> SuccessResponse[list[TableSessionResponseDTO]]:
     sessions = await table_session_service.list_active_sessions(session, tenant_id)
     return SuccessResponse(
@@ -414,8 +418,7 @@ async def unlock_table_session(
     request: Request,
     session: PostgresSession,
     table_session_service: TableSessionServiceDep,
-    tenant_id: AuthorizedTenantId,
-    _role: RequireAnyStaff,
+    tenant_id: TableSessionUnlockTenantId,
 ) -> SuccessResponse[dict]:
     request_user = getattr(request.state, "user", None)
     subject = request_user.get("sub") if isinstance(request_user, dict) else None

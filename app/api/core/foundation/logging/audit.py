@@ -94,5 +94,27 @@ class AuditLogger:
     def password_reset_completed(self, *, request: Request, user_id: str) -> None:
         self._emit("password_reset_completed", request, user_id=user_id)
 
+    def authorization_decision(
+        self,
+        *,
+        request: Request,
+        user_id: str,
+        tenant_id: str | None,
+        action: str,
+        allowed: bool,
+        policy_id: str,
+        reason: str,
+    ) -> None:
+        self._emit(
+            "authorization_decision",
+            request,
+            user_id=user_id,
+            tenant_id=tenant_id,
+            action=action,
+            allowed=allowed,
+            policy_id=policy_id,
+            reason=reason,
+        )
+
 
 audit = AuditLogger()

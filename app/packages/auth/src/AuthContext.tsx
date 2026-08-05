@@ -1,21 +1,18 @@
 import type { ReactElement, ReactNode } from "react";
 import { createContext, useContext } from "react";
 
-import type { UserRole } from "./RoleGuard";
-
 export interface AuthContextValue {
-  role: UserRole | null;
+  authenticated: true;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export interface AuthProviderProps {
   children: ReactNode;
-  role: UserRole | null;
 }
 
-export const AuthProvider = ({ children, role }: AuthProviderProps): ReactElement => {
-  return <AuthContext.Provider value={{ role }}>{children}</AuthContext.Provider>;
+export const AuthProvider = ({ children }: AuthProviderProps): ReactElement => {
+  return <AuthContext.Provider value={{ authenticated: true }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuthContext = (): AuthContextValue => {
