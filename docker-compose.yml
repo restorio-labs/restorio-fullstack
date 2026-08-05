@@ -67,7 +67,7 @@ services:
       start_period: 60s
 
   postgres:
-    image: postgis/postgis:16-3.5-alpine
+    image: postgis/postgis:17-3.5-alpine
     container_name: restorio-postgres
     environment:
       - POSTGRES_DB=${POSTGRES_DB:-restorio}
@@ -88,7 +88,7 @@ services:
       start_period: 60s
 
   mongo:
-    image: mongo:7
+    image: mongo:8
     container_name: restorio-mongo
     environment:
       - MONGO_INITDB_ROOT_USERNAME=${MONGODB_USERNAME:-restorio}
