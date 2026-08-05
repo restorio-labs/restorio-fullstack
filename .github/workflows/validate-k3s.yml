@@ -1,0 +1,58 @@
+name: Validate k3s Platform Configuration
+
+on:
+  pull_request:
+    paths:
+      - "infra/k3s/**"
+      - ".github/workflows/validate-k3s.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "infra/k3s/**"
+      - ".github/workflows/validate-k3s.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate ${{ matrix.environment }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment:
+          - staging
+          - production
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.36.1
+
+      - name: Validate shell scripts
+        run: |
+          shellcheck infra/k3s/scripts/*.sh
+          for script in infra/k3s/scripts/*.sh; do
+            bash -n "$script"
+          done
+
+      - name: Render environment configuration
+        run: kubectl kustomize "infra/k3s/overlays/${{ matrix.environment }}" > rendered.yaml
+
+      - name: Validate Kubernetes schemas
+        uses: docker://ghcr.io/yannh/kubeconform:v0.7.0
+        with:
+          args: -strict -summary -kubernetes-version 1.36.0 /github/workspace/rendered.yaml
+
+      - name: Verify environment isolation
+        env:
+          ENVIRONMENT: ${{ matrix.environment }}
+        run: |
+          test "$(grep -c "namespace: $ENVIRONMENT" rendered.yaml)" -ge 3
+          ! grep -q 'namespace: default' rendered.yaml
+          ! grep -q 'kind: ClusterRole' rendered.yaml
+          ! grep -q 'kind: ClusterRoleBinding' rendered.yaml
