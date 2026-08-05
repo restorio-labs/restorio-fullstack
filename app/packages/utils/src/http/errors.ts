@@ -78,7 +78,7 @@ export const getApiValidationFieldLeafs = (data: unknown): string[] => {
   const leafs = new Set<string>();
 
   for (const fieldPath of getApiValidationFields(data)) {
-    const leaf = fieldPath.split(".").at(-1)?.toLowerCase();
+    const leaf = fieldPath.split(".").pop()?.toLowerCase();
 
     if (leaf != null && leaf.length > 0) {
       leafs.add(leaf);
