@@ -1,353 +1,336 @@
-# ADR 0002: Observability architecture
+# ADR 0002: Define the initial observability architecture
 
 - Status: Accepted
 - Date: 2026-08-05
 - Decision owners: Restorio maintainers
-- Tracking issue: [#202](https://github.com/restorio-labs/restorio-fullstack/issues/202)
-- Parent epic: [#200](https://github.com/restorio-labs/restorio-fullstack/issues/200)
+- Related issues: [#147](https://github.com/restorio-labs/restorio-fullstack/issues/147), [#200](https://github.com/restorio-labs/restorio-fullstack/issues/200), [#202](https://github.com/restorio-labs/restorio-fullstack/issues/202), [#152](https://github.com/restorio-labs/restorio-fullstack/issues/152)
 
 ## Context
 
-ADR 0001 places the production API, authenticated applications, and stateful services on a single k3s node, with staging in a separate cluster.
-That topology needs metrics, centralized logs, dashboards, and actionable alerts before production cutover.
+Restorio needs centralized metrics, dashboards, alerts, and logs for its staging and production k3s clusters.
+The first production topology is intentionally small and may start on one k3s node.
+The observability stack must therefore provide useful operational coverage without adding distributed-system complexity that the current scale does not justify.
+This ADR inherits the separate staging and production cluster boundary accepted under #147.
 
-The current API exposes health endpoints, returns request IDs and timing headers, writes general text logs to standard output, and writes audit events as JSON to standard output.
-It does not expose Prometheus metrics or send logs to centralized storage.
-The repository does not yet contain a Kubernetes observability deployment.
+This decision covers the initial observability control plane and the collection paths used by Kubernetes workloads and Restorio applications.
+It does not deploy the stack.
+The deployment remains the responsibility of the implementation tickets under epic #200.
 
-The initial architecture must fit the minimum production capacity in ADR 0001 without implying high availability.
-It must preserve storage headroom for the application databases, avoid unbounded telemetry cardinality, keep administrative interfaces private, and allow an observability failure without stopping application traffic.
-Staging and production must remain separate failure and credential domains.
+## Decision drivers
+
+- Keep the first deployment operable on a small k3s cluster
+- Preserve application availability when the observability stack is degraded
+- Keep configuration reproducible and reviewable in Git
+- Bound disk and memory consumption
+- Avoid high-cardinality metrics and log labels
+- Protect operational data and administrative endpoints
+- Provide a clear path to higher availability when measured demand requires it
 
 ## Decision
 
-Each k3s cluster will run its own observability stack in a dedicated `observability` namespace.
+Restorio will deploy one independent observability stack in each staging and production k3s cluster.
 The initial stack consists of Prometheus, Grafana, Alertmanager, Grafana Loki, Grafana Alloy, kube-state-metrics, and node-exporter.
-The stack will be installed as version-pinned platform releases with environment-specific values.
-Dashboards, alert rules, data-source provisioning, and collector configuration will be stored in version control.
 
-The initial topology deliberately uses one replica for Prometheus, Grafana, Alertmanager, Loki, and kube-state-metrics.
-Alloy and node-exporter run as DaemonSets so that each k3s node is covered when nodes are added.
-Single replicas are an explicit availability tradeoff and not an HA claim.
+Prometheus will run with exactly one replica and one shard.
+Prometheus will not use a HorizontalPodAutoscaler.
+Its local TSDB will use persistent storage with both time-based and size-based retention.
 
-Prometheus will use exactly one replica and will not have a HorizontalPodAutoscaler.
-Scaling Prometheus vertically requires measured resource or query pressure and a planned restart or rollout.
-Horizontal scaling requires a different storage and query architecture and belongs to the future HA path.
+Loki will initially run as one single-binary instance with TSDB indexing and filesystem storage on a persistent volume.
+Alloy will run as a DaemonSet and will tail Kubernetes container logs from every node.
 
-### Logical topology
+Kafka, Redpanda, RabbitMQ, Redis, and database-backed queues are excluded from the logging pipeline.
+Applications write structured JSON logs to standard output, the container runtime persists the node-local log files, Alloy tails those files, and Alloy sends them directly to Loki over the cluster network.
+An observability outage must never make an application request depend on or wait for log delivery.
 
-```mermaid
-flowchart LR
-    subgraph workloads[Application namespaces]
-        api[FastAPI API]
-        pods[Application and platform pods]
-    end
+## Initial topology and data flow
 
-    subgraph nodes[k3s nodes]
-        alloy[Grafana Alloy DaemonSet]
-        nodeExporter[node-exporter DaemonSet]
-    end
-
-    subgraph observability[Namespace: observability]
-        prometheus[Prometheus - one replica]
-        alertmanager[Alertmanager - one replica]
-        grafana[Grafana - one replica]
-        loki[Loki - one replica]
-        kubeState[kube-state-metrics - one replica]
-    end
-
-    operator[Authorized operator over private administration path]
-    receiver[Production notification receiver]
-
-    api -->|Prometheus scrape| prometheus
-    pods -->|stdout and stderr| alloy
-    alloy -->|Loki push API| loki
-    nodeExporter -->|Prometheus scrape| prometheus
-    kubeState -->|Prometheus scrape| prometheus
-    prometheus -->|alert notifications| alertmanager
-    prometheus -->|metrics queries| grafana
-    loki -->|log queries| grafana
-    alertmanager -->|notifications| receiver
-    operator -->|authenticated access| grafana
-    operator -.->|temporary port-forward for diagnostics| prometheus
-    operator -.->|temporary port-forward for diagnostics| alertmanager
-    operator -.->|temporary port-forward for diagnostics| loki
+```text
+staging k3s cluster                         production k3s cluster
+┌──────────────────────────────┐           ┌──────────────────────────────┐
+│ applications                 │           │ applications                 │
+│  ├─ /metrics ─────────────┐  │           │  ├─ /metrics ─────────────┐  │
+│  └─ JSON logs to stdout ─┐│  │           │  └─ JSON logs to stdout ─┐│  │
+│                          ││  │           │                          ││  │
+│ Prometheus <─────────────┘│  │           │ Prometheus <─────────────┘│  │
+│  ├─ kube-state-metrics     │  │           │  ├─ kube-state-metrics     │  │
+│  ├─ node-exporter          │  │           │  ├─ node-exporter          │  │
+│  └─ rules ─> Alertmanager  │  │           │  └─ rules ─> Alertmanager  │  │
+│                            │  │           │                            │  │
+│ Alloy DaemonSet <──────────┘  │           │ Alloy DaemonSet <──────────┘  │
+│  └─ direct push ─> Loki       │           │  └─ direct push ─> Loki       │
+│                               │           │                               │
+│ Grafana ─> Prometheus + Loki  │           │ Grafana ─> Prometheus + Loki  │
+└──────────────────────────────┘           └──────────────────────────────┘
 ```
 
-The arrows show logical traffic rather than public routes.
-Prometheus, Alertmanager, Loki, and their administrative APIs remain ClusterIP-only.
-Application processes do not depend on Loki, Prometheus, Grafana, or Alertmanager to serve requests.
+No telemetry is shared between environments by default.
+There is no cross-cluster scraping, log shipping, or dashboard data source.
 
-### Component responsibilities
+## Component responsibilities
 
-| Component | Initial form | Responsibility | Persistent state |
-|---|---|---|---|
-| Prometheus | One StatefulSet replica | Discover and scrape application, Kubernetes, node, and observability targets; evaluate recording and alert rules; serve metric queries to Grafana | Local TSDB on a PVC |
-| Grafana | One Deployment replica | Query Prometheus and Loki; present provisioned dashboards; provide the primary protected operator interface | Configuration in Git and a small PVC for the Grafana database |
-| Alertmanager | One StatefulSet replica | Group, deduplicate, inhibit, and route alerts to environment-specific receivers | Small PVC for notification and silence state |
-| Loki | One StatefulSet replica in monolithic mode | Ingest, retain, and query cluster logs | Filesystem storage on a PVC |
-| Alloy | DaemonSet | Discover pod log files, parse and enrich records, and forward them directly to Loki with bounded buffering and retries | Ephemeral bounded buffer only |
-| kube-state-metrics | One Deployment replica | Expose Kubernetes object state such as pod, workload, Job, and PVC status | None |
-| node-exporter | DaemonSet | Expose node CPU, memory, filesystem, disk, and network metrics | None |
-| Application metrics | FastAPI endpoint and instrumented code | Expose request, dependency, WebSocket, and domain-operation signals in Prometheus format | None |
-| Structured application logs | JSON records on standard output and standard error | Record application, audit, and error events for Alloy collection | None in the application container |
+### Prometheus
 
-Prometheus scrapes itself and every stack component that exposes metrics.
-Alert rules must cover observability target loss, failed notification delivery, ingestion failures, and storage pressure so that failures of the monitoring stack are visible when a viable signal path remains.
+Prometheus discovers and scrapes Kubernetes, exporter, application, and observability-component metrics.
+It stores recent time-series data, evaluates recording and alerting rules, and sends firing alerts to Alertmanager.
+It is the source of truth for current operational metrics, but it is not a durable business-data store.
 
-### Metrics collection and cardinality
+The initial deployment has these hard constraints:
 
-The FastAPI API will expose a cluster-internal Prometheus endpoint.
-Ingress and NetworkPolicy will not publish that endpoint to the internet.
-Prometheus will discover it through Kubernetes-native ServiceMonitor or PodMonitor resources.
+- `replicas: 1`
+- `shards: 1`
+- no HPA
+- no Thanos
+- no remote write
+- no long-term object storage
 
-Initial application metrics will cover:
+### Grafana
 
-- HTTP request rate, error rate, and duration by method, normalized route, and status class
-- active HTTP requests and WebSocket connections
-- dependency request duration and failures for PostgreSQL, MongoDB, Redis, MinIO, email, and payment integrations where practical
-- authentication failures, authorization denials, rate-limit decisions, payment callbacks, and order-processing outcomes
-- process and Python runtime metrics supplied by the selected instrumentation library
+Grafana is the read interface for Prometheus metrics and Loki logs.
+Prometheus and Loki data sources, dashboards, folders, and alert-related configuration must be provisioned from repository-managed configuration.
+Manual dashboard edits may be used for exploration, but they are not a source of truth and must be exported to Git before they are relied upon operationally.
 
-Metric names and labels form a compatibility and capacity boundary.
-Labels may contain bounded dimensions such as service, environment, method, normalized route, status class, operation, and dependency.
-Metrics must not label observations with tenant IDs, user IDs, order IDs, payment IDs, email addresses, request IDs, raw URLs, exception messages, or other unbounded values.
-Sensitive or tenant-specific detail belongs in access-controlled logs, not metric labels.
+### Alertmanager
 
-Prometheus will initially use a 30-second scrape interval and a 30-second rule-evaluation interval.
-An individual target may use a shorter interval only when an alert or SLO requires it and the storage impact is measured.
+Alertmanager receives alerts from Prometheus, groups related alerts, suppresses duplicates, applies inhibition rules, and routes notifications to configured receivers.
+Alert routing and templates are stored in Git.
+Receiver credentials are supplied through Kubernetes Secrets and are never committed.
 
-### Structured logging and log labels
+### Grafana Loki
 
-Containers write logs to standard output or standard error and do not manage log files.
-Application logs will use one JSON object per line with a stable schema.
-The initial schema includes timestamp, severity, service, environment, version, message, event name, request ID, route, duration, and exception details when applicable.
-Tenant ID, actor ID, and object ID may appear as JSON fields when they are necessary for authorized operational or audit investigation, but they must not become Loki index labels.
+Loki stores and queries recent Kubernetes and application logs.
+The initial single-binary process includes ingestion, querying, compaction, and retention responsibilities.
+Loki is not a business event store, audit ledger, analytics pipeline, or backup destination.
 
-Secrets, authorization headers, session cookies, access tokens, refresh tokens, password material, payment credentials, complete payment payloads, and unnecessary personal data must never be logged.
-Request and response bodies are not logged by default.
-Logging and collection errors must not fail an application request.
+### Grafana Alloy
 
-Alloy runs on every node, discovers Kubernetes pod logs, parses valid JSON, preserves unparsed lines with a parse-error field, and adds bounded Kubernetes metadata.
-The initial Loki label set is limited to environment, namespace, service, container, severity, and stream.
-Pod name, request ID, tenant ID, user ID, trace ID, raw route, and other high-cardinality values remain queryable fields rather than labels.
-The deployment must define label-drop rules so that Kubernetes discovery metadata is not promoted indiscriminately.
+Alloy runs once on every k3s node as a DaemonSet.
+It discovers pods, tails container log files, attaches an approved low-cardinality label set, parses structured application logs, and pushes log batches directly to Loki.
+Alloy retries temporary delivery failures within configured backoff and queue limits.
+It does not provide a durable cross-node message queue.
 
-Alloy forwards logs directly to Loki.
-Kafka, Redpanda, RabbitMQ, Redis, and database-backed queues are explicitly excluded from the logging pipeline.
-Adding a broker would increase failure modes and resource use without a current durability or fan-out requirement.
-Alloy uses bounded memory or disk buffering and retries with backoff during a temporary Loki outage, then drops data according to an explicit limit rather than exhausting the node.
+### kube-state-metrics
 
-### Retention and storage
+kube-state-metrics exposes metrics derived from Kubernetes object state, including deployments, pods, jobs, and resource requests.
+It is read-only and stores no persistent application state.
 
-Retention has both time and size boundaries so a telemetry surge cannot consume the node.
-The initial production values are capacity starting points and must be adjusted from measured ingestion while preserving the disk headroom required by ADR 0001.
+### node-exporter
 
-| Data | Production retention | Staging retention | Initial PVC | Full-volume behavior |
-|---|---:|---:|---:|---|
-| Prometheus metrics | 15 days and at most 25 GiB of TSDB blocks | 7 days and at most 10 GiB | 30 GiB production, 15 GiB staging | Delete oldest blocks within configured retention and alert before the PVC reaches 80 percent |
-| General Loki logs | 14 days | 7 days | 35 GiB production, 15 GiB staging | Enforce compactor retention and reject or delete expired data; alert before the PVC reaches 80 percent |
-| Security and audit log stream | 30 days | 14 days | Shared Loki PVC and a stream-specific retention rule | Apply the same storage-pressure alerts and preserve bounded retention |
-| Grafana database | Configuration lifetime | Configuration lifetime | 2 GiB | Alert on PVC pressure; recover provisioned assets from Git |
-| Alertmanager state | 120 hours for notification log and silences as configured | 120 hours | 1 GiB | Alert on PVC pressure; configuration remains recoverable from Git |
+node-exporter runs on every node and exposes host CPU, memory, filesystem, and network metrics.
+It stores no persistent state.
 
-The Prometheus PVC size exceeds its TSDB size limit to leave compaction and write headroom.
-The Loki PVC must leave compaction and temporary-file headroom beyond expected retained chunks.
-The cluster must alert at 70 percent and 80 percent PVC usage, with a critical alert based on predicted exhaustion time.
-Operators must reduce retention or increase capacity before storage pressure threatens the node.
+### Application metrics
 
-### Resource requests and limits
+Restorio services expose Prometheus-format metrics on an internal endpoint that is reachable by Prometheus and not exposed through the public application ingress.
+Metrics cover request rates, errors, latency, dependency health, background work, and domain signals that are safe to aggregate.
+Routes use normalized route templates rather than raw URLs.
+Metrics must not use tenant IDs, user IDs, request IDs, order IDs, trace IDs, or other unbounded values as labels.
 
-The following values are initial production reservations for one node, not permanent sizing guarantees.
-Staging may use smaller limits but must preserve the same topology and behavior.
+### Structured application logs
 
-| Component | CPU request | CPU limit | Memory request | Memory limit |
-|---|---:|---:|---:|---:|
-| Prometheus | 300m | 1000m | 768 MiB | 2 GiB |
-| Loki | 200m | 1000m | 512 MiB | 1536 MiB |
-| Grafana | 100m | 500m | 256 MiB | 512 MiB |
-| Alertmanager | 50m | 200m | 128 MiB | 256 MiB |
-| Alloy, per node | 100m | 500m | 128 MiB | 512 MiB |
-| kube-state-metrics | 50m | 200m | 128 MiB | 256 MiB |
-| node-exporter, per node | 25m | 100m | 64 MiB | 128 MiB |
+Production applications write one valid JSON object per line to standard output.
+The common fields include timestamp, severity, service, environment, version, Git SHA, message, request ID, trace ID when available, normalized route, and duration.
+Tenant and correlation identifiers may be retained as parsed log fields when policy permits, but they must not become Loki labels.
+Secrets, credentials, authorization headers, payment payloads, and unnecessary personal data must be redacted before logging.
 
-The initial production stack reserves approximately 825m CPU and 1984 MiB memory on a one-node cluster.
-Implementation must verify the exact total after chart defaults and sidecars are rendered.
-The values must be load-tested with expected metric series, log volume, dashboard queries, and compaction work before production cutover.
-Any increase must be reconciled with the 30 percent disk headroom and node-recovery memory headroom required by ADR 0001.
+## Capacity baseline
 
-Prometheus must not receive an HPA.
-Loki, Grafana, and Alertmanager also remain fixed at one replica in this phase.
-Alloy and node-exporter scale only by following the node count through their DaemonSets.
+These values are the initial production ceilings, not permanent sizing claims.
+The deployment tickets must validate them in staging and record actual peak CPU, memory, ingestion, series count, and disk growth before production rollout.
 
-### Dashboards and alerts
+| Component | Workload | Initial replicas | CPU request | CPU limit | Memory request | Memory limit | Persistent storage |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | --- |
+| Prometheus | StatefulSet | 1 | 250m | 1 | 1Gi | 2Gi | 30Gi RWO PVC |
+| Grafana | Deployment | 1 | 100m | 500m | 128Mi | 512Mi | 5Gi RWO PVC |
+| Alertmanager | StatefulSet | 1 | 50m | 200m | 64Mi | 256Mi | 2Gi RWO PVC |
+| Loki | StatefulSet, single binary | 1 | 250m | 1 | 512Mi | 2Gi | 30Gi RWO PVC |
+| Alloy | DaemonSet | 1 per node | 100m | 500m | 128Mi | 512Mi | None |
+| kube-state-metrics | Deployment | 1 | 50m | 200m | 64Mi | 256Mi | None |
+| node-exporter | DaemonSet | 1 per node | 20m | 100m | 32Mi | 128Mi | None |
 
-Grafana data sources, dashboards, and folders will be provisioned from version-controlled configuration.
-Manual production dashboard edits are temporary and must be exported to the repository or discarded.
-Dashboards must support environment and service filtering without using tenant IDs as data-source labels.
+The persistent volumes must use a k3s storage class with `ReadWriteOnce` support and documented node-failure behavior.
+Prometheus local storage must use a POSIX-compatible filesystem and must not use NFS.
 
-Prometheus owns alert-rule evaluation and sends alerts to Alertmanager.
-Alertmanager owns grouping, inhibition, deduplication, routing, and receiver credentials.
-Every paging alert must identify the environment, affected service, severity, summary, and a version-controlled runbook URL.
-Alert rules should describe user-visible symptoms before internal causes where possible and must include a sustained `for` interval to avoid paging on transient noise.
+CPU limits may be relaxed during staging validation if throttling harms ingestion or query reliability.
+Memory limits remain mandatory because an unbounded observability workload must not evict application workloads.
+Any increase must be based on recorded usage and cluster capacity, not guesswork.
 
-Production routes actionable notifications to the selected on-call receivers.
-Staging uses separate receivers and must not page the production on-call path by default.
-Notification credentials are Kubernetes Secrets and are never stored in Helm values committed to the repository.
+## Retention and storage controls
 
-### Access control and network boundaries
+### Metrics
 
-Observability interfaces have no public Ingress, NodePort, LoadBalancer Service, or public DNS record.
-Prometheus, Loki, Alertmanager, kube-state-metrics, and node-exporter are reachable only inside the cluster, subject to default-deny NetworkPolicy and explicit scrape, query, and ingestion rules.
+Prometheus retains metrics for 15 days or 24 GB, whichever limit is reached first.
+The 24 GB size limit leaves 20 percent of the 30 GiB volume for the WAL, head chunks, compaction, and filesystem overhead.
+Alerts fire at 70, 85, and 95 percent volume utilization.
 
-Grafana is the normal human query interface.
-Operators reach it through the private administration path required by ADR 0001 and must authenticate with individual identities.
-Anonymous access and shared routine administrator accounts are forbidden.
-Grafana roles grant read-only dashboard access by default and reserve data-source, user, and dashboard administration for platform maintainers.
-Authentication integration is selected during deployment, but it must support revocation and environment-specific authorization.
+The implementation must set both `retention: 15d` and `retentionSize: 24GB` through the selected Prometheus chart values.
+The implementation must also monitor ingestion rate, active series, WAL growth, compaction failures, and TSDB corruption signals.
 
-Direct Prometheus, Loki, and Alertmanager access is limited to platform maintainers using temporary authenticated port-forwarding or an equivalently private administrative mechanism.
-Kubernetes RBAC restricts port-forward and Secret access.
-Service accounts receive only the discovery, scrape, query, or write permissions required by their component.
+### Logs
 
-Telemetry is operationally multi-tenant but not a customer-facing analytics surface.
-Restaurant users do not receive direct Grafana, Prometheus, or Loki access in this phase.
-Access to logs that contain tenant or actor identifiers is restricted to authorized maintainers and audited through the selected cluster and identity-provider controls.
+Loki retains logs for 14 days.
+Retention is enforced by the Loki Compactor and must be explicitly enabled.
+The TSDB schema uses a 24-hour index period so that compactor retention is supported.
+The compactor working directory, retention markers, and deletion-request store use the same Loki persistent volume in the initial single-binary deployment.
 
-### Environment separation
+Filesystem-backed Loki does not enforce a hard byte cap.
+The 30 GiB volume therefore requires alerts at 70, 85, and 95 percent utilization and a measured daily growth dashboard.
+At 85 percent utilization, operators must reduce noisy log volume, shorten retention, or expand the volume before ingestion reaches the filesystem limit.
+Per-stream ingestion limits and rejection metrics must be configured and monitored so one workload cannot exhaust storage silently.
 
-Staging and production run independent copies of the complete stack in their separate clusters.
-They do not share Prometheus storage, Loki storage, Grafana databases, Alertmanager state, credentials, receivers, PVCs, or service accounts.
-Every metric and log record carries a bounded environment label to prevent ambiguity inside its cluster and in any future remote storage.
+Container-runtime log rotation remains enabled on every node.
+Those node-local files provide only a short delivery buffer during a Loki or Alloy outage and are not a second log archive.
 
-The same version-pinned charts and repository-managed dashboards, rules, and collector configuration are promoted between environments.
-Environment-specific values define retention, storage size, resource limits, URLs, and notification receivers.
-Staging validates chart upgrades, rule changes, dashboard changes, restore procedures, and telemetry volume before production rollout.
+## Availability and failure behavior
 
-### Backup and recovery expectations
+Observability is off the application request path.
+Applications expose metrics for pull-based scraping and write logs to standard output without synchronously contacting Prometheus, Alloy, Loki, Grafana, or Alertmanager.
 
-Observability configuration is durable source code.
-Helm values without secrets, dashboards, alert rules, recording rules, data-source provisioning, and Alloy configuration are backed up by the repository and must be reproducible in a fresh cluster.
-Secrets follow the platform secret-management and recovery process defined by the production infrastructure work.
+A Prometheus outage creates a monitoring gap but does not stop workloads.
+A Loki or Alloy outage creates a log-ingestion gap after node-local rotated logs are exhausted but does not stop workloads.
+A Grafana outage removes the shared query interface but does not stop metric collection, log ingestion, or alert evaluation.
+An Alertmanager outage may delay or lose notifications while Prometheus continues evaluating rules.
 
-Prometheus metrics are disposable operational data in the initial phase.
-The local Prometheus TSDB is not copied to the general off-site backup because crash-consistent TSDB recovery and the transfer cost are not justified for a 15-day window.
-After a node loss, Prometheus is redeployed from configuration and starts with an empty TSDB.
-This data-loss boundary must be included in incident and SLO reviews.
+All observability workloads must have readiness and liveness probes where the upstream component supports them.
+PodDisruptionBudgets must not claim availability that a single replica cannot provide.
 
-Loki logs are not treated as the authoritative audit ledger.
-The initial Loki filesystem may be included in encrypted off-node volume backups only if the backup system can take an application-consistent snapshot without blocking ingestion and can meet the security controls for the log content.
-Until that capability is proven, a node loss may lose retained Loki data.
-Any legal or compliance requirement for durable audit records must be implemented as a separate append-only audit archive rather than extending Loki retention by assumption.
+## Backup and recovery
 
-Grafana's database and Alertmanager state are convenient operational state rather than the source of configuration truth.
-They may be included in the encrypted platform backup, but recovery must also work by redeploying provisioned configuration from Git.
-Restore drills must verify that data sources, dashboards, rules, receivers, and collector pipelines become healthy in a fresh staging cluster.
+Git is the primary backup for Helm values, dashboards, data sources, alert rules, routing templates, Alloy configuration, and runbooks.
+Secret values follow the platform secret-management and backup process and are not stored in Git.
 
-### Failure behavior
+Metrics and logs are operational evidence, not systems of record.
+The initial phase accepts the loss of locally stored metrics and logs after unrecoverable volume or node failure.
+This gives both stores an initial recovery point objective equal to the full locally retained window and a recovery time objective of four hours to recreate the service and resume collection.
 
-If Prometheus is unavailable, applications continue serving and only metrics collection and alert evaluation are interrupted.
-If Loki is unavailable, applications continue writing to their container streams while Alloy retries within its bounded buffer.
-If Grafana is unavailable, collection, storage, and alert evaluation continue.
-If Alertmanager is unavailable, Prometheus continues evaluating alerts but notifications are delayed or lost until delivery resumes.
+Prometheus and Loki volumes are not copied with naive filesystem-level backups while their processes are running.
+If infrastructure issue #153 supplies volume snapshots, daily crash-consistent snapshots may be enabled with seven days of snapshot retention and a restore test before they are treated as recoverable backups.
+Prometheus API snapshots are the required application-consistent method if metrics backup becomes mandatory.
 
-Readiness and liveness probes for application workloads must not depend on any observability component.
-NetworkPolicy must allow telemetry flow without giving observability components unrestricted access to application or data-service ports.
-Resource limits, storage alerts, and log-rate controls prevent the observability stack from exhausting the node during an application failure or logging storm.
+Grafana's persistent volume is snapshotted daily with seven days of retention once the platform snapshot facility exists.
+The stack must still be reconstructable from Git and Secrets if the Grafana volume is lost.
+Alertmanager silences and notification history are disposable; routing configuration is reconstructed from Git.
+
+If legal, support, or incident-response requirements make logs durable records, this ADR must be superseded before claiming that guarantee.
+The likely next storage step is a dedicated Loki object-store bucket with its own tested backup and recovery policy.
+
+## Access control and data protection
+
+Grafana is the only component that may receive an external ingress.
+That ingress requires TLS and authenticated access through the platform's approved identity layer.
+Anonymous access and anonymous administrative access are disabled.
+Grafana users receive the least privileged organization role required for their work.
+
+Prometheus, Alertmanager, Loki, Alloy, kube-state-metrics, node-exporter, and application metrics endpoints are cluster-internal only.
+NetworkPolicies allow only the required scrape, query, ingestion, and notification flows.
+Administrative ports and profiling endpoints are not publicly exposed.
+
+Kubernetes RBAC for Prometheus, Alloy, and exporters grants read-only discovery permissions limited to the resources they need.
+Service accounts are dedicated per component and do not reuse application service accounts.
+Credentials and notification receiver tokens are mounted from Kubernetes Secrets and are redacted from logs.
+
+Dashboards and logs may expose operational tenant context.
+Access to production telemetry is therefore restricted to authorized operators, access is auditable, and telemetry must follow the platform's data-handling rules.
+
+## Environment separation
+
+Staging and production use separate k3s clusters, namespaces, Helm releases, service accounts, Secrets, persistent volumes, Grafana organizations or instances, and notification routes.
+Production data sources never point at staging, and staging data sources never point at production.
+Production alert receivers are distinct from test receivers.
+
+Resource sizes and retention may be reduced in staging, but the topology and security controls remain equivalent so deployment behavior is exercised before production.
+Local development may use console logs and an optional disposable observability stack.
+Local development is not a source of production telemetry.
+
+## Configuration ownership and deployment
+
+Observability configuration is reviewed and versioned in this repository.
+Helm releases must use pinned chart versions and environment-specific values.
+Generated Secrets, live Grafana edits, and manual cluster changes are not accepted as the only source of truth.
+
+Each deployment ticket must provide validation for its acceptance criteria.
+At minimum, validation covers Prometheus target discovery and persistence, Grafana data sources, alert delivery, Loki ingestion and retention, Alloy coverage on every node, access restrictions, and recovery after pod restart.
 
 ## Future high-availability path
 
-High availability is not implemented by this decision.
-It becomes justified when availability objectives cannot tolerate the documented single-node and single-replica gaps, when ingestion exceeds safe vertical capacity, or when longer retention requires object storage.
+High availability is intentionally not implemented by this decision.
+The single-node production topology cannot provide infrastructure-level HA even if individual observability components have extra replicas.
 
-The future path is:
+The architecture must be reviewed when any of these conditions is met:
 
-1. Add at least three k3s server nodes across real failure domains as required by ADR 0001.
-2. Move Prometheus long-term blocks to an object-storage architecture such as Thanos, or adopt a compatible distributed metrics backend, before adding replicas that would otherwise produce duplicate independent series.
-3. Move Loki chunks and indexes to object storage and adopt simple-scalable or distributed mode with replicated write and read paths.
-4. Run an odd-sized Alertmanager cluster across failure domains and configure Prometheus to notify every Alertmanager peer.
-5. Run multiple Grafana replicas behind a private endpoint with an external shared database and repository-provisioned configuration.
-6. Keep Alloy and node-exporter as DaemonSets and add topology constraints and disruption budgets to replicated components.
-7. Evaluate remote, cross-cluster querying without weakening the staging and production credential boundary.
+- production moves to at least three failure-independent k3s nodes
+- monitoring or logging availability receives a formal service-level objective
+- a single Prometheus instance cannot meet ingestion or query demand within its resource budget
+- the required retention no longer fits safely on one volume
+- loss of one node would violate an approved metrics or logs recovery objective
+- alert delivery becomes business-critical enough to require redundant routing
 
-Distributed tracing, continuous profiling, real-user monitoring, and long-term business analytics are separate decisions.
-OpenTelemetry may later provide trace correlation, but trace IDs can be added as non-indexed log fields without selecting a tracing backend now.
+The expected evolution is:
 
-## Rejected alternatives
+1. Move Loki from filesystem storage to a dedicated object-store bucket and adopt simple-scalable or distributed mode only after measured demand justifies it.
+2. Run Alertmanager as a three-replica cluster across failure domains.
+3. Run multiple Grafana replicas with an external supported database and shared configuration.
+4. Run two Prometheus replicas for scrape and rule-evaluation redundancy.
+5. Add Thanos, Mimir, or another remote storage layer only when long-term retention, global queries, or durable metric history is required.
+6. Apply anti-affinity, topology spread constraints, and disruption budgets after the cluster has enough independent nodes to honor them.
 
-### Add Kafka to the logging pipeline
+Prometheus horizontal sharding and an HPA remain excluded until a separate ADR demonstrates why vertical sizing, cardinality control, and scrape tuning are insufficient.
 
-Rejected because the initial pipeline has one collector and one log backend.
-Kafka would add storage, replication, schema, monitoring, upgrade, and recovery work without a concrete logging requirement that Alloy buffering and Loki ingestion cannot meet.
-Kafka-compatible streaming may still be evaluated for application events under its own ADR, but it is not part of log transport.
+## Alternatives rejected for the initial phase
 
-### Use a hosted observability platform immediately
+### Multi-replica Prometheus with Thanos
 
-Rejected for the initial phase because the roadmap requires the named in-cluster stack and current ingestion volume is not measured.
-The design preserves standard Prometheus and Loki interfaces so a later cost, residency, and reliability review can select remote storage or a managed service.
+This provides better availability and long-term storage, but it adds object storage, sidecars, query components, deduplication behavior, and a larger operational surface.
+The current cluster size and retention requirements do not justify it.
 
-### Start with a distributed or highly available stack
+### Prometheus HPA
 
-Rejected because the initial k3s topology has one node per environment.
-Multiple replicas on one node would not survive the node failure and would consume resources needed by the application and data services.
+An HPA does not safely turn a stateful Prometheus server into a horizontally scalable system.
+Adding replicas without an explicit sharding, replication, or query-deduplication design would duplicate scraping and alert evaluation while leaving storage semantics unclear.
 
-### Expose each observability interface through public ingress
+### Loki simple-scalable or distributed mode
 
-Rejected because these APIs reveal infrastructure and potentially tenant-sensitive operational data.
-The private operator path and Grafana provide the required human access without enlarging the public attack surface.
+These modes improve independent scaling at higher volume but require more workloads, object storage, and operational coordination.
+One single-binary instance is sufficient for the initial measured load.
 
-### Put tenant and request identifiers in metric or Loki labels
+### Kafka or another broker for log transport
 
-Rejected because unbounded labels create series and index cardinality that can exhaust memory, storage, and query capacity.
-Identifiers remain structured log fields that authorized operators can filter at query time.
+A broker could buffer logs independently, but it would add another stateful production system, storage budget, security surface, monitoring stack, and recovery procedure.
+Kubernetes node-local log files already provide a bounded short-term buffer, and losing telemetry must not affect application correctness.
+Kafka-compatible streaming may be evaluated separately for concrete business-event use cases under #208, but it is not part of this logging architecture.
 
-### Back up every Prometheus block by default
+### Hosted observability as the default
 
-Rejected because short-retention metrics are reproducible and are not transactional records.
-Configuration recovery and application-data backups take priority on the initial single-node platform.
-Long-term metrics durability belongs to the future object-storage architecture.
+A hosted stack could reduce some operations but introduces ongoing data-egress, cost, tenancy, and vendor-dependency decisions that are outside this ticket.
+The initial decision keeps telemetry inside the existing k3s environments.
 
 ## Consequences
 
-Restorio gains one coherent path for cluster metrics, centralized logs, dashboards, and operational alerts.
-Follow-up implementation can select version-pinned charts and instrumentation against explicit topology, capacity, retention, security, and failure boundaries.
+The initial stack is small, explicit, and can be operated with the current platform footprint.
+Configuration is reviewable, resource usage is bounded, and failures remain isolated from application request processing.
 
-The stack consumes meaningful CPU, memory, and local disk on the same node as production workloads.
-Retention and label controls are therefore correctness requirements, not optional optimizations.
-Initial sizing must be validated under load and reviewed after real production ingestion is available.
+The accepted tradeoff is that a node or volume failure can create gaps in locally retained metrics and logs.
+The stack also has planned single points of failure until the production cluster and operational requirements justify the documented HA path.
 
-The initial stack loses monitoring and some retained telemetry after a node failure.
-That limitation matches the single-node phase and is documented rather than hidden behind same-node replicas.
-Application data remains governed by the stricter backup objectives in ADR 0001.
+Resource values are starting constraints and require staging measurements.
+If the measurements do not fit within the cluster's application headroom, production rollout must stop until the stack is tuned or cluster capacity is increased.
 
-## Implementation constraints for follow-up issues
+## Implementation mapping
 
-- Deploy each environment's stack in its own `observability` namespace
-- Pin chart and image versions and promote the same configuration through staging
-- Run exactly one Prometheus replica with no HPA
-- Provision the documented PVCs, retention limits, requests, and limits
-- Store dashboards, rules, data sources, and collector configuration in version control
-- Keep all component APIs off the public internet
-- Enforce default-deny NetworkPolicy with explicit scrape, query, and ingestion flows
-- Send structured container logs directly from Alloy to Loki without Kafka or another broker
-- Reject high-cardinality metric and Loki labels during review and automated validation
-- Keep application probes and request paths independent from the observability stack
-- Configure production and staging with separate credentials and notification receivers
-- Validate storage pressure, collector backpressure, alert delivery, and fresh-cluster recovery before production cutover
+- #203 deploys the single-replica Prometheus stack defined here
+- #204 deploys Grafana and provisions data sources
+- #205 standardizes structured application logs
+- #206 deploys the single-binary Loki store
+- #213 deploys Alloy as a DaemonSet
+- #209 adds FastAPI application metrics
+- #210 deploys Kubernetes and infrastructure exporters
+- #215 provisions dashboards
+- #211 configures Alertmanager routes
+- #207 adds operational alert rules
+- #212 adds deployment validation and runbooks
 
-## Validation
+## References
 
-This ADR is complete when follow-up implementation reviews can answer all of the following from version-controlled configuration:
-
-- every named component has the responsibility and deployment form defined above
-- Prometheus has one replica, persistent storage, bounded retention, and no HPA
-- Loki has bounded retention and receives logs directly from Alloy
-- no Kafka-compatible or queueing system appears in the logging path
-- every component has explicit requests and limits
-- staging and production have independent stacks, credentials, storage, and receivers
-- no observability administrative interface is publicly routable
-- dashboards, rules, and data sources can be recreated from the repository
-- application metrics and Loki labels pass cardinality and sensitive-data checks
-- observability failures do not make application workloads unready
-- storage-pressure and notification-delivery tests produce actionable alerts
-- the future HA path is documented but no implementation claims HA in the single-node phase
+- [Prometheus local storage and retention](https://prometheus.io/docs/prometheus/latest/storage/)
+- [Grafana Loki storage](https://grafana.com/docs/loki/latest/configure/storage/)
+- [Grafana Loki retention](https://grafana.com/docs/loki/latest/operations/storage/retention/)
+- [How Grafana Alloy works](https://grafana.com/docs/alloy/latest/introduction/how-alloy-works/)
