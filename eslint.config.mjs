@@ -1,7 +1,7 @@
 import { defineConfig, globalIgnores } from "eslint/config";
 import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
-import { fixupPluginRules } from "@eslint/compat";
+import { fixupConfigRules, fixupPluginRules } from "@eslint/compat";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import js from "@eslint/js";
@@ -35,10 +35,10 @@ export default defineConfig([globalIgnores([
     "**/vitest.config.ts",
     "**/scripts",
 ]), {
-    extends: compat.extends("./.eslintrc.json"),
+    extends: fixupConfigRules(compat.extends("./.eslintrc.json")),
 
     plugins: {
-        react,
+        react: fixupPluginRules(react),
         "react-hooks": fixupPluginRules(reactHooks),
     },
 
