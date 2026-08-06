@@ -1,0 +1,171 @@
+global:
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 473
+    runAsGroup: 473
+    fsGroup: 473
+    seccompProfile:
+      type: RuntimeDefault
+
+rbac:
+  create: false
+
+serviceAccount:
+  create: true
+  automountServiceAccountToken: false
+
+alloy:
+  enableReporting: false
+  storagePath: /var/lib/alloy
+  mounts:
+    varlog: true
+    extra:
+      - name: alloy-data
+        mountPath: /var/lib/alloy
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 473
+    runAsGroup: 473
+  resources:
+    requests:
+      cpu: 90m
+      memory: 96Mi
+    limits:
+      cpu: 400m
+      memory: 384Mi
+  configMap:
+    content: |-
+      loki.source.file "kubernetes_pods" {
+        targets = [
+          {
+            __path__ = "/var/log/pods/*/*/*.log",
+            job = "kubernetes/pods",
+          },
+        ]
+        forward_to = [loki.process.kubernetes_pods.receiver]
+        file_match {
+          enabled = true
+          sync_period = "10s"
+        }
+      }
+
+      loki.process "kubernetes_pods" {
+        forward_to = [loki.write.default.receiver]
+        stage.cri {}
+        stage.regex {
+          source = "filename"
+          expression = "^/var/log/pods/(?P<namespace>[^_]+)_[^_]+_[^/]+/(?P<container>[^/]+)/.*$"
+        }
+        stage.labels {
+          values = {
+            namespace = "",
+            container = "",
+          }
+        }
+        stage.static_labels {
+          values = {
+            cluster = "{{ .Values.restorio.clusterName }}",
+            source = "kubernetes",
+          }
+        }
+        stage.label_drop {
+          values = ["filename"]
+        }
+      }
+
+      loki.write "default" {
+        endpoint {
+          url = "http://loki.observability.svc.cluster.local:3100/loki/api/v1/push"
+          batch_size = "1MiB"
+          batch_wait = "1s"
+          remote_timeout = "10s"
+          min_backoff_period = "500ms"
+          max_backoff_period = "30s"
+          max_backoff_retries = 10
+        }
+      }
+
+controller:
+  type: daemonset
+  podLabels:
+    app.kubernetes.io/part-of: observability
+  volumes:
+    extra:
+      - name: alloy-data
+        emptyDir: {}
+  podDisruptionBudget:
+    enabled: false
+  autoscaling:
+    enabled: false
+    horizontal:
+      enabled: false
+    vertical:
+      enabled: false
+
+configReloader:
+  enabled: true
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 65534
+    runAsGroup: 65534
+
+service:
+  enabled: true
+  type: ClusterIP
+
+serviceMonitor:
+  enabled: true
+  additionalLabels:
+    restorio.io/prometheus: primary
+
+networkPolicy:
+  enabled: true
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - port: 12345
+          protocol: TCP
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: loki
+              app.kubernetes.io/instance: loki
+      ports:
+        - port: 3100
+          protocol: TCP
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP

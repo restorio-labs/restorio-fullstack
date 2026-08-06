@@ -67,3 +67,29 @@ jobs:
 
       - name: Validate rendered manifests
         run: ./infrastructure/observability/grafana/validate.sh
+
+  loki:
+    name: Loki and Alloy manifests
+    runs-on: ubuntu-slim
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Helm
+        env:
+          HELM_VERSION: v3.20.2
+        run: |
+          set -euo pipefail
+          archive="helm-${HELM_VERSION}-linux-amd64.tar.gz"
+          curl --fail --location --silent --show-error \
+            "https://get.helm.sh/${archive}" \
+            --output "${RUNNER_TEMP}/${archive}"
+          curl --fail --location --silent --show-error \
+            "https://get.helm.sh/${archive}.sha256sum" \
+            --output "${RUNNER_TEMP}/${archive}.sha256sum"
+          cd "$RUNNER_TEMP"
+          sha256sum --check "${archive}.sha256sum"
+          tar --extract --gzip --file "$archive"
+          echo "${RUNNER_TEMP}/linux-amd64" >> "$GITHUB_PATH"
+
+      - name: Validate rendered manifests
+        run: ./infrastructure/observability/loki/validate.sh
