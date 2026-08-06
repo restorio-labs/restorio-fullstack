@@ -64,7 +64,7 @@ export default {
     // ctx.waitUntil() is available to background cache writes and
     // other deferred work via getRequestExecutionContext().
     // vinext handler is untyped
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
+
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     return handler.fetch(request, env, ctx);
   },

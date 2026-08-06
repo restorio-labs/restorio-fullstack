@@ -1,0 +1,184 @@
+name: Publish OCI Images
+
+on:
+  pull_request:
+    paths:
+      - "app/api/**"
+      - "app/apps/admin-panel/**"
+      - "app/apps/kitchen-panel/**"
+      - "app/apps/mobile-app/**"
+      - "app/apps/waiter-panel/**"
+      - "app/packages/**"
+      - "infra/images/**"
+      - ".github/workflows/publish-images.yml"
+      - "bun.lock"
+      - "package.json"
+  push:
+    branches:
+      - main
+    tags:
+      - "api-v*"
+      - "admin-panel-v*"
+      - "kitchen-panel-v*"
+      - "mobile-app-v*"
+      - "waiter-panel-v*"
+    paths:
+      - "app/api/**"
+      - "app/apps/admin-panel/**"
+      - "app/apps/kitchen-panel/**"
+      - "app/apps/mobile-app/**"
+      - "app/apps/waiter-panel/**"
+      - "app/packages/**"
+      - "infra/images/**"
+      - ".github/workflows/publish-images.yml"
+      - "bun.lock"
+      - "package.json"
+  workflow_dispatch:
+
+concurrency:
+  group: publish-images-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+  security-events: write
+  id-token: write
+
+jobs:
+  publish:
+    name: Publish ${{ matrix.component }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - component: api
+            context: app/api
+            dockerfile: app/api/Dockerfile
+            app_name: ""
+          - component: admin-panel
+            context: .
+            dockerfile: infra/images/frontend.Dockerfile
+            app_name: admin-panel
+          - component: kitchen-panel
+            context: .
+            dockerfile: infra/images/frontend.Dockerfile
+            app_name: kitchen-panel
+          - component: mobile-app
+            context: .
+            dockerfile: infra/images/frontend.Dockerfile
+            app_name: mobile-app
+          - component: waiter-panel
+            context: .
+            dockerfile: infra/images/frontend.Dockerfile
+            app_name: waiter-panel
+
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      - name: Resolve component metadata
+        id: component
+        env:
+          COMPONENT: ${{ matrix.component }}
+        run: |
+          set -euo pipefail
+
+          if [ "$COMPONENT" = "api" ]; then
+            VERSION=$(python -c 'import tomllib; print(tomllib.load(open("app/api/pyproject.toml", "rb"))["project"]["version"])')
+          else
+            VERSION=$(jq -r .version "app/apps/$COMPONENT/package.json")
+          fi
+
+          test -n "$VERSION"
+          test "$VERSION" != "null"
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_OUTPUT"
+          echo "image=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/restorio-$COMPONENT" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
+
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+
+      - name: Sign in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate image metadata
+        id: metadata
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5.10.0
+        with:
+          images: ${{ steps.component.outputs.image }}
+          labels: |
+            org.opencontainers.image.created=${{ steps.component.outputs.created }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.version=${{ steps.component.outputs.version }}
+          tags: |
+            type=raw,value=${{ steps.component.outputs.version }}
+            type=raw,value=sha-${{ github.sha }}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and publish immutable image
+        id: build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+        with:
+          build-args: |
+            APP_NAME=${{ matrix.app_name }}
+            BUILD_DATE=${{ steps.component.outputs.created }}
+            VCS_REF=${{ github.sha }}
+            VERSION=${{ steps.component.outputs.version }}
+          cache-from: type=gha,scope=${{ matrix.component }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.component }}
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          labels: ${{ steps.metadata.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
+          provenance: mode=max
+          push: ${{ github.event_name != 'pull_request' }}
+          sbom: true
+          tags: ${{ steps.metadata.outputs.tags }}
+
+      - name: Scan published digest
+        if: github.event_name != 'pull_request'
+        env:
+          IMAGE_REF: ${{ steps.component.outputs.image }}@${{ steps.build.outputs.digest }}
+          TRIVY_ARCHIVE_SHA256: 2edd39da482bb4e9831962487b68f68e3928ec3137794757f54d00383d79547b
+          TRIVY_VERSION: 0.73.0
+        run: |
+          set -euo pipefail
+
+          archive="$RUNNER_TEMP/trivy.tar.gz"
+          binary="$RUNNER_TEMP/trivy"
+          curl --fail --location --silent --show-error \
+            "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz" \
+            --output "$archive"
+          echo "${TRIVY_ARCHIVE_SHA256}  ${archive}" | sha256sum --check --strict
+          tar --extract --gzip --file "$archive" --directory "$RUNNER_TEMP" trivy
+          "$binary" image \
+            --exit-code 1 \
+            --format sarif \
+            --ignore-unfixed \
+            --output "trivy-${{ matrix.component }}.sarif" \
+            --severity HIGH,CRITICAL \
+            "$IMAGE_REF"
+
+      - name: Upload vulnerability report
+        if: github.event_name != 'pull_request' && always()
+        uses: github/codeql-action/upload-sarif@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
+        with:
+          category: container-${{ matrix.component }}
+          sarif_file: trivy-${{ matrix.component }}.sarif
+
+      - name: Record immutable digest
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "### ${{ matrix.component }}" >> "$GITHUB_STEP_SUMMARY"
+          echo '```text' >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.component.outputs.image }}@${{ steps.build.outputs.digest }}" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"

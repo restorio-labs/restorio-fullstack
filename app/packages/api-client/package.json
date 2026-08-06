@@ -34,7 +34,7 @@
   "dependencies": {
     "@restorio/types": "workspace:*",
     "@restorio/utils": "workspace:*",
-    "axios": "^1.18.0"
+    "axios": "^1.19.0"
   },
   "peerDependencies": {
     "@tanstack/react-query": "^5.90.21"
@@ -47,7 +47,7 @@
   "devDependencies": {
     "typescript": "^5.9",
     "tsup": "^8.5.1",
-    "vite": "^7.3.2",
+    "vite": "^8.2.0",
     "vitest": "^4.0.16",
     "@vitest/coverage-v8": "^4.0.16"
   }
