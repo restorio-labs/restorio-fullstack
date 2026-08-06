@@ -21,6 +21,26 @@ data:
           "targets": [{"expr": "sum(up)", "refId": "A"}],
           "title": "Healthy Prometheus targets",
           "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "percentage", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 70}, {"color": "red", "value": 85}]}}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+          "id": 2,
+          "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
+          "targets": [{"expr": "100 * kubelet_volume_stats_used_bytes{namespace=\"observability\",persistentvolumeclaim=\"storage-loki-0\"} / kubelet_volume_stats_capacity_bytes{namespace=\"observability\",persistentvolumeclaim=\"storage-loki-0\"}", "refId": "A"}],
+          "title": "Loki persistent volume usage",
+          "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "mappings": [], "unit": "bytes"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+          "id": 3,
+          "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "single", "sort": "none"}},
+          "targets": [{"expr": "deriv(kubelet_volume_stats_used_bytes{namespace=\"observability\",persistentvolumeclaim=\"storage-loki-0\"}[1d]) * 86400", "refId": "A"}],
+          "title": "Loki daily storage growth",
+          "type": "timeseries"
         }
       ],
       "schemaVersion": 41,

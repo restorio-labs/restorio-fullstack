@@ -4,7 +4,7 @@ This directory defines the Grafana release required by issue [#204](https://gith
 It uses the upstream Grafana chart pinned to an exact version and archive SHA-256 digest.
 
 Grafana has one replica and a `local-path` persistent volume for its SQLite state, plugin metadata, and local configuration state.
-Its Prometheus datasource and Platform overview dashboard are provisioned from reviewed files in this repository.
+Its Prometheus and Loki datasources and Platform overview dashboard are provisioned from reviewed files in this repository.
 Dashboard changes are not editable through the Grafana UI.
 
 The service is `ClusterIP` only.
@@ -16,6 +16,7 @@ No public ingress is rendered until issue #150 supplies the approved TLS and ide
 - Helm 3.20 or newer
 - `kubectl` access to the target cluster
 - The Prometheus release from issue #203
+- The Loki release from issue #206 before the Loki datasource is queried
 - A default-compatible `local-path` storage class
 - A `grafana-admin` Secret in the `observability` namespace with `admin-user` and `admin-password` keys
 

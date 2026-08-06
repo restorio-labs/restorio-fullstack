@@ -87,6 +87,7 @@ validate_environment() {
   assert_contains "$config_map" '^    enabled = false$' "Grafana anonymous access must be disabled"
   assert_contains "$config_map" '^    cookie_secure = true$' "Grafana secure cookies must be enabled"
   assert_contains "$rendered" 'prometheus-kube-prometheus-prometheus.observability.svc.cluster.local:9090' "Prometheus datasource is missing"
+  assert_contains "$rendered" 'loki.observability.svc.cluster.local:3100' "Loki datasource is missing"
   assert_contains "$rendered" 'grafana-dashboard-platform-overview' "Repository dashboard ConfigMap is not provisioned"
   assert_not_contains "$rendered" '^kind: Ingress$' "Grafana ingress requires the platform TLS and identity layer"
   assert_not_contains "$rendered" '^kind: HorizontalPodAutoscaler$' "Grafana must not render an HPA"

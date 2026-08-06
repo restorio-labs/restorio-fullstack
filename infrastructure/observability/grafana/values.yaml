@@ -59,6 +59,12 @@ datasources:
         url: http://prometheus-kube-prometheus-prometheus.observability.svc.cluster.local:9090
         isDefault: true
         editable: false
+      - name: Loki
+        uid: loki
+        type: loki
+        access: proxy
+        url: http://loki.observability.svc.cluster.local:3100
+        editable: false
 
 dashboardProviders:
   dashboardproviders.yaml:
