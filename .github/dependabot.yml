@@ -32,7 +32,7 @@ updates:
       - "/"
       - "/e2e"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "monday"
       time: "06:00"
       timezone: "Europe/Warsaw"
@@ -61,7 +61,7 @@ updates:
       - "/app/apps/public-web"
       - "/nginx"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "monday"
       time: "06:00"
       timezone: "Europe/Warsaw"
@@ -75,7 +75,7 @@ updates:
   - package-ecosystem: "docker-compose"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "monday"
       time: "06:00"
       timezone: "Europe/Warsaw"
@@ -89,7 +89,7 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "monday"
       time: "06:00"
       timezone: "Europe/Warsaw"
