@@ -1,0 +1,159 @@
+crds:
+  enabled: true
+
+defaultRules:
+  create: false
+
+alertmanager:
+  enabled: false
+
+grafana:
+  enabled: false
+
+kubeStateMetrics:
+  enabled: false
+
+nodeExporter:
+  enabled: false
+
+windowsMonitoring:
+  enabled: false
+
+kubernetesServiceMonitors:
+  enabled: true
+
+kubeApiServer:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    additionalLabels:
+      restorio.io/prometheus: primary
+
+kubelet:
+  enabled: true
+  jobNameOverride: k3s-server
+  serviceMonitor:
+    enabled: true
+    additionalLabels:
+      restorio.io/prometheus: primary
+
+coreDns:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    additionalLabels:
+      restorio.io/prometheus: primary
+
+kubeDns:
+  enabled: false
+
+kubeControllerManager:
+  enabled: false
+
+kubeEtcd:
+  enabled: false
+
+kubeScheduler:
+  enabled: false
+
+kubeProxy:
+  enabled: false
+
+prometheusOperator:
+  enabled: true
+  admissionWebhooks:
+    enabled: false
+  podDisruptionBudget:
+    enabled: false
+  verticalPodAutoscaler:
+    enabled: false
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  prometheusConfigReloader:
+    enableProbe: true
+    resources:
+      requests:
+        cpu: 25m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+  serviceMonitor:
+    selfMonitor: true
+    additionalLabels:
+      restorio.io/prometheus: primary
+
+prometheus:
+  enabled: true
+  ingress:
+    enabled: false
+  service:
+    enabled: true
+    type: ClusterIP
+  podDisruptionBudget:
+    enabled: false
+  verticalPodAutoscaler:
+    enabled: false
+  serviceMonitor:
+    selfMonitor: true
+    additionalLabels:
+      restorio.io/prometheus: primary
+  prometheusSpec:
+    replicas: 1
+    shards: 1
+    disableAlerting: true
+    enableRemoteWriteReceiver: false
+    remoteRead: []
+    remoteWrite: []
+    ruleSelectorNilUsesHelmValues: false
+    ruleSelector:
+      matchLabels:
+        restorio.io/prometheus: primary
+    ruleNamespaceSelector: {}
+    serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelector:
+      matchLabels:
+        restorio.io/prometheus: primary
+    serviceMonitorNamespaceSelector: {}
+    podMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelector:
+      matchLabels:
+        restorio.io/prometheus: primary
+    podMonitorNamespaceSelector: {}
+    probeSelectorNilUsesHelmValues: false
+    probeSelector:
+      matchLabels:
+        restorio.io/prometheus: primary
+    probeNamespaceSelector: {}
+    scrapeConfigSelectorNilUsesHelmValues: false
+    scrapeConfigSelector:
+      matchLabels:
+        restorio.io/prometheus: primary
+    scrapeConfigNamespaceSelector: {}
+    retention: 15d
+    retentionSize: 24GB
+    walCompression: true
+    persistentVolumeClaimRetentionPolicy:
+      whenDeleted: Retain
+      whenScaled: Retain
+    resources:
+      requests:
+        cpu: 250m
+        memory: 1Gi
+      limits:
+        cpu: "1"
+        memory: 2Gi
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: local-path
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 30Gi

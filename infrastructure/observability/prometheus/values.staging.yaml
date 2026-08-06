@@ -1,0 +1,16 @@
+prometheus:
+  prometheusSpec:
+    externalLabels:
+      cluster: restorio-staging
+      environment: staging
+    retention: 7d
+    retentionSize: 12GB
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: local-path
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 15Gi
