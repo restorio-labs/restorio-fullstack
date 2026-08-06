@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Restorio API"
     PROJECT_DESCRIPTION: str = "Multi-tenant Restaurant Management Platform API"
     VERSION: str = "0.1.0"
+    GIT_SHA: str = "unknown"
+    LOG_SERVICE_NAME: str = "restorio-api"
+    ENV: str = "development"
     DEBUG: bool = False
 
     API_V1_PREFIX: str = "/api/v1"
@@ -130,6 +133,11 @@ class Settings(BaseSettings):
                 )
             )
         return self
+
+    @field_validator("GIT_SHA", mode="before")
+    @classmethod
+    def set_unknown_git_sha(cls, value: str | None) -> str:
+        return value or "unknown"
 
     @model_validator(mode="after")
     def _reject_insecure_production_secrets(self) -> "Settings":
