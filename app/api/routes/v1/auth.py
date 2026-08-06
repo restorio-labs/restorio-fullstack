@@ -66,7 +66,7 @@ async def login(
             password=credentials.password,
         )
     except UnauthorizedError:
-        audit.login_failure(request=request, email=credentials.email)
+        audit.login_failure(request=request)
         raise
 
     payload = auth_service.security.decode_access_token(access_token)
@@ -87,7 +87,7 @@ async def login(
         access_token=access_token,
         refresh_token=refresh_token,
     )
-    audit.login_success(request=request, user_id=str(payload.get("sub")), email=credentials.email)
+    audit.login_success(request=request, user_id=str(payload.get("sub")))
     return SuccessResponse(
         data=LoginResponseData(),
         message="Login successful",
@@ -124,7 +124,7 @@ async def register(
         to_email=user.email,
         activation_link=activation_link,
     )
-    audit.register(request=request, email=user.email)
+    audit.register(request=request)
 
     return CreatedResponse(
         data=RegisterCreatedData(

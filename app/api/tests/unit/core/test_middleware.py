@@ -1,3 +1,6 @@
+import io
+import json
+import logging
 from unittest.mock import patch
 
 from fastapi import FastAPI, Request, Response
@@ -6,6 +9,7 @@ from httpx import ASGITransport, AsyncClient
 import pytest
 
 from core.foundation.infra.config import Settings
+from core.foundation.logging.logger import JsonLogFormatter
 from core.middleware import TimingMiddleware, UnauthorizedMiddleware, setup_cors
 from core.middleware.cors import _build_allowed_origins, is_origin_allowed
 
@@ -65,6 +69,39 @@ async def test_timing_middleware_adds_header() -> None:
     response = await middleware.dispatch(request, call_next)
 
     assert "X-Process-Time" in response.headers
+
+
+@pytest.mark.asyncio
+async def test_timing_middleware_propagates_valid_request_and_trace_ids() -> None:
+    async def call_next(_: Request) -> Response:
+        return Response(content="ok")
+
+    middleware = TimingMiddleware(call_next)
+    scope = {
+        "type": "http",
+        "method": "GET",
+        "path": "/",
+        "headers": [(b"x-request-id", b"request-123"), (b"x-trace-id", b"trace-123")],
+    }
+    request = Request(scope)
+    stream = io.StringIO()
+    handler = logging.StreamHandler(stream)
+    handler.setFormatter(JsonLogFormatter())
+    root_logger = logging.getLogger()
+    root_logger.addHandler(handler)
+
+    try:
+        response = await middleware.dispatch(request, call_next)
+    finally:
+        root_logger.removeHandler(handler)
+
+    log_payload = json.loads(stream.getvalue())
+
+    assert response.headers["X-Request-ID"] == "request-123"
+    assert response.headers["X-Trace-ID"] == "trace-123"
+    assert log_payload["request_id"] == "request-123"
+    assert log_payload["trace_id"] == "trace-123"
+    assert log_payload["message"] == "request_completed"
 
 
 @pytest.mark.asyncio

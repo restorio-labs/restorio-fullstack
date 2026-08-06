@@ -32,7 +32,8 @@ LABEL org.opencontainers.image.created="${BUILD_DATE}" \
 ENV PATH="/app/.venv/bin:${PATH}" \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    VERSION="${VERSION}"
+    VERSION="${VERSION}" \
+    GIT_SHA="${VCS_REF}"
 
 WORKDIR /app
 

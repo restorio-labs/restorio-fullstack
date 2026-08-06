@@ -1,5 +1,4 @@
 import logging
-import traceback
 
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
@@ -58,8 +57,12 @@ def setup_exception_handlers(app: FastAPI, settings: Settings) -> None:
         exc: Exception,
     ) -> JSONResponse:
         rid = _get_request_id(request)
-        logger.error(
-            "Unhandled exception [request_id=%s]: %s\n%s", rid, exc, traceback.format_exc()
+        logger.exception(
+            "Unhandled exception",
+            extra={
+                "request_id": rid,
+                "route": getattr(request.scope.get("route"), "path", request.url.path),
+            },
         )
         if settings.DEBUG:
             return JSONResponse(

@@ -110,9 +110,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         if limited:
             logger.warning(
-                "Rate limit exceeded: path=%s ip=%s",
-                request.url.path,
-                ip,
+                "Rate limit exceeded",
+                extra={"route": request.url.path},
             )
             audit.rate_limited(request=request)
             rid = getattr(request.state, "request_id", None)
