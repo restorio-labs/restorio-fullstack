@@ -1,26 +1,55 @@
-FROM python:3.12-slim
+ARG PYTHON_IMAGE=python:3.14-slim
+
+FROM ${PYTHON_IMAGE} AS dependencies
+
+ARG UV_VERSION=0.8.15
+
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_NO_DEV=1
 
 WORKDIR /app
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl && \
-    rm -rf /var/lib/apt/lists/*
+RUN python -m pip install --no-cache-dir "uv==${UV_VERSION}"
 
-RUN pip install --no-cache-dir uv
+COPY pyproject.toml uv.lock ./
 
-ENV UV_LINK_MODE=copy
+RUN uv sync --frozen --no-dev --no-install-project
 
-COPY pyproject.toml ./
+FROM ${PYTHON_IMAGE} AS runtime
 
-RUN uv pip compile pyproject.toml -o requirements.txt && \
-    uv pip install --system --no-cache -r requirements.txt
+ARG BUILD_DATE
+ARG VERSION
+ARG VCS_REF
 
-COPY . .
+LABEL org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.description="Restorio multi-tenant API" \
+      org.opencontainers.image.revision="${VCS_REF}" \
+      org.opencontainers.image.source="https://github.com/restorio-labs/restorio-fullstack" \
+      org.opencontainers.image.title="Restorio API" \
+      org.opencontainers.image.version="${VERSION}"
+
+ENV PATH="/app/.venv/bin:${PATH}" \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    VERSION="${VERSION}"
+
+WORKDIR /app
+
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --gid 10001 restorio \
+    && useradd --uid 10001 --gid restorio --no-create-home --shell /usr/sbin/nologin restorio
+
+COPY --from=dependencies --chown=10001:10001 /app/.venv /app/.venv
+COPY --chown=10001:10001 . /app
+
+USER 10001:10001
 
 EXPOSE 8000
 
-HEALTHCHECK --interval=10s --timeout=5s --start-period=45s --retries=5 \
-  CMD curl -f http://localhost:8000/health/live || exit 1
+HEALTHCHECK --interval=15s --timeout=5s --start-period=60s --retries=5 \
+  CMD ["curl", "--fail", "--silent", "--show-error", "http://127.0.0.1:8000/health/live"]
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
-
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--no-access-log"]

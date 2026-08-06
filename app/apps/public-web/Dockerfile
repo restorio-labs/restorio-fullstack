@@ -1,4 +1,4 @@
-FROM oven/bun:1.3.5-alpine AS builder
+FROM oven/bun:1.3.14-alpine AS builder
 WORKDIR /repo
 
 COPY package.json bun.lock turbo.json tsconfig.base.json ./
@@ -17,7 +17,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN bun run turbo run build --filter=@restorio/public-web --concurrency=1
 
-FROM oven/bun:1.3.5-alpine AS runner
+FROM oven/bun:1.3.14-alpine AS runner
 WORKDIR /repo
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
