@@ -1,0 +1,43 @@
+global:
+  environment: production
+  imagePullSecrets: []
+
+api:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/restorio-labs/restorio-api
+    digest: ""
+    pullPolicy: IfNotPresent
+  existingSecret: restorio-api-runtime
+  service:
+    type: NodePort
+    nodePort: 30081
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+migrations:
+  enabled: true
+  backoffLimit: 1
+
+publicWeb:
+  enabled: false
+  replicaCount: 1
+  image:
+    repository: ghcr.io/restorio-labs/restorio-public-web
+    digest: ""
+    pullPolicy: IfNotPresent
+  service:
+    type: NodePort
+    nodePort: 30080
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
