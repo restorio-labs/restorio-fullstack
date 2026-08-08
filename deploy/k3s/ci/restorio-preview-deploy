@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+readonly DEPLOY_HOME=/var/lib/restorio-deploy
+readonly REPOSITORY_DIR="$DEPLOY_HOME/restorio-fullstack"
+readonly REPOSITORY_URL=https://github.com/restorio-labs/restorio-fullstack.git
+readonly CONFIG_FILE=/etc/restorio-deploy/preview.env
+export KUBECONFIG=/etc/restorio-deploy/kubeconfig
+readonly KUBECONFIG
+
+if [ ! -r "$CONFIG_FILE" ] || [ ! -r "$KUBECONFIG" ]; then
+  echo "Missing local deployment configuration" >&2
+  exit 1
+fi
+
+read -r -a command <<< "${SSH_ORIGINAL_COMMAND:-}"
+if [ "${#command[@]}" -ne 5 ] || [ "${command[0]}" != deploy ]; then
+  echo "Expected: deploy VERSION COMMIT API_DIGEST WEB_DIGEST" >&2
+  exit 1
+fi
+
+readonly RELEASE_VERSION="${command[1]}"
+readonly RELEASE_COMMIT="${command[2]}"
+readonly API_DIGEST="${command[3]}"
+readonly WEB_DIGEST="${command[4]}"
+
+if ! [[ "$RELEASE_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || \
+  ! [[ "$RELEASE_COMMIT" =~ ^[0-9a-f]{40}$ ]] || \
+  ! [[ "$API_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]] || \
+  ! [[ "$WEB_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+  echo "Invalid deployment request" >&2
+  exit 1
+fi
+
+# shellcheck disable=SC1090
+source "$CONFIG_FILE"
+: "${GHCR_PULL_TOKEN:?Missing GHCR_PULL_TOKEN}"
+: "${GHCR_USERNAME:?Missing GHCR_USERNAME}"
+: "${K3S_NAMESPACE:?Missing K3S_NAMESPACE}"
+
+if [ ! -d "$REPOSITORY_DIR/.git" ]; then
+  git clone --no-checkout "$REPOSITORY_URL" "$REPOSITORY_DIR"
+fi
+
+git -C "$REPOSITORY_DIR" remote set-url origin "$REPOSITORY_URL"
+git -C "$REPOSITORY_DIR" fetch --force origin "+refs/tags/$RELEASE_VERSION:refs/tags/$RELEASE_VERSION"
+
+if [ "$(git -C "$REPOSITORY_DIR" rev-parse "$RELEASE_VERSION^{commit}")" != "$RELEASE_COMMIT" ]; then
+  echo "Release tag does not resolve to the approved commit" >&2
+  exit 1
+fi
+
+git -C "$REPOSITORY_DIR" checkout --detach --force "$RELEASE_COMMIT"
+
+readonly chart_dir="$REPOSITORY_DIR/deploy/helm/restorio"
+readonly values_file="$chart_dir/values-preview.yaml"
+
+if [ ! -f "$chart_dir/Chart.yaml" ] || [ ! -f "$values_file" ]; then
+  echo "Release does not contain the preview Helm chart" >&2
+  exit 1
+fi
+
+kubectl create secret docker-registry ghcr-pull \
+  --namespace "$K3S_NAMESPACE" \
+  --docker-server=ghcr.io \
+  --docker-username="$GHCR_USERNAME" \
+  --docker-password="$GHCR_PULL_TOKEN" \
+  --dry-run=client \
+  -o yaml | kubectl apply -f -
+
+helm upgrade --install restorio "$chart_dir" \
+  --namespace "$K3S_NAMESPACE" \
+  --values "$values_file" \
+  --set global.imagePullSecrets[0].name=ghcr-pull \
+  --set api.image.digest="$API_DIGEST" \
+  --set publicWeb.image.digest="$WEB_DIGEST" \
+  --wait \
+  --wait-for-jobs \
+  --timeout 10m \
+  --atomic
+
+kubectl rollout status deployment/restorio-restorio-api --namespace "$K3S_NAMESPACE" --timeout=3m
+kubectl get pods,services --namespace "$K3S_NAMESPACE" -l app.kubernetes.io/instance=restorio
