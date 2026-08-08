@@ -23,10 +23,13 @@ permissions:
 jobs:
   deploy:
     name: Deploy release to ${{ inputs.environment }}
-    runs-on: ubuntu-latest
+    runs-on:
+      - self-hosted
+      - linux
+      - restorio-${{ inputs.environment }}
     environment: ${{ inputs.environment }}
     env:
-      KUBECONFIG_B64: ${{ secrets.KUBECONFIG_B64 }}
+      KUBECONFIG: /etc/restorio-ci/kubeconfig
       GHCR_PULL_TOKEN: ${{ secrets.GHCR_PULL_TOKEN }}
       K3S_NAMESPACE: ${{ vars.K3S_NAMESPACE || 'restorio' }}
     steps:
@@ -53,10 +56,10 @@ jobs:
         run: |
           set -euo pipefail
           missing=()
-          [ -n "${KUBECONFIG_B64:-}" ] || missing+=(KUBECONFIG_B64)
+          [ -r "$KUBECONFIG" ] || missing+=(local-kubeconfig)
           [ -n "${GHCR_PULL_TOKEN:-}" ] || missing+=(GHCR_PULL_TOKEN)
           if [ "${#missing[@]}" -ne 0 ]; then
-            echo "::error::Missing GitHub environment secrets: ${missing[*]}"
+            echo "::error::Missing deployment configuration: ${missing[*]}"
             exit 1
           fi
 
@@ -71,14 +74,8 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@v4
 
-      - name: Configure restricted kubeconfig
-        shell: bash
-        run: |
-          set -euo pipefail
-          umask 077
-          printf '%s' "$KUBECONFIG_B64" | base64 --decode > "$RUNNER_TEMP/kubeconfig"
-          chmod 600 "$RUNNER_TEMP/kubeconfig"
-          echo "KUBECONFIG=$RUNNER_TEMP/kubeconfig" >> "$GITHUB_ENV"
+      - name: Set up Crane
+        uses: imjasonh/setup-crane@v0.4
 
       - name: Verify target cluster access
         shell: bash
@@ -101,23 +98,17 @@ jobs:
             --dry-run=client \
             -o yaml | kubectl apply -f -
 
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Resolve immutable image digests
         id: images
         shell: bash
         env:
           RELEASE_VERSION: ${{ github.ref_name }}
-          IMAGE_OWNER: ${{ github.repository_owner }}
+          GHCR_USERNAME: ${{ github.repository_owner }}
         run: |
           set -euo pipefail
-          API_DIGEST=$(docker buildx imagetools inspect "ghcr.io/$IMAGE_OWNER/restorio-api:$RELEASE_VERSION" --format '{{.Digest}}')
-          WEB_DIGEST=$(docker buildx imagetools inspect "ghcr.io/$IMAGE_OWNER/restorio-public-web:$RELEASE_VERSION" --format '{{.Digest}}')
+          printf '%s' "$GHCR_PULL_TOKEN" | crane auth login ghcr.io --username "$GHCR_USERNAME" --password-stdin
+          API_DIGEST=$(crane digest "ghcr.io/$GHCR_USERNAME/restorio-api:$RELEASE_VERSION")
+          WEB_DIGEST=$(crane digest "ghcr.io/$GHCR_USERNAME/restorio-public-web:$RELEASE_VERSION")
           printf 'api=%s\n' "$API_DIGEST" >> "$GITHUB_OUTPUT"
           printf 'public_web=%s\n' "$WEB_DIGEST" >> "$GITHUB_OUTPUT"
 
