@@ -11,16 +11,17 @@ The chart runs Alembic as a Helm pre-install and pre-upgrade job before the API 
 ## GitHub environment configuration
 
 Create the `preview` and `production` GitHub Environments.
-Each environment needs these secrets:
+Each environment needs this secret:
 
-- `KUBECONFIG_B64` - base64-encoded kubeconfig for a namespace-scoped CI ServiceAccount
 - `GHCR_PULL_TOKEN` - GitHub token with read access to the Restorio container packages
 
 Each environment may define `K3S_NAMESPACE` as a GitHub Environment variable.
 It defaults to `restorio`.
 
-The kubeconfig identity needs only the namespace permissions required by the workflow.
-It must not use the k3s administrator kubeconfig.
+The self-hosted runner keeps its kubeconfig at `/etc/restorio-ci/kubeconfig` on its VPS.
+It must use a namespace-scoped ServiceAccount and must not use the k3s administrator kubeconfig.
+This keeps the Kubernetes API private and prevents GitHub-hosted runners from receiving cluster credentials.
+Bootstrap the namespace-scoped identity using [`deploy/k3s/ci/README.md`](../../k3s/ci/README.md).
 
 ## Deploying a release
 
