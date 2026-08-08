@@ -1,90 +1,65 @@
-# Restorio k3s deployment runner
+# Restorio k3s deployment gateway
 
-Each k3s node runs one GitHub Actions self-hosted runner.
-The preview runner has the `restorio-preview` label and the production runner has the `restorio-production` label.
-The deployment workflow selects its node through that label.
-No Kubernetes API port is exposed to the internet.
+The GitHub workflow runs on a GitHub-hosted runner and connects through SSH to a dedicated deployment account on the target VPS.
+Kubernetes API access and the service-account kubeconfig never leave the VPS.
+Do not install a self-hosted GitHub Actions runner on this public repository.
 
-## Bootstrap the Kubernetes identity
+## Preview bootstrap
 
-Run the following on the target VPS as root after checking out the repository.
-Set `K3S_NAMESPACE` to the same namespace configured in the matching GitHub Environment.
-
-Create the unprivileged system account that will run the deployment runner:
+Run the following commands as root on `tadek122` after the deployment change is merged.
+The commands create a non-interactive `restorio-deploy` account and an RBAC identity constrained to the `restorio` namespace.
 
 ```bash
-useradd --system --create-home --home-dir /opt/actions-runner --shell /usr/sbin/nologin actions
-install -d -o actions -g actions -m 0750 /opt/actions-runner
+id -u restorio-deploy >/dev/null 2>&1 || useradd --system --create-home --home-dir /var/lib/restorio-deploy --shell /usr/sbin/nologin restorio-deploy
+install -d -o restorio-deploy -g restorio-deploy -m 0700 /var/lib/restorio-deploy/.ssh
+install -d -o root -g restorio-deploy -m 0750 /etc/restorio-deploy
 ```
+
+Apply `restorio-deployer-rbac.yaml` into the target namespace and create a kubeconfig for `restorio-deploy` at `/etc/restorio-deploy/kubeconfig`.
+The file must be owned by `root:restorio-deploy` with mode `0640`.
+Create a new `restorio-deployer-token` whenever creating that kubeconfig.
+
+Install the checked-in command as root:
 
 ```bash
-export K3S_NAMESPACE=restorio
-k3s kubectl create namespace "$K3S_NAMESPACE" --dry-run=client -o yaml | k3s kubectl apply -f -
-k3s kubectl --namespace "$K3S_NAMESPACE" apply -f deploy/k3s/ci/restorio-deployer-rbac.yaml
+install -d -o root -g root -m 0755 /usr/local/libexec
+install -o root -g root -m 0755 deploy/k3s/ci/restorio-preview-deploy /usr/local/libexec/restorio-preview-deploy
 ```
 
-The manifest creates a dedicated ServiceAccount with access only to that namespace.
-It deliberately creates a non-expiring service-account token because the runner must deploy unattended.
-Treat the resulting kubeconfig as a privileged local credential and rotate it at least every 90 days or immediately after suspected disclosure.
+The deploy account needs Helm and kubectl in its `PATH`.
+Use the k3s-provided `kubectl` and install a current Helm 3 binary with its published SHA-256 checksum.
 
-Create its kubeconfig without printing the token:
+Create `/etc/restorio-deploy/preview.env` as `root:restorio-deploy`, mode `0640`:
 
-```bash
-export K3S_NAMESPACE=restorio
-install -d -o root -g actions -m 0750 /etc/restorio-ci
-K3S_SERVER=$(k3s kubectl config view --raw -o jsonpath='{.clusters[0].cluster.server}')
-K3S_CA_DATA=$(k3s kubectl config view --raw -o jsonpath='{.clusters[0].cluster.certificate-authority-data}')
-K3S_TOKEN=$(k3s kubectl --namespace "$K3S_NAMESPACE" get secret restorio-deployer-token -o jsonpath='{.data.token}' | base64 --decode)
-umask 077
-{
-  printf 'apiVersion: v1\nkind: Config\nclusters:\n- cluster:\n    certificate-authority-data: %s\n    server: %s\n  name: k3s\n' "$K3S_CA_DATA" "$K3S_SERVER"
-  printf 'contexts:\n- context:\n    cluster: k3s\n    namespace: %s\n    user: restorio-deployer\n  name: restorio-deployer\ncurrent-context: restorio-deployer\n' "$K3S_NAMESPACE"
-  printf 'users:\n- name: restorio-deployer\n  user:\n    token: %s\n' "$K3S_TOKEN"
-} > /etc/restorio-ci/kubeconfig
-chown root:actions /etc/restorio-ci/kubeconfig
-chmod 0640 /etc/restorio-ci/kubeconfig
-unset K3S_TOKEN
+```dotenv
+K3S_NAMESPACE=restorio
+GHCR_USERNAME=restorio-labs
+GHCR_PULL_TOKEN=REPLACE_WITH_A_READ_ONLY_GHCR_TOKEN
 ```
 
-`actions` is the system user that runs the GitHub Actions runner in the next section.
+Do not store this token in the repository or paste it into chat.
 
-## Install the GitHub Actions runner
+## SSH restriction
 
-In GitHub, open the repository's **Settings** then **Actions** then **Runners** and choose **New self-hosted runner** for Linux x64.
-Do not paste the one-time registration token into chat, a terminal history file, or source control.
+Generate a dedicated ED25519 key pair for the GitHub Environment.
+Place its public key in `/var/lib/restorio-deploy/.ssh/authorized_keys` as a single line prefixed with:
 
-Download and extract the runner using the exact commands GitHub displays.
-Then configure it as the `actions` user with the environment label for this VPS:
-
-```bash
-su -s /bin/bash actions -c './config.sh --unattended --replace --url https://github.com/restorio-labs/restorio-fullstack --token YOUR_ONE_TIME_TOKEN --name YOUR_NODE_NAME --labels restorio-preview'
-./svc.sh install actions
-./svc.sh start
+```text
+command="/usr/local/libexec/restorio-preview-deploy",no-port-forwarding,no-agent-forwarding,no-X11-forwarding,no-pty
 ```
 
-Use `restorio-production` instead of `restorio-preview` on the production VPS.
-Run the `config.sh` command in `/opt/actions-runner` after extracting the runner there.
+The forced command accepts only `deploy VERSION COMMIT API_DIGEST WEB_DIGEST` and validates every argument.
+The key cannot open an interactive shell, tunnel ports, or execute arbitrary commands.
 
-## GitHub Environment configuration
+## GitHub Environment
 
-Create `preview` and `production` Environments in GitHub.
-For each one, set `K3S_NAMESPACE` to `restorio` and add `GHCR_PULL_TOKEN`, a token with read-only access to the Restorio container packages.
-Use required reviewers for the `production` Environment.
+For the `preview` Environment, configure:
 
-## Runner isolation
+- Variable `DEPLOY_SSH_HOST` with the public address of `tadek122`
+- Variable `DEPLOY_SSH_PORT` with the SSH port, normally `22`
+- Variable `DEPLOY_SSH_KNOWN_HOSTS` with the output of `ssh-keyscan -H -p 22 YOUR_HOST`
+- Secret `DEPLOY_SSH_PRIVATE_KEY` with the dedicated private key
+- Secret `GHCR_PULL_TOKEN` with read-only access to the Restorio packages
 
-The `actions` user can read the local deployment kubeconfig.
-Therefore this runner must run only the deployment workflow for this repository and must never run pull-request or other untrusted code.
-Place it in a runner group restricted to `restorio-labs/restorio-fullstack` and do not target generic `self-hosted` labels from other workflows.
-Keep production deployments behind GitHub Environment approval.
-
-## Rotate the deployment token
-
-Rotation revokes the old local kubeconfig and creates a replacement.
-Run this on the relevant VPS as root, then repeat the kubeconfig creation commands above:
-
-```bash
-export K3S_NAMESPACE=restorio
-k3s kubectl --namespace "$K3S_NAMESPACE" delete secret restorio-deployer-token
-k3s kubectl --namespace "$K3S_NAMESPACE" apply -f deploy/k3s/ci/restorio-deployer-rbac.yaml
-```
+Do not configure `KUBECONFIG_B64`.
+Use required reviewers for the production Environment.

@@ -11,24 +11,29 @@ The chart runs Alembic as a Helm pre-install and pre-upgrade job before the API 
 ## GitHub environment configuration
 
 Create the `preview` and `production` GitHub Environments.
-Each environment needs this secret:
+Each environment needs these secrets:
 
+- `DEPLOY_SSH_PRIVATE_KEY` - dedicated key restricted to the deployment command on the target VPS
 - `GHCR_PULL_TOKEN` - GitHub token with read access to the Restorio container packages
 
-Each environment may define `K3S_NAMESPACE` as a GitHub Environment variable.
-It defaults to `restorio`.
+Each environment needs these variables:
 
-The self-hosted runner keeps its kubeconfig at `/etc/restorio-ci/kubeconfig` on its VPS.
+- `DEPLOY_SSH_HOST` - public SSH address of the target VPS
+- `DEPLOY_SSH_PORT` - SSH port, normally `22`
+- `DEPLOY_SSH_KNOWN_HOSTS` - pinned SSH host key for the target VPS
+
+The k3s kubeconfig stays on the target VPS and is readable only by the local deployment account.
 It must use a namespace-scoped ServiceAccount and must not use the k3s administrator kubeconfig.
-This keeps the Kubernetes API private and prevents GitHub-hosted runners from receiving cluster credentials.
-Bootstrap the namespace-scoped identity using [`deploy/k3s/ci/README.md`](../../k3s/ci/README.md).
+This keeps the Kubernetes API private and prevents GitHub Actions from receiving cluster credentials.
+Bootstrap the SSH deployment gateway using [`deploy/k3s/ci/README.md`](../../k3s/ci/README.md).
 
 ## Deploying a release
 
 First publish the images from a `vMAJOR.MINOR.PATCH` tag through the `Publish OCI Images` workflow.
 After both image jobs finish, run `Deploy to k3s` from the same tag and select `preview` or `production`.
-The workflow resolves the released image tags to OCI digests and passes only those digests to Helm.
+The GitHub workflow resolves the released image tags to OCI digests and makes one constrained SSH deployment request to the target VPS.
 
+The target verifies the release tag's commit before it checks out the Helm chart.
 `helm upgrade --install --atomic --wait --wait-for-jobs` automatically rolls back the release when the migration job or an application readiness check fails.
 
 ## External Caddy routing
