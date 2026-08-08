@@ -1,0 +1,6 @@
+apiVersion: v2
+name: restorio
+description: Restorio application workloads for k3s
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

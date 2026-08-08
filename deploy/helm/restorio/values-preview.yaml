@@ -1,0 +1,17 @@
+global:
+  environment: preview
+
+api:
+  existingSecret: restorio-api-preview-runtime
+  service:
+    nodePort: 31081
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+publicWeb:
+  enabled: false
