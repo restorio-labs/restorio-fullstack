@@ -156,6 +156,8 @@ jobs:
           ssh \
             -i "$RUNNER_TEMP/ssh/id_ed25519" \
             -o BatchMode=yes \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=20 \
             -o StrictHostKeyChecking=yes \
             -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
             -p "$DEPLOY_SSH_PORT" \

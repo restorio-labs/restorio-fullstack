@@ -72,6 +72,49 @@ readonly runtime_chart_dir="$REPOSITORY_DIR/deploy/helm/restorio-runtime"
 readonly runtime_values_file="$runtime_chart_dir/values-preview.yaml"
 readonly api_runtime_secret=restorio-api-preview-runtime
 
+log() {
+  printf '[%s] %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*"
+}
+
+show_workload_status() {
+  kubectl get pods,jobs,deployments,statefulsets,pvc \
+    --namespace "$K3S_NAMESPACE" \
+    --output wide || true
+}
+
+run_with_progress() {
+  local description="$1"
+  shift
+
+  log "$description started"
+  "$@" &
+  local command_pid=$!
+
+  (
+    while kill -0 "$command_pid" 2>/dev/null; do
+      sleep 30
+      if kill -0 "$command_pid" 2>/dev/null; then
+        log "$description is still running"
+        show_workload_status
+      fi
+    done
+  ) &
+  local watcher_pid=$!
+  local exit_status=0
+
+  if wait "$command_pid"; then
+    log "$description completed"
+  else
+    exit_status=$?
+    log "$description failed with exit code $exit_status"
+    kubectl get events --namespace "$K3S_NAMESPACE" --sort-by='.lastTimestamp' | tail -n 30 || true
+  fi
+
+  kill "$watcher_pid" 2>/dev/null || true
+  wait "$watcher_pid" 2>/dev/null || true
+  return "$exit_status"
+}
+
 if [ ! -f "$chart_dir/Chart.yaml" ] || [ ! -f "$values_file" ] || \
   [ ! -f "$runtime_chart_dir/Chart.yaml" ] || [ ! -f "$runtime_values_file" ]; then
   echo "Release does not contain the preview Helm chart" >&2
@@ -86,7 +129,7 @@ kubectl create secret docker-registry ghcr-pull \
   --dry-run=client \
   -o yaml | kubectl apply -f -
 
-helm upgrade --install restorio-runtime "$runtime_chart_dir" \
+run_with_progress "Deploying stateful runtime" helm upgrade --install restorio-runtime "$runtime_chart_dir" \
   --namespace "$K3S_NAMESPACE" \
   --values "$runtime_values_file" \
   --wait \
@@ -106,7 +149,7 @@ if [[ "$(secret_value DATABASE_URL)" != *"@restorio-runtime-mongo.restorio.svc.c
   exit 1
 fi
 
-helm upgrade --install restorio "$chart_dir" \
+run_with_progress "Deploying Restorio applications" helm upgrade --install restorio "$chart_dir" \
   --namespace "$K3S_NAMESPACE" \
   --values "$values_file" \
   --set global.imagePullSecrets[0].name=ghcr-pull \
