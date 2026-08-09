@@ -5,14 +5,9 @@ on:
     tags:
       - "v*"
   workflow_dispatch:
-    inputs:
-      github_ref:
-        description: Existing release tag in vMAJOR.MINOR.PATCH format
-        required: true
-        type: string
 
 concurrency:
-  group: publish-oci-images-${{ inputs.github_ref || github.ref }}
+  group: publish-oci-images-${{ github.ref }}
   cancel-in-progress: false
 
 permissions:
@@ -33,22 +28,16 @@ jobs:
         name: Validate release version
         shell: bash
         env:
-          EVENT_NAME: ${{ github.event_name }}
           REF: ${{ github.ref }}
           REF_NAME: ${{ github.ref_name }}
-          INPUT_GITHUB_REF: ${{ inputs.github_ref }}
         run: |
           set -euo pipefail
 
-          if [ "$EVENT_NAME" = "push" ]; then
-            if [[ "$REF" != refs/tags/* ]]; then
-              echo "::error::Image publication must run from a release tag"
-              exit 1
-            fi
-            VERSION="$REF_NAME"
-          else
-            VERSION="$INPUT_GITHUB_REF"
+          if [[ "$REF" != refs/tags/* ]]; then
+            echo "::error::Image publication must run from a release tag"
+            exit 1
           fi
+          VERSION="$REF_NAME"
 
           if ! [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "::error::Expected release version vMAJOR.MINOR.PATCH, got: $VERSION"
@@ -80,7 +69,7 @@ jobs:
       - name: Checkout selected release
         uses: actions/checkout@v6
         with:
-          ref: refs/tags/${{ needs.validate-release.outputs.version }}
+          ref: ${{ github.sha }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
