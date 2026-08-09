@@ -14,6 +14,8 @@ interface Fetcher {
 
 interface Env {
   ASSETS: Fetcher;
+  PREVIEW_BASIC_AUTH_PASSWORD?: string;
+  PREVIEW_BASIC_AUTH_USERNAME?: string;
   IMAGES: {
     input(stream: ReadableStream): {
       transform(options: Record<string, unknown>): {
@@ -28,6 +30,28 @@ interface ExecutionContext {
   passThroughOnException(): void;
 }
 
+const PREVIEW_HOSTNAME = "preview.restorio.org";
+const PREVIEW_API_ORIGIN = "https://preview-api.restorio.org";
+
+const unauthorizedPreviewResponse = (): Response =>
+  new Response("Preview authentication required\n", {
+    status: 401,
+    headers: {
+      "Cache-Control": "no-store",
+      "WWW-Authenticate": 'Basic realm="Restorio preview", charset="UTF-8"',
+    },
+  });
+
+const isPreviewAuthorized = (request: Request, env: Env): boolean => {
+  if (env.PREVIEW_BASIC_AUTH_USERNAME === undefined || env.PREVIEW_BASIC_AUTH_PASSWORD === undefined) {
+    return false;
+  }
+
+  const expected = `Basic ${btoa(`${env.PREVIEW_BASIC_AUTH_USERNAME}:${env.PREVIEW_BASIC_AUTH_PASSWORD}`)}`;
+
+  return request.headers.get("Authorization") === expected;
+};
+
 // Image security config. SVG sources with .svg extension auto-skip the
 // optimization endpoint on the client side (served directly, no proxy).
 // To route SVGs through the optimizer (with security headers), set
@@ -37,6 +61,17 @@ interface ExecutionContext {
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
+    const isPreview = url.hostname === PREVIEW_HOSTNAME;
+
+    if (isPreview && !isPreviewAuthorized(request, env)) {
+      return unauthorizedPreviewResponse();
+    }
+
+    if (isPreview && url.pathname.startsWith("/api/")) {
+      const apiUrl = new URL(`${url.pathname}${url.search}`, PREVIEW_API_ORIGIN);
+
+      return fetch(new Request(apiUrl, request));
+    }
 
     // Image optimization via Cloudflare Images binding.
     // The parseImageParams validation inside handleImageOptimization
@@ -60,12 +95,7 @@ export default {
       );
     }
 
-    // Delegate everything else to vinext, forwarding ctx so that
-    // ctx.waitUntil() is available to background cache writes and
-    // other deferred work via getRequestExecutionContext().
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    // @typescript-eslint/no-unsafe-call
-    // @typescript-eslint/no-unsafe-member-access -- vinext handler is untyped
+    // Delegate all other requests to vinext so ctx.waitUntil() remains available
     return handler.fetch(request, env, ctx);
   },
 };

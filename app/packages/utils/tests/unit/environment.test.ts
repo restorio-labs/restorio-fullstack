@@ -16,13 +16,14 @@ describe("Environment", () => {
   it("defines the supported runtime environments", () => {
     expect(Environment).toEqual({
       PRODUCTION: "production",
+      PREVIEW: "preview",
       DEVELOPMENT: "development",
       LOCAL: "local",
     });
   });
 
   it("uses lowercase string values", () => {
-    expect(Object.values(Environment)).toEqual(["production", "development", "local"]);
+    expect(Object.values(Environment)).toEqual(["production", "preview", "development", "local"]);
   });
 });
 
@@ -46,6 +47,14 @@ describe("getAppUrl", () => {
     expect(getAppUrl(Environment.PRODUCTION, "mobile-app")).toBe("https://mobile.restorio.org");
   });
 
+  it("returns dedicated preview urls", () => {
+    expect(getAppUrl(Environment.PREVIEW, "public-web")).toBe("https://preview.restorio.org");
+    expect(getAppUrl(Environment.PREVIEW, "admin-panel")).toBe("https://preview-admin.restorio.org");
+    expect(getAppUrl(Environment.PREVIEW, "kitchen-panel")).toBe("https://preview-kitchen.restorio.org");
+    expect(getAppUrl(Environment.PREVIEW, "mobile-app")).toBe("https://preview-mobile.restorio.org");
+    expect(getAppUrl(Environment.PREVIEW, "waiter-panel")).toBe("https://preview-waiter.restorio.org");
+  });
+
   it("returns localhost urls for development", () => {
     expect(getAppUrl(Environment.DEVELOPMENT, "public-web")).toBe("http://localhost:3000");
     expect(getAppUrl(Environment.DEVELOPMENT, "admin-panel")).toBe("http://localhost:3001");
@@ -66,6 +75,10 @@ describe("getEnvironmentFromEnv", () => {
 
   it("maps development mode", () => {
     expect(getEnvironmentFromEnv("development")).toBe(Environment.DEVELOPMENT);
+  });
+
+  it("maps preview mode", () => {
+    expect(getEnvironmentFromEnv("preview")).toBe(Environment.PREVIEW);
   });
 
   it("falls back to local for unknown mode", () => {
@@ -101,6 +114,7 @@ describe("getEnvMode", () => {
 describe("getAppHref", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
   });
 
   it("returns app url for current env mode", () => {
@@ -115,6 +129,14 @@ describe("getAppHref", () => {
 
     expect(getAppHref("public-web")).toBe("http://localhost:3000");
   });
+
+  it("uses the preview host at runtime even when the static bundle was built for production", () => {
+    vi.stubEnv("ENV", "production");
+    vi.stubGlobal("window", { location: { hostname: "preview-admin.restorio.org" } });
+
+    expect(getAppHref("public-web")).toBe("https://preview.restorio.org");
+    expect(getAppHref("mobile-app")).toBe("https://preview-mobile.restorio.org");
+  });
 });
 
 describe("getAppBaseUrl", () => {
@@ -122,16 +144,13 @@ describe("getAppBaseUrl", () => {
     vi.unstubAllEnvs();
   });
 
-  it("returns override from VITE_PUBLIC_WEB_URL when set", () => {
+  it("uses the environment topology instead of injected application URLs", () => {
+    vi.stubEnv("ENV", "preview");
     vi.stubEnv("VITE_PUBLIC_WEB_URL", "https://public.example");
+    vi.stubEnv("NEXT_PUBLIC_ADMIN_PANEL_URL", "https://admin.example");
 
-    expect(getAppBaseUrl("public-web")).toBe("https://public.example");
-  });
-
-  it("returns override from VITE_ADMIN_PANEL_URL when set", () => {
-    vi.stubEnv("VITE_ADMIN_PANEL_URL", "https://admin.example");
-
-    expect(getAppBaseUrl("admin-panel")).toBe("https://admin.example");
+    expect(getAppBaseUrl("public-web")).toBe("https://preview.restorio.org");
+    expect(getAppBaseUrl("admin-panel")).toBe("https://preview-admin.restorio.org");
   });
 
   it("falls back to getAppHref when no override", () => {
@@ -178,6 +197,13 @@ describe("resolveApiBaseUrl", () => {
     vi.stubGlobal("window", {});
 
     expect(resolveApiBaseUrl({ preferRelativeInBrowser: true })).toBe("https://api.restorio.org/api/v1");
+  });
+
+  it("uses the relative API path on a preview host", () => {
+    vi.stubEnv("ENV", "production");
+    vi.stubGlobal("window", { location: { hostname: "preview-admin.restorio.org" } });
+
+    expect(resolveApiBaseUrl({ preferRelativeInBrowser: true })).toBe("/api/v1");
   });
 });
 

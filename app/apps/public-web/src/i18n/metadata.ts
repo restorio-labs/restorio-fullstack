@@ -1,3 +1,4 @@
+import { getAppBaseUrl } from "@restorio/utils";
 import type { Metadata } from "next";
 
 import { loadMessages, locales } from "./request";
@@ -7,12 +8,6 @@ export interface MetadataParams {
 }
 
 const resolveMetadataBaseUrl = (): string => {
-  const explicit = process.env.NEXT_PUBLIC_BASE_URL;
-
-  if (typeof explicit === "string" && explicit.length > 0) {
-    return explicit;
-  }
-
   const vercel = process.env.VERCEL_URL;
 
   if (typeof vercel === "string" && vercel.length > 0) {
@@ -23,7 +18,7 @@ const resolveMetadataBaseUrl = (): string => {
     return `https://${vercel}`;
   }
 
-  return "http://localhost:3000";
+  return getAppBaseUrl("public-web");
 };
 
 const OPEN_GRAPH_LOCALE_MAP: Record<string, string> = {

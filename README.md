@@ -1,6 +1,6 @@
 # Restorio Platform
 
-Restorio is a full-stack, multi-tenant restaurant management platform designed and implemented as a monorepo. The system comprises a RESTful backend built with the FastAPI framework, six specialised front-end applications developed in React and Next.js, a set of shared library packages, and an infrastructure layer orchestrated through Docker Compose and Cloudflare Workers. The project follows the monorepo pattern managed by Turborepo and Bun workspaces, which ensures consistent dependency resolution and unified build pipelines across all sub-projects.
+Restorio is a full-stack, multi-tenant restaurant management platform designed and implemented as a monorepo. The system comprises a RESTful backend built with the FastAPI framework, five specialised front-end applications developed in React and Next.js, a set of shared library packages, and an infrastructure layer orchestrated through Docker Compose and Cloudflare Workers. The project follows the monorepo pattern managed by Turborepo and Bun workspaces, which ensures consistent dependency resolution and unified build pipelines across all sub-projects.
 
 ## System Architecture
 
@@ -17,7 +17,6 @@ restorio-fullstack/
 │   │   ├── kitchen-panel/   # Kitchen order management panel  (React 19, Vite – port 3002)
 │   │   ├── mobile-app/      # Customer-facing mobile client   (React 18, Vite – port 3003)
 │   │   ├── public-web/      # Public website and ordering     (Next.js 19    – port 3000)
-│   │   ├── ui-demo/         # Component library showcase      (React 18, Vite – port 6767)
 │   │   └── waiter-panel/    # Waiter management interface     (React 18, Vite – port 3004)
 │   └── packages/
 │       ├── api-client/      # HTTP client abstraction layer (Axios)
@@ -125,7 +124,6 @@ During local development, the individual services are accessible at the followin
 | Kitchen Panel | http://localhost:3002 | Real-time order visualisation for kitchen personnel |
 | Mobile App | http://localhost:3003 | Mobile-optimised customer interface |
 | Waiter Panel | http://localhost:3004 | Order and table management for waiting staff |
-| UI Demo | http://localhost:6767 | Interactive component library documentation |
 | API | http://localhost:8000 | RESTful backend API |
 | API Documentation | http://localhost:8000/docs | Interactive API documentation (Swagger UI) |
 | MinIO Console | http://localhost:9001 | Object storage administration interface |

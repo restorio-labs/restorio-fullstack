@@ -147,6 +147,7 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/preview-auth:/etc/nginx/preview-auth:ro
     networks:
       - restorio-network
     restart: unless-stopped

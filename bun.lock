@@ -183,31 +183,6 @@
         "wrangler": "^4.118.0",
       },
     },
-    "app/apps/ui-demo": {
-      "name": "@restorio/ui-demo",
-      "version": "1.0.0",
-      "dependencies": {
-        "@restorio/auth": "workspace:*",
-        "@restorio/types": "workspace:*",
-        "@restorio/ui": "workspace:*",
-        "@restorio/utils": "workspace:*",
-        "@types/node": "^26",
-        "react": "^19.2.8",
-        "react-dom": "^19.2.8",
-        "react-router-dom": "^7.18.0",
-      },
-      "devDependencies": {
-        "@types/react": "^19.0.0",
-        "@types/react-dom": "^19.0.0",
-        "@vitejs/plugin-react": "^6.0.5",
-        "autoprefixer": "^10.5.4",
-        "eslint": "^10.8.0",
-        "postcss": "^8.4.35",
-        "tailwindcss": "^4.3.3",
-        "typescript": "^5.9",
-        "vite": "^8.2.0",
-      },
-    },
     "app/apps/waiter-panel": {
       "name": "@restorio/waiter-panel",
       "version": "1.0.0",
@@ -821,8 +796,6 @@
     "@restorio/types": ["@restorio/types@workspace:app/packages/types"],
 
     "@restorio/ui": ["@restorio/ui@workspace:app/packages/ui"],
-
-    "@restorio/ui-demo": ["@restorio/ui-demo@workspace:app/apps/ui-demo"],
 
     "@restorio/utils": ["@restorio/utils@workspace:app/packages/utils"],
 
@@ -2503,10 +2476,6 @@
     "@restorio/public-web/typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
 
     "@restorio/ui/typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
-
-    "@restorio/ui-demo/tailwindcss": ["tailwindcss@4.3.3", "", {}, "sha512-gOhV3P7ufE62QDGg1zVaTgCR+EtPv92k2nIhVcVKcLmxT1sUBsQGhnZj175j+MqRt4zLF7ic+sCYjfhxMxj7YQ=="],
-
-    "@restorio/ui-demo/typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
 
     "@restorio/utils/typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
 

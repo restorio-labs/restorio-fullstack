@@ -429,7 +429,6 @@ utils-v1.3.0
 * graf jest zapisany w dokumentacji;
 * istnieje reguła dla bezpośrednich i tranzytywnych zależności;
 * każda aplikacja posiada niezależną wersję;
-* `ui-demo` jest jawnie oznaczone jako wersjonowane albo niewersjonowane;
 * określono zasady dla breaking changes.
 
 ---
@@ -737,8 +736,6 @@ Przeanalizować i, po pozytywnym PoC, zmigrować produkcyjne aplikacje frontendo
 `public-web` posiada już skrypty Vinext i osobny workflow Cloudflare. Pozostałe aplikacje są Vite SPA z React Router.
 
 Migracja nie jest prostą zmianą bundlera. Dla aplikacji Vite wymaga decyzji dotyczącej routingu, renderowania, autoryzacji i targetu deploymentu.
-
-`ui-demo` pozostaje poza zakresem, chyba że ADR wykaże korzyść z migracji.
 
 Related to [#14](https://github.com/restorio-labs/restorio-fullstack/issues/14).
 

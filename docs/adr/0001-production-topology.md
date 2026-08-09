@@ -113,7 +113,6 @@ The same Helm chart and immutable component images must be usable in both cluste
 | `kitchen-panel` | k3s | Independent Deployment, ClusterIP Service, immutable static-server image | `kitchen.restorio.org` | Stateless |
 | `mobile-app` | k3s | Independent Deployment, ClusterIP Service, immutable static-server image | `mobile.restorio.org` | Stateless |
 | `waiter-panel` | k3s | Independent Deployment, ClusterIP Service, immutable static-server image | `waiter.restorio.org` | Stateless |
-| `ui-demo` | No production deployment | None | None | Development-only |
 | FastAPI API | k3s | Deployment and ClusterIP Service | `api.restorio.org` | Stateless process with stateful dependencies |
 | Alembic migrations | k3s | One-shot Helm pre-upgrade Job | None | Release operation |
 | PostgreSQL 17 with PostGIS | k3s for the first production phase | StatefulSet, headless Service, PVC | None | Stateful |

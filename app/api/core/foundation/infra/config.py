@@ -40,6 +40,14 @@ class Settings(BaseSettings):
         "https://order.restorio.org",
         "https://mobile.restorio.org",
     ]
+    PREVIEW_ORIGINS: list[str] = [
+        "https://preview.restorio.org",
+        "https://preview-api.restorio.org",
+        "https://preview-admin.restorio.org",
+        "https://preview-kitchen.restorio.org",
+        "https://preview-waiter.restorio.org",
+        "https://preview-mobile.restorio.org",
+    ]
 
     CORS_ALLOW_CF_PAGES_PREVIEWS: bool = False
 
@@ -134,6 +142,28 @@ class Settings(BaseSettings):
             )
         return self
 
+    @model_validator(mode="after")
+    def _apply_environment_topology(self) -> "Settings":
+        environment = self.ENV.strip().lower()
+
+        if environment == "production":
+            self.CORS_ORIGINS = self.PRODUCTION_ORIGINS
+            self.FRONTEND_URL = "https://restorio.org"
+            self.API_BASE_URL = "https://api.restorio.org"
+            self.WAITER_PANEL_URL = "https://waiter.restorio.org"
+            self.MOBILE_APP_URL = "https://mobile.restorio.org"
+        elif environment == "preview":
+            self.CORS_ORIGINS = self.PREVIEW_ORIGINS
+            self.FRONTEND_URL = "https://preview.restorio.org"
+            self.API_BASE_URL = "https://preview-api.restorio.org"
+            self.WAITER_PANEL_URL = "https://preview-waiter.restorio.org"
+            self.MOBILE_APP_URL = "https://preview-mobile.restorio.org"
+            self.ACCESS_TOKEN_COOKIE_NAME = "preview_rat"
+            self.REFRESH_TOKEN_COOKIE_NAME = "preview_rrt"
+            self.SESSION_HINT_COOKIE = "preview_rshc"
+
+        return self
+
     @field_validator("GIT_SHA", mode="before")
     @classmethod
     def set_unknown_git_sha(cls, value: str | None) -> str:
@@ -141,7 +171,7 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _reject_insecure_production_secrets(self) -> "Settings":
-        env_mode = os.getenv("ENV") or os.getenv("NODE_ENV") or "development"
+        env_mode = self.ENV.strip().lower()
         if env_mode == "production" and self.SECRET_KEY in _INSECURE_SECRET_KEYS:
             msg = (
                 "FATAL: SECRET_KEY is set to an insecure default. "

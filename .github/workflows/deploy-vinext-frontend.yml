@@ -44,6 +44,8 @@ jobs:
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      PREVIEW_BASIC_AUTH_USERNAME: ${{ secrets.PREVIEW_BASIC_AUTH_USERNAME }}
+      PREVIEW_BASIC_AUTH_PASSWORD: ${{ secrets.PREVIEW_BASIC_AUTH_PASSWORD }}
     steps:
       - uses: actions/checkout@v7
 
@@ -64,13 +66,36 @@ jobs:
             exit 1
           fi
 
+          if [ "${{ inputs.environment }}" = "preview" ]; then
+            [ -n "${PREVIEW_BASIC_AUTH_USERNAME:-}" ] || { echo "Missing PREVIEW_BASIC_AUTH_USERNAME"; exit 1; }
+            [ -n "${PREVIEW_BASIC_AUTH_PASSWORD:-}" ] || { echo "Missing PREVIEW_BASIC_AUTH_PASSWORD"; exit 1; }
+          fi
+
+      - name: Configure preview authentication
+        if: inputs.environment == 'preview'
+        working-directory: app/apps/public-web
+        run: |
+          set -euo pipefail
+          printf '%s' "$PREVIEW_BASIC_AUTH_USERNAME" | bunx wrangler secret put PREVIEW_BASIC_AUTH_USERNAME --env preview
+          printf '%s' "$PREVIEW_BASIC_AUTH_PASSWORD" | bunx wrangler secret put PREVIEW_BASIC_AUTH_PASSWORD --env preview
+
       - name: Deploy public-web with vinext/wrangler
         working-directory: app/apps/public-web
-        env:
-          VITE_ENV: production
-          NODE_ENV: production
-          NEXT_PUBLIC_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || 'https://api.restorio.org/api/v1' }}
-          NEXT_PUBLIC_PUBLIC_WEB_URL: ${{ vars.VITE_PUBLIC_WEB_URL || 'https://restorio.org' }}
-          NEXT_PUBLIC_ADMIN_PANEL_URL: ${{ vars.VITE_ADMIN_PANEL_URL || 'https://admin.restorio.org' }}
-          NEXT_PUBLIC_BASE_URL: ${{ vars.VITE_PUBLIC_WEB_URL || 'https://restorio.org' }}
-        run: VITE_APP_VERSION="$PUBLIC_WEB_VERSION" bunx vinext deploy
+        run: |
+          set -euo pipefail
+
+          if [ "${{ inputs.environment }}" = "preview" ]; then
+            CLOUDFLARE_ENV=preview \
+              VITE_ENV=preview \
+              NODE_ENV=production \
+              NEXT_PUBLIC_API_BASE_URL=/api/v1 \
+              VITE_APP_VERSION="$PUBLIC_WEB_VERSION" \
+              bunx vinext deploy --env preview
+            exit 0
+          fi
+
+          VITE_ENV=production \
+            NODE_ENV=production \
+            NEXT_PUBLIC_API_BASE_URL=/api/v1 \
+            VITE_APP_VERSION="$PUBLIC_WEB_VERSION" \
+            bunx vinext deploy

@@ -38,3 +38,43 @@ class TestSettingsProductionSecrets:
         monkeypatch.setenv("ENV", "production")
         with pytest.raises(ValueError, match="FATAL: SECRET_KEY is set to an insecure default"):
             Settings(SECRET_KEY="change-me-in-production")
+
+
+class TestSettingsEnvironmentTopology:
+    def test_preview_urls_and_cookies_cannot_be_overridden(self) -> None:
+        settings = Settings(
+            ENV="preview",
+            CORS_ORIGINS=["https://untrusted.example"],
+            FRONTEND_URL="https://untrusted.example",
+            API_BASE_URL="https://untrusted.example",
+            WAITER_PANEL_URL="https://untrusted.example",
+            MOBILE_APP_URL="https://untrusted.example",
+            ACCESS_TOKEN_COOKIE_NAME="untrusted",
+            REFRESH_TOKEN_COOKIE_NAME="untrusted",
+            SESSION_HINT_COOKIE="untrusted",
+        )
+
+        assert settings.CORS_ORIGINS == settings.PREVIEW_ORIGINS
+        assert settings.FRONTEND_URL == "https://preview.restorio.org"
+        assert settings.API_BASE_URL == "https://preview-api.restorio.org"
+        assert settings.WAITER_PANEL_URL == "https://preview-waiter.restorio.org"
+        assert settings.MOBILE_APP_URL == "https://preview-mobile.restorio.org"
+        assert settings.ACCESS_TOKEN_COOKIE_NAME == "preview_rat"
+        assert settings.REFRESH_TOKEN_COOKIE_NAME == "preview_rrt"
+        assert settings.SESSION_HINT_COOKIE == "preview_rshc"
+
+    def test_production_urls_cannot_be_overridden(self) -> None:
+        settings = Settings(
+            ENV="production",
+            SECRET_KEY="a" * 64,
+            FRONTEND_URL="https://untrusted.example",
+            API_BASE_URL="https://untrusted.example",
+            WAITER_PANEL_URL="https://untrusted.example",
+            MOBILE_APP_URL="https://untrusted.example",
+        )
+
+        assert settings.CORS_ORIGINS == settings.PRODUCTION_ORIGINS
+        assert settings.FRONTEND_URL == "https://restorio.org"
+        assert settings.API_BASE_URL == "https://api.restorio.org"
+        assert settings.WAITER_PANEL_URL == "https://waiter.restorio.org"
+        assert settings.MOBILE_APP_URL == "https://mobile.restorio.org"

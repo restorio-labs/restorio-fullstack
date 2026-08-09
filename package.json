@@ -9,7 +9,6 @@
   "scripts": {
     "dev": "turbo run build --filter='./app/packages/*' && turbo run dev --concurrency=100%",
     "dev:kitchen-panel": "turbo run build --filter='@restorio/kitchen-panel...' && turbo run dev --concurrency=100% --filter='@restorio/kitchen-panel...'",
-    "dev:ui-demo": "bun run --filter @restorio/ui-demo demo",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "test:unit": "vitest run --passWithNoTests",

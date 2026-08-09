@@ -22,6 +22,29 @@ const PRODUCTION_SUBDOMAINS: Record<AppSlug, string> = {
   "mobile-app": "mobile",
 };
 
+const PREVIEW_SUBDOMAINS: Record<AppSlug, string> = {
+  "public-web": "preview",
+  "admin-panel": "preview-admin",
+  "kitchen-panel": "preview-kitchen",
+  "waiter-panel": "preview-waiter",
+  "mobile-app": "preview-mobile",
+};
+
+const _isPreviewHostname = (hostname: string | undefined): boolean =>
+  hostname === "preview.restorio.org" ||
+  (hostname?.startsWith("preview-") === true && hostname.endsWith(".restorio.org"));
+
+const _getCurrentEnvironment = (): EnvironmentType => {
+  const browserWindow = typeof window === "undefined" ? undefined : (window as { location?: { hostname?: string } });
+  const browserHostname = browserWindow?.location?.hostname;
+
+  if (_isPreviewHostname(browserHostname)) {
+    return Environment.PREVIEW;
+  }
+
+  return getEnvironmentFromEnv(getEnvMode());
+};
+
 export const getAppUrl = (environment: EnvironmentType, appSlug: AppSlug): string => {
   if (environment === Environment.PRODUCTION) {
     const subdomain = PRODUCTION_SUBDOMAINS[appSlug];
@@ -33,6 +56,10 @@ export const getAppUrl = (environment: EnvironmentType, appSlug: AppSlug): strin
     return `https://${subdomain}.${PRODUCTION_DOMAIN}`;
   }
 
+  if (environment === Environment.PREVIEW) {
+    return `https://${PREVIEW_SUBDOMAINS[appSlug]}.${PRODUCTION_DOMAIN}`;
+  }
+
   const port = LOCAL_PORTS[appSlug];
 
   return `http://localhost:${port}`;
@@ -41,6 +68,10 @@ export const getAppUrl = (environment: EnvironmentType, appSlug: AppSlug): strin
 export const getEnvironmentFromEnv = (mode: string): EnvironmentType => {
   if (mode === "production") {
     return Environment.PRODUCTION;
+  }
+
+  if (mode === "preview") {
+    return Environment.PREVIEW;
   }
 
   if (mode === "development") {
@@ -60,9 +91,7 @@ export const getEnvMode = (): string => {
 };
 
 export const getAppHref = (slug: AppSlug): string => {
-  const envMode = getEnvMode();
-
-  return getAppUrl(getEnvironmentFromEnv(envMode), slug);
+  return getAppUrl(_getCurrentEnvironment(), slug);
 };
 
 export const getMergedRuntimeEnv = (): Record<string, unknown> => {
@@ -73,27 +102,9 @@ export const getMergedRuntimeEnv = (): Record<string, unknown> => {
   return { ...(viteEnv ?? {}), ...(processEnv ?? {}) };
 };
 
-const APP_URL_OVERRIDE_KEYS: Partial<Record<AppSlug, readonly string[]>> = {
-  "public-web": ["VITE_PUBLIC_WEB_URL", "NEXT_PUBLIC_PUBLIC_WEB_URL"],
-  "admin-panel": ["VITE_ADMIN_PANEL_URL", "NEXT_PUBLIC_ADMIN_PANEL_URL"],
-};
-
 export const PUBLIC_WEB_LOCALE_PATH_PREFIX = "/pl";
 
-export const getAppBaseUrl = (slug: AppSlug): string => {
-  const keys = APP_URL_OVERRIDE_KEYS[slug];
-
-  if (keys !== undefined && keys.length > 0) {
-    const merged = getMergedRuntimeEnv();
-    const override = resolveNextEnvVar(merged, ...keys);
-
-    if (override !== undefined) {
-      return override;
-    }
-  }
-
-  return getAppHref(slug);
-};
+export const getAppBaseUrl = (slug: AppSlug): string => getAppHref(slug);
 
 export const goToApp = (slug: AppSlug): void => {
   if (typeof window === "undefined") {
@@ -123,14 +134,14 @@ export const resolveApiBaseUrl = (options?: ResolveApiBaseUrlOptions): string =>
   const fromEnv = resolveNextEnvVar(merged, "VITE_API_BASE_URL", "NEXT_PUBLIC_API_BASE_URL");
 
   if (typeof fromEnv === "string" && fromEnv.length > 0) {
-    const envTypeEarly = getEnvironmentFromEnv(getEnvMode());
+    const envTypeEarly = _getCurrentEnvironment();
 
     if (!(envTypeEarly === Environment.PRODUCTION && _isLocalhostApiUrl(fromEnv))) {
       return fromEnv;
     }
   }
 
-  const envType = getEnvironmentFromEnv(getEnvMode());
+  const envType = _getCurrentEnvironment();
 
   if (
     options?.preferRelativeInBrowser === true &&

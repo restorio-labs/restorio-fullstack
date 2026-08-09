@@ -6,10 +6,16 @@
   "main": "worker/index.ts",
   "assets": {
     "directory": "dist/client",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
   },
   "routes": [
     { "pattern": "restorio.org/*", "zone_name": "restorio.org" },
-    { "pattern": "www.restorio.org/*", "zone_name": "restorio.org" }
-  ]
+    { "pattern": "www.restorio.org/*", "zone_name": "restorio.org" },
+  ],
+  "env": {
+    "preview": {
+      "name": "restorio-public-web-preview",
+      "routes": [{ "pattern": "preview.restorio.org/*", "zone_name": "restorio.org" }],
+    },
+  },
 }

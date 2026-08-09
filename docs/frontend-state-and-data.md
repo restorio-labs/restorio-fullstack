@@ -63,8 +63,7 @@ Use `FormProvider` only when deeply nested fields need the form context.
 
 The admin, kitchen, mobile, and waiter applications create a TanStack Query client at their root.
 The public website uses server components and route actions for server data, so it must not add a client query provider without a client-side data owner.
-The UI demo has no backend state and intentionally has no query provider.
-Both applications should add a library only when they add the corresponding runtime responsibility.
+Applications should add a library only when they add the corresponding runtime responsibility.
 
 Redux and Redux Toolkit are not part of the frontend architecture.
 A pull request introducing another state, query, form, or virtualization library must justify why the existing focused tool cannot meet the requirement.

@@ -15,7 +15,6 @@ The `Publish Release OCI Images` workflow publishes changed repositories to GitH
 | Waiter panel | `ghcr.io/restorio-labs/restorio-waiter-panel` |
 
 `public-web` is not published as a container because ADR 0001 assigns it to Cloudflare Workers.
-`ui-demo` is not a production component.
 
 ## Artifact identity
 

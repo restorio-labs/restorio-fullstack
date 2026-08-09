@@ -34,6 +34,7 @@ dist/
 .DS_Store
 Thumbs.db
 /nginx/ssl/
+/nginx/preview-auth/
 
 # Python
 __pycache__/
