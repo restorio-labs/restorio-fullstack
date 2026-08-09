@@ -72,15 +72,18 @@ spec:
           startupProbe:
             exec:
               command: ["sh", "-ec", "mongosh admin --quiet --username \"$MONGO_INITDB_ROOT_USERNAME\" --password \"$MONGO_INITDB_ROOT_PASSWORD\" --authenticationDatabase admin --eval 'db.adminCommand({ ping: 1 })'"]
+            timeoutSeconds: 5
             failureThreshold: 30
             periodSeconds: 5
           readinessProbe:
             exec:
               command: ["sh", "-ec", "mongosh admin --quiet --username \"$MONGO_INITDB_ROOT_USERNAME\" --password \"$MONGO_INITDB_ROOT_PASSWORD\" --authenticationDatabase admin --eval 'db.adminCommand({ ping: 1 })'"]
+            timeoutSeconds: 5
             periodSeconds: 10
           livenessProbe:
             exec:
               command: ["sh", "-ec", "mongosh admin --quiet --username \"$MONGO_INITDB_ROOT_USERNAME\" --password \"$MONGO_INITDB_ROOT_PASSWORD\" --authenticationDatabase admin --eval 'db.adminCommand({ ping: 1 })'"]
+            timeoutSeconds: 5
             periodSeconds: 10
           volumeMounts:
             - name: data
