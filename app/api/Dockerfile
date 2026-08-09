@@ -1,4 +1,4 @@
-FROM python:3.12.12-slim@sha256:f3fa41d74a768c2fce8016b98c191ae8c1bacd8f1152870a3f9f87d350920b7c
+FROM python:3.12.13-slim@sha256:d657ab0ade19f404a6ccc883ab399540de667aff751748ce23c07330c5a89e64
 
 WORKDIR /app
 
@@ -10,13 +10,15 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 RUN groupadd --gid 10001 restorio && \
     useradd --create-home --uid 10001 --gid 10001 --shell /usr/sbin/nologin restorio && \
     apt-get update && \
+    apt-get upgrade -y --no-install-recommends && \
     apt-get install -y --no-install-recommends curl && \
     rm -rf /var/lib/apt/lists/* && \
     pip install --no-cache-dir uv==0.8.22
 
 COPY pyproject.toml uv.lock ./
 
-RUN uv sync --frozen --no-dev --no-install-project
+RUN uv sync --frozen --no-dev --no-install-project && \
+    rm -rf /root/.cache/uv
 
 COPY --chown=restorio:restorio . .
 
