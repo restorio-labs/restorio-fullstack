@@ -20,7 +20,7 @@ rules:
     resources: [configmaps, events, pods, secrets, serviceaccounts, services]
     verbs: [create, delete, get, list, patch, update, watch]
   - apiGroups: ["apps"]
-    resources: [deployments, replicasets]
+    resources: [deployments, replicasets, statefulsets]
     verbs: [create, delete, get, list, patch, update, watch]
   - apiGroups: ["batch"]
     resources: [jobs]
