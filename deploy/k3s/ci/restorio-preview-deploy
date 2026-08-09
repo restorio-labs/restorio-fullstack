@@ -15,23 +15,36 @@ if [ ! -r "$CONFIG_FILE" ] || [ ! -r "$KUBECONFIG" ]; then
 fi
 
 read -r -a command <<< "${SSH_ORIGINAL_COMMAND:-}"
-if [ "${#command[@]}" -ne 5 ] || [ "${command[0]}" != deploy ]; then
-  echo "Expected: deploy VERSION COMMIT API_DIGEST WEB_DIGEST" >&2
+if [ "${#command[@]}" -ne 8 ] || [ "${command[0]}" != deploy ]; then
+  echo "Expected: deploy VERSION COMMIT API_DIGEST ADMIN_PANEL_DIGEST KITCHEN_PANEL_DIGEST MOBILE_APP_DIGEST WAITER_PANEL_DIGEST" >&2
   exit 1
 fi
 
 readonly RELEASE_VERSION="${command[1]}"
 readonly RELEASE_COMMIT="${command[2]}"
 readonly API_DIGEST="${command[3]}"
-readonly WEB_DIGEST="${command[4]}"
+readonly ADMIN_PANEL_DIGEST="${command[4]}"
+readonly KITCHEN_PANEL_DIGEST="${command[5]}"
+readonly MOBILE_APP_DIGEST="${command[6]}"
+readonly WAITER_PANEL_DIGEST="${command[7]}"
 
 if ! [[ "$RELEASE_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || \
-  ! [[ "$RELEASE_COMMIT" =~ ^[0-9a-f]{40}$ ]] || \
-  ! [[ "$API_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]] || \
-  ! [[ "$WEB_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+  ! [[ "$RELEASE_COMMIT" =~ ^[0-9a-f]{40}$ ]]; then
   echo "Invalid deployment request" >&2
   exit 1
 fi
+
+for image_digest in \
+  "$API_DIGEST" \
+  "$ADMIN_PANEL_DIGEST" \
+  "$KITCHEN_PANEL_DIGEST" \
+  "$MOBILE_APP_DIGEST" \
+  "$WAITER_PANEL_DIGEST"; do
+  if ! [[ "$image_digest" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+    echo "Invalid deployment request" >&2
+    exit 1
+  fi
+done
 
 # shellcheck disable=SC1090
 source "$CONFIG_FILE"
@@ -73,12 +86,19 @@ helm upgrade --install restorio "$chart_dir" \
   --namespace "$K3S_NAMESPACE" \
   --values "$values_file" \
   --set global.imagePullSecrets[0].name=ghcr-pull \
-  --set api.image.digest="$API_DIGEST" \
-  --set publicWeb.image.digest="$WEB_DIGEST" \
+  --set-string api.image.digest="$API_DIGEST" \
+  --set-string staticFrontends.adminPanel.image.digest="$ADMIN_PANEL_DIGEST" \
+  --set-string staticFrontends.kitchenPanel.image.digest="$KITCHEN_PANEL_DIGEST" \
+  --set-string staticFrontends.mobileApp.image.digest="$MOBILE_APP_DIGEST" \
+  --set-string staticFrontends.waiterPanel.image.digest="$WAITER_PANEL_DIGEST" \
   --wait \
   --wait-for-jobs \
   --timeout 10m \
   --atomic
 
 kubectl rollout status deployment/restorio-restorio-api --namespace "$K3S_NAMESPACE" --timeout=3m
+kubectl rollout status deployment/restorio-restorio-admin-panel --namespace "$K3S_NAMESPACE" --timeout=3m
+kubectl rollout status deployment/restorio-restorio-kitchen-panel --namespace "$K3S_NAMESPACE" --timeout=3m
+kubectl rollout status deployment/restorio-restorio-mobile-app --namespace "$K3S_NAMESPACE" --timeout=3m
+kubectl rollout status deployment/restorio-restorio-waiter-panel --namespace "$K3S_NAMESPACE" --timeout=3m
 kubectl get pods,services --namespace "$K3S_NAMESPACE" -l app.kubernetes.io/instance=restorio

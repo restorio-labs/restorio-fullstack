@@ -109,5 +109,6 @@ jobs:
             echo "- Tag: \`$RELEASE_TAG\`"
             echo "- Commit: \`$(git rev-parse HEAD)\`"
             echo
-            echo "Run Publish OCI Images and Deploy to k3s from the \`$RELEASE_TAG\` ref."
+            echo "Publishing release images starts automatically from \`$RELEASE_TAG\`."
+            echo "After it succeeds, run Deploy to k3s from the same ref."
           } >> "$GITHUB_STEP_SUMMARY"

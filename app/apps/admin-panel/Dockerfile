@@ -1,9 +1,8 @@
-ARG BUN_IMAGE=oven/bun:1.3.5-alpine
-ARG NGINX_IMAGE=nginxinc/nginx-unprivileged:1.31.3-alpine3.24
+ARG BUN_IMAGE=oven/bun:1.3.5-alpine@sha256:245ea34e0fe836d0fa113065d2a2da7bbc77f6b5a3240df8b1f64e6c19f8dabc
+ARG NGINX_IMAGE=nginxinc/nginx-unprivileged:1.31.3-alpine3.24@sha256:a6c3ec0c0d249d68b0682df854d4a9e222b90fb607dc3fcf2f1d2fcbc85d347e
 
 FROM ${BUN_IMAGE} AS build
 
-ARG APP_NAME
 ARG VERSION
 
 ENV NODE_ENV=production \
@@ -17,28 +16,23 @@ COPY bun.lock bunfig.toml package.json turbo.json tsconfig.base.json tsconfig.js
 COPY app/apps ./app/apps
 COPY app/packages ./app/packages
 
-RUN test -n "${APP_NAME}" \
-    && test -f "app/apps/${APP_NAME}/package.json" \
-    && bun install --frozen-lockfile \
-    && bun run turbo run build --filter="@restorio/${APP_NAME}..." \
+RUN bun install --frozen-lockfile && \
+    bun run turbo run build --filter=@restorio/admin-panel... \
     && mkdir -p /output \
-    && cp -R "app/apps/${APP_NAME}/dist/." /output/
+    && cp -R app/apps/admin-panel/dist/. /output/
 
 FROM ${NGINX_IMAGE} AS runtime
 
-ARG APP_NAME
-ARG BUILD_DATE
 ARG VERSION
 ARG VCS_REF
 
-LABEL org.opencontainers.image.created="${BUILD_DATE}" \
-      org.opencontainers.image.description="Restorio ${APP_NAME} static frontend" \
+LABEL org.opencontainers.image.description="Restorio admin-panel static frontend" \
       org.opencontainers.image.revision="${VCS_REF}" \
       org.opencontainers.image.source="https://github.com/restorio-labs/restorio-fullstack" \
-      org.opencontainers.image.title="Restorio ${APP_NAME}" \
+      org.opencontainers.image.title="Restorio admin-panel" \
       org.opencontainers.image.version="${VERSION}"
 
-COPY infra/images/nginx.conf /etc/nginx/conf.d/default.conf
+COPY app/apps/admin-panel/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build --chown=101:101 /output/ /usr/share/nginx/html/
 
 USER 101:101

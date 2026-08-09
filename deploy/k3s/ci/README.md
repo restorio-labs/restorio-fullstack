@@ -6,11 +6,11 @@ Do not install a self-hosted GitHub Actions runner on this public repository.
 
 ## Preview bootstrap
 
-Run the following commands as root on `tadek122` after the deployment change is merged.
+Run the following commands as root on the preview VPS after the deployment change is merged.
 The commands create a non-interactive `restorio-deploy` account and an RBAC identity constrained to the `restorio` namespace.
 
 ```bash
-id -u restorio-deploy >/dev/null 2>&1 || useradd --system --create-home --home-dir /var/lib/restorio-deploy --shell /usr/sbin/nologin restorio-deploy
+id -u restorio-deploy >/dev/null 2>&1 || useradd --system --create-home --home-dir /var/lib/restorio-deploy --shell /bin/bash restorio-deploy
 install -d -o restorio-deploy -g restorio-deploy -m 0700 /var/lib/restorio-deploy/.ssh
 install -d -o root -g restorio-deploy -m 0750 /etc/restorio-deploy
 ```
@@ -48,14 +48,14 @@ Place its public key in `/var/lib/restorio-deploy/.ssh/authorized_keys` as a sin
 command="/usr/local/libexec/restorio-preview-deploy",no-port-forwarding,no-agent-forwarding,no-X11-forwarding,no-pty
 ```
 
-The forced command accepts only `deploy VERSION COMMIT API_DIGEST WEB_DIGEST` and validates every argument.
+The forced command accepts only `deploy VERSION COMMIT API_DIGEST ADMIN_PANEL_DIGEST KITCHEN_PANEL_DIGEST MOBILE_APP_DIGEST WAITER_PANEL_DIGEST` and validates every argument.
 The key cannot open an interactive shell, tunnel ports, or execute arbitrary commands.
 
 ## GitHub Environment
 
 For the `preview` Environment, configure:
 
-- Variable `DEPLOY_SSH_HOST` with the public address of `tadek122`
+- Variable `DEPLOY_SSH_HOST` with the public address of the preview VPS
 - Variable `DEPLOY_SSH_PORT` with the SSH port, normally `22`
 - Variable `DEPLOY_SSH_KNOWN_HOSTS` with the output of `ssh-keyscan -H -p 22 YOUR_HOST`
 - Secret `DEPLOY_SSH_PRIVATE_KEY` with the dedicated private key

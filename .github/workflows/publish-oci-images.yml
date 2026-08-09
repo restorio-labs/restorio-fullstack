@@ -58,10 +58,22 @@ jobs:
             context: ./app/api
             file: ./app/api/Dockerfile
             image: restorio-api
-          - name: public-web
+          - name: admin-panel
             context: .
-            file: ./app/apps/public-web/Dockerfile
-            image: restorio-public-web
+            file: ./app/apps/admin-panel/Dockerfile
+            image: restorio-admin-panel
+          - name: kitchen-panel
+            context: .
+            file: ./app/apps/kitchen-panel/Dockerfile
+            image: restorio-kitchen-panel
+          - name: mobile-app
+            context: .
+            file: ./app/apps/mobile-app/Dockerfile
+            image: restorio-mobile-app
+          - name: waiter-panel
+            context: .
+            file: ./app/apps/waiter-panel/Dockerfile
+            image: restorio-waiter-panel
     env:
       REGISTRY: ghcr.io
       IMAGE: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
@@ -103,6 +115,9 @@ jobs:
           push: true
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
+          build-args: |
+            VERSION=${{ needs.validate-release.outputs.version }}
+            VCS_REF=${{ github.sha }}
           cache-from: type=gha,scope=${{ matrix.image }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}
           provenance: mode=max
