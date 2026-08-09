@@ -1,0 +1,96 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "restorio-runtime.fullname" . }}-mongo
+  labels:
+    {{- include "restorio-runtime.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mongo
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: {{ include "restorio-runtime.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: mongo
+  ports:
+    - name: mongo
+      port: 27017
+      targetPort: mongo
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "restorio-runtime.fullname" . }}-mongo
+  labels:
+    {{- include "restorio-runtime.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mongo
+spec:
+  serviceName: {{ include "restorio-runtime.fullname" . }}-mongo
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "restorio-runtime.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: mongo
+  template:
+    metadata:
+      labels:
+        {{- include "restorio-runtime.labels" . | nindent 8 }}
+        app.kubernetes.io/component: mongo
+    spec:
+      securityContext:
+        fsGroup: 999
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: mongo
+          image: "{{ .Values.mongo.image.repository }}@{{ .Values.mongo.image.digest }}"
+          imagePullPolicy: {{ .Values.mongo.image.pullPolicy }}
+          ports:
+            - name: mongo
+              containerPort: 27017
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.runtime.existingSecret }}
+                  key: MONGODB_ROOT_USERNAME
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.runtime.existingSecret }}
+                  key: MONGODB_ROOT_PASSWORD
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsNonRoot: true
+            runAsUser: 999
+            runAsGroup: 999
+          resources:
+            {{- toYaml .Values.mongo.resources | nindent 12 }}
+          startupProbe:
+            exec:
+              command: ["sh", "-ec", "mongosh admin --quiet --username \"$MONGO_INITDB_ROOT_USERNAME\" --password \"$MONGO_INITDB_ROOT_PASSWORD\" --authenticationDatabase admin --eval 'db.adminCommand({ ping: 1 })'"]
+            failureThreshold: 30
+            periodSeconds: 5
+          readinessProbe:
+            exec:
+              command: ["sh", "-ec", "mongosh admin --quiet --username \"$MONGO_INITDB_ROOT_USERNAME\" --password \"$MONGO_INITDB_ROOT_PASSWORD\" --authenticationDatabase admin --eval 'db.adminCommand({ ping: 1 })'"]
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command: ["sh", "-ec", "mongosh admin --quiet --username \"$MONGO_INITDB_ROOT_USERNAME\" --password \"$MONGO_INITDB_ROOT_PASSWORD\" --authenticationDatabase admin --eval 'db.adminCommand({ ping: 1 })'"]
+            periodSeconds: 10
+          volumeMounts:
+            - name: data
+              mountPath: /data/db
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: {{ .Values.mongo.persistence.storageClassName }}
+        resources:
+          requests:
+            storage: {{ .Values.mongo.persistence.size }}

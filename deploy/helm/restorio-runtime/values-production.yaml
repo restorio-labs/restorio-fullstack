@@ -1,0 +1,5 @@
+global:
+  environment: production
+
+runtime:
+  existingSecret: restorio-data-runtime
