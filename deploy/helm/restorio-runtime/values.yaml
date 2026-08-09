@@ -1,0 +1,53 @@
+global:
+  environment: production
+
+runtime:
+  existingSecret: restorio-runtime
+
+postgres:
+  image:
+    repository: postgis/postgis
+    digest: sha256:978a2e6671c956d650d1f240dba7c73b8519a5f5af8685165fca616cc4ae3568
+    pullPolicy: IfNotPresent
+  persistence:
+    storageClassName: local-path
+    size: 10Gi
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+mongo:
+  image:
+    repository: mongo
+    digest: sha256:e0ce8c35124d4a9f9785532d1f268f39e9728ffa1cb38f46fa482436424c4bd3
+    pullPolicy: IfNotPresent
+  persistence:
+    storageClassName: local-path
+    size: 10Gi
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+minio:
+  image:
+    repository: minio/minio
+    digest: sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
+    pullPolicy: IfNotPresent
+  persistence:
+    storageClassName: local-path
+    size: 10Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi

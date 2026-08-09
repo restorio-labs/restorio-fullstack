@@ -68,8 +68,12 @@ git -C "$REPOSITORY_DIR" checkout --detach --force "$RELEASE_COMMIT"
 
 readonly chart_dir="$REPOSITORY_DIR/deploy/helm/restorio"
 readonly values_file="$chart_dir/values-preview.yaml"
+readonly runtime_chart_dir="$REPOSITORY_DIR/deploy/helm/restorio-runtime"
+readonly runtime_values_file="$runtime_chart_dir/values-preview.yaml"
+readonly api_runtime_secret=restorio-api-preview-runtime
 
-if [ ! -f "$chart_dir/Chart.yaml" ] || [ ! -f "$values_file" ]; then
+if [ ! -f "$chart_dir/Chart.yaml" ] || [ ! -f "$values_file" ] || \
+  [ ! -f "$runtime_chart_dir/Chart.yaml" ] || [ ! -f "$runtime_values_file" ]; then
   echo "Release does not contain the preview Helm chart" >&2
   exit 1
 fi
@@ -81,6 +85,26 @@ kubectl create secret docker-registry ghcr-pull \
   --docker-password="$GHCR_PULL_TOKEN" \
   --dry-run=client \
   -o yaml | kubectl apply -f -
+
+helm upgrade --install restorio-runtime "$runtime_chart_dir" \
+  --namespace "$K3S_NAMESPACE" \
+  --values "$runtime_values_file" \
+  --wait \
+  --timeout 10m \
+  --atomic
+
+secret_value() {
+  kubectl get secret "$api_runtime_secret" \
+    --namespace "$K3S_NAMESPACE" \
+    --output="jsonpath={.data.$1}" | base64 --decode
+}
+
+if [[ "$(secret_value DATABASE_URL)" != *"@restorio-runtime-mongo.restorio.svc.cluster.local:27017"* ]] || \
+  [[ "$(secret_value POSTGRES_DSN)" != *"@restorio-runtime-postgres.restorio.svc.cluster.local:5432"* ]] || \
+  [[ "$(secret_value MINIO_ENDPOINT)" != "restorio-runtime-minio.restorio.svc.cluster.local:9000" ]]; then
+  echo "Preview API runtime secret does not target the k3s stateful services" >&2
+  exit 1
+fi
 
 helm upgrade --install restorio "$chart_dir" \
   --namespace "$K3S_NAMESPACE" \
