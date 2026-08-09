@@ -1,12 +1,15 @@
 name: Create Release Tag
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       bump:
         description: Version increment
         required: true
-        default: initial
+        default: patch
         type: choice
         options:
           - initial
@@ -23,20 +26,20 @@ permissions:
 
 jobs:
   create-tag:
-    name: Create ${{ inputs.bump }} release tag
+    name: Create release tag
     runs-on: ubuntu-latest
     steps:
       - name: Checkout main
         uses: actions/checkout@v6
         with:
-          ref: main
+          ref: ${{ github.event_name == 'push' && github.sha || 'main' }}
           fetch-depth: 0
 
       - name: Calculate next release tag
         id: release
         shell: bash
         env:
-          BUMP: ${{ inputs.bump }}
+          BUMP: ${{ inputs.bump || 'patch' }}
         run: |
           set -euo pipefail
 
