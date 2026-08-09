@@ -4,13 +4,13 @@ The GitHub workflow runs on a GitHub-hosted runner and connects through SSH to a
 Kubernetes API access and the service-account kubeconfig never leave the VPS.
 Do not install a self-hosted GitHub Actions runner on this public repository.
 
-## Preview bootstrap
+## Staging bootstrap
 
 Run the following commands as root on `tadek122` after the deployment change is merged.
 The commands create a non-interactive `restorio-deploy` account and an RBAC identity constrained to the `restorio` namespace.
 
 ```bash
-id -u restorio-deploy >/dev/null 2>&1 || useradd --system --create-home --home-dir /var/lib/restorio-deploy --shell /usr/sbin/nologin restorio-deploy
+id -u restorio-deploy >/dev/null 2>&1 || useradd --system --create-home --home-dir /var/lib/restorio-deploy --shell /bin/bash restorio-deploy
 install -d -o restorio-deploy -g restorio-deploy -m 0700 /var/lib/restorio-deploy/.ssh
 install -d -o root -g restorio-deploy -m 0750 /etc/restorio-deploy
 ```
@@ -23,13 +23,13 @@ Install the checked-in command as root:
 
 ```bash
 install -d -o root -g root -m 0755 /usr/local/libexec
-install -o root -g root -m 0755 deploy/k3s/ci/restorio-preview-deploy /usr/local/libexec/restorio-preview-deploy
+install -o root -g root -m 0755 deploy/k3s/ci/restorio-staging-deploy /usr/local/libexec/restorio-staging-deploy
 ```
 
 The deploy account needs Helm and kubectl in its `PATH`.
 Use the k3s-provided `kubectl` and install a current Helm 3 binary with its published SHA-256 checksum.
 
-Create `/etc/restorio-deploy/preview.env` as `root:restorio-deploy`, mode `0640`:
+Create `/etc/restorio-deploy/staging.env` as `root:restorio-deploy`, mode `0640`:
 
 ```dotenv
 K3S_NAMESPACE=restorio
@@ -45,15 +45,15 @@ Generate a dedicated ED25519 key pair for the GitHub Environment.
 Place its public key in `/var/lib/restorio-deploy/.ssh/authorized_keys` as a single line prefixed with:
 
 ```text
-command="/usr/local/libexec/restorio-preview-deploy",no-port-forwarding,no-agent-forwarding,no-X11-forwarding,no-pty
+command="/usr/local/libexec/restorio-staging-deploy",no-port-forwarding,no-agent-forwarding,no-X11-forwarding,no-pty
 ```
 
-The forced command accepts only `deploy VERSION COMMIT API_DIGEST WEB_DIGEST` and validates every argument.
+The forced command accepts only `deploy VERSION COMMIT API_DIGEST` and validates every argument.
 The key cannot open an interactive shell, tunnel ports, or execute arbitrary commands.
 
 ## GitHub Environment
 
-For the `preview` Environment, configure:
+For the `staging` Environment, configure:
 
 - Variable `DEPLOY_SSH_HOST` with the public address of `tadek122`
 - Variable `DEPLOY_SSH_PORT` with the SSH port, normally `22`

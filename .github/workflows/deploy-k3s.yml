@@ -94,9 +94,7 @@ jobs:
           set -euo pipefail
           printf '%s' "$GHCR_PULL_TOKEN" | crane auth login ghcr.io --username "$GHCR_USERNAME" --password-stdin
           API_DIGEST=$(crane digest "ghcr.io/$GHCR_USERNAME/restorio-api:$RELEASE_VERSION")
-          WEB_DIGEST=$(crane digest "ghcr.io/$GHCR_USERNAME/restorio-public-web:$RELEASE_VERSION")
           printf 'api=%s\n' "$API_DIGEST" >> "$GITHUB_OUTPUT"
-          printf 'public_web=%s\n' "$WEB_DIGEST" >> "$GITHUB_OUTPUT"
 
       - name: Request deployment from target VPS
         shell: bash
@@ -104,7 +102,6 @@ jobs:
           RELEASE_VERSION: ${{ github.ref_name }}
           RELEASE_COMMIT: ${{ steps.release.outputs.commit }}
           API_DIGEST: ${{ steps.images.outputs.api }}
-          WEB_DIGEST: ${{ steps.images.outputs.public_web }}
         run: |
           set -euo pipefail
           install -d -m 0700 "$RUNNER_TEMP/ssh"
@@ -120,14 +117,13 @@ jobs:
             -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
             -p "$DEPLOY_SSH_PORT" \
             "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
-            "deploy $RELEASE_VERSION $RELEASE_COMMIT $API_DIGEST $WEB_DIGEST"
+            "deploy $RELEASE_VERSION $RELEASE_COMMIT $API_DIGEST"
 
       - name: Write deployment summary
         shell: bash
         env:
           RELEASE_COMMIT: ${{ steps.release.outputs.commit }}
           API_DIGEST: ${{ steps.images.outputs.api }}
-          WEB_DIGEST: ${{ steps.images.outputs.public_web }}
         run: |
           set -euo pipefail
           {
@@ -137,5 +133,4 @@ jobs:
             echo "- Release: \`${{ github.ref_name }}\`"
             echo "- Commit: \`$RELEASE_COMMIT\`"
             echo "- API digest: \`$API_DIGEST\`"
-            echo "- Public web digest: \`$WEB_DIGEST\`"
           } >> "$GITHUB_STEP_SUMMARY"

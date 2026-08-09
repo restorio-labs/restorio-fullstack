@@ -58,10 +58,6 @@ jobs:
             context: ./app/api
             file: ./app/api/Dockerfile
             image: restorio-api
-          - name: public-web
-            context: .
-            file: ./app/apps/public-web/Dockerfile
-            image: restorio-public-web
     env:
       REGISTRY: ghcr.io
       IMAGE: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
