@@ -4,7 +4,7 @@ Issue [#148](https://github.com/restorio-labs/restorio-fullstack/issues/148) def
 
 ## Published components
 
-The `Publish Release OCI Images` workflow publishes these repositories to GitHub Container Registry from a `vMAJOR.MINOR.PATCH` release tag:
+The `Publish Release OCI Images` workflow publishes changed repositories to GitHub Container Registry from a `vMAJOR.MINOR.PATCH` release tag:
 
 | Component | Image |
 |---|---|
@@ -19,9 +19,19 @@ The `Publish Release OCI Images` workflow publishes these repositories to GitHub
 
 ## Artifact identity
 
-Every release publishes the release version and `sha-<full-commit-sha>`.
-Release configuration must resolve a tag to the digest emitted by the workflow and store the full `image@sha256:...` reference.
+An OCI component is published only when its own source changes.
+Changes in `app/packages/**`, `bun.lock`, or root frontend build configuration rebuild all four static frontend images because each of them consumes shared workspace packages.
+The API is not rebuilt for those changes because it has an independent Python build context.
+
+Changed components receive the release version and `sha-<full-commit-sha>` tags.
+After the selected builds and vulnerability scans succeed, the workflow records all five image digests in `restorio-release-manifest.json` and attaches it to the matching GitHub Release.
+For an unchanged component, the manifest records the latest earlier published image digest.
+This means a release that changes only the admin panel keeps the previously published API, kitchen panel, mobile app, and waiter panel images.
+The deploy workflow downloads and validates the manifest instead of resolving mutable image tags again.
 Production deployment must never select `latest` or another mutable tag.
+
+For a release created before manifests were introduced, run `Publish Release OCI Images` from `main` with `release_tag` set to that existing tag and `manifest_only` enabled.
+This backfills the release asset without rebuilding or overwriting any image.
 
 The workflow adds OCI source, version, revision, and creation labels.
 BuildKit also publishes provenance and SBOM attestations for the digest.

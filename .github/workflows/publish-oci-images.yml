@@ -1,35 +1,58 @@
 name: Publish Release OCI Images
 
 on:
+  workflow_call:
+    inputs:
+      release_tag:
+        description: Existing vMAJOR.MINOR.PATCH tag to publish
+        required: true
+        type: string
   push:
     tags:
       - "v*"
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing vMAJOR.MINOR.PATCH tag to publish or backfill
+        required: false
+        type: string
+      manifest_only:
+        description: Record the release manifest without rebuilding images
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: publish-oci-images-${{ github.ref }}
   cancel-in-progress: false
 
 permissions:
-  contents: read
+  contents: write
   packages: write
   attestations: write
   id-token: write
   security-events: write
 
 jobs:
-  validate-release:
-    name: Validate release version
-    runs-on: ubuntu-slim
+  resolve-release:
+    name: Resolve release components
+    runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.release.outputs.version }}
+      components: ${{ steps.release.outputs.components }}
     steps:
+      - name: Checkout selected release
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.release_tag || github.ref_name }}
+          fetch-depth: 0
+
       - id: release
-        name: Validate release version
+        name: Validate release and select components
         shell: bash
         env:
-          REF: ${{ github.ref }}
-          REF_NAME: ${{ github.ref_name }}
+          REF: ${{ inputs.release_tag && format('refs/tags/{0}', inputs.release_tag) || github.ref }}
+          REF_NAME: ${{ inputs.release_tag || github.ref_name }}
         run: |
           set -euo pipefail
 
@@ -46,34 +69,41 @@ jobs:
 
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
+          git fetch --force --tags origin
+          release_commit=$(git rev-parse "$VERSION^{commit}")
+          previous_tag=""
+          while IFS= read -r candidate; do
+            if [ "$candidate" = "$VERSION" ]; then
+              continue
+            fi
+
+            if git merge-base --is-ancestor "$candidate^{commit}" "$release_commit"; then
+              previous_tag="$candidate"
+              break
+            fi
+          done < <(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-version:refname)
+
+          if [ -n "$previous_tag" ]; then
+            components=$(scripts/select-oci-release-components.sh "$previous_tag^{commit}" "$release_commit")
+            echo "Previous release tag: $previous_tag"
+          else
+            components=$(scripts/select-oci-release-components.sh '' "$release_commit")
+            echo "No prior release tag found; publishing every OCI component"
+          fi
+
+          test "$(jq --raw-output 'type' <<< "$components")" = array
+          echo "components=$components" >> "$GITHUB_OUTPUT"
+          echo "Components to publish: $components"
+
   build-and-publish:
     name: Build ${{ matrix.name }}
-    needs: validate-release
+    needs: resolve-release
+    if: ${{ needs.resolve-release.outputs.components != '[]' && !inputs.manifest_only }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - name: api
-            context: ./app/api
-            file: ./app/api/Dockerfile
-            image: restorio-api
-          - name: admin-panel
-            context: .
-            file: ./app/apps/admin-panel/Dockerfile
-            image: restorio-admin-panel
-          - name: kitchen-panel
-            context: .
-            file: ./app/apps/kitchen-panel/Dockerfile
-            image: restorio-kitchen-panel
-          - name: mobile-app
-            context: .
-            file: ./app/apps/mobile-app/Dockerfile
-            image: restorio-mobile-app
-          - name: waiter-panel
-            context: .
-            file: ./app/apps/waiter-panel/Dockerfile
-            image: restorio-waiter-panel
+        include: ${{ fromJSON(needs.resolve-release.outputs.components) }}
     env:
       REGISTRY: ghcr.io
       IMAGE: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
@@ -99,11 +129,11 @@ jobs:
         with:
           images: ${{ env.IMAGE }}
           tags: |
-            type=raw,value=${{ needs.validate-release.outputs.version }}
+            type=raw,value=${{ needs.resolve-release.outputs.version }}
             type=sha,prefix=sha-
           labels: |
             org.opencontainers.image.title=Restorio ${{ matrix.name }}
-            org.opencontainers.image.version=${{ needs.validate-release.outputs.version }}
+            org.opencontainers.image.version=${{ needs.resolve-release.outputs.version }}
 
       - name: Build and publish immutable image
         id: build
@@ -116,7 +146,7 @@ jobs:
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
           build-args: |
-            VERSION=${{ needs.validate-release.outputs.version }}
+            VERSION=${{ needs.resolve-release.outputs.version }}
             VCS_REF=${{ github.sha }}
           cache-from: type=gha,scope=${{ matrix.image }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}
@@ -155,7 +185,62 @@ jobs:
           {
             echo "### ${{ matrix.name }} image"
             echo
-            echo "- Version: \`${{ needs.validate-release.outputs.version }}\`"
+            echo "- Release tag: \`${{ needs.resolve-release.outputs.version }}\`"
             echo "- Digest: \`${{ steps.build.outputs.digest }}\`"
             echo "- Image: \`${{ env.IMAGE }}@${{ steps.build.outputs.digest }}\`"
           } >> "$GITHUB_STEP_SUMMARY"
+
+  create-release-manifest:
+    name: Record release manifest
+    needs:
+      - resolve-release
+      - build-and-publish
+    if: >-
+      ${{ always() && needs.resolve-release.result == 'success' &&
+      (needs.build-and-publish.result == 'success' || needs.build-and-publish.result == 'skipped') }}
+    runs-on: ubuntu-latest
+    env:
+      GHCR_USERNAME: ${{ github.repository_owner }}
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ needs.resolve-release.outputs.version }}
+    steps:
+      - name: Checkout selected release
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.release_tag || github.ref_name }}
+
+      - name: Set up Crane
+        uses: imjasonh/setup-crane@v0.4
+
+      - name: Log in to GitHub Container Registry
+        run: |
+          set -euo pipefail
+          printf '%s' "$GH_TOKEN" | crane auth login ghcr.io --username "$GHCR_USERNAME" --password-stdin
+
+      - name: Generate immutable release manifest
+        id: manifest
+        run: |
+          set -euo pipefail
+          release_commit=$(git rev-parse "$RELEASE_TAG^{commit}")
+          manifest_path="$RUNNER_TEMP/restorio-release-manifest.json"
+          scripts/create-oci-release-manifest.sh "$RELEASE_TAG" "$release_commit" > "$manifest_path"
+          jq --exit-status \
+            --arg release_tag "$RELEASE_TAG" \
+            --arg commit "$release_commit" \
+            '.schemaVersion == 1 and .releaseTag == $release_tag and .commit == $commit and (.components | length) == 5' \
+            "$manifest_path" > /dev/null
+          echo "path=$manifest_path" >> "$GITHUB_OUTPUT"
+
+      - name: Attach manifest to GitHub Release
+        env:
+          MANIFEST_PATH: ${{ steps.manifest.outputs.path }}
+        run: |
+          set -euo pipefail
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "$MANIFEST_PATH#restorio-release-manifest.json" --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "$RELEASE_TAG" "$MANIFEST_PATH#restorio-release-manifest.json" \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "Restorio $RELEASE_TAG" \
+              --notes "Immutable OCI deployment manifest for $RELEASE_TAG"
+          fi

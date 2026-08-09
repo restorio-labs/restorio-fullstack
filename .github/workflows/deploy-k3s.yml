@@ -81,28 +81,55 @@ jobs:
           RELEASE_COMMIT=$(git rev-parse "$RELEASE_VERSION^{commit}")
           printf 'commit=%s\n' "$RELEASE_COMMIT" >> "$GITHUB_OUTPUT"
 
-      - name: Set up Crane
-        uses: imjasonh/setup-crane@v0.4
-
-      - name: Resolve immutable image digests
+      - name: Read immutable release manifest
         id: images
         shell: bash
         env:
           RELEASE_VERSION: ${{ github.ref_name }}
-          GHCR_USERNAME: ${{ github.repository_owner }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          printf '%s' "$GHCR_PULL_TOKEN" | crane auth login ghcr.io --username "$GHCR_USERNAME" --password-stdin
-          API_DIGEST=$(crane digest "ghcr.io/$GHCR_USERNAME/restorio-api:$RELEASE_VERSION")
-          ADMIN_PANEL_DIGEST=$(crane digest "ghcr.io/$GHCR_USERNAME/restorio-admin-panel:$RELEASE_VERSION")
-          KITCHEN_PANEL_DIGEST=$(crane digest "ghcr.io/$GHCR_USERNAME/restorio-kitchen-panel:$RELEASE_VERSION")
-          MOBILE_APP_DIGEST=$(crane digest "ghcr.io/$GHCR_USERNAME/restorio-mobile-app:$RELEASE_VERSION")
-          WAITER_PANEL_DIGEST=$(crane digest "ghcr.io/$GHCR_USERNAME/restorio-waiter-panel:$RELEASE_VERSION")
+
+          manifest_path="$RUNNER_TEMP/restorio-release-manifest.json"
+          gh release download "$RELEASE_VERSION" \
+            --repo "$GITHUB_REPOSITORY" \
+            --pattern restorio-release-manifest.json \
+            --dir "$RUNNER_TEMP"
+
+          release_commit=$(git rev-parse "$RELEASE_VERSION^{commit}")
+          jq --exit-status \
+            --arg release_tag "$RELEASE_VERSION" \
+            --arg commit "$release_commit" \
+            '.schemaVersion == 1 and .releaseTag == $release_tag and .commit == $commit and (.components | length) == 5' \
+            "$manifest_path" > /dev/null
+
+          read_component() {
+            jq --raw-output --exit-status \
+              --arg component "$1" \
+              '.components[$component] | select(.image and .tag and (.digest | test("^sha256:[0-9a-f]{64}$"))) | "\(.tag) \(.digest)"' \
+              "$manifest_path"
+          }
+
+          resolved_api=$(read_component api)
+          read -r API_TAG API_DIGEST <<< "$resolved_api"
+          resolved_admin_panel=$(read_component admin-panel)
+          read -r ADMIN_PANEL_TAG ADMIN_PANEL_DIGEST <<< "$resolved_admin_panel"
+          resolved_kitchen_panel=$(read_component kitchen-panel)
+          read -r KITCHEN_PANEL_TAG KITCHEN_PANEL_DIGEST <<< "$resolved_kitchen_panel"
+          resolved_mobile_app=$(read_component mobile-app)
+          read -r MOBILE_APP_TAG MOBILE_APP_DIGEST <<< "$resolved_mobile_app"
+          resolved_waiter_panel=$(read_component waiter-panel)
+          read -r WAITER_PANEL_TAG WAITER_PANEL_DIGEST <<< "$resolved_waiter_panel"
           printf 'api=%s\n' "$API_DIGEST" >> "$GITHUB_OUTPUT"
+          printf 'api_tag=%s\n' "$API_TAG" >> "$GITHUB_OUTPUT"
           printf 'admin_panel=%s\n' "$ADMIN_PANEL_DIGEST" >> "$GITHUB_OUTPUT"
+          printf 'admin_panel_tag=%s\n' "$ADMIN_PANEL_TAG" >> "$GITHUB_OUTPUT"
           printf 'kitchen_panel=%s\n' "$KITCHEN_PANEL_DIGEST" >> "$GITHUB_OUTPUT"
+          printf 'kitchen_panel_tag=%s\n' "$KITCHEN_PANEL_TAG" >> "$GITHUB_OUTPUT"
           printf 'mobile_app=%s\n' "$MOBILE_APP_DIGEST" >> "$GITHUB_OUTPUT"
+          printf 'mobile_app_tag=%s\n' "$MOBILE_APP_TAG" >> "$GITHUB_OUTPUT"
           printf 'waiter_panel=%s\n' "$WAITER_PANEL_DIGEST" >> "$GITHUB_OUTPUT"
+          printf 'waiter_panel_tag=%s\n' "$WAITER_PANEL_TAG" >> "$GITHUB_OUTPUT"
 
       - name: Request deployment from target VPS
         shell: bash
@@ -110,10 +137,15 @@ jobs:
           RELEASE_VERSION: ${{ github.ref_name }}
           RELEASE_COMMIT: ${{ steps.release.outputs.commit }}
           API_DIGEST: ${{ steps.images.outputs.api }}
+          API_TAG: ${{ steps.images.outputs.api_tag }}
           ADMIN_PANEL_DIGEST: ${{ steps.images.outputs.admin_panel }}
+          ADMIN_PANEL_TAG: ${{ steps.images.outputs.admin_panel_tag }}
           KITCHEN_PANEL_DIGEST: ${{ steps.images.outputs.kitchen_panel }}
+          KITCHEN_PANEL_TAG: ${{ steps.images.outputs.kitchen_panel_tag }}
           MOBILE_APP_DIGEST: ${{ steps.images.outputs.mobile_app }}
+          MOBILE_APP_TAG: ${{ steps.images.outputs.mobile_app_tag }}
           WAITER_PANEL_DIGEST: ${{ steps.images.outputs.waiter_panel }}
+          WAITER_PANEL_TAG: ${{ steps.images.outputs.waiter_panel_tag }}
         run: |
           set -euo pipefail
           install -d -m 0700 "$RUNNER_TEMP/ssh"
@@ -136,10 +168,15 @@ jobs:
         env:
           RELEASE_COMMIT: ${{ steps.release.outputs.commit }}
           API_DIGEST: ${{ steps.images.outputs.api }}
+          API_TAG: ${{ steps.images.outputs.api_tag }}
           ADMIN_PANEL_DIGEST: ${{ steps.images.outputs.admin_panel }}
+          ADMIN_PANEL_TAG: ${{ steps.images.outputs.admin_panel_tag }}
           KITCHEN_PANEL_DIGEST: ${{ steps.images.outputs.kitchen_panel }}
+          KITCHEN_PANEL_TAG: ${{ steps.images.outputs.kitchen_panel_tag }}
           MOBILE_APP_DIGEST: ${{ steps.images.outputs.mobile_app }}
+          MOBILE_APP_TAG: ${{ steps.images.outputs.mobile_app_tag }}
           WAITER_PANEL_DIGEST: ${{ steps.images.outputs.waiter_panel }}
+          WAITER_PANEL_TAG: ${{ steps.images.outputs.waiter_panel_tag }}
         run: |
           set -euo pipefail
           {
@@ -148,9 +185,9 @@ jobs:
             echo "- Environment: \`${{ inputs.environment }}\`"
             echo "- Release: \`${{ github.ref_name }}\`"
             echo "- Commit: \`$RELEASE_COMMIT\`"
-            echo "- API digest: \`$API_DIGEST\`"
-            echo "- Admin panel digest: \`$ADMIN_PANEL_DIGEST\`"
-            echo "- Kitchen panel digest: \`$KITCHEN_PANEL_DIGEST\`"
-            echo "- Mobile app digest: \`$MOBILE_APP_DIGEST\`"
-            echo "- Waiter panel digest: \`$WAITER_PANEL_DIGEST\`"
+            echo "- API: \`$API_TAG\` at \`$API_DIGEST\`"
+            echo "- Admin panel: \`$ADMIN_PANEL_TAG\` at \`$ADMIN_PANEL_DIGEST\`"
+            echo "- Kitchen panel: \`$KITCHEN_PANEL_TAG\` at \`$KITCHEN_PANEL_DIGEST\`"
+            echo "- Mobile app: \`$MOBILE_APP_TAG\` at \`$MOBILE_APP_DIGEST\`"
+            echo "- Waiter panel: \`$WAITER_PANEL_TAG\` at \`$WAITER_PANEL_DIGEST\`"
           } >> "$GITHUB_STEP_SUMMARY"
