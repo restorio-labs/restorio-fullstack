@@ -1,8 +1,8 @@
 # Restorio k3s chart
 
 This chart deploys the Restorio API and the four static application frontends to a single-node k3s cluster.
-It does not deploy PostgreSQL, MongoDB, MinIO, TLS, the public web frontend, ingress, or observability.
-Those resources have their own platform tickets and must exist before a production deployment.
+PostgreSQL, MongoDB, and MinIO are deployed first by the separate [`restorio-runtime`](../restorio-runtime/README.md) chart.
+TLS, the public web frontend, ingress, and observability have their own platform tickets.
 
 Every workload image digest is required.
 The public web frontend remains deployed to Cloudflare and is not part of this chart.

@@ -40,7 +40,7 @@ The following table summarises the principal technologies and frameworks employe
 |---|---|
 | **Backend** | FastAPI, SQLAlchemy 2.0 (asynchronous), Alembic, Motor (MongoDB), Redis, MinIO |
 | **Frontend** | React 18/19, Next.js 19, Vite, TypeScript, Tailwind CSS, Zustand, TanStack Query, TanStack Virtual, React Hook Form |
-| **Infrastructure** | Docker Compose, Nginx, Cloudflare Workers, PostgreSQL 16 with PostGIS, MongoDB 7, MinIO |
+| **Infrastructure** | k3s, Helm, Nginx, Cloudflare Workers, PostgreSQL 17 with PostGIS, MongoDB 8, MinIO |
 | **Quality Assurance** | Vitest, Playwright, pytest, React Testing Library |
 | **Development Tooling** | Turborepo, Bun, uv, Ruff, ESLint, Prettier, Husky |
 

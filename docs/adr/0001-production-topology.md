@@ -116,8 +116,8 @@ The same Helm chart and immutable component images must be usable in both cluste
 | `ui-demo` | No production deployment | None | None | Development-only |
 | FastAPI API | k3s | Deployment and ClusterIP Service | `api.restorio.org` | Stateless process with stateful dependencies |
 | Alembic migrations | k3s | One-shot Helm pre-upgrade Job | None | Release operation |
-| PostgreSQL 16 with PostGIS | k3s for the first production phase | StatefulSet, headless Service, PVC | None | Stateful |
-| MongoDB 7 | k3s for the first production phase | StatefulSet, headless Service, PVC | None | Stateful |
+| PostgreSQL 17 with PostGIS | k3s for the first production phase | StatefulSet, headless Service, PVC | None | Stateful |
+| MongoDB 8 | k3s for the first production phase | StatefulSet, headless Service, PVC | None | Stateful |
 | MinIO object API | k3s for the first production phase | StatefulSet, ClusterIP Service, PVC | `minio.restorio.org` for object requests | Stateful |
 | MinIO administrative console | k3s | ClusterIP Service only | None | Administrative |
 | Ingress | k3s platform namespace | Traefik supplied and version-pinned with k3s | Origin for approved HTTP hosts | Platform |
