@@ -1,11 +1,11 @@
 # Restorio k3s chart
 
-This chart deploys the Restorio API and an optional self-hosted public web workload to a single-node k3s cluster.
-It does not deploy PostgreSQL, MongoDB, MinIO, TLS, ingress, or observability.
+This chart deploys the Restorio API and the four static application frontends to a single-node k3s cluster.
+It does not deploy PostgreSQL, MongoDB, MinIO, TLS, the public web frontend, ingress, or observability.
 Those resources have their own platform tickets and must exist before a production deployment.
 
-The API image digest is required.
-The public web digest is required only when `publicWeb.enabled` is true.
+Every workload image digest is required.
+The public web frontend remains deployed to Cloudflare and is not part of this chart.
 The chart runs Alembic as a Helm pre-install and pre-upgrade job before the API Deployment rolls out.
 
 ## GitHub environment configuration
@@ -29,7 +29,7 @@ Bootstrap the SSH deployment gateway using [`deploy/k3s/ci/README.md`](../../k3s
 
 ## Deploying a release
 
-First publish the images from a `vMAJOR.MINOR.PATCH` tag through the `Publish OCI Images` workflow.
+First publish the images from a `vMAJOR.MINOR.PATCH` tag through the `Publish Release OCI Images` workflow.
 After both image jobs finish, run `Deploy to k3s` from the same tag and select `preview` or `production`.
 The GitHub workflow resolves the released image tags to OCI digests and makes one constrained SSH deployment request to the target VPS.
 
@@ -42,5 +42,5 @@ The chart exposes API traffic as NodePort `30081` in production and `31081` in p
 The existing external Caddy instance must proxy `api.restorio.org` to the production node's `30081` endpoint.
 Do not expose the Kubernetes API, Prometheus, Grafana, Loki, or internal services through this route.
 
-When the optional public web workload is enabled, it uses NodePort `30080` in production.
-Do not enable it while `restorio.org` is served by the existing Cloudflare Worker.
+The static frontend services use NodePorts `30082` through `30085` in production and `31082` through `31085` in preview.
+The existing external reverse proxy routes the panel hostnames to those NodePorts.

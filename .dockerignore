@@ -13,11 +13,6 @@
 !app/packages/
 !app/packages/**
 
-!infra/
-!infra/images/
-!infra/images/frontend.Dockerfile
-!infra/images/nginx.conf
-
 **/.env
 **/.env.*
 **/.next

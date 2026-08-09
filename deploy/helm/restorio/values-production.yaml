@@ -3,6 +3,3 @@ global:
 
 api:
   existingSecret: restorio-api-runtime
-
-publicWeb:
-  enabled: false

@@ -4,7 +4,7 @@ Issue [#148](https://github.com/restorio-labs/restorio-fullstack/issues/148) def
 
 ## Published components
 
-The `Publish OCI Images` workflow publishes these repositories to GitHub Container Registry:
+The `Publish Release OCI Images` workflow publishes these repositories to GitHub Container Registry from a `vMAJOR.MINOR.PATCH` release tag:
 
 | Component | Image |
 |---|---|
@@ -19,7 +19,7 @@ The `Publish OCI Images` workflow publishes these repositories to GitHub Contain
 
 ## Artifact identity
 
-Every build publishes the component version, `sha-<full-commit-sha>`, and `latest` on the default branch.
+Every release publishes the release version and `sha-<full-commit-sha>`.
 Release configuration must resolve a tag to the digest emitted by the workflow and store the full `image@sha256:...` reference.
 Production deployment must never select `latest` or another mutable tag.
 
@@ -34,7 +34,7 @@ Static frontends run on the unprivileged Nginx image as UID and GID `101` and li
 All images include a container health check and can run without mounting the source repository.
 
 The four static frontends use `/api/v1` as a same-origin API base.
-The Kubernetes ingress defined by issue #150 must route `/api` and WebSocket traffic to the API before the frontend catch-all route.
+The external reverse proxy routes `/api` and WebSocket traffic to the API before routing the frontend catch-all path to a static frontend NodePort.
 
 ## Local verification
 
@@ -54,11 +54,9 @@ Build a frontend image:
 
 ```bash
 docker build \
-  --build-arg APP_NAME=admin-panel \
-  --build-arg BUILD_DATE=1970-01-01T00:00:00Z \
   --build-arg VCS_REF=local \
   --build-arg VERSION=1.0.0 \
-  --file infra/images/frontend.Dockerfile \
+  --file app/apps/admin-panel/Dockerfile \
   --tag restorio-admin-panel:local \
   .
 ```

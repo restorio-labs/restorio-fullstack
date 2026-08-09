@@ -13,5 +13,16 @@ api:
       cpu: 500m
       memory: 512Mi
 
-publicWeb:
-  enabled: false
+staticFrontends:
+  adminPanel:
+    service:
+      nodePort: 31082
+  kitchenPanel:
+    service:
+      nodePort: 31083
+  mobileApp:
+    service:
+      nodePort: 31084
+  waiterPanel:
+    service:
+      nodePort: 31085

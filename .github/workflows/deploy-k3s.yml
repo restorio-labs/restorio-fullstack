@@ -94,7 +94,15 @@ jobs:
           set -euo pipefail
           printf '%s' "$GHCR_PULL_TOKEN" | crane auth login ghcr.io --username "$GHCR_USERNAME" --password-stdin
           API_DIGEST=$(crane digest "ghcr.io/$GHCR_USERNAME/restorio-api:$RELEASE_VERSION")
+          ADMIN_PANEL_DIGEST=$(crane digest "ghcr.io/$GHCR_USERNAME/restorio-admin-panel:$RELEASE_VERSION")
+          KITCHEN_PANEL_DIGEST=$(crane digest "ghcr.io/$GHCR_USERNAME/restorio-kitchen-panel:$RELEASE_VERSION")
+          MOBILE_APP_DIGEST=$(crane digest "ghcr.io/$GHCR_USERNAME/restorio-mobile-app:$RELEASE_VERSION")
+          WAITER_PANEL_DIGEST=$(crane digest "ghcr.io/$GHCR_USERNAME/restorio-waiter-panel:$RELEASE_VERSION")
           printf 'api=%s\n' "$API_DIGEST" >> "$GITHUB_OUTPUT"
+          printf 'admin_panel=%s\n' "$ADMIN_PANEL_DIGEST" >> "$GITHUB_OUTPUT"
+          printf 'kitchen_panel=%s\n' "$KITCHEN_PANEL_DIGEST" >> "$GITHUB_OUTPUT"
+          printf 'mobile_app=%s\n' "$MOBILE_APP_DIGEST" >> "$GITHUB_OUTPUT"
+          printf 'waiter_panel=%s\n' "$WAITER_PANEL_DIGEST" >> "$GITHUB_OUTPUT"
 
       - name: Request deployment from target VPS
         shell: bash
@@ -102,6 +110,10 @@ jobs:
           RELEASE_VERSION: ${{ github.ref_name }}
           RELEASE_COMMIT: ${{ steps.release.outputs.commit }}
           API_DIGEST: ${{ steps.images.outputs.api }}
+          ADMIN_PANEL_DIGEST: ${{ steps.images.outputs.admin_panel }}
+          KITCHEN_PANEL_DIGEST: ${{ steps.images.outputs.kitchen_panel }}
+          MOBILE_APP_DIGEST: ${{ steps.images.outputs.mobile_app }}
+          WAITER_PANEL_DIGEST: ${{ steps.images.outputs.waiter_panel }}
         run: |
           set -euo pipefail
           install -d -m 0700 "$RUNNER_TEMP/ssh"
@@ -117,13 +129,17 @@ jobs:
             -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
             -p "$DEPLOY_SSH_PORT" \
             "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
-            "deploy $RELEASE_VERSION $RELEASE_COMMIT $API_DIGEST"
+            "deploy $RELEASE_VERSION $RELEASE_COMMIT $API_DIGEST $ADMIN_PANEL_DIGEST $KITCHEN_PANEL_DIGEST $MOBILE_APP_DIGEST $WAITER_PANEL_DIGEST"
 
       - name: Write deployment summary
         shell: bash
         env:
           RELEASE_COMMIT: ${{ steps.release.outputs.commit }}
           API_DIGEST: ${{ steps.images.outputs.api }}
+          ADMIN_PANEL_DIGEST: ${{ steps.images.outputs.admin_panel }}
+          KITCHEN_PANEL_DIGEST: ${{ steps.images.outputs.kitchen_panel }}
+          MOBILE_APP_DIGEST: ${{ steps.images.outputs.mobile_app }}
+          WAITER_PANEL_DIGEST: ${{ steps.images.outputs.waiter_panel }}
         run: |
           set -euo pipefail
           {
@@ -133,4 +149,8 @@ jobs:
             echo "- Release: \`${{ github.ref_name }}\`"
             echo "- Commit: \`$RELEASE_COMMIT\`"
             echo "- API digest: \`$API_DIGEST\`"
+            echo "- Admin panel digest: \`$ADMIN_PANEL_DIGEST\`"
+            echo "- Kitchen panel digest: \`$KITCHEN_PANEL_DIGEST\`"
+            echo "- Mobile app digest: \`$MOBILE_APP_DIGEST\`"
+            echo "- Waiter panel digest: \`$WAITER_PANEL_DIGEST\`"
           } >> "$GITHUB_STEP_SUMMARY"

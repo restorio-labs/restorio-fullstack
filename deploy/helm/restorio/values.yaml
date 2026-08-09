@@ -24,20 +24,76 @@ migrations:
   enabled: true
   backoffLimit: 1
 
-publicWeb:
-  enabled: false
-  replicaCount: 1
-  image:
-    repository: ghcr.io/restorio-labs/restorio-public-web
-    digest: ""
-    pullPolicy: IfNotPresent
-  service:
-    type: NodePort
-    nodePort: 30080
-  resources:
-    requests:
-      cpu: 100m
-      memory: 256Mi
-    limits:
-      cpu: 500m
-      memory: 512Mi
+staticFrontends:
+  adminPanel:
+    enabled: true
+    name: admin-panel
+    replicaCount: 1
+    image:
+      repository: ghcr.io/restorio-labs/restorio-admin-panel
+      digest: ""
+      pullPolicy: IfNotPresent
+    service:
+      type: NodePort
+      nodePort: 30082
+    resources:
+      requests:
+        cpu: 25m
+        memory: 32Mi
+      limits:
+        cpu: 250m
+        memory: 128Mi
+  kitchenPanel:
+    enabled: true
+    name: kitchen-panel
+    replicaCount: 1
+    image:
+      repository: ghcr.io/restorio-labs/restorio-kitchen-panel
+      digest: ""
+      pullPolicy: IfNotPresent
+    service:
+      type: NodePort
+      nodePort: 30083
+    resources:
+      requests:
+        cpu: 25m
+        memory: 32Mi
+      limits:
+        cpu: 250m
+        memory: 128Mi
+  mobileApp:
+    enabled: true
+    name: mobile-app
+    replicaCount: 1
+    image:
+      repository: ghcr.io/restorio-labs/restorio-mobile-app
+      digest: ""
+      pullPolicy: IfNotPresent
+    service:
+      type: NodePort
+      nodePort: 30084
+    resources:
+      requests:
+        cpu: 25m
+        memory: 32Mi
+      limits:
+        cpu: 250m
+        memory: 128Mi
+  waiterPanel:
+    enabled: true
+    name: waiter-panel
+    replicaCount: 1
+    image:
+      repository: ghcr.io/restorio-labs/restorio-waiter-panel
+      digest: ""
+      pullPolicy: IfNotPresent
+    service:
+      type: NodePort
+      nodePort: 30085
+    resources:
+      requests:
+        cpu: 25m
+        memory: 32Mi
+      limits:
+        cpu: 250m
+        memory: 128Mi
