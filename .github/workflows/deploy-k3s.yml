@@ -3,10 +3,6 @@ name: Deploy to k3s
 on:
   workflow_dispatch:
     inputs:
-      github_ref:
-        description: Existing release tag in vMAJOR.MINOR.PATCH format
-        required: true
-        type: string
       environment:
         description: Target GitHub environment
         required: true
@@ -40,9 +36,15 @@ jobs:
       - name: Validate selected release
         shell: bash
         env:
-          RELEASE_VERSION: ${{ inputs.github_ref }}
+          RELEASE_REF: ${{ github.ref }}
+          RELEASE_VERSION: ${{ github.ref_name }}
         run: |
           set -euo pipefail
+
+          if [[ "$RELEASE_REF" != refs/tags/* ]]; then
+            echo "::error::Deploy to k3s must run from a release tag"
+            exit 1
+          fi
 
           if ! [[ "$RELEASE_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "::error::Expected release tag vMAJOR.MINOR.PATCH, got: $RELEASE_VERSION"
@@ -66,14 +68,14 @@ jobs:
       - name: Checkout selected release
         uses: actions/checkout@v6
         with:
-          ref: refs/tags/${{ inputs.github_ref }}
+          ref: ${{ github.sha }}
           fetch-depth: 0
 
       - name: Resolve release commit
         id: release
         shell: bash
         env:
-          RELEASE_VERSION: ${{ inputs.github_ref }}
+          RELEASE_VERSION: ${{ github.ref_name }}
         run: |
           set -euo pipefail
           RELEASE_COMMIT=$(git rev-parse "$RELEASE_VERSION^{commit}")
@@ -86,7 +88,7 @@ jobs:
         id: images
         shell: bash
         env:
-          RELEASE_VERSION: ${{ inputs.github_ref }}
+          RELEASE_VERSION: ${{ github.ref_name }}
           GHCR_USERNAME: ${{ github.repository_owner }}
         run: |
           set -euo pipefail
@@ -99,7 +101,7 @@ jobs:
       - name: Request deployment from target VPS
         shell: bash
         env:
-          RELEASE_VERSION: ${{ inputs.github_ref }}
+          RELEASE_VERSION: ${{ github.ref_name }}
           RELEASE_COMMIT: ${{ steps.release.outputs.commit }}
           API_DIGEST: ${{ steps.images.outputs.api }}
           WEB_DIGEST: ${{ steps.images.outputs.public_web }}
@@ -132,7 +134,7 @@ jobs:
             echo "## k3s deployment"
             echo
             echo "- Environment: \`${{ inputs.environment }}\`"
-            echo "- Release: \`${{ inputs.github_ref }}\`"
+            echo "- Release: \`${{ github.ref_name }}\`"
             echo "- Commit: \`$RELEASE_COMMIT\`"
             echo "- API digest: \`$API_DIGEST\`"
             echo "- Public web digest: \`$WEB_DIGEST\`"
