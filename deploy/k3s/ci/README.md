@@ -50,6 +50,9 @@ command="/usr/local/libexec/restorio-preview-deploy",no-port-forwarding,no-agent
 
 The forced command accepts only `deploy VERSION COMMIT API_DIGEST ADMIN_PANEL_DIGEST KITCHEN_PANEL_DIGEST MOBILE_APP_DIGEST WAITER_PANEL_DIGEST` and validates every argument.
 The key cannot open an interactive shell, tunnel ports, or execute arbitrary commands.
+Only one preview deployment can run at a time.
+If an earlier deployment still owns the VPS lock, the newer workflow fails with an instruction to wait and select **Re-run failed jobs**.
+The gateway keeps a sparse checkout containing only `deploy/` because pods run immutable OCI images and do not need the application source tree.
 
 ## GitHub Environment
 

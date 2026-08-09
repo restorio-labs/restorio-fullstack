@@ -3,11 +3,18 @@
 set -euo pipefail
 
 readonly DEPLOY_HOME=/var/lib/restorio-deploy
+readonly DEPLOY_LOCK_FILE="$DEPLOY_HOME/preview-deploy.lock"
 readonly REPOSITORY_DIR="$DEPLOY_HOME/restorio-fullstack"
 readonly REPOSITORY_URL=https://github.com/restorio-labs/restorio-fullstack.git
 readonly CONFIG_FILE=/etc/restorio-deploy/preview.env
 export KUBECONFIG=/etc/restorio-deploy/kubeconfig
 readonly KUBECONFIG
+
+exec 9>"$DEPLOY_LOCK_FILE"
+if ! flock -n 9; then
+  echo "::error title=Preview deployment already running::Another preview deployment still owns the VPS lock. Wait for that deployment to finish, then choose Re-run failed jobs in GitHub Actions" >&2
+  exit 75
+fi
 
 if [ ! -r "$CONFIG_FILE" ] || [ ! -r "$KUBECONFIG" ]; then
   echo "Missing local deployment configuration" >&2
@@ -57,6 +64,10 @@ if [ ! -d "$REPOSITORY_DIR/.git" ]; then
 fi
 
 git -C "$REPOSITORY_DIR" remote set-url origin "$REPOSITORY_URL"
+if [ "$(git -C "$REPOSITORY_DIR" config --bool core.sparseCheckout 2>/dev/null || true)" != true ]; then
+  git -C "$REPOSITORY_DIR" sparse-checkout init --cone
+fi
+git -C "$REPOSITORY_DIR" sparse-checkout set --cone deploy
 git -C "$REPOSITORY_DIR" fetch --force origin "+refs/tags/$RELEASE_VERSION:refs/tags/$RELEASE_VERSION"
 
 if [ "$(git -C "$REPOSITORY_DIR" rev-parse "$RELEASE_VERSION^{commit}")" != "$RELEASE_COMMIT" ]; then
