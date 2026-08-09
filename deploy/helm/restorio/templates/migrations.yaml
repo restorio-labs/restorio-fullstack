@@ -18,6 +18,10 @@ spec:
         {{- include "restorio.labels" . | nindent 8 }}
         app.kubernetes.io/component: migrations
     spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       restartPolicy: Never
       securityContext:
         seccompProfile:
