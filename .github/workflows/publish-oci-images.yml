@@ -5,11 +5,6 @@ on:
     tags:
       - "v*"
   workflow_dispatch:
-    inputs:
-      version:
-        description: Release version in vMAJOR.MINOR.PATCH format
-        required: true
-        type: string
 
 concurrency:
   group: publish-oci-images-${{ github.ref }}
@@ -33,22 +28,16 @@ jobs:
         name: Validate release version
         shell: bash
         env:
-          EVENT_NAME: ${{ github.event_name }}
           REF: ${{ github.ref }}
           REF_NAME: ${{ github.ref_name }}
-          INPUT_VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
 
-          if [ "$EVENT_NAME" = "push" ]; then
-            if [[ "$REF" != refs/tags/* ]]; then
-              echo "::error::Image publication must run from a release tag"
-              exit 1
-            fi
-            VERSION="$REF_NAME"
-          else
-            VERSION="$INPUT_VERSION"
+          if [[ "$REF" != refs/tags/* ]]; then
+            echo "::error::Image publication must run from a release tag"
+            exit 1
           fi
+          VERSION="$REF_NAME"
 
           if ! [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "::error::Expected release version vMAJOR.MINOR.PATCH, got: $VERSION"
@@ -120,7 +109,7 @@ jobs:
           sbom: true
 
       - name: Generate vulnerability report
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@v0.33.1
         with:
           image-ref: ${{ env.IMAGE }}@${{ steps.build.outputs.digest }}
           format: sarif
@@ -136,7 +125,7 @@ jobs:
           category: container-${{ matrix.name }}
 
       - name: Enforce vulnerability policy
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@v0.33.1
         with:
           image-ref: ${{ env.IMAGE }}@${{ steps.build.outputs.digest }}
           format: table
