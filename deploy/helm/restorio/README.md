@@ -29,9 +29,11 @@ Bootstrap the SSH deployment gateway using [`deploy/k3s/ci/README.md`](../../k3s
 
 ## Deploying a release
 
-First publish the images from a `vMAJOR.MINOR.PATCH` tag through the `Publish Release OCI Images` workflow.
-After both image jobs finish, run `Deploy to k3s` from the same tag and select `preview` or `production`.
-The GitHub workflow resolves the released image tags to OCI digests and makes one constrained SSH deployment request to the target VPS.
+First publish the changed images from a `vMAJOR.MINOR.PATCH` tag through the `Publish Release OCI Images` workflow.
+After its selected component jobs finish, run `Deploy to k3s` from the same tag and select `preview` or `production`.
+The GitHub workflow resolves each component to the digest released by that tag or, when unchanged, to its latest earlier immutable digest.
+It records that complete set in a release manifest attached to the GitHub Release.
+`Deploy to k3s` downloads the manifest and makes one constrained SSH deployment request to the target VPS.
 
 The target verifies the release tag's commit before it checks out the Helm chart.
 `helm upgrade --install --atomic --wait --wait-for-jobs` automatically rolls back the release when the migration job or an application readiness check fails.
