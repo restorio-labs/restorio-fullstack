@@ -89,7 +89,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-
           manifest_path="$RUNNER_TEMP/restorio-release-manifest.json"
           gh release download "$RELEASE_VERSION" \
             --repo "$GITHUB_REPOSITORY" \
