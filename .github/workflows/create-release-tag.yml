@@ -1,21 +1,20 @@
 name: Create Release Tag
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+  workflow_call:
     inputs:
       bump:
         description: Version increment
         required: true
-        default: patch
-        type: choice
-        options:
-          - initial
-          - patch
-          - minor
-          - major
+        type: string
+      source_ref:
+        description: Main commit or branch to tag
+        required: true
+        type: string
+    outputs:
+      tag:
+        description: Created vMAJOR.MINOR.PATCH tag
+        value: ${{ jobs.create-tag.outputs.tag }}
 
 concurrency:
   group: create-release-tag-main
@@ -38,7 +37,7 @@ jobs:
       - name: Checkout main
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event_name == 'push' && github.sha || 'main' }}
+          ref: ${{ inputs.source_ref }}
           fetch-depth: 0
 
       - name: Calculate next release tag
@@ -109,19 +108,17 @@ jobs:
         env:
           RELEASE_TAG: ${{ steps.release.outputs.tag }}
         run: |
+          publish_workflow_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/workflows/publish-oci-images.yml"
+          preview_k3s_workflow_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/workflows/deploy-preview-k3s.yml"
+          vinext_workflow_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/workflows/deploy-vinext-frontend.yml"
+
           {
             echo "## Release tag created"
             echo
             echo "- Tag: \`$RELEASE_TAG\`"
             echo "- Commit: \`$(git rev-parse HEAD)\`"
             echo
-            echo "Publishing release images starts automatically from \`$RELEASE_TAG\`."
-            echo "After it succeeds, run Deploy preview to k3s from the same ref."
+            echo "1. [Publish Release OCI Images]($publish_workflow_url) starts automatically for \`$RELEASE_TAG\`."
+            echo "2. After it succeeds, run [Deploy preview to k3s]($preview_k3s_workflow_url) from \`$RELEASE_TAG\`."
+            echo "3. Then run [Deploy Vinext Frontend]($vinext_workflow_url) from \`$RELEASE_TAG\` for \`preview\`."
           } >> "$GITHUB_STEP_SUMMARY"
-
-  publish-images:
-    name: Publish release images
-    needs: create-tag
-    uses: ./.github/workflows/publish-oci-images.yml
-    with:
-      release_tag: ${{ needs.create-tag.outputs.tag }}

@@ -1,6 +1,16 @@
 name: Deploy Vinext Frontend
 
 on:
+  workflow_call:
+    inputs:
+      environment:
+        description: GitHub Environment name
+        required: true
+        type: string
+      release_tag:
+        description: Published vMAJOR.MINOR.PATCH tag to deploy
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       environment:
@@ -13,7 +23,7 @@ on:
           - production
 
 concurrency:
-  group: deploy-vinext-${{ github.ref }}-${{ inputs.environment }}
+  group: deploy-vinext-${{ inputs.release_tag || github.ref }}-${{ inputs.environment }}
   cancel-in-progress: true
 
 permissions:
@@ -29,17 +39,17 @@ jobs:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       PREVIEW_BASIC_AUTH_USERNAME: ${{ secrets.PREVIEW_BASIC_AUTH_USERNAME }}
       PREVIEW_BASIC_AUTH_PASSWORD: ${{ secrets.PREVIEW_BASIC_AUTH_PASSWORD }}
+      RELEASE_TAG_INPUT: ${{ inputs.release_tag }}
+      RELEASE_VERSION: ${{ inputs.release_tag || github.ref_name }}
     steps:
       - name: Validate selected release
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_REF: ${{ github.ref }}
-          RELEASE_VERSION: ${{ github.ref_name }}
         run: |
           set -euo pipefail
 
-          if [[ "$RELEASE_REF" != refs/tags/* ]]; then
+          if [ -z "$RELEASE_TAG_INPUT" ] && [[ "$GITHUB_REF" != refs/tags/* ]]; then
             echo "::error::Deploy Vinext Frontend must run from a release tag"
             exit 1
           fi
@@ -54,7 +64,7 @@ jobs:
       - name: Checkout selected release
         uses: actions/checkout@v7
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ inputs.release_tag || github.sha }}
           fetch-depth: 0
 
       - uses: ./.github/actions/setup-bun
@@ -93,7 +103,7 @@ jobs:
               VITE_ENV=preview \
               NODE_ENV=production \
               NEXT_PUBLIC_API_BASE_URL=/api/v1 \
-              VITE_APP_VERSION="${{ github.ref_name }}" \
+              VITE_APP_VERSION="$RELEASE_VERSION" \
               bunx vinext deploy --env preview
             exit 0
           fi
@@ -101,5 +111,5 @@ jobs:
           VITE_ENV=production \
             NODE_ENV=production \
             NEXT_PUBLIC_API_BASE_URL=/api/v1 \
-            VITE_APP_VERSION="${{ github.ref_name }}" \
+            VITE_APP_VERSION="$RELEASE_VERSION" \
             bunx vinext deploy

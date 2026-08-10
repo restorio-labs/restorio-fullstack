@@ -1,0 +1,26 @@
+name: Deploy preview
+
+on:
+  workflow_call:
+    inputs:
+      release_tag:
+        description: Published vMAJOR.MINOR.PATCH tag to deploy
+        required: true
+        type: string
+
+jobs:
+  deploy-k3s:
+    name: Deploy preview to k3s
+    uses: ./.github/workflows/deploy-preview-k3s.yml
+    with:
+      release_tag: ${{ inputs.release_tag }}
+    secrets: inherit
+
+  deploy-vinext:
+    name: Deploy preview public web
+    needs: deploy-k3s
+    uses: ./.github/workflows/deploy-vinext-frontend.yml
+    with:
+      environment: preview
+      release_tag: ${{ inputs.release_tag }}
+    secrets: inherit

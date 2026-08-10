@@ -1,0 +1,52 @@
+name: Auto deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Version increment
+        required: true
+        default: patch
+        type: choice
+        options:
+          - initial
+          - patch
+          - minor
+          - major
+
+concurrency:
+  group: auto-deploy-main
+  cancel-in-progress: false
+
+permissions:
+  attestations: write
+  contents: write
+  id-token: write
+  packages: write
+  security-events: write
+
+jobs:
+  create-release:
+    name: Create release tag
+    uses: ./.github/workflows/create-release-tag.yml
+    with:
+      bump: ${{ inputs.bump || 'patch' }}
+      source_ref: ${{ github.event_name == 'push' && github.sha || 'main' }}
+
+  publish-images:
+    name: Publish release images
+    needs: create-release
+    uses: ./.github/workflows/publish-oci-images.yml
+    with:
+      release_tag: ${{ needs.create-release.outputs.tag }}
+
+  deploy-preview:
+    name: Deploy preview
+    needs: publish-images
+    uses: ./.github/workflows/deploy-preview.yml
+    with:
+      release_tag: ${{ needs.create-release.outputs.tag }}
+    secrets: inherit
