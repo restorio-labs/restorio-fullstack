@@ -103,6 +103,7 @@ jobs:
               VITE_ENV=preview \
               NODE_ENV=production \
               NEXT_PUBLIC_API_BASE_URL=/api/v1 \
+              NEXT_PUBLIC_API_PROXY_TARGET=https://preview-api.restorio.org \
               VITE_APP_VERSION="$RELEASE_VERSION" \
               bunx vinext deploy --env preview
             exit 0

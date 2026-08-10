@@ -1,10 +1,11 @@
+import { filterPreviewCookies } from "../src/services/filterPreviewCookies";
+
 export interface PreviewAuthEnv {
   PREVIEW_BASIC_AUTH_PASSWORD?: string;
   PREVIEW_BASIC_AUTH_USERNAME?: string;
 }
 
 const PREVIEW_API_ORIGIN = "https://preview-api.restorio.org";
-const PREVIEW_COOKIE_NAMES = new Set(["preview_rat", "preview_rrt", "preview_rshc", "preview_csrf_token"]);
 const PROXIED_REQUEST_HEADERS = [
   "accept",
   "accept-language",
@@ -29,20 +30,6 @@ export const isPreviewAuthorized = (request: Request, env: PreviewAuthEnv): bool
   return expected !== null && request.headers.get("Authorization") === expected;
 };
 
-const previewCookieHeader = (request: Request): string | null => {
-  const cookies = request.headers.get("Cookie");
-  if (cookies === null) {
-    return null;
-  }
-
-  const previewCookies = cookies
-    .split(";")
-    .map((cookie) => cookie.trim())
-    .filter((cookie) => PREVIEW_COOKIE_NAMES.has(cookie.split("=", 1)[0]));
-
-  return previewCookies.length > 0 ? previewCookies.join("; ") : null;
-};
-
 export const createPreviewApiRequest = (request: Request, env: PreviewAuthEnv): Request => {
   const url = new URL(request.url);
   const apiUrl = new URL(`${url.pathname}${url.search}`, PREVIEW_API_ORIGIN);
@@ -55,7 +42,7 @@ export const createPreviewApiRequest = (request: Request, env: PreviewAuthEnv): 
     }
   }
 
-  const cookies = previewCookieHeader(request);
+  const cookies = filterPreviewCookies(request.headers.get("Cookie"));
   if (cookies !== null) {
     headers.set("Cookie", cookies);
   }

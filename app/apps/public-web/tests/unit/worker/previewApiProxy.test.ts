@@ -3,6 +3,7 @@ import {
   isPreviewAuthorized,
   previewAuthorizationHeader,
 } from "../../../worker/previewApiProxy";
+import { filterPreviewCookies } from "../../../src/services/filterPreviewCookies";
 
 const previewEnv = {
   PREVIEW_BASIC_AUTH_USERNAME: "preview-user",
@@ -10,6 +11,15 @@ const previewEnv = {
 };
 
 describe("preview API proxy", () => {
+  it("forwards only preview cookies", () => {
+    expect(
+      filterPreviewCookies(
+        "rrt=production; preview_rat=preview-access; preview_csrf_token=preview-csrf; csrf_token=production-csrf",
+      ),
+    ).toBe("preview_rat=preview-access; preview_csrf_token=preview-csrf");
+    expect(filterPreviewCookies("rat=production")).toBeNull();
+  });
+
   it("accepts only the configured Basic Auth credentials", () => {
     const authorization = previewAuthorizationHeader(previewEnv);
     const authorizedRequest = new Request("https://preview.restorio.org/api/v1/health", {
