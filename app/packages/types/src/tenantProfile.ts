@@ -61,6 +61,7 @@ export interface TenantLogoViewPresignResponse {
 }
 
 export interface ProfileFormData {
+  restaurantName: string;
   nip: string;
   companyName: string;
   contactEmail: string;
@@ -100,8 +101,8 @@ export interface CreateTenantProfileRequest {
   address_city: string;
   address_postal_code: string;
   address_country?: string;
-  latitude: number;
-  longitude: number;
+  latitude: number | null;
+  longitude: number | null;
   geocoding_status?: GeocodingStatus;
   location_source?: LocationSource | null;
   location_precision?: LocationPrecision | null;

@@ -215,6 +215,25 @@ run_with_progress "Deploying stateful runtime" helm upgrade --install restorio-r
   --timeout 10m \
   --atomic
 
+migrate_legacy_application_service_names() {
+  local legacy_services=(
+    restorio-restorio-api
+    restorio-restorio-admin-panel
+    restorio-restorio-kitchen-panel
+    restorio-restorio-mobile-app
+    restorio-restorio-waiter-panel
+  )
+  local service
+
+  for service in "${legacy_services[@]}"; do
+    if kubectl get service "$service" --namespace "$K3S_NAMESPACE" >/dev/null 2>&1; then
+      log "Removing legacy application Services before the naming migration"
+      kubectl delete service "${legacy_services[@]}" --namespace "$K3S_NAMESPACE" --ignore-not-found
+      return
+    fi
+  done
+}
+
 secret_value() {
   kubectl get secret "$api_runtime_secret" \
     --namespace "$K3S_NAMESPACE" \
@@ -227,6 +246,8 @@ if [[ "$(secret_value DATABASE_URL)" != *"@restorio-runtime-mongo.restorio.svc.c
   echo "Preview API runtime secret does not target the k3s stateful services" >&2
   exit 1
 fi
+
+migrate_legacy_application_service_names
 
 run_with_progress "Deploying Restorio applications" helm upgrade --install restorio "$chart_dir" \
   --namespace "$K3S_NAMESPACE" \
@@ -242,11 +263,11 @@ run_with_progress "Deploying Restorio applications" helm upgrade --install resto
   --timeout 10m \
   --atomic
 
-kubectl rollout status deployment/restorio-restorio-api --namespace "$K3S_NAMESPACE" --timeout=3m
-kubectl rollout status deployment/restorio-restorio-admin-panel --namespace "$K3S_NAMESPACE" --timeout=3m
-kubectl rollout status deployment/restorio-restorio-kitchen-panel --namespace "$K3S_NAMESPACE" --timeout=3m
-kubectl rollout status deployment/restorio-restorio-mobile-app --namespace "$K3S_NAMESPACE" --timeout=3m
-kubectl rollout status deployment/restorio-restorio-waiter-panel --namespace "$K3S_NAMESPACE" --timeout=3m
+kubectl rollout status deployment/restorio-api --namespace "$K3S_NAMESPACE" --timeout=3m
+kubectl rollout status deployment/restorio-admin-panel --namespace "$K3S_NAMESPACE" --timeout=3m
+kubectl rollout status deployment/restorio-kitchen-panel --namespace "$K3S_NAMESPACE" --timeout=3m
+kubectl rollout status deployment/restorio-mobile-app --namespace "$K3S_NAMESPACE" --timeout=3m
+kubectl rollout status deployment/restorio-waiter-panel --namespace "$K3S_NAMESPACE" --timeout=3m
 kubectl rollout restart deployment/restorio-edge --namespace "$K3S_NAMESPACE"
 kubectl rollout status deployment/restorio-edge --namespace "$K3S_NAMESPACE" --timeout=3m
 kubectl get pods,services --namespace "$K3S_NAMESPACE" -l app.kubernetes.io/instance=restorio

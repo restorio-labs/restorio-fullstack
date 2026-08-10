@@ -66,6 +66,7 @@ export const RestaurantCreatorPage = (): ReactElement => {
   const {
     register,
     handleSubmit,
+    setValue,
     watch,
     reset,
     formState: { isValid, errors },
@@ -356,6 +357,12 @@ export const RestaurantCreatorPage = (): ReactElement => {
                   <LocationFieldset
                     canPublish={hasValidCoordinates(watchedLatitude, watchedLongitude)}
                     getFieldError={getCombinedFieldError}
+                    latitude={watchedLatitude}
+                    longitude={watchedLongitude}
+                    onLocationChange={(latitude, longitude) => {
+                      setValue("latitude", latitude.toFixed(6), { shouldDirty: true, shouldValidate: true });
+                      setValue("longitude", longitude.toFixed(6), { shouldDirty: true, shouldValidate: true });
+                    }}
                     register={profileRegister}
                     t={t}
                   />

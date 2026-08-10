@@ -189,6 +189,7 @@ describe("resolveApiBaseUrl", () => {
     vi.stubEnv("ENV", "production");
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("NEXT_PUBLIC_PUBLIC_API_ORIGIN", "https://api.example.org");
+    vi.stubGlobal("window", { location: { hostname: "restorio.org" } });
 
     expect(resolveApiBaseUrl()).toBe("https://api.restorio.org/api/v1");
   });

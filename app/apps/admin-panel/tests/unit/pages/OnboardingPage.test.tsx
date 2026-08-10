@@ -22,6 +22,14 @@ vi.mock("../../../src/context/TenantContext", async () => {
   };
 });
 
+vi.mock("../../../src/features/profile/LocationPickerMap", () => ({
+  LocationPickerMap: ({ onLocationChange }: { onLocationChange: (latitude: number, longitude: number) => void }) => (
+    <button type="button" onClick={() => onLocationChange(52.2297, 21.0122)}>
+      Select map location
+    </button>
+  ),
+}));
+
 import { api } from "../../../src/api/client";
 import { useCurrentTenant } from "../../../src/context/TenantContext";
 import { fallbackMessages, getMessages } from "../../../src/i18n/messages";
@@ -57,6 +65,17 @@ describe("OnboardingPage", () => {
     renderPage();
 
     expect(screen.getByText("Your restaurant starts organized")).toBeInTheDocument();
+    expect(screen.getByTestId("onboarding-feature-panel")).toHaveAttribute("data-step", "0");
+    expect(screen.getByTestId("onboarding-feature-panel")).toHaveStyle({
+      backgroundColor: "var(--color-interactive-primary)",
+    });
+    expect(screen.getByTestId("onboarding-overlay-top-card")).toHaveStyle({ left: "4%", top: "8%" });
+    expect(screen.getByTestId("onboarding-overlay-bottom-card")).toHaveStyle({
+      left: "calc(100% - 9rem)",
+      top: "calc(100% - 5.5rem)",
+    });
+    expect(screen.getByText("Bistro Nova")).toBeInTheDocument();
+    expect(screen.getByText("ul. Długa 12")).toBeInTheDocument();
 
     setValue(/restaurant name/i, "Balans");
     setValue(/street name/i, "Main");
@@ -67,9 +86,41 @@ describe("OnboardingPage", () => {
 
     expect(await screen.findByText("Guide guests to the right place")).toBeInTheDocument();
     expect(screen.getByLabelText(/show this restaurant publicly/i)).toBeInTheDocument();
+    expect(screen.getByTestId("onboarding-feature-panel")).toHaveAttribute("data-step", "1");
+    expect(screen.getByTestId("onboarding-feature-panel")).toHaveStyle({
+      backgroundColor: "var(--color-interactive-primary-hover)",
+    });
+    expect(screen.getByTestId("onboarding-overlay-top-card")).toHaveStyle({
+      left: "4%",
+      top: "calc(100% - 5.5rem)",
+    });
+    expect(screen.getByTestId("onboarding-overlay-bottom-card")).toHaveStyle({
+      left: "calc(100% - 9rem)",
+      top: "8%",
+    });
+    expect(screen.getByText("Location selected")).toBeInTheDocument();
+    expect(screen.getByText("Pin the entrance")).toBeInTheDocument();
   });
 
-  it("creates the complete profile with a manual location", async () => {
+  it("allows continuing without a map location", async () => {
+    renderPage();
+
+    setValue(/restaurant name/i, "Balans");
+    setValue(/street name/i, "Main");
+    setValue(/street number/i, "1");
+    setValue(/^city$/i, "Warsaw");
+    setValue(/postal code/i, "00-001");
+    fireEvent.click(screen.getByRole("button", { name: /continue/i }));
+
+    await screen.findByRole("button", { name: /select map location/i });
+    expect(screen.queryByLabelText(/^latitude$/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/^longitude$/i)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /continue/i }));
+
+    expect(await screen.findByLabelText(/^nip$/i)).toBeInTheDocument();
+  });
+
+  it("creates the complete profile with a map location", async () => {
     mockCreateTenant.mockResolvedValueOnce({
       id: "tenant-1",
       name: "Balans",
@@ -89,9 +140,7 @@ describe("OnboardingPage", () => {
     setValue(/postal code/i, "00-001");
     fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 
-    await screen.findByLabelText(/^latitude$/i);
-    setValue(/^latitude$/i, "52.2297");
-    setValue(/^longitude$/i, "21.0122");
+    fireEvent.click(await screen.findByRole("button", { name: /select map location/i }));
     fireEvent.click(screen.getByRole("switch", { name: /show this restaurant publicly/i }));
     fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 
@@ -116,6 +165,55 @@ describe("OnboardingPage", () => {
           location_source: "manual",
           location_precision: "approximate",
           is_location_public: true,
+        }),
+      );
+    });
+  });
+
+  it("creates the profile without a location", async () => {
+    mockCreateTenant.mockResolvedValueOnce({
+      id: "tenant-1",
+      name: "Balans",
+      slug: "balans-main-1-warsaw",
+      status: "ACTIVE",
+      activeLayoutVersionId: null,
+      floorCanvases: [],
+      createdAt: new Date(),
+    });
+    mockSaveProfile.mockResolvedValueOnce({});
+    renderPage();
+
+    setValue(/restaurant name/i, "Balans");
+    setValue(/street name/i, "Main");
+    setValue(/street number/i, "1");
+    setValue(/^city$/i, "Warsaw");
+    setValue(/postal code/i, "00-001");
+    fireEvent.click(screen.getByRole("button", { name: /continue/i }));
+
+    await screen.findByRole("button", { name: /select map location/i });
+    fireEvent.click(screen.getByRole("button", { name: /continue/i }));
+
+    await screen.findByLabelText(/^nip$/i);
+    setValue(/^nip$/i, "1234567890");
+    setValue(/company name/i, "Balans Sp. z o.o.");
+    setValue(/contact email/i, "hello@balans.pl");
+    setValue(/^phone$/i, "+48123456789");
+    fireEvent.click(screen.getByRole("button", { name: /continue/i }));
+
+    await screen.findByText("Confirm ownership");
+    setValue(/^first name$/i, "Jan");
+    setValue(/^last name$/i, "Kowalski");
+    fireEvent.click(screen.getByRole("button", { name: /create restaurant/i }));
+
+    await waitFor(() => {
+      expect(mockSaveProfile).toHaveBeenCalledWith(
+        "tenant-1",
+        expect.objectContaining({
+          latitude: null,
+          longitude: null,
+          location_source: null,
+          location_precision: null,
+          is_location_public: false,
         }),
       );
     });

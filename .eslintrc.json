@@ -7,7 +7,13 @@
     "ecmaFeatures": {
       "jsx": true
     },
-    "project": ["./tsconfig.json", "./tsconfig.eslint.json"]
+    "project": [
+      "./tsconfig.json",
+      "./tsconfig.eslint.json",
+      "./app/apps/*/tsconfig.json",
+      "./app/apps/*/tsconfig.eslint.json",
+      "./app/packages/*/tsconfig.json"
+    ]
   },
   "plugins": ["@typescript-eslint", "import", "unused-imports", "prettier"],
   "extends": [

@@ -34,7 +34,7 @@ const _isPreviewHostname = (hostname: string | undefined): boolean =>
   hostname === "preview.restorio.org" ||
   (hostname?.startsWith("preview-") === true && hostname.endsWith(".restorio.org"));
 
-const _getCurrentEnvironment = (): EnvironmentType => {
+export const getCurrentEnvironment = (): EnvironmentType => {
   const browserWindow = typeof window === "undefined" ? undefined : (window as { location?: { hostname?: string } });
   const browserHostname = browserWindow?.location?.hostname;
 
@@ -91,7 +91,7 @@ export const getEnvMode = (): string => {
 };
 
 export const getAppHref = (slug: AppSlug): string => {
-  return getAppUrl(_getCurrentEnvironment(), slug);
+  return getAppUrl(getCurrentEnvironment(), slug);
 };
 
 export const getMergedRuntimeEnv = (): Record<string, unknown> => {
@@ -131,7 +131,7 @@ const _isLocalhostApiUrl = (value: string): boolean => {
 
 export const resolveApiBaseUrl = (options?: ResolveApiBaseUrlOptions): string => {
   const merged = getMergedRuntimeEnv();
-  const environment = _getCurrentEnvironment();
+  const environment = getCurrentEnvironment();
 
   if (typeof window !== "undefined") {
     if (environment === Environment.PREVIEW) {

@@ -1,4 +1,4 @@
-import { I18nProvider, ThemeProvider, ToastProvider } from "@restorio/ui";
+import { I18nProvider, PreviewEnvironmentNotice, ThemeProvider, ToastProvider } from "@restorio/ui";
 import {
   LANGUAGE_LOCALE_STORAGE_KEY,
   LAST_VISITED_APP_STORAGE_KEY,
@@ -56,6 +56,7 @@ export const AppProviders = ({ children }: AppProvidersProps): ReactNode => {
       >
         <BrowserRouter>
           <ThemeProvider defaultMode="system" storageKey={THEME_STORAGE_KEY}>
+            <PreviewEnvironmentNotice />
             <ToastProvider>
               <TenantProvider>{children}</TenantProvider>
             </ToastProvider>

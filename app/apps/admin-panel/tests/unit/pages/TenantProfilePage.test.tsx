@@ -5,6 +5,9 @@ import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 
 vi.mock("../../../src/api/client", () => ({
   api: {
+    tenants: {
+      update: vi.fn(),
+    },
     tenantProfiles: {
       get: vi.fn(),
       save: vi.fn(),
@@ -15,7 +18,11 @@ vi.mock("../../../src/api/client", () => ({
 }));
 
 vi.mock("../../../src/context/TenantContext", () => ({
-  useCurrentTenant: vi.fn(() => ({ selectedTenant: { id: "tenant-1" } })),
+  tenantDetailsQueryKey: (tenantId: string) => ["tenant", tenantId],
+  useCurrentTenant: vi.fn(() => ({
+    refreshTenants: vi.fn(),
+    selectedTenant: { id: "tenant-1", name: "Restorio" },
+  })),
 }));
 
 import { api } from "../../../src/api/client";
@@ -23,6 +30,7 @@ import { fallbackMessages, getMessages } from "../../../src/i18n/messages";
 import { TenantProfilePage, type TenantProfileSection } from "../../../src/pages/TenantProfilePage";
 
 const tenantProfilesApi = api.tenantProfiles as unknown as Record<string, Mock>;
+const tenantsApi = api.tenants as unknown as Record<string, Mock>;
 const profile = {
   nip: "1234567890",
   companyName: "Restorio Sp. z o.o.",
@@ -65,6 +73,7 @@ describe("TenantProfilePage", () => {
     vi.clearAllMocks();
     tenantProfilesApi.get.mockResolvedValue(profile);
     tenantProfilesApi.save.mockResolvedValue(profile);
+    tenantsApi.update.mockResolvedValue({ id: "tenant-1", name: "Bistro Nova" });
   });
 
   it("renders only the fieldsets assigned to the selected profile section", async () => {
@@ -97,6 +106,19 @@ describe("TenantProfilePage", () => {
           social_website: "https://restorio.example",
         }),
       );
+    });
+  });
+
+  it("updates the restaurant name from the company profile section", async () => {
+    renderPage("company-contact");
+
+    await screen.findByDisplayValue("1234567890");
+    const restaurantName = await screen.findByLabelText("Restaurant name");
+    fireEvent.change(restaurantName, { target: { value: "Bistro Nova" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save Profile" }));
+
+    await waitFor(() => {
+      expect(tenantsApi.update).toHaveBeenCalledWith("tenant-1", { name: "Bistro Nova" });
     });
   });
 });

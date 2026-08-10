@@ -767,6 +767,11 @@
       "socials": "Media społecznościowe"
     },
     "fields": {
+      "restaurantName": {
+        "label": "Nazwa restauracji",
+        "placeholder": "np. Bistro Nova",
+        "error": "Nazwa restauracji jest wymagana"
+      },
       "nip": {
         "label": "NIP",
         "placeholder": "np. 1234567890",
@@ -906,13 +911,13 @@
       }
     },
     "location": {
-      "description": "Wpisz dokładne współrzędne wejścia do restauracji lub głównej lokalizacji dostępnej dla gości.",
+      "description": "Wskaż na mapie wejście do restauracji lub główną lokalizację dostępną dla gości.",
       "loadingMap": "Wczytywanie mapy...",
       "mapHint": "Kliknij mapę lub przeciągnij znacznik, aby ustawić dokładną lokalizację.",
       "mapLabel": "Wybór lokalizacji restauracji na mapie",
       "markerTitle": "Lokalizacja restauracji",
       "legacyTitle": "Ten profil wymaga lokalizacji",
-      "legacyDescription": "Restauracja powstała zanim lokalizacja była wymagana. Dodaj współrzędne przed zapisem lub włączeniem widoczności publicznej."
+      "legacyDescription": "Restauracja powstała zanim lokalizacja była wymagana. Wskaż lokalizację na mapie przed zapisem lub włączeniem widoczności publicznej."
     },
     "errors": {
       "loadTenants": "Nie udało się wczytać najemców. Odśwież i spróbuj ponownie.",

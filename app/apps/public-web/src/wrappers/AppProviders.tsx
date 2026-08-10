@@ -4,6 +4,7 @@ import { checkPublicWebAuth } from "@restorio/auth";
 import {
   AuthRouteProvider,
   I18nProvider,
+  PreviewEnvironmentNotice,
   ThemeProvider,
   type AuthCheckContext,
   type AuthRouteResolvedStatus,
@@ -31,6 +32,7 @@ export const AppProviders = ({ children, locale, messages }: AppProvidersProps):
   return (
     <I18nProvider locale={locale} messages={messages}>
       <ThemeProvider defaultMode="system" storageKey={THEME_STORAGE_KEY}>
+        <PreviewEnvironmentNotice />
         <AuthRouteProvider checkAuth={checkAuth}>{children}</AuthRouteProvider>
       </ThemeProvider>
     </I18nProvider>

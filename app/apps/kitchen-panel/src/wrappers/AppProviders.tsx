@@ -1,4 +1,4 @@
-import { I18nProvider, ThemeProvider, ToastProvider } from "@restorio/ui";
+import { I18nProvider, PreviewEnvironmentNotice, ThemeProvider, ToastProvider } from "@restorio/ui";
 import { THEME_STORAGE_KEY } from "@restorio/utils";
 import { QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
@@ -20,7 +20,8 @@ export const AppProviders = ({ children }: AppProvidersProps): ReactNode => {
       <I18nProvider locale="pl" messages={plMessages}>
         <BrowserRouter>
           <ThemeProvider defaultMode="system" storageKey={THEME_STORAGE_KEY}>
-            <ToastProvider position="top-left">{children}</ToastProvider>
+            <PreviewEnvironmentNotice />
+            <ToastProvider>{children}</ToastProvider>
           </ThemeProvider>
         </BrowserRouter>
       </I18nProvider>

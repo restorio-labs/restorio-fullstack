@@ -24,9 +24,11 @@ def _profile_data(**overrides: object) -> dict[str, object]:
     return data
 
 
-def test_requires_location_for_new_profiles() -> None:
-    with pytest.raises(ValidationError):
-        CreateTenantProfileDTO.model_validate(_profile_data())
+def test_accepts_profile_without_location() -> None:
+    dto = CreateTenantProfileDTO.model_validate(_profile_data())
+
+    assert dto.latitude is None
+    assert dto.longitude is None
 
 
 def test_accepts_complete_public_location() -> None:

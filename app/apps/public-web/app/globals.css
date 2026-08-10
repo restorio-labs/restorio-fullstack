@@ -118,15 +118,6 @@
   }
 }
 
-@keyframes restorio-wink {
-  0%   { transform: scaleY(1) translateZ(0); }
-  35%  { transform: scaleY(1) translateZ(0); }
-  45%  { transform: scaleY(0.05) translateZ(0); }
-  55%  { transform: scaleY(0.05) translateZ(0); }
-  70%  { transform: scaleY(1.05) translateZ(0); }
-  100% { transform: scaleY(1) translateZ(0); }
-}
-
 @keyframes connection-bubble-in {
   from {
     opacity: 0;
@@ -163,22 +154,6 @@
       drop-shadow(0 0 22px color-mix(in srgb, var(--color-interactive-primary) 44%, transparent))
       drop-shadow(0 0 38px color-mix(in srgb, var(--color-interactive-primary) 22%, transparent));
   }
-}
-
-.restorio-wink-base {
-  transform-box: fill-box;
-  transform-origin: center top;
-  will-change: transform;
-  backface-visibility: hidden;
-  transform: perspective(1000px) translateZ(0.001px);
-}
-
-.restorio-wink-once {
-  animation: restorio-wink 1.4s cubic-bezier(0.22, 0.72, 0.28, 1) forwards;
-}
-
-.restorio-winking {
-  animation: restorio-wink 2.5s cubic-bezier(0.22, 0.72, 0.28, 1) infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

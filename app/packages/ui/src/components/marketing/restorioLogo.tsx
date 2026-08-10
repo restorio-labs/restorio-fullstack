@@ -20,22 +20,33 @@ export const RestorioLogoPin = ({
   winking?: boolean;
 }): ReactElement => {
   const maskId = "restorio-pin-mask";
+  const shouldWink = wink || winking;
 
   return (
     <>
-      <animateTransform attributeName="transform" dur="1.4s" repeatCount="1" />
       <g transform="translate(0.000000,1200.000000) scale(0.100000,-0.100000)">
         <defs>
           <mask id={maskId}>
             <rect x="0" y="0" width="12000" height="12000" fill="white" />
             <g transform="translate(650 1650) scale(0.8)">
-              <g
-                className={`restorio-wink-base ${winking ? "restorio-winking" : wink ? "restorio-wink-once" : ""}`}
-                style={{ transformOrigin: "center top" }}
-              >
-                <path fill="black" d={R} />
-                {/* RPIN should be WHITE to show through the R cutout */}
-                <path fill="white" d={RPIN} transform="translate(-90 -300)" />
+              <g transform="translate(2575 5550)">
+                <g>
+                  {shouldWink && (
+                    <animateTransform
+                      attributeName="transform"
+                      type="scale"
+                      values="1 1; 1 1; 1 0.05; 1 0.05; 1 1.05; 1 1"
+                      keyTimes="0; 0.35; 0.45; 0.55; 0.7; 1"
+                      dur={winking ? "1.5s" : "0.8s"}
+                      repeatCount={winking ? "indefinite" : "1"}
+                    />
+                  )}
+                  <g transform="translate(-2575 -5550)">
+                    <path fill="black" d={R} />
+                    {/* RPIN should be WHITE to show through the R cutout */}
+                    <path fill="white" d={RPIN} transform="translate(-90 -300)" />
+                  </g>
+                </g>
               </g>
             </g>
           </mask>

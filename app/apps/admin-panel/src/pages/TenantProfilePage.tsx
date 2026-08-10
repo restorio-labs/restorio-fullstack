@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { api } from "../api/client";
-import { useCurrentTenant } from "../context/TenantContext";
+import { tenantDetailsQueryKey, useCurrentTenant } from "../context/TenantContext";
 import { EMPTY_FORM, hasValidCoordinates, toFormData, toProfileRequest } from "../features/profile/profileForm";
 import {
   AddressFieldset,
@@ -32,7 +32,7 @@ interface TenantProfilePageProps {
 
 export const TenantProfilePage = ({ section }: TenantProfilePageProps): ReactElement => {
   const { t } = useI18n();
-  const { selectedTenant } = useCurrentTenant();
+  const { refreshTenants, selectedTenant } = useCurrentTenant();
   const queryClient = useQueryClient();
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error" | "validation">("idle");
   const [logoUploadError, setLogoUploadError] = useState("");
@@ -64,7 +64,7 @@ export const TenantProfilePage = ({ section }: TenantProfilePageProps): ReactEle
 
   useEffect(() => {
     if (profile) {
-      reset(toFormData(profile));
+      reset(toFormData(profile, selectedTenant?.name));
     } else {
       reset(EMPTY_FORM);
     }
@@ -75,7 +75,7 @@ export const TenantProfilePage = ({ section }: TenantProfilePageProps): ReactEle
     setLogoViewUrl(null);
     setSelectedLogoFile(null);
     clearErrors();
-  }, [profile, reset, clearErrors]);
+  }, [profile, selectedTenant?.name, reset, clearErrors]);
 
   useEffect(() => {
     if (!tenantId || !profile?.logo) {
@@ -132,12 +132,21 @@ export const TenantProfilePage = ({ section }: TenantProfilePageProps): ReactEle
         logoUploadKey = uploadTarget.objectKey;
       }
 
-      return api.tenantProfiles.save(tenantId, {
+      const restaurantName = values.restaurantName.trim();
+      const restaurantNameChanged = restaurantName !== selectedTenant?.name;
+
+      if (restaurantNameChanged) {
+        await api.tenants.update(tenantId, { name: restaurantName });
+      }
+
+      const savedProfile = await api.tenantProfiles.save(tenantId, {
         ...toProfileRequest(values),
         logo_upload_key: logoUploadKey,
       });
+
+      return { restaurantNameChanged, savedProfile };
     },
-    onSuccess: (_savedProfile) => {
+    onSuccess: ({ restaurantNameChanged }) => {
       setSubmitStatus("success");
       setLogoUploadError("");
       setSelectedLogoFile(null);
@@ -151,6 +160,11 @@ export const TenantProfilePage = ({ section }: TenantProfilePageProps): ReactEle
 
       if (tenantId) {
         void queryClient.invalidateQueries({ queryKey: profileQueryKey(tenantId) });
+
+        if (restaurantNameChanged) {
+          void queryClient.invalidateQueries({ queryKey: tenantDetailsQueryKey(tenantId) });
+          refreshTenants();
+        }
       }
     },
     onError: (err: unknown) => {
@@ -170,7 +184,7 @@ export const TenantProfilePage = ({ section }: TenantProfilePageProps): ReactEle
     clearErrors();
     saveMutation.mutate({
       ...EMPTY_FORM,
-      ...(profile ? toFormData(profile) : {}),
+      ...(profile ? toFormData(profile, selectedTenant?.name) : {}),
       ...values,
     });
   };
@@ -214,7 +228,7 @@ export const TenantProfilePage = ({ section }: TenantProfilePageProps): ReactEle
   const longitude = watch("longitude");
   const logoFieldError = logoUploadError || getFieldError("logo");
   const getFormFieldError = (field: string): string | undefined => {
-    const serverError = getFieldError(field);
+    const serverError = getFieldError(field === "restaurantName" ? "name" : field);
 
     if (serverError) {
       return serverError;
@@ -270,6 +284,7 @@ export const TenantProfilePage = ({ section }: TenantProfilePageProps): ReactEle
                   isSaving={saveMutation.isPending}
                   logoFieldError={logoFieldError}
                   register={register}
+                  showRestaurantName
                   t={t}
                 />
                 <ContactFieldset getFieldError={getFormFieldError} register={register} t={t} />

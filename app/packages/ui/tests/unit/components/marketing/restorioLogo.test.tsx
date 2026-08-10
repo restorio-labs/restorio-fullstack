@@ -44,19 +44,19 @@ describe("RestorioLogo", () => {
     expect(svg?.getAttribute("height")).toBe("100%");
   });
 
-  it("toggles wink classes", () => {
+  it("renders the native SVG wink animation", () => {
     const { container, rerender } = render(<RestorioLogo wink />);
 
-    let winkNode = container.querySelector(".restorio-wink-base");
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-    const getClassName = (node: Element | null): string => (node ? ((node as SVGElement).className.baseVal ?? "") : "");
+    let winkAnimation = container.querySelector("animateTransform[type='scale']");
 
-    expect(getClassName(winkNode)).toContain("restorio-wink-once");
+    expect(winkAnimation?.getAttribute("dur")).toBe("0.8s");
+    expect(winkAnimation?.getAttribute("repeatCount")).toBe("1");
 
     rerender(<RestorioLogo winking />);
-    winkNode = container.querySelector(".restorio-wink-base");
+    winkAnimation = container.querySelector("animateTransform[type='scale']");
 
-    expect(getClassName(winkNode)).toContain("restorio-winking");
+    expect(winkAnimation?.getAttribute("dur")).toBe("1.5s");
+    expect(winkAnimation?.getAttribute("repeatCount")).toBe("indefinite");
   });
 });
 

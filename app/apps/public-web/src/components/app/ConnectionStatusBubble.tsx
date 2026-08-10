@@ -2,7 +2,7 @@
 
 import { cn, useAuthRoute, type AuthRouteStatus } from "@restorio/ui";
 import { type ReactElement, useEffect, useState } from "react";
-import { FaPlugCircleCheck, FaPlugCircleExclamation } from "react-icons/fa6";
+import { FaPlugCircleMinus, FaPlugCircleExclamation } from "react-icons/fa6";
 
 import { useTranslations } from "@/i18n/useT";
 
@@ -61,9 +61,9 @@ export const ConnectionStatusBubble = (): ReactElement | null => {
           )}
         >
           {isReconnecting ? (
-            <FaPlugCircleCheck className="h-5 w-5 shrink-0 text-status-success-text" aria-hidden />
+            <FaPlugCircleExclamation className="h-5 w-5 shrink-0 text-status-success-text" aria-hidden />
           ) : (
-            <FaPlugCircleExclamation className="h-5 w-5 shrink-0 text-text-primary" aria-hidden />
+            <FaPlugCircleMinus className="h-5 w-5 shrink-0 text-text-primary" aria-hidden />
           )}
           <span className="shrink-0 leading-snug text-text-primary">
             {isReconnecting ? t("common.tryingToConnect") : t("common.backendUnavailable")}

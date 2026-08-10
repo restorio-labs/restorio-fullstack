@@ -1,4 +1,4 @@
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from core.dto.v1.common import BaseDTO
 from core.models.enums import GeocodingStatus, LocationPrecision, LocationSource
@@ -39,8 +39,26 @@ class TenantLogoUploadPresignRequestDTO(BaseDTO):
 
 
 class CreateTenantProfileDTO(LocationFieldsDTO):
-    latitude: float = Field(..., ge=-90, le=90, description="WGS84 latitude")
-    longitude: float = Field(..., ge=-180, le=180, description="WGS84 longitude")
+    @model_validator(mode="after")
+    def validate_location(self) -> "CreateTenantProfileDTO":
+        has_latitude = self.latitude is not None
+        has_longitude = self.longitude is not None
+
+        if has_latitude != has_longitude:
+            message = "latitude and longitude must be provided together"
+            raise ValueError(message)
+
+        if not has_latitude and (
+            self.is_location_public
+            or self.location_source is not None
+            or self.location_precision is not None
+            or self.geocoding_status != GeocodingStatus.NOT_GEOCODED
+        ):
+            message = "location metadata requires latitude and longitude"
+            raise ValueError(message)
+
+        return self
+
     nip: str = Field(
         ...,
         min_length=10,

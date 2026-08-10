@@ -38,6 +38,14 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
+vi.mock("../../../src/features/profile/LocationPickerMap", () => ({
+  LocationPickerMap: ({ onLocationChange }: { onLocationChange: (latitude: number, longitude: number) => void }) => (
+    <button type="button" onClick={() => onLocationChange(52.2297, 21.0122)}>
+      Select map location
+    </button>
+  ),
+}));
+
 import { api } from "../../../src/api/client";
 import { useCurrentTenant } from "../../../src/context/TenantContext";
 import { fallbackMessages, getMessages } from "../../../src/i18n/messages";
@@ -84,7 +92,7 @@ const fillRequiredAddressForCreation = (): void => {
   setInputValue("addressCity", "Warsaw");
 };
 
-const fillRequiredProfileFields = (): void => {
+const fillRequiredProfileFields = async (): Promise<void> => {
   setInputValue("nip", "1234567890");
   setInputValue("companyName", "Bistro Nova LLC");
   setInputValue("contactEmail", "contact@example.com");
@@ -92,8 +100,7 @@ const fillRequiredProfileFields = (): void => {
   setInputValue("addressPostalCode", "00-001");
   setInputValue("ownerFirstName", "John");
   setInputValue("ownerLastName", "Smith");
-  setInputValue("latitude", "52.2297");
-  setInputValue("longitude", "21.0122");
+  fireEvent.click(await screen.findByRole("button", { name: /select map location/i }));
 };
 
 describe("RestaurantCreatorPage", () => {
@@ -234,7 +241,7 @@ describe("RestaurantCreatorPage", () => {
     fireEvent.change(screen.getByLabelText(/restaurant name/i), { target: { value: "New Name" } });
     fillRequiredAddressForCreation();
     fireEvent.click(screen.getByRole("button", { name: /add profile now/i }));
-    fillRequiredProfileFields();
+    await fillRequiredProfileFields();
 
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /create restaurant/i })).toBeEnabled();
@@ -322,7 +329,7 @@ describe("RestaurantCreatorPage", () => {
     fireEvent.change(screen.getByLabelText(/restaurant name/i), { target: { value: "New Name" } });
     fillRequiredAddressForCreation();
     fireEvent.click(screen.getByRole("button", { name: /add profile now/i }));
-    fillRequiredProfileFields();
+    await fillRequiredProfileFields();
 
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /create restaurant/i })).toBeEnabled();
@@ -352,7 +359,7 @@ describe("RestaurantCreatorPage", () => {
     fireEvent.change(screen.getByLabelText(/restaurant name/i), { target: { value: "New Name" } });
     fillRequiredAddressForCreation();
     fireEvent.click(screen.getByRole("button", { name: /add profile now/i }));
-    fillRequiredProfileFields();
+    await fillRequiredProfileFields();
 
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /create restaurant/i })).toBeEnabled();
@@ -380,7 +387,7 @@ describe("RestaurantCreatorPage", () => {
     fireEvent.change(screen.getByLabelText(/restaurant name/i), { target: { value: "New Name" } });
     fillRequiredAddressForCreation();
     fireEvent.click(screen.getByRole("button", { name: /add profile now/i }));
-    fillRequiredProfileFields();
+    await fillRequiredProfileFields();
     setInputValue("addressCountry", " ");
 
     await waitFor(() => {

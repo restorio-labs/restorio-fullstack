@@ -762,6 +762,11 @@
       "socials": "Social Media"
     },
     "fields": {
+      "restaurantName": {
+        "label": "Restaurant name",
+        "placeholder": "e.g. Bistro Nova",
+        "error": "Restaurant name is required"
+      },
       "nip": {
         "label": "NIP",
         "placeholder": "e.g. 1234567890",
@@ -901,13 +906,13 @@
       }
     },
     "location": {
-      "description": "Enter the exact coordinates of the restaurant entrance or its main customer-facing location.",
+      "description": "Select the restaurant entrance or main guest-facing location on the map.",
       "loadingMap": "Loading map...",
       "mapHint": "Click the map or drag the marker to set the exact location.",
       "mapLabel": "Select the restaurant location on the map",
       "markerTitle": "Restaurant location",
       "legacyTitle": "This profile needs a location",
-      "legacyDescription": "This restaurant was created before locations were required. Add coordinates before saving or making it publicly visible."
+      "legacyDescription": "This restaurant was created before locations were required. Select a location on the map before saving or making it publicly visible."
     },
     "errors": {
       "loadTenants": "Failed to load tenants. Please refresh and try again.",

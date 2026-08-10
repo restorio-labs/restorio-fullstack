@@ -181,20 +181,18 @@ describe("Icon", () => {
     expect(logo?.getAttribute("height")).toBe("100%");
   });
 
-  it("should forward wink states to logo animation classes", () => {
+  it("should forward wink states to the logo animation", () => {
     const { container, rerender } = render(<Icon isLogo wink />);
 
-    let winkNode = container.querySelector(".restorio-wink-base");
+    let winkAnimation = container.querySelector("animateTransform[type='scale']");
 
     // @ts-expect-error - test purposes
-    expect(winkNode).toBeInTheDocument();
-    // @ts-expect-error - test purposes
-    expect(winkNode?.className.baseVal).toContain("restorio-wink-once");
+    expect(winkAnimation).toBeInTheDocument();
+    expect(winkAnimation?.getAttribute("repeatCount")).toBe("1");
 
     rerender(<Icon isLogo winking />);
-    winkNode = container.querySelector(".restorio-wink-base");
+    winkAnimation = container.querySelector("animateTransform[type='scale']");
 
-    // @ts-expect-error - test purposes
-    expect(winkNode?.className.baseVal).toContain("restorio-winking");
+    expect(winkAnimation?.getAttribute("repeatCount")).toBe("indefinite");
   });
 });

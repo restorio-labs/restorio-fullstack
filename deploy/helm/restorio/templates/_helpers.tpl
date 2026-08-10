@@ -3,7 +3,7 @@
 {{- end }}
 
 {{- define "restorio.fullname" -}}
-{{- printf "%s-%s" .Release.Name (include "restorio.name" .) | trunc 63 | trimSuffix "-" }}
+{{- .Release.Name | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{- define "restorio.labels" -}}

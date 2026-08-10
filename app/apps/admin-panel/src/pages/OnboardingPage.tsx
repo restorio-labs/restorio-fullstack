@@ -40,6 +40,7 @@ export const OnboardingPage = (): ReactElement => {
   const {
     register,
     handleSubmit,
+    setValue,
     trigger,
     watch,
     formState: { errors },
@@ -178,6 +179,13 @@ export const OnboardingPage = (): ReactElement => {
                 <LocationFieldset
                   canPublish={hasValidCoordinates(values.latitude, values.longitude)}
                   getFieldError={getFieldError}
+                  locationRequired={false}
+                  latitude={values.latitude}
+                  longitude={values.longitude}
+                  onLocationChange={(latitude, longitude) => {
+                    setValue("latitude", latitude.toFixed(6), { shouldDirty: true, shouldValidate: true });
+                    setValue("longitude", longitude.toFixed(6), { shouldDirty: true, shouldValidate: true });
+                  }}
                   register={profileRegister}
                   t={t}
                 />

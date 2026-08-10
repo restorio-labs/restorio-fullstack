@@ -26,14 +26,16 @@ interface CompanyFieldsetProps extends FormFieldsetProps {
   isSaving?: boolean;
   logoFieldError: string | undefined;
   showLogoField?: boolean;
+  showRestaurantName?: boolean;
 }
 
 interface LocationFieldsetProps extends FormFieldsetProps {
   canPublish?: boolean;
   isLegacyLocationMissing?: boolean;
   latitude?: string;
+  locationRequired?: boolean;
   longitude?: string;
-  onLocationChange?: (latitude: number, longitude: number) => void;
+  onLocationChange: (latitude: number, longitude: number) => void;
 }
 
 const FieldsetCard = ({ children, title }: BaseFieldsetProps): ReactElement => {
@@ -53,6 +55,7 @@ export const CompanyFieldset = ({
   logoFieldError,
   register,
   showLogoField = true,
+  showRestaurantName = false,
   t,
 }: CompanyFieldsetProps): ReactElement => {
   const handleLogoChangeSafe: ChangeEventHandler<HTMLInputElement> = (event) => {
@@ -61,6 +64,15 @@ export const CompanyFieldset = ({
 
   return (
     <FieldsetCard title={t("tenantProfile.sections.company")}>
+      {showRestaurantName ? (
+        <Input
+          label={t("tenantProfile.fields.restaurantName.label")}
+          placeholder={t("tenantProfile.fields.restaurantName.placeholder")}
+          maxLength={255}
+          error={getFieldError("restaurantName")}
+          {...register("restaurantName", { validate: (value) => value.trim().length > 0, maxLength: 255 })}
+        />
+      ) : null}
       <Input
         label={t("tenantProfile.fields.nip.label")}
         placeholder={t("tenantProfile.fields.nip.placeholder")}
@@ -178,6 +190,7 @@ export const LocationFieldset = ({
   getFieldError,
   isLegacyLocationMissing = false,
   latitude = "",
+  locationRequired = true,
   longitude = "",
   onLocationChange,
   register,
@@ -195,62 +208,57 @@ export const LocationFieldset = ({
         </div>
       ) : null}
       <p className="text-sm text-text-secondary">{t("tenantProfile.location.description")}</p>
-      {onLocationChange ? (
-        <div className="space-y-2">
-          <p className="text-sm text-text-secondary">{t("tenantProfile.location.mapHint")}</p>
-          <Suspense
-            fallback={
-              <div
-                className="flex h-72 items-center justify-center gap-2 rounded-lg border border-border-default bg-surface-primary text-sm text-text-secondary"
-                role="status"
-              >
-                <Loader size="sm" />
-                <span>{t("tenantProfile.location.loadingMap")}</span>
-              </div>
-            }
-          >
-            <LocationPickerMap
-              latitude={latitude}
-              longitude={longitude}
-              label={t("tenantProfile.location.mapLabel")}
-              markerTitle={t("tenantProfile.location.markerTitle")}
-              onLocationChange={onLocationChange}
-            />
-          </Suspense>
-        </div>
-      ) : null}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Input
-          label={t("tenantProfile.fields.latitude.label")}
-          placeholder={t("tenantProfile.fields.latitude.placeholder")}
-          helperText={t("tenantProfile.fields.latitude.helper")}
-          type="number"
-          min={-90}
-          max={90}
-          step="any"
-          error={getFieldError("latitude")}
-          {...register("latitude", {
-            required: true,
-            validate: (value) =>
-              value.trim() !== "" && Number.isFinite(Number(value)) && Number(value) >= -90 && Number(value) <= 90,
-          })}
-        />
-        <Input
-          label={t("tenantProfile.fields.longitude.label")}
-          placeholder={t("tenantProfile.fields.longitude.placeholder")}
-          helperText={t("tenantProfile.fields.longitude.helper")}
-          type="number"
-          min={-180}
-          max={180}
-          step="any"
-          error={getFieldError("longitude")}
-          {...register("longitude", {
-            required: true,
-            validate: (value) =>
-              value.trim() !== "" && Number.isFinite(Number(value)) && Number(value) >= -180 && Number(value) <= 180,
-          })}
-        />
+      <div className="space-y-2">
+        <p className="text-sm text-text-secondary">{t("tenantProfile.location.mapHint")}</p>
+        <Suspense
+          fallback={
+            <div
+              className="flex h-72 items-center justify-center gap-2 rounded-lg border border-border-default bg-surface-primary text-sm text-text-secondary"
+              role="status"
+            >
+              <Loader size="sm" />
+              <span>{t("tenantProfile.location.loadingMap")}</span>
+            </div>
+          }
+        >
+          <LocationPickerMap
+            latitude={latitude}
+            longitude={longitude}
+            label={t("tenantProfile.location.mapLabel")}
+            markerTitle={t("tenantProfile.location.markerTitle")}
+            onLocationChange={onLocationChange}
+          />
+        </Suspense>
       </div>
+      <input
+        type="hidden"
+        {...register("latitude", {
+          validate: (value) => {
+            if (value.trim() === "") {
+              return !locationRequired && longitude.trim() === "";
+            }
+
+            return Number.isFinite(Number(value)) && Number(value) >= -90 && Number(value) <= 90;
+          },
+        })}
+      />
+      <input
+        type="hidden"
+        {...register("longitude", {
+          validate: (value) => {
+            if (value.trim() === "") {
+              return !locationRequired && latitude.trim() === "";
+            }
+
+            return Number.isFinite(Number(value)) && Number(value) >= -180 && Number(value) <= 180;
+          },
+        })}
+      />
+      {getFieldError("latitude") || getFieldError("longitude") ? (
+        <p className="text-sm text-status-error-text" role="alert">
+          {getFieldError("latitude") ?? getFieldError("longitude")}
+        </p>
+      ) : null}
       <Switch
         label={t("tenantProfile.fields.isLocationPublic.label")}
         disabled={!canPublish}
