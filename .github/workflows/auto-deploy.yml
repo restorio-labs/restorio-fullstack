@@ -51,3 +51,11 @@ jobs:
     with:
       release_tag: ${{ needs.create-release.outputs.tag }}
     secrets: inherit
+
+  deploy-production:
+    name: Deploy production
+    needs: [create-release, publish-images, deploy-preview]
+    uses: ./.github/workflows/deploy-production.yml
+    with:
+      release_tag: ${{ needs.create-release.outputs.tag }}
+    secrets: inherit
