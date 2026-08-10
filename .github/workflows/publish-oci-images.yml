@@ -93,7 +93,7 @@ jobs:
           echo "Components to publish: $components"
 
   build-and-publish:
-    name: Build ${{ matrix.name || 'OCI images' }}
+    name: Build ${{ matrix.name }}
     needs: resolve-release
     if: ${{ needs.resolve-release.outputs.components != '[]' && !inputs.manifest_only }}
     runs-on: ubuntu-latest

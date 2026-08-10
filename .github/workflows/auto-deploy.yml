@@ -45,7 +45,7 @@ jobs:
 
   deploy-preview:
     name: Deploy preview
-    needs: publish-images
+    needs: [create-release, publish-images]
     uses: ./.github/workflows/deploy-preview.yml
     with:
       release_tag: ${{ needs.create-release.outputs.tag }}
