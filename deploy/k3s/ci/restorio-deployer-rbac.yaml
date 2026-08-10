@@ -17,7 +17,7 @@ metadata:
   name: restorio-deployer
 rules:
   - apiGroups: [""]
-    resources: [configmaps, events, pods, secrets, serviceaccounts, services]
+    resources: [configmaps, events, persistentvolumeclaims, pods, secrets, serviceaccounts, services]
     verbs: [create, delete, get, list, patch, update, watch]
   - apiGroups: ["apps"]
     resources: [deployments, replicasets, statefulsets]
