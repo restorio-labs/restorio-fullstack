@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from fastapi import Request, Response
 import pytest
@@ -8,6 +8,7 @@ from core.middleware.csrf import (
     CSRF_TOKEN_COOKIE_NAME,
     CSRF_TOKEN_HEADER_NAME,
     CSRFMiddleware,
+    _csrf_token_cookie_name,
     _is_csrf_exempt,
     _uses_bearer_auth,
     _uses_cookie_auth,
@@ -21,6 +22,13 @@ def test_generate_csrf_token_non_empty() -> None:
     t2 = generate_csrf_token()
     assert len(t1) > 8  # noqa: PLR2004
     assert t1 != t2
+
+
+@patch("core.middleware.csrf.settings")
+def test_preview_uses_an_environment_specific_csrf_cookie(mock_settings: MagicMock) -> None:
+    mock_settings.ENV = "preview"
+
+    assert _csrf_token_cookie_name() == "preview_csrf_token"
 
 
 def test_is_csrf_exempt_prefix() -> None:

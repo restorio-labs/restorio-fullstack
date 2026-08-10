@@ -116,7 +116,7 @@ jobs:
             echo "- Commit: \`$(git rev-parse HEAD)\`"
             echo
             echo "Publishing release images starts automatically from \`$RELEASE_TAG\`."
-            echo "After it succeeds, run Deploy to k3s from the same ref."
+            echo "After it succeeds, run Deploy preview to k3s from the same ref."
           } >> "$GITHUB_STEP_SUMMARY"
 
   publish-images:

@@ -62,3 +62,4 @@ ENV/
 .cursor/settings.json
 
 .open-next/
+.local/

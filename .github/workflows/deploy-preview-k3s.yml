@@ -1,19 +1,10 @@
-name: Deploy to k3s
+name: Deploy preview to k3s
 
 on:
   workflow_dispatch:
-    inputs:
-      environment:
-        description: Target GitHub environment
-        required: true
-        default: preview
-        type: choice
-        options:
-          - preview
-          - production
 
 concurrency:
-  group: deploy-k3s-${{ inputs.environment }}
+  group: deploy-preview-k3s
   cancel-in-progress: false
 
 permissions:
@@ -22,9 +13,9 @@ permissions:
 
 jobs:
   deploy:
-    name: Deploy release to ${{ inputs.environment }}
+    name: Deploy release to preview
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: preview
     env:
       DEPLOY_SSH_HOST: ${{ vars.DEPLOY_SSH_HOST }}
       DEPLOY_SSH_PORT: ${{ vars.DEPLOY_SSH_PORT || '22' }}
@@ -32,6 +23,8 @@ jobs:
       DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
       DEPLOY_SSH_KNOWN_HOSTS: ${{ vars.DEPLOY_SSH_KNOWN_HOSTS }}
       GHCR_PULL_TOKEN: ${{ secrets.GHCR_PULL_TOKEN }}
+      PREVIEW_BASIC_AUTH_USERNAME: ${{ secrets.PREVIEW_BASIC_AUTH_USERNAME }}
+      PREVIEW_BASIC_AUTH_PASSWORD: ${{ secrets.PREVIEW_BASIC_AUTH_PASSWORD }}
     steps:
       - name: Validate selected release
         shell: bash
@@ -42,7 +35,7 @@ jobs:
           set -euo pipefail
 
           if [[ "$RELEASE_REF" != refs/tags/* ]]; then
-            echo "::error::Deploy to k3s must run from a release tag"
+            echo "::error::Deploy preview to k3s must run from a release tag"
             exit 1
           fi
 
@@ -60,6 +53,8 @@ jobs:
           [ -n "${DEPLOY_SSH_PRIVATE_KEY:-}" ] || missing+=(DEPLOY_SSH_PRIVATE_KEY)
           [ -n "${DEPLOY_SSH_KNOWN_HOSTS:-}" ] || missing+=(DEPLOY_SSH_KNOWN_HOSTS)
           [ -n "${GHCR_PULL_TOKEN:-}" ] || missing+=(GHCR_PULL_TOKEN)
+          [ -n "${PREVIEW_BASIC_AUTH_USERNAME:-}" ] || missing+=(PREVIEW_BASIC_AUTH_USERNAME)
+          [ -n "${PREVIEW_BASIC_AUTH_PASSWORD:-}" ] || missing+=(PREVIEW_BASIC_AUTH_PASSWORD)
           if [ "${#missing[@]}" -ne 0 ]; then
             echo "::error::Missing GitHub Environment configuration: ${missing[*]}"
             exit 1
@@ -153,7 +148,8 @@ jobs:
           chmod 0600 "$RUNNER_TEMP/ssh/id_ed25519"
           trap 'rm -rf "$RUNNER_TEMP/ssh"' EXIT
 
-          ssh \
+          ssh_command=(
+            ssh
             -i "$RUNNER_TEMP/ssh/id_ed25519" \
             -o BatchMode=yes \
             -o ServerAliveInterval=30 \
@@ -161,8 +157,13 @@ jobs:
             -o StrictHostKeyChecking=yes \
             -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" \
             -p "$DEPLOY_SSH_PORT" \
-            "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
-            "deploy $RELEASE_VERSION $RELEASE_COMMIT $API_DIGEST $ADMIN_PANEL_DIGEST $KITCHEN_PANEL_DIGEST $MOBILE_APP_DIGEST $WAITER_PANEL_DIGEST"
+            "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST"
+          )
+
+          deployment_command="deploy $RELEASE_VERSION $RELEASE_COMMIT $API_DIGEST $ADMIN_PANEL_DIGEST $KITCHEN_PANEL_DIGEST $MOBILE_APP_DIGEST $WAITER_PANEL_DIGEST"
+
+          printf '%s\n%s\n' "$PREVIEW_BASIC_AUTH_USERNAME" "$PREVIEW_BASIC_AUTH_PASSWORD" | \
+            "${ssh_command[@]}" "$deployment_command"
 
       - name: Write deployment summary
         shell: bash
@@ -183,7 +184,7 @@ jobs:
           {
             echo "## k3s deployment"
             echo
-            echo "- Environment: \`${{ inputs.environment }}\`"
+            echo "- Environment: \`preview\`"
             echo "- Release: \`${{ github.ref_name }}\`"
             echo "- Commit: \`$RELEASE_COMMIT\`"
             echo "- API: \`$API_TAG\` at \`$API_DIGEST\`"

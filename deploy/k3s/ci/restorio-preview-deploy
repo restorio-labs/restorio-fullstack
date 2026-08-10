@@ -84,6 +84,7 @@ readonly runtime_values_file="$runtime_chart_dir/values-preview.yaml"
 readonly edge_chart_dir="$REPOSITORY_DIR/deploy/helm/restorio-edge"
 readonly edge_values_file="$edge_chart_dir/values-preview.yaml"
 readonly api_runtime_secret=restorio-api-preview-runtime
+readonly preview_auth_secret=restorio-preview-basic-auth
 
 log() {
   printf '[%s] %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*"
@@ -128,6 +129,61 @@ run_with_progress() {
   return "$exit_status"
 }
 
+sync_preview_basic_auth() {
+  local username
+  local password
+  local unexpected_input
+  local auth_file
+
+  if ! IFS= read -r username || ! IFS= read -r password; then
+    echo "Missing preview Basic Auth credentials" >&2
+    exit 1
+  fi
+
+  if [[ ! "$username" =~ ^[A-Za-z0-9._-]+$ ]]; then
+    echo "Preview Basic Auth username contains unsupported characters" >&2
+    exit 1
+  fi
+
+  if [ -z "$password" ]; then
+    echo "Preview Basic Auth password must not be empty" >&2
+    exit 1
+  fi
+
+  if IFS= read -r unexpected_input; then
+    echo "Unexpected data after preview Basic Auth credentials" >&2
+    exit 1
+  fi
+
+  if ! command -v htpasswd >/dev/null 2>&1; then
+    echo "Missing htpasswd. Install the apache2-utils package on the preview VPS" >&2
+    exit 1
+  fi
+
+  auth_file=$(mktemp)
+  chmod 0600 "$auth_file"
+
+  if ! printf '%s\n' "$password" | htpasswd -i -B -c "$auth_file" "$username" >/dev/null; then
+    rm -f "$auth_file"
+    echo "Unable to create the preview Basic Auth file" >&2
+    exit 1
+  fi
+
+  if ! kubectl create secret generic "$preview_auth_secret" \
+    --namespace "$K3S_NAMESPACE" \
+    --from-file=htpasswd="$auth_file" \
+    --dry-run=client \
+    -o yaml | kubectl apply -f -; then
+    rm -f "$auth_file"
+    echo "Unable to synchronize the preview Basic Auth secret" >&2
+    exit 1
+  fi
+
+  rm -f "$auth_file"
+
+  log "Preview Basic Auth secret synchronized from the GitHub Environment"
+}
+
 if [ ! -f "$chart_dir/Chart.yaml" ] || [ ! -f "$values_file" ] || \
   [ ! -f "$runtime_chart_dir/Chart.yaml" ] || [ ! -f "$runtime_values_file" ] || \
   [ ! -f "$edge_chart_dir/Chart.yaml" ] || [ ! -f "$edge_values_file" ]; then
@@ -142,6 +198,8 @@ kubectl create secret docker-registry ghcr-pull \
   --docker-password="$GHCR_PULL_TOKEN" \
   --dry-run=client \
   -o yaml | kubectl apply -f -
+
+sync_preview_basic_auth
 
 run_with_progress "Deploying public edge" helm upgrade --install restorio-edge "$edge_chart_dir" \
   --namespace "$K3S_NAMESPACE" \
@@ -189,5 +247,6 @@ kubectl rollout status deployment/restorio-restorio-admin-panel --namespace "$K3
 kubectl rollout status deployment/restorio-restorio-kitchen-panel --namespace "$K3S_NAMESPACE" --timeout=3m
 kubectl rollout status deployment/restorio-restorio-mobile-app --namespace "$K3S_NAMESPACE" --timeout=3m
 kubectl rollout status deployment/restorio-restorio-waiter-panel --namespace "$K3S_NAMESPACE" --timeout=3m
+kubectl rollout restart deployment/restorio-edge --namespace "$K3S_NAMESPACE"
 kubectl rollout status deployment/restorio-edge --namespace "$K3S_NAMESPACE" --timeout=3m
 kubectl get pods,services --namespace "$K3S_NAMESPACE" -l app.kubernetes.io/instance=restorio

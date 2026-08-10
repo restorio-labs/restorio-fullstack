@@ -7,15 +7,14 @@
  */
 import handler from "vinext/server/app-router-entry";
 import { handleImageOptimization, DEFAULT_DEVICE_SIZES, DEFAULT_IMAGE_SIZES } from "vinext/server/image-optimization";
+import { createPreviewApiRequest, isPreviewAuthorized, type PreviewAuthEnv } from "./previewApiProxy";
 
 interface Fetcher {
   fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
 }
 
-interface Env {
+interface Env extends PreviewAuthEnv {
   ASSETS: Fetcher;
-  PREVIEW_BASIC_AUTH_PASSWORD?: string;
-  PREVIEW_BASIC_AUTH_USERNAME?: string;
   IMAGES: {
     input(stream: ReadableStream): {
       transform(options: Record<string, unknown>): {
@@ -31,7 +30,6 @@ interface ExecutionContext {
 }
 
 const PREVIEW_HOSTNAME = "preview.restorio.org";
-const PREVIEW_API_ORIGIN = "https://preview-api.restorio.org";
 
 const unauthorizedPreviewResponse = (): Response =>
   new Response("Preview authentication required\n", {
@@ -41,16 +39,6 @@ const unauthorizedPreviewResponse = (): Response =>
       "WWW-Authenticate": 'Basic realm="Restorio preview", charset="UTF-8"',
     },
   });
-
-const isPreviewAuthorized = (request: Request, env: Env): boolean => {
-  if (env.PREVIEW_BASIC_AUTH_USERNAME === undefined || env.PREVIEW_BASIC_AUTH_PASSWORD === undefined) {
-    return false;
-  }
-
-  const expected = `Basic ${btoa(`${env.PREVIEW_BASIC_AUTH_USERNAME}:${env.PREVIEW_BASIC_AUTH_PASSWORD}`)}`;
-
-  return request.headers.get("Authorization") === expected;
-};
 
 // Image security config. SVG sources with .svg extension auto-skip the
 // optimization endpoint on the client side (served directly, no proxy).
@@ -68,9 +56,7 @@ export default {
     }
 
     if (isPreview && url.pathname.startsWith("/api/")) {
-      const apiUrl = new URL(`${url.pathname}${url.search}`, PREVIEW_API_ORIGIN);
-
-      return fetch(new Request(apiUrl, request));
+      return fetch(createPreviewApiRequest(request, env));
     }
 
     // Image optimization via Cloudflare Images binding.

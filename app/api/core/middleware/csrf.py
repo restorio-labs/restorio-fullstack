@@ -56,6 +56,13 @@ def _uses_cookie_auth(request: Request) -> bool:
     return settings.ACCESS_TOKEN_COOKIE_NAME in request.cookies
 
 
+def _csrf_token_cookie_name() -> str:
+    if settings.ENV.strip().lower() == "preview":
+        return "preview_csrf_token"
+
+    return CSRF_TOKEN_COOKIE_NAME
+
+
 def generate_csrf_token() -> str:
     """Generate a cryptographically secure CSRF token."""
     return secrets.token_urlsafe(CSRF_TOKEN_LENGTH)
@@ -63,7 +70,7 @@ def generate_csrf_token() -> str:
 
 def _validate_csrf_token(request: Request) -> bool:
     """Validate that the CSRF token in header matches the cookie."""
-    cookie_token = request.cookies.get(CSRF_TOKEN_COOKIE_NAME)
+    cookie_token = request.cookies.get(_csrf_token_cookie_name())
     header_token = request.headers.get(CSRF_TOKEN_HEADER_NAME)
 
     if not cookie_token or not header_token:
@@ -105,7 +112,8 @@ class CSRFMiddleware(BaseHTTPMiddleware):
 
     def _ensure_csrf_cookie(self, request: Request, response: Response) -> Response:
         """Ensure CSRF token cookie is set if not present."""
-        if CSRF_TOKEN_COOKIE_NAME not in request.cookies:
+        cookie_name = _csrf_token_cookie_name()
+        if cookie_name not in request.cookies:
             token = generate_csrf_token()
             hostname = request.url.hostname
             secure = request.url.scheme == "https"
@@ -113,6 +121,8 @@ class CSRFMiddleware(BaseHTTPMiddleware):
             if hostname in {"localhost", "127.0.0.1"}:
                 domain = None
                 secure = False
+            elif settings.ENV.strip().lower() == "preview":
+                domain = None
             else:
                 domain = None
                 for d in ["restorio.org"]:
@@ -121,7 +131,7 @@ class CSRFMiddleware(BaseHTTPMiddleware):
                         break
 
             response.set_cookie(
-                key=CSRF_TOKEN_COOKIE_NAME,
+                key=cookie_name,
                 value=token,
                 httponly=False,
                 secure=secure,
