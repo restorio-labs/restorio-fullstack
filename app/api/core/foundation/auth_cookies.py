@@ -10,14 +10,7 @@ def _is_local_host(hostname: str | None) -> bool:
     return hostname in {"localhost", "127.0.0.1"}
 
 
-def _cookie_domain(hostname: str | None) -> str | None:
-    if _is_local_host(hostname):
-        return None
-
-    for domain in ["restorio.org"]:
-        if hostname == domain or (hostname and hostname.endswith(f".{domain}")):
-            return f".{domain}"
-
+def _cookie_domain(_hostname: str | None) -> str | None:
     return None
 
 
@@ -35,6 +28,8 @@ def set_auth_cookies(
     hostname = request.url.hostname
     domain = _cookie_domain(hostname)
     secure = _should_use_secure_cookie(request)
+
+    _clear_legacy_shared_auth_cookies(response, hostname, secure)
 
     response.set_cookie(
         key=settings.ACCESS_TOKEN_COOKIE_NAME,
@@ -97,6 +92,29 @@ def clear_auth_cookies(response: Response, request: Request) -> None:
         httponly=False,
         samesite="lax",
     )
+
+    _clear_legacy_shared_auth_cookies(response, hostname, secure)
+
+
+def _clear_legacy_shared_auth_cookies(
+    response: Response, hostname: str | None, secure: bool
+) -> None:
+    if hostname is None or not (hostname == "restorio.org" or hostname.endswith(".restorio.org")):
+        return
+
+    for key, httponly in [
+        (settings.ACCESS_TOKEN_COOKIE_NAME, True),
+        (settings.REFRESH_TOKEN_COOKIE_NAME, True),
+        (settings.SESSION_HINT_COOKIE, False),
+    ]:
+        response.delete_cookie(
+            key=key,
+            path="/",
+            domain=".restorio.org",
+            secure=secure,
+            httponly=httponly,
+            samesite="lax",
+        )
 
 
 def get_access_token_from_request(request: Request) -> str | None:

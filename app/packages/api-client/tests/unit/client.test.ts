@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import axios, {
-  type AxiosResponse,
   type AxiosError,
   type AxiosRequestConfig,
+  type AxiosResponse,
   type InternalAxiosRequestConfig,
 } from "axios";
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -282,23 +282,19 @@ describe("Api Client", () => {
     vi.unstubAllGlobals();
   });
 
-  it("adds X-CSRF-Token on POST when csrf_token cookie is present", async () => {
-    vi.stubGlobal("document", { cookie: "csrf_token=signed-token-value" });
-
+  it("adds X-CSRF-Token on POST after the API returns a token", async () => {
     new ApiClient({ baseURL: "x" });
+
+    ctx.responseSuccess?.({ headers: { "x-csrf-token": "signed-token-value" } } as AxiosResponse);
 
     const config = { headers: {}, method: "post" } as InternalAxiosRequestConfig;
 
     const result = (await ctx.requestInterceptor?.(config)) ?? config;
 
     expect((result as AxiosRequestConfig).headers?.["X-CSRF-Token"]).toBe("signed-token-value");
-
-    vi.unstubAllGlobals();
   });
 
   it("does not set X-CSRF-Token when header already present", async () => {
-    vi.stubGlobal("document", { cookie: "csrf_token=cookie-value" });
-
     new ApiClient({ baseURL: "x" });
 
     const config = {
@@ -309,13 +305,9 @@ describe("Api Client", () => {
     const result = (await ctx.requestInterceptor?.(config)) ?? config;
 
     expect((result as AxiosRequestConfig).headers?.["X-CSRF-Token"]).toBe("preset");
-
-    vi.unstubAllGlobals();
   });
 
   it("does not add X-CSRF-Token for GET requests", async () => {
-    vi.stubGlobal("document", { cookie: "csrf_token=should-not-apply" });
-
     new ApiClient({ baseURL: "x" });
 
     const config = { headers: {}, method: "get" } as InternalAxiosRequestConfig;
@@ -323,8 +315,6 @@ describe("Api Client", () => {
     const result = (await ctx.requestInterceptor?.(config)) ?? config;
 
     expect((result as AxiosRequestConfig).headers?.["X-CSRF-Token"]).toBeUndefined();
-
-    vi.unstubAllGlobals();
   });
 
   it("uses custom tokenExpiryBufferMs when provided", () => {

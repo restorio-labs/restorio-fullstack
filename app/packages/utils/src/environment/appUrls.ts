@@ -131,22 +131,30 @@ const _isLocalhostApiUrl = (value: string): boolean => {
 
 export const resolveApiBaseUrl = (options?: ResolveApiBaseUrlOptions): string => {
   const merged = getMergedRuntimeEnv();
+  const environment = _getCurrentEnvironment();
+
+  if (typeof window !== "undefined") {
+    if (environment === Environment.PREVIEW) {
+      return "https://preview-api.restorio.org/api/v1";
+    }
+
+    if (environment === Environment.PRODUCTION) {
+      return DEFAULT_PRODUCTION_API_BASE;
+    }
+  }
+
   const fromEnv = resolveNextEnvVar(merged, "VITE_API_BASE_URL", "NEXT_PUBLIC_API_BASE_URL");
 
   if (typeof fromEnv === "string" && fromEnv.length > 0) {
-    const envTypeEarly = _getCurrentEnvironment();
-
-    if (!(envTypeEarly === Environment.PRODUCTION && _isLocalhostApiUrl(fromEnv))) {
+    if (!(environment === Environment.PRODUCTION && _isLocalhostApiUrl(fromEnv))) {
       return fromEnv;
     }
   }
 
-  const envType = _getCurrentEnvironment();
-
   if (
     options?.preferRelativeInBrowser === true &&
     typeof window !== "undefined" &&
-    envType !== Environment.PRODUCTION
+    environment !== Environment.PRODUCTION
   ) {
     return "/api/v1";
   }
@@ -159,7 +167,7 @@ export const resolveApiBaseUrl = (options?: ResolveApiBaseUrlOptions): string =>
     return `${trimmed}/api/v1`;
   }
 
-  if (envType === Environment.PRODUCTION) {
+  if (environment === Environment.PRODUCTION) {
     return DEFAULT_PRODUCTION_API_BASE;
   }
 

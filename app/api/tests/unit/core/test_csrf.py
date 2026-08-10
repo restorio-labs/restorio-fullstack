@@ -82,6 +82,26 @@ def test_validate_csrf_token_matches_header_and_cookie() -> None:
 
 
 @pytest.mark.asyncio
+async def test_csrf_failure_returns_the_current_token_header() -> None:
+    async def call_next(_: Request) -> Response:
+        return Response(content="ok")
+
+    middleware = CSRFMiddleware(call_next)
+    token = "a" * 32
+    scope = {
+        "type": "http",
+        "method": "POST",
+        "path": "/api/v1/private",
+        "headers": [(b"cookie", f"rat=access;{CSRF_TOKEN_COOKIE_NAME}={token}".encode())],
+    }
+
+    response = await middleware.dispatch(Request(scope), call_next)
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.headers[CSRF_TOKEN_HEADER_NAME] == token
+
+
+@pytest.mark.asyncio
 async def test_csrf_middleware_options_passthrough() -> None:
     async def call_next(_: Request) -> Response:
         return Response(content="ok")
@@ -255,7 +275,7 @@ async def test_csrf_middleware_sets_cookie_on_post_success() -> None:
 
 
 @pytest.mark.asyncio
-async def test_csrf_middleware_sets_cookie_for_restorio_domain() -> None:
+async def test_csrf_middleware_sets_host_only_cookie_for_restorio_domain() -> None:
     middleware = CSRFMiddleware(MagicMock())
     scope = {
         "type": "http",
@@ -270,12 +290,13 @@ async def test_csrf_middleware_sets_cookie_for_restorio_domain() -> None:
     out = middleware._ensure_csrf_cookie(request, response)
     cookie_header = out.headers.get("set-cookie", "")
     assert CSRF_TOKEN_COOKIE_NAME in cookie_header
-    assert ".restorio.org" in cookie_header
+    assert "Domain=" not in cookie_header
+    assert out.headers.get(CSRF_TOKEN_HEADER_NAME)
 
 
 @pytest.mark.asyncio
 @patch("core.middleware.csrf.settings")
-async def test_preview_csrf_cookie_is_shared_with_preview_subdomains(
+async def test_preview_csrf_cookie_is_host_only(
     mock_settings: MagicMock,
 ) -> None:
     mock_settings.ENV = "preview"
@@ -294,7 +315,7 @@ async def test_preview_csrf_cookie_is_shared_with_preview_subdomains(
     cookie_header = out.headers.get("set-cookie", "")
 
     assert "preview_csrf_token" in cookie_header
-    assert ".restorio.org" in cookie_header
+    assert "Domain=" not in cookie_header
 
 
 @pytest.mark.asyncio

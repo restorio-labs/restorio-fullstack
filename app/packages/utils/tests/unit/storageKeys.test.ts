@@ -70,4 +70,5 @@ describe("storageKeys", () => {
     expect(keys.SESSION_HINT_COOKIE).toBe("custom-session-hint");
     expect(keys.CROSS_APP_BACKUP_STORAGE_KEY).toBe("custom-backup");
   });
+
 });

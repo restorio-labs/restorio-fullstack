@@ -44,6 +44,21 @@ data:
             https https;
         }
 
+        map $http_origin $api_cors_origin {
+            default "";
+            "https://restorio.org" $http_origin;
+            "https://www.restorio.org" $http_origin;
+            "https://admin.restorio.org" $http_origin;
+            "https://kitchen.restorio.org" $http_origin;
+            "https://mobile.restorio.org" $http_origin;
+            "https://waiter.restorio.org" $http_origin;
+            "https://preview.restorio.org" $http_origin;
+            "https://preview-admin.restorio.org" $http_origin;
+            "https://preview-kitchen.restorio.org" $http_origin;
+            "https://preview-mobile.restorio.org" $http_origin;
+            "https://preview-waiter.restorio.org" $http_origin;
+        }
+
         ssl_protocols TLSv1.2 TLSv1.3;
         ssl_certificate /etc/restorio-edge/tls/cert.pem;
         ssl_certificate_key /etc/restorio-edge/tls/key.pem;
@@ -61,6 +76,16 @@ data:
             add_header X-XSS-Protection "1; mode=block" always;
             add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
             add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+            add_header Access-Control-Allow-Origin $api_cors_origin always;
+            add_header Access-Control-Allow-Credentials "true" always;
+            add_header Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS" always;
+            add_header Access-Control-Allow-Headers "Accept, Accept-Language, Authorization, Content-Type, Origin, X-CSRF-Token, X-Requested-With, X-Timezone" always;
+            add_header Access-Control-Expose-Headers "X-CSRF-Token" always;
+            add_header Vary Origin always;
+
+            if ($request_method = OPTIONS) {
+                return 204;
+            }
 
             location / {
                 limit_req zone=api_limit burst=20 nodelay;
@@ -74,6 +99,12 @@ data:
                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                 proxy_set_header X-Forwarded-Proto $real_scheme;
                 proxy_cache_bypass $http_upgrade;
+                proxy_hide_header Access-Control-Allow-Origin;
+                proxy_hide_header Access-Control-Allow-Credentials;
+                proxy_hide_header Access-Control-Allow-Methods;
+                proxy_hide_header Access-Control-Allow-Headers;
+                proxy_hide_header Access-Control-Expose-Headers;
+                proxy_hide_header Vary;
             }
         }
 
@@ -96,20 +127,6 @@ data:
             add_header X-Content-Type-Options "nosniff" always;
             add_header Referrer-Policy "strict-origin-when-cross-origin" always;
             add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
-
-            location /api/ {
-                limit_req zone=api_limit burst=20 nodelay;
-                limit_conn addr_conn 10;
-                proxy_pass http://127.0.0.1:31081;
-                proxy_http_version 1.1;
-                proxy_set_header Upgrade $http_upgrade;
-                proxy_set_header Connection 'upgrade';
-                proxy_set_header Host $host;
-                proxy_set_header X-Real-IP $remote_addr;
-                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                proxy_set_header X-Forwarded-Proto $real_scheme;
-                proxy_cache_bypass $http_upgrade;
-            }
 
             location / {
                 proxy_pass http://$frontend_upstream;
@@ -136,6 +153,16 @@ data:
             add_header X-Content-Type-Options "nosniff" always;
             add_header Referrer-Policy "strict-origin-when-cross-origin" always;
             add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+            add_header Access-Control-Allow-Origin $api_cors_origin always;
+            add_header Access-Control-Allow-Credentials "true" always;
+            add_header Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS" always;
+            add_header Access-Control-Allow-Headers "Accept, Accept-Language, Authorization, Content-Type, Origin, X-CSRF-Token, X-Requested-With, X-Timezone" always;
+            add_header Access-Control-Expose-Headers "X-CSRF-Token" always;
+            add_header Vary Origin always;
+
+            if ($request_method = OPTIONS) {
+                return 204;
+            }
 
             location / {
                 limit_req zone=api_limit burst=20 nodelay;
@@ -149,6 +176,12 @@ data:
                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                 proxy_set_header X-Forwarded-Proto $real_scheme;
                 proxy_cache_bypass $http_upgrade;
+                proxy_hide_header Access-Control-Allow-Origin;
+                proxy_hide_header Access-Control-Allow-Credentials;
+                proxy_hide_header Access-Control-Allow-Methods;
+                proxy_hide_header Access-Control-Allow-Headers;
+                proxy_hide_header Access-Control-Expose-Headers;
+                proxy_hide_header Vary;
             }
         }
 
@@ -165,20 +198,6 @@ data:
             add_header X-Content-Type-Options "nosniff" always;
             add_header Referrer-Policy "strict-origin-when-cross-origin" always;
             add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
-
-            location /api/ {
-                limit_req zone=api_limit burst=20 nodelay;
-                limit_conn addr_conn 10;
-                proxy_pass http://127.0.0.1:31081;
-                proxy_http_version 1.1;
-                proxy_set_header Upgrade $http_upgrade;
-                proxy_set_header Connection 'upgrade';
-                proxy_set_header Host $host;
-                proxy_set_header X-Real-IP $remote_addr;
-                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                proxy_set_header X-Forwarded-Proto $real_scheme;
-                proxy_cache_bypass $http_upgrade;
-            }
 
             location / {
                 proxy_pass http://$frontend_upstream;

@@ -7,7 +7,7 @@
  */
 import handler from "vinext/server/app-router-entry";
 import { handleImageOptimization, DEFAULT_DEVICE_SIZES, DEFAULT_IMAGE_SIZES } from "vinext/server/image-optimization";
-import { createPreviewApiRequest, isPreviewAuthorized, type PreviewAuthEnv } from "./previewApiProxy";
+import { isPreviewAuthorized, type PreviewAuthEnv } from "./previewAuth";
 
 interface Fetcher {
   fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
@@ -53,10 +53,6 @@ export default {
 
     if (isPreview && !isPreviewAuthorized(request, env)) {
       return unauthorizedPreviewResponse();
-    }
-
-    if (isPreview && url.pathname.startsWith("/api/")) {
-      return fetch(createPreviewApiRequest(request, env));
     }
 
     // Image optimization via Cloudflare Images binding.

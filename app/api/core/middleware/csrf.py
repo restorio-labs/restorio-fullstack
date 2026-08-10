@@ -96,16 +96,18 @@ class CSRFMiddleware(BaseHTTPMiddleware):
             return self._ensure_csrf_cookie(request, response)
 
         if _is_csrf_exempt(request.url.path):
-            return await call_next(request)
+            response = await call_next(request)
+            return self._ensure_csrf_cookie(request, response)
 
         if _uses_bearer_auth(request):
             return await call_next(request)
 
         if _uses_cookie_auth(request) and not _validate_csrf_token(request):
-            return JSONResponse(
+            response = JSONResponse(
                 status_code=403,
                 content={"message": "CSRF token validation failed"},
             )
+            return self._ensure_csrf_cookie(request, response)
 
         response = await call_next(request)
         return self._ensure_csrf_cookie(request, response)
@@ -113,20 +115,14 @@ class CSRFMiddleware(BaseHTTPMiddleware):
     def _ensure_csrf_cookie(self, request: Request, response: Response) -> Response:
         """Ensure CSRF token cookie is set if not present."""
         cookie_name = _csrf_token_cookie_name()
-        if cookie_name not in request.cookies:
+        token = request.cookies.get(cookie_name)
+        if token is None:
             token = generate_csrf_token()
             hostname = request.url.hostname
             secure = request.url.scheme == "https"
 
             if hostname in {"localhost", "127.0.0.1"}:
-                domain = None
                 secure = False
-            else:
-                domain = None
-                for d in ["restorio.org"]:
-                    if hostname == d or (hostname and hostname.endswith(f".{d}")):
-                        domain = f".{d}"
-                        break
 
             response.set_cookie(
                 key=cookie_name,
@@ -136,7 +132,9 @@ class CSRFMiddleware(BaseHTTPMiddleware):
                 samesite="lax",
                 max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
                 path="/",
-                domain=domain,
+                domain=None,
             )
+
+        response.headers[CSRF_TOKEN_HEADER_NAME] = token
 
         return response

@@ -1,25 +1,27 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, type InternalAxiosRequestConfig } from "axios";
 
-const CSRF_TOKEN_COOKIE_NAME = "csrf_token";
 const CSRF_TOKEN_HEADER_NAME = "X-CSRF-Token";
 const TIMEZONE_HEADER_NAME = "X-Timezone";
 const STATE_CHANGING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
-const getCsrfTokenFromCookie = (): string | null => {
-  if (typeof document === "undefined") {
+interface ResponseHeaders {
+  get?: (name: string) => unknown;
+  [key: string]: unknown;
+}
+
+const getCsrfTokenFromHeaders = (headers: ResponseHeaders | undefined): string | null => {
+  if (headers === undefined) {
     return null;
   }
 
-  const entry = document.cookie
-    .split(";")
-    .map((item) => item.trim())
-    .find((item) => item.startsWith(`${CSRF_TOKEN_COOKIE_NAME}=`));
+  const fromGetter = headers.get?.(CSRF_TOKEN_HEADER_NAME);
+  const value = fromGetter ?? headers[CSRF_TOKEN_HEADER_NAME] ?? headers[CSRF_TOKEN_HEADER_NAME.toLowerCase()];
 
-  if (entry === undefined) {
-    return null;
+  if (typeof value === "string" && value.length > 0) {
+    return value;
   }
 
-  return decodeURIComponent(entry.slice(CSRF_TOKEN_COOKIE_NAME.length + 1));
+  return null;
 };
 
 const readCsrfHeader = (headers: InternalAxiosRequestConfig["headers"]): string | undefined => {
@@ -61,7 +63,7 @@ export interface ApiClientConfig {
 }
 
 interface AxiosErrorWithConfig {
-  response?: { status?: number };
+  response?: { status?: number; headers?: ResponseHeaders };
   config?: AxiosRequestConfig & { _retry?: boolean };
 }
 
@@ -98,6 +100,7 @@ export class ApiClient {
   private config: ApiClientConfig;
   private refreshPromise: Promise<boolean> | null = null;
   private tokenExpiryBufferMs: number;
+  private csrfToken: string | null = null;
 
   constructor(config: ApiClientConfig) {
     this.config = config;
@@ -120,10 +123,8 @@ export class ApiClient {
       const method = (requestConfig.method ?? "get").toUpperCase();
 
       if (STATE_CHANGING_METHODS.has(method) && readCsrfHeader(requestConfig.headers) === undefined) {
-        const csrf = getCsrfTokenFromCookie();
-
-        if (csrf !== null) {
-          requestConfig.headers[CSRF_TOKEN_HEADER_NAME] = csrf;
+        if (this.csrfToken !== null) {
+          requestConfig.headers[CSRF_TOKEN_HEADER_NAME] = this.csrfToken;
         }
       }
 
@@ -148,8 +149,14 @@ export class ApiClient {
     });
 
     this.client.interceptors.response.use(
-      (response) => response,
+      (response) => {
+        this.rememberCsrfToken(response.headers);
+
+        return response;
+      },
       async (error: AxiosErrorWithConfig) => {
+        this.rememberCsrfToken(error.response?.headers);
+
         if (error.response?.status !== 401) {
           return Promise.reject(error);
         }
@@ -179,6 +186,14 @@ export class ApiClient {
         return this.client.request(config);
       },
     );
+  }
+
+  private rememberCsrfToken(headers: ResponseHeaders | undefined): void {
+    const token = getCsrfTokenFromHeaders(headers);
+
+    if (token !== null) {
+      this.csrfToken = token;
+    }
   }
 
   private doRefresh(): Promise<boolean> {

@@ -46,40 +46,13 @@ class TestIsLocalHost:
 
 
 class TestCookieDomain:
-    def test_localhost_returns_none(self):
+    def test_uses_host_only_cookies_for_every_host(self):
         assert _cookie_domain("localhost") is None
-
-    def test_127_returns_none(self):
         assert _cookie_domain("127.0.0.1") is None
-
-    def test_apex_domain(self):
-        assert _cookie_domain("restorio.org") == ".restorio.org"
-
-    def test_subdomain(self):
-        assert _cookie_domain("api.restorio.org") == ".restorio.org"
-
-    def test_deep_subdomain(self):
-        assert _cookie_domain("staging.api.restorio.org") == ".restorio.org"
-
-    def test_apex_domain_com(self):
-        assert _cookie_domain("restorio.org") == ".restorio.org"
-
-    def test_subdomain_com(self):
-        assert _cookie_domain("api.restorio.org") == ".restorio.org"
-
-    def test_unknown_host_returns_none(self):
+        assert _cookie_domain("api.restorio.org") is None
+        assert _cookie_domain("preview-api.restorio.org") is None
         assert _cookie_domain("evil.com") is None
-
-    def test_none_hostname(self):
         assert _cookie_domain(None) is None
-
-    @patch("core.foundation.auth_cookies.settings")
-    def test_preview_shares_environment_scoped_cookies_with_restorio_subdomains(
-        self, mock_settings
-    ):
-        mock_settings.ENV = "preview"
-
-        assert _cookie_domain("preview-api.restorio.org") == ".restorio.org"
 
 
 class TestShouldUseSecureCookie:
@@ -151,7 +124,9 @@ class TestSetAuthCookies:
         )
 
     @patch("core.foundation.auth_cookies.settings")
-    def test_production_sets_cookies_with_domain_and_secure(self, mock_settings):
+    def test_production_sets_host_only_cookies_and_clears_legacy_shared_cookies(
+        self, mock_settings
+    ):
         mock_settings.ACCESS_TOKEN_COOKIE_NAME = "access_token"
         mock_settings.REFRESH_TOKEN_COOKIE_NAME = "refresh_token"
         mock_settings.SESSION_HINT_COOKIE = "rshc"
@@ -171,7 +146,7 @@ class TestSetAuthCookies:
             samesite="lax",
             max_age=15 * 60,
             path="/",
-            domain=".restorio.org",
+            domain=None,
         )
         response.set_cookie.assert_any_call(
             key="refresh_token",
@@ -181,7 +156,7 @@ class TestSetAuthCookies:
             samesite="lax",
             max_age=7 * 24 * 60 * 60,
             path="/",
-            domain=".restorio.org",
+            domain=None,
         )
         response.set_cookie.assert_any_call(
             key="rshc",
@@ -191,7 +166,15 @@ class TestSetAuthCookies:
             samesite="lax",
             max_age=7 * 24 * 60 * 60,
             path="/",
+            domain=None,
+        )
+        response.delete_cookie.assert_any_call(
+            key="access_token",
+            path="/",
             domain=".restorio.org",
+            secure=True,
+            httponly=True,
+            samesite="lax",
         )
 
     @patch("core.foundation.auth_cookies.settings")
@@ -248,7 +231,7 @@ class TestClearAuthCookies:
         )
 
     @patch("core.foundation.auth_cookies.settings")
-    def test_production_deletes_cookies_with_domain_and_secure(self, mock_settings):
+    def test_production_deletes_host_only_and_legacy_shared_cookies(self, mock_settings):
         mock_settings.ACCESS_TOKEN_COOKIE_NAME = "access_token"
         mock_settings.REFRESH_TOKEN_COOKIE_NAME = "refresh_token"
         mock_settings.SESSION_HINT_COOKIE = "rshc"
@@ -258,6 +241,14 @@ class TestClearAuthCookies:
 
         clear_auth_cookies(response, request)
 
+        response.delete_cookie.assert_any_call(
+            key="access_token",
+            path="/",
+            domain=None,
+            secure=True,
+            httponly=True,
+            samesite="lax",
+        )
         response.delete_cookie.assert_any_call(
             key="access_token",
             path="/",

@@ -102,8 +102,6 @@ jobs:
             CLOUDFLARE_ENV=preview \
               VITE_ENV=preview \
               NODE_ENV=production \
-              NEXT_PUBLIC_API_BASE_URL=/api/v1 \
-              NEXT_PUBLIC_API_PROXY_TARGET=https://preview-api.restorio.org \
               VITE_APP_VERSION="$RELEASE_VERSION" \
               bunx vinext deploy --env preview
             exit 0
@@ -111,6 +109,5 @@ jobs:
 
           VITE_ENV=production \
             NODE_ENV=production \
-            NEXT_PUBLIC_API_BASE_URL=/api/v1 \
             VITE_APP_VERSION="$RELEASE_VERSION" \
             bunx vinext deploy

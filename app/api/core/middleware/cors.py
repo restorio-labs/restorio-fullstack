@@ -95,4 +95,5 @@ def setup_cors(app: FastAPI, settings: Settings) -> None:
             "X-Requested-With",
             "X-Timezone",
         ],
+        expose_headers=["X-CSRF-Token"],
     )

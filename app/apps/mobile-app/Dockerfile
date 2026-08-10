@@ -6,7 +6,6 @@ FROM ${BUN_IMAGE} AS build
 ARG VERSION
 
 ENV NODE_ENV=production \
-    VITE_API_BASE_URL=/api/v1 \
     VITE_APP_VERSION="${VERSION}" \
     VITE_ENV=production
 

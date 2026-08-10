@@ -89,6 +89,7 @@ describe("getEnvironmentFromEnv", () => {
 describe("getEnvMode", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
   });
 
   it("returns ENV when set", () => {
@@ -164,6 +165,7 @@ describe("getAppBaseUrl", () => {
 describe("resolveApiBaseUrl", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
   });
 
   it("returns localhost default when no env", () => {
@@ -183,12 +185,12 @@ describe("resolveApiBaseUrl", () => {
     expect(resolveApiBaseUrl()).toBe("https://api.restorio.org/api/v1");
   });
 
-  it("builds API path from NEXT_PUBLIC_PUBLIC_API_ORIGIN in production", () => {
+  it("uses the fixed production API origin in a browser", () => {
     vi.stubEnv("ENV", "production");
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("NEXT_PUBLIC_PUBLIC_API_ORIGIN", "https://api.example.org");
 
-    expect(resolveApiBaseUrl()).toBe("https://api.example.org/api/v1");
+    expect(resolveApiBaseUrl()).toBe("https://api.restorio.org/api/v1");
   });
 
   it("does not use relative /api/v1 in production even when preferRelativeInBrowser", () => {
@@ -199,11 +201,11 @@ describe("resolveApiBaseUrl", () => {
     expect(resolveApiBaseUrl({ preferRelativeInBrowser: true })).toBe("https://api.restorio.org/api/v1");
   });
 
-  it("uses the relative API path on a preview host", () => {
+  it("uses the preview API origin on a preview host", () => {
     vi.stubEnv("ENV", "production");
     vi.stubGlobal("window", { location: { hostname: "preview-admin.restorio.org" } });
 
-    expect(resolveApiBaseUrl({ preferRelativeInBrowser: true })).toBe("/api/v1");
+    expect(resolveApiBaseUrl({ preferRelativeInBrowser: true })).toBe("https://preview-api.restorio.org/api/v1");
   });
 });
 
