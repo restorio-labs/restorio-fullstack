@@ -54,6 +54,12 @@ Only one preview deployment can run at a time.
 If an earlier deployment still owns the VPS lock, the newer workflow fails with an instruction to wait and select **Re-run failed jobs**.
 The gateway keeps a sparse checkout containing only `deploy/` because pods run immutable OCI images and do not need the application source tree.
 
+## Public edge
+
+The public Nginx edge is deployed by `deploy/helm/restorio-edge` and runs inside k3s.
+It requires pre-existing Kubernetes Secrets for the Cloudflare Origin certificate and the preview Basic Auth file.
+Follow the [edge chart cutover guide](../../helm/restorio-edge/README.md) before removing the legacy Docker Compose stack.
+
 ## GitHub Environment
 
 For the `preview` Environment, configure:

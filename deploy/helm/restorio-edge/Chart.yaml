@@ -1,0 +1,6 @@
+apiVersion: v2
+name: restorio-edge
+description: Public TLS edge for Restorio k3s environments
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

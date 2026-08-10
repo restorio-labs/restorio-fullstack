@@ -1,0 +1,25 @@
+global:
+  environment: production
+
+image:
+  repository: nginxinc/nginx-unprivileged
+  digest: sha256:a6c3ec0c0d249d68b0682df854d4a9e222b90fb607dc3fcf2f1d2fcbc85d347e
+  pullPolicy: IfNotPresent
+
+tls:
+  existingSecret: restorio-edge-tls
+
+previewAuth:
+  existingSecret: restorio-preview-basic-auth
+
+ports:
+  http: 20122
+  https: 30122
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 250m
+    memory: 128Mi

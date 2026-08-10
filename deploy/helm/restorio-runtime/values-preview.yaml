@@ -27,6 +27,8 @@ mongo:
       memory: 512Mi
 
 minio:
+  edgeService:
+    enabled: true
   persistence:
     size: 2Gi
   resources:

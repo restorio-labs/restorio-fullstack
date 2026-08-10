@@ -2,7 +2,7 @@
 
 This chart deploys the stateful Restorio dependencies as single-replica StatefulSets.
 It contains PostgreSQL with PostGIS, MongoDB, and MinIO.
-Each workload has one local-path PVC and a ClusterIP Service.
+Each workload has one local-path PVC and a private ClusterIP Service.
 
 The chart is a separate Helm release from the API and frontend chart.
 The application chart runs Alembic as a pre-install and pre-upgrade hook, so its dependencies must already be healthy before that release begins.
@@ -91,7 +91,8 @@ They use the k3s `local-path` StorageClass and therefore remain tied to this sin
 PVCs are not backups.
 
 PostgreSQL, MongoDB, and the MinIO console are private ClusterIP services.
-MinIO's object API also stays private until the ingress work provides an approved public S3 route for presigned browser uploads.
-Do not retire the existing external reverse proxy until that route exists, because browser media upload and download requires it.
+The preview values also create a loopback-only MinIO API NodePort for `restorio-edge`.
+The k3s node configuration limits NodePort listeners to loopback, so it is not a public data-service endpoint.
+`restorio-edge` is the only component that proxies the public MinIO object hostname to that port.
 
 The preview deployment command installs or upgrades this chart before the application chart.

@@ -1,0 +1,236 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "restorio-edge.fullname" . }}-nginx
+  labels:
+    {{- include "restorio-edge.labels" . | nindent 4 }}
+data:
+  nginx.conf: |
+    worker_processes auto;
+    error_log /dev/stderr warn;
+    pid /tmp/nginx.pid;
+
+    events {
+        worker_connections 1024;
+    }
+
+    http {
+        include /etc/nginx/mime.types;
+        default_type application/octet-stream;
+
+        limit_req_zone $binary_remote_addr zone=api_limit:10m rate=10r/s;
+        limit_conn_zone $binary_remote_addr zone=addr_conn:10m;
+
+        server_tokens off;
+        client_body_timeout 10s;
+        client_header_timeout 10s;
+        keepalive_timeout 15s;
+        send_timeout 10s;
+
+        map $host $frontend_upstream {
+            default 127.0.0.1:9;
+            admin.restorio.org 127.0.0.1:31082;
+            kitchen.restorio.org 127.0.0.1:31083;
+            mobile.restorio.org 127.0.0.1:31084;
+            waiter.restorio.org 127.0.0.1:31085;
+            preview-admin.restorio.org 127.0.0.1:31082;
+            preview-kitchen.restorio.org 127.0.0.1:31083;
+            preview-mobile.restorio.org 127.0.0.1:31084;
+            preview-waiter.restorio.org 127.0.0.1:31085;
+        }
+
+        map $http_x_forwarded_proto $real_scheme {
+            default $scheme;
+            https https;
+        }
+
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_certificate /etc/restorio-edge/tls/cert.pem;
+        ssl_certificate_key /etc/restorio-edge/tls/key.pem;
+
+        server {
+            listen {{ .Values.ports.http }};
+            listen {{ .Values.ports.https }} ssl;
+            server_name api.restorio.org api.local;
+
+            client_max_body_size 10M;
+
+            add_header X-Frame-Options "DENY" always;
+            add_header X-Content-Type-Options "nosniff" always;
+            add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+            add_header X-XSS-Protection "1; mode=block" always;
+            add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+            add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+
+            location / {
+                limit_req zone=api_limit burst=20 nodelay;
+                limit_conn addr_conn 10;
+                proxy_pass http://127.0.0.1:31081;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $real_scheme;
+                proxy_cache_bypass $http_upgrade;
+            }
+        }
+
+        server {
+            listen {{ .Values.ports.http }};
+            listen {{ .Values.ports.https }} ssl;
+            server_name restorio.org www.restorio.org;
+
+            add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+
+            return 308 https://restorio.org$request_uri;
+        }
+
+        server {
+            listen {{ .Values.ports.http }};
+            listen {{ .Values.ports.https }} ssl;
+            server_name admin.restorio.org kitchen.restorio.org mobile.restorio.org waiter.restorio.org;
+
+            add_header X-Frame-Options "DENY" always;
+            add_header X-Content-Type-Options "nosniff" always;
+            add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+            add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+
+            location /api/ {
+                limit_req zone=api_limit burst=20 nodelay;
+                limit_conn addr_conn 10;
+                proxy_pass http://127.0.0.1:31081;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $real_scheme;
+                proxy_cache_bypass $http_upgrade;
+            }
+
+            location / {
+                proxy_pass http://$frontend_upstream;
+                proxy_http_version 1.1;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $real_scheme;
+            }
+        }
+
+        server {
+            listen {{ .Values.ports.http }};
+            listen {{ .Values.ports.https }} ssl;
+            server_name preview-api.restorio.org;
+
+            client_max_body_size 10M;
+
+            auth_basic "Restorio preview";
+            auth_basic_user_file /etc/restorio-edge/preview-auth/htpasswd;
+
+            add_header X-Restorio-Environment "preview" always;
+            add_header X-Frame-Options "DENY" always;
+            add_header X-Content-Type-Options "nosniff" always;
+            add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+            add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+
+            location / {
+                limit_req zone=api_limit burst=20 nodelay;
+                limit_conn addr_conn 10;
+                proxy_pass http://127.0.0.1:31081;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $real_scheme;
+                proxy_cache_bypass $http_upgrade;
+            }
+        }
+
+        server {
+            listen {{ .Values.ports.http }};
+            listen {{ .Values.ports.https }} ssl;
+            server_name preview-admin.restorio.org preview-kitchen.restorio.org preview-mobile.restorio.org preview-waiter.restorio.org;
+
+            auth_basic "Restorio preview";
+            auth_basic_user_file /etc/restorio-edge/preview-auth/htpasswd;
+
+            add_header X-Restorio-Environment "preview" always;
+            add_header X-Frame-Options "DENY" always;
+            add_header X-Content-Type-Options "nosniff" always;
+            add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+            add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+
+            location /api/ {
+                limit_req zone=api_limit burst=20 nodelay;
+                limit_conn addr_conn 10;
+                proxy_pass http://127.0.0.1:31081;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $real_scheme;
+                proxy_cache_bypass $http_upgrade;
+            }
+
+            location / {
+                proxy_pass http://$frontend_upstream;
+                proxy_http_version 1.1;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $real_scheme;
+            }
+        }
+
+        server {
+            listen {{ .Values.ports.http }};
+            listen {{ .Values.ports.https }} ssl;
+            server_name minio.restorio.org minio.local;
+
+            client_max_body_size 10M;
+
+            add_header X-Frame-Options "DENY" always;
+            add_header X-Content-Type-Options "nosniff" always;
+            add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+            add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+
+            location / {
+                proxy_pass http://127.0.0.1:31086;
+                proxy_http_version 1.1;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $real_scheme;
+                proxy_request_buffering off;
+            }
+        }
+
+        server {
+            listen {{ .Values.ports.http }} default_server;
+            listen {{ .Values.ports.https }} ssl default_server;
+            server_name localhost _;
+
+            add_header X-Frame-Options "DENY" always;
+            add_header X-Content-Type-Options "nosniff" always;
+            add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+            location = /healthz {
+                access_log off;
+                default_type text/plain;
+                return 200 "ok\\n";
+            }
+
+            location / {
+                default_type text/plain;
+                return 404 "Not found. Public site is served from Cloudflare; use the Restorio application hostnames.\\n";
+            }
+        }
+    }

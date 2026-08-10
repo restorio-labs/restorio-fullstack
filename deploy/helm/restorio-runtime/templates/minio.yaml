@@ -18,6 +18,27 @@ spec:
     - name: console
       port: 9001
       targetPort: console
+{{- if .Values.minio.edgeService.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "restorio-runtime.fullname" . }}-minio-edge
+  labels:
+    {{- include "restorio-runtime.labels" . | nindent 4 }}
+    app.kubernetes.io/component: minio
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: {{ include "restorio-runtime.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: minio
+  ports:
+    - name: api
+      port: 9000
+      targetPort: api
+      nodePort: {{ .Values.minio.edgeService.nodePort }}
+{{- end }}
 ---
 apiVersion: apps/v1
 kind: StatefulSet

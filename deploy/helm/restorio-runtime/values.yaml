@@ -44,6 +44,9 @@ minio:
   persistence:
     storageClassName: local-path
     size: 10Gi
+  edgeService:
+    enabled: false
+    nodePort: 31086
   resources:
     requests:
       cpu: 100m

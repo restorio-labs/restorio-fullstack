@@ -81,6 +81,8 @@ readonly chart_dir="$REPOSITORY_DIR/deploy/helm/restorio"
 readonly values_file="$chart_dir/values-preview.yaml"
 readonly runtime_chart_dir="$REPOSITORY_DIR/deploy/helm/restorio-runtime"
 readonly runtime_values_file="$runtime_chart_dir/values-preview.yaml"
+readonly edge_chart_dir="$REPOSITORY_DIR/deploy/helm/restorio-edge"
+readonly edge_values_file="$edge_chart_dir/values-preview.yaml"
 readonly api_runtime_secret=restorio-api-preview-runtime
 
 log() {
@@ -127,7 +129,8 @@ run_with_progress() {
 }
 
 if [ ! -f "$chart_dir/Chart.yaml" ] || [ ! -f "$values_file" ] || \
-  [ ! -f "$runtime_chart_dir/Chart.yaml" ] || [ ! -f "$runtime_values_file" ]; then
+  [ ! -f "$runtime_chart_dir/Chart.yaml" ] || [ ! -f "$runtime_values_file" ] || \
+  [ ! -f "$edge_chart_dir/Chart.yaml" ] || [ ! -f "$edge_values_file" ]; then
   echo "Release does not contain the preview Helm chart" >&2
   exit 1
 fi
@@ -139,6 +142,13 @@ kubectl create secret docker-registry ghcr-pull \
   --docker-password="$GHCR_PULL_TOKEN" \
   --dry-run=client \
   -o yaml | kubectl apply -f -
+
+run_with_progress "Deploying public edge" helm upgrade --install restorio-edge "$edge_chart_dir" \
+  --namespace "$K3S_NAMESPACE" \
+  --values "$edge_values_file" \
+  --wait \
+  --timeout 5m \
+  --atomic
 
 run_with_progress "Deploying stateful runtime" helm upgrade --install restorio-runtime "$runtime_chart_dir" \
   --namespace "$K3S_NAMESPACE" \
@@ -179,4 +189,5 @@ kubectl rollout status deployment/restorio-restorio-admin-panel --namespace "$K3
 kubectl rollout status deployment/restorio-restorio-kitchen-panel --namespace "$K3S_NAMESPACE" --timeout=3m
 kubectl rollout status deployment/restorio-restorio-mobile-app --namespace "$K3S_NAMESPACE" --timeout=3m
 kubectl rollout status deployment/restorio-restorio-waiter-panel --namespace "$K3S_NAMESPACE" --timeout=3m
+kubectl rollout status deployment/restorio-edge --namespace "$K3S_NAMESPACE" --timeout=3m
 kubectl get pods,services --namespace "$K3S_NAMESPACE" -l app.kubernetes.io/instance=restorio
