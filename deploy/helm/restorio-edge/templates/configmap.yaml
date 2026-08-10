@@ -63,6 +63,20 @@ data:
             {{- end }}
         }
 
+        map $http_origin $object_cors_origin {
+            default "";
+            "https://admin.restorio.org" $http_origin;
+            "https://kitchen.restorio.org" $http_origin;
+            "https://mobile.restorio.org" $http_origin;
+            "https://waiter.restorio.org" $http_origin;
+            {{- if eq .Values.global.environment "preview" }}
+            "https://preview-admin.restorio.org" $http_origin;
+            "https://preview-kitchen.restorio.org" $http_origin;
+            "https://preview-mobile.restorio.org" $http_origin;
+            "https://preview-waiter.restorio.org" $http_origin;
+            {{- end }}
+        }
+
         ssl_protocols TLSv1.2 TLSv1.3;
         ssl_certificate /etc/restorio-edge/tls/cert.pem;
         ssl_certificate_key /etc/restorio-edge/tls/key.pem;
@@ -227,9 +241,18 @@ data:
             add_header X-Content-Type-Options "nosniff" always;
             add_header Referrer-Policy "strict-origin-when-cross-origin" always;
             add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+            add_header Access-Control-Allow-Origin $object_cors_origin always;
+            add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS" always;
+            add_header Access-Control-Allow-Headers "Origin, Range, Content-Type, Accept" always;
+            add_header Access-Control-Expose-Headers "Accept-Ranges, Content-Length, Content-Range, ETag" always;
+            add_header Vary Origin always;
+
+            if ($request_method = OPTIONS) {
+                return 204;
+            }
 
             location / {
-                proxy_pass http://127.0.0.1:31086;
+                proxy_pass http://restorio-runtime-minio-edge.{{ .Release.Namespace }}.svc.cluster.local:9000;
                 proxy_http_version 1.1;
                 proxy_set_header Host $host;
                 proxy_set_header X-Real-IP $remote_addr;
