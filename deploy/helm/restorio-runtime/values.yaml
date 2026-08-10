@@ -21,6 +21,7 @@ postgres:
       memory: 1Gi
 
 mongo:
+  glibcTunables: ""
   image:
     repository: mongo
     digest: sha256:e0ce8c35124d4a9f9785532d1f268f39e9728ffa1cb38f46fa482436424c4bd3

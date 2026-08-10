@@ -27,14 +27,14 @@ export const OnboardingFeaturePanel = ({ activeStep, t }: OnboardingFeaturePanel
 
         <div className="relative mt-8 h-40 lg:my-12 lg:h-64" aria-hidden="true">
           <div className="onboarding-orbit absolute left-1/2 top-1/2 size-36 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/20 lg:size-52" />
-          <div className="onboarding-feature-card absolute left-1/2 top-1/2 flex size-24 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-3xl border border-white/30 bg-white/20 shadow-2xl backdrop-blur-xl lg:size-32">
+          <div className="onboarding-feature-card absolute left-1/2 top-1/2 flex size-24 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-3xl border border-white/30 bg-white/25 shadow-2xl lg:size-32">
             <ActiveIcon className="size-11 lg:size-14" />
           </div>
-          <div className="onboarding-overlay-card absolute left-[4%] top-[8%] rounded-xl border border-white/20 bg-white/15 px-4 py-3 shadow-lg backdrop-blur-md">
+          <div className="onboarding-overlay-card absolute left-[4%] top-[8%] rounded-xl border border-white/20 bg-white/20 px-4 py-3 shadow-lg">
             <span className="block h-2 w-16 rounded-full bg-white/80" />
             <span className="mt-2 block h-1.5 w-24 rounded-full bg-white/30" />
           </div>
-          <div className="onboarding-overlay-card-reverse absolute bottom-[5%] right-[2%] rounded-xl border border-white/20 bg-white/15 px-4 py-3 shadow-lg backdrop-blur-md">
+          <div className="onboarding-overlay-card-reverse absolute bottom-[5%] right-[2%] rounded-xl border border-white/20 bg-white/20 px-4 py-3 shadow-lg">
             <div className="flex gap-1.5">
               <span className="size-2 rounded-full bg-white/40" />
               <span className="size-2 rounded-full bg-white/70" />

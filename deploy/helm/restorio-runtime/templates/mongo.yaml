@@ -60,6 +60,10 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.runtime.existingSecret }}
                   key: MONGODB_ROOT_PASSWORD
+            {{- with .Values.mongo.glibcTunables }}
+            - name: GLIBC_TUNABLES
+              value: {{ . | quote }}
+            {{- end }}
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:

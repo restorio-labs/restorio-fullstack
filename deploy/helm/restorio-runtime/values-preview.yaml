@@ -16,6 +16,7 @@ postgres:
       memory: 512Mi
 
 mongo:
+  glibcTunables: glibc.pthread.rseq=1
   persistence:
     size: 2Gi
   resources:
