@@ -1,7 +1,9 @@
-name: Deploy preview to k3s
-description: Deploy a published Restorio release to the preview k3s cluster
+name: Deploy k3s release
+description: Deploy a published Restorio release to an environment-specific k3s cluster
 
 inputs:
+  environment:
+    required: true
   release_tag:
     required: true
   deploy_ssh_host:
@@ -15,9 +17,11 @@ inputs:
   ghcr_pull_token:
     required: true
   preview_basic_auth_username:
-    required: true
+    required: false
+    default: ""
   preview_basic_auth_password:
-    required: true
+    required: false
+    default: ""
   github_token:
     required: true
 
@@ -27,6 +31,7 @@ runs:
     - name: Validate deployment configuration
       shell: bash
       env:
+        DEPLOYMENT_ENVIRONMENT: ${{ inputs.environment }}
         DEPLOY_SSH_HOST: ${{ inputs.deploy_ssh_host }}
         DEPLOY_SSH_PRIVATE_KEY: ${{ inputs.deploy_ssh_private_key }}
         DEPLOY_SSH_KNOWN_HOSTS: ${{ inputs.deploy_ssh_known_hosts }}
@@ -36,12 +41,15 @@ runs:
       run: |
         set -euo pipefail
         missing=()
+        [[ "$DEPLOYMENT_ENVIRONMENT" =~ ^(preview|production)$ ]] || missing+=(environment)
         [ -n "$DEPLOY_SSH_HOST" ] || missing+=(DEPLOY_SSH_HOST)
         [ -n "$DEPLOY_SSH_PRIVATE_KEY" ] || missing+=(DEPLOY_SSH_PRIVATE_KEY)
         [ -n "$DEPLOY_SSH_KNOWN_HOSTS" ] || missing+=(DEPLOY_SSH_KNOWN_HOSTS)
         [ -n "$GHCR_PULL_TOKEN" ] || missing+=(GHCR_PULL_TOKEN)
-        [ -n "$PREVIEW_BASIC_AUTH_USERNAME" ] || missing+=(PREVIEW_BASIC_AUTH_USERNAME)
-        [ -n "$PREVIEW_BASIC_AUTH_PASSWORD" ] || missing+=(PREVIEW_BASIC_AUTH_PASSWORD)
+        if [ "$DEPLOYMENT_ENVIRONMENT" = preview ]; then
+          [ -n "$PREVIEW_BASIC_AUTH_USERNAME" ] || missing+=(PREVIEW_BASIC_AUTH_USERNAME)
+          [ -n "$PREVIEW_BASIC_AUTH_PASSWORD" ] || missing+=(PREVIEW_BASIC_AUTH_PASSWORD)
+        fi
         if [ "${#missing[@]}" -ne 0 ]; then
           echo "::error::Missing GitHub Environment configuration: ${missing[*]}"
           exit 1
@@ -113,6 +121,7 @@ runs:
         DEPLOY_SSH_PORT: ${{ inputs.deploy_ssh_port }}
         DEPLOY_SSH_PRIVATE_KEY: ${{ inputs.deploy_ssh_private_key }}
         DEPLOY_SSH_KNOWN_HOSTS: ${{ inputs.deploy_ssh_known_hosts }}
+        DEPLOYMENT_ENVIRONMENT: ${{ inputs.environment }}
         PREVIEW_BASIC_AUTH_USERNAME: ${{ inputs.preview_basic_auth_username }}
         PREVIEW_BASIC_AUTH_PASSWORD: ${{ inputs.preview_basic_auth_password }}
         RELEASE_VERSION: ${{ inputs.release_tag }}
@@ -143,13 +152,19 @@ runs:
         )
 
         deployment_command="deploy $RELEASE_VERSION $RELEASE_COMMIT $API_DIGEST $ADMIN_PANEL_DIGEST $KITCHEN_PANEL_DIGEST $MOBILE_APP_DIGEST $WAITER_PANEL_DIGEST"
-        printf '%s\n%s\n' "$PREVIEW_BASIC_AUTH_USERNAME" "$PREVIEW_BASIC_AUTH_PASSWORD" | \
+
+        if [ "$DEPLOYMENT_ENVIRONMENT" = preview ]; then
+          printf '%s\n%s\n' "$PREVIEW_BASIC_AUTH_USERNAME" "$PREVIEW_BASIC_AUTH_PASSWORD" | \
+            "${ssh_command[@]}" "$deployment_command"
+        else
           "${ssh_command[@]}" "$deployment_command"
+        fi
 
     - name: Write k3s deployment summary
       shell: bash
       env:
         RELEASE_VERSION: ${{ inputs.release_tag }}
+        DEPLOYMENT_ENVIRONMENT: ${{ inputs.environment }}
         RELEASE_COMMIT: ${{ steps.release.outputs.commit }}
         API_DIGEST: ${{ steps.images.outputs.api }}
         API_TAG: ${{ steps.images.outputs.api_tag }}
@@ -166,7 +181,7 @@ runs:
         {
           echo "## k3s deployment"
           echo
-          echo "- Environment: \`preview\`"
+          echo "- Environment: \`$DEPLOYMENT_ENVIRONMENT\`"
           echo "- Release: \`$RELEASE_VERSION\`"
           echo "- Commit: \`$RELEASE_COMMIT\`"
           echo "- API: \`$API_TAG\` at \`$API_DIGEST\`"

@@ -33,10 +33,12 @@ data:
             kitchen.restorio.org 127.0.0.1:31083;
             mobile.restorio.org 127.0.0.1:31084;
             waiter.restorio.org 127.0.0.1:31085;
+            {{- if eq .Values.global.environment "preview" }}
             preview-admin.restorio.org 127.0.0.1:31082;
             preview-kitchen.restorio.org 127.0.0.1:31083;
             preview-mobile.restorio.org 127.0.0.1:31084;
             preview-waiter.restorio.org 127.0.0.1:31085;
+            {{- end }}
         }
 
         map $http_x_forwarded_proto $real_scheme {
@@ -52,11 +54,13 @@ data:
             "https://kitchen.restorio.org" $http_origin;
             "https://mobile.restorio.org" $http_origin;
             "https://waiter.restorio.org" $http_origin;
+            {{- if eq .Values.global.environment "preview" }}
             "https://preview.restorio.org" $http_origin;
             "https://preview-admin.restorio.org" $http_origin;
             "https://preview-kitchen.restorio.org" $http_origin;
             "https://preview-mobile.restorio.org" $http_origin;
             "https://preview-waiter.restorio.org" $http_origin;
+            {{- end }}
         }
 
         ssl_protocols TLSv1.2 TLSv1.3;
@@ -118,6 +122,7 @@ data:
             return 308 https://restorio.org$request_uri;
         }
 
+        {{- if eq .Values.global.environment "preview" }}
         server {
             listen {{ .Values.ports.http }};
             listen {{ .Values.ports.https }} ssl;
@@ -208,6 +213,8 @@ data:
                 proxy_set_header X-Forwarded-Proto $real_scheme;
             }
         }
+
+        {{- end }}
 
         server {
             listen {{ .Values.ports.http }};

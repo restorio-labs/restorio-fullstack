@@ -1,4 +1,4 @@
-name: Deploy preview
+name: Deploy production
 
 on:
   workflow_call:
@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: deploy-preview
+  group: deploy-production
   cancel-in-progress: false
 
 permissions:
@@ -19,9 +19,9 @@ permissions:
 
 jobs:
   deploy:
-    name: Deploy release to preview
+    name: Deploy release to production
     runs-on: ubuntu-latest
-    environment: preview
+    environment: production
     env:
       RELEASE_TAG_INPUT: ${{ inputs.release_tag }}
       RELEASE_VERSION: ${{ inputs.release_tag || github.ref_name }}
@@ -32,7 +32,7 @@ jobs:
           set -euo pipefail
 
           if [ -z "$RELEASE_TAG_INPUT" ] && [[ "$GITHUB_REF" != refs/tags/* ]]; then
-            echo "::error::Deploy preview must run from a release tag"
+            echo "::error::Deploy production must run from a release tag"
             exit 1
           fi
 
@@ -50,21 +50,17 @@ jobs:
       - name: Deploy k3s workloads
         uses: ./.github/actions/deploy-preview-k3s
         with:
-          environment: preview
+          environment: production
           release_tag: ${{ env.RELEASE_VERSION }}
           deploy_ssh_host: ${{ vars.DEPLOY_SSH_HOST }}
           deploy_ssh_port: ${{ vars.DEPLOY_SSH_PORT || '22' }}
           deploy_ssh_private_key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
           deploy_ssh_known_hosts: ${{ vars.DEPLOY_SSH_KNOWN_HOSTS }}
           ghcr_pull_token: ${{ secrets.GHCR_PULL_TOKEN }}
-          preview_basic_auth_username: ${{ secrets.PREVIEW_BASIC_AUTH_USERNAME }}
-          preview_basic_auth_password: ${{ secrets.PREVIEW_BASIC_AUTH_PASSWORD }}
           github_token: ${{ github.token }}
 
       - name: Deploy public web
-        uses: ./.github/actions/deploy-vinext-preview
+        uses: ./.github/actions/deploy-vinext-production
         with:
           release_tag: ${{ env.RELEASE_VERSION }}
           cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          preview_basic_auth_username: ${{ secrets.PREVIEW_BASIC_AUTH_USERNAME }}
-          preview_basic_auth_password: ${{ secrets.PREVIEW_BASIC_AUTH_PASSWORD }}

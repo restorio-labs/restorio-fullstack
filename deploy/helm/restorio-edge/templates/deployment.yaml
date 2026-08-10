@@ -66,9 +66,11 @@ spec:
             - name: tls
               mountPath: /etc/restorio-edge/tls
               readOnly: true
+            {{- if eq .Values.global.environment "preview" }}
             - name: preview-auth
               mountPath: /etc/restorio-edge/preview-auth
               readOnly: true
+            {{- end }}
             - name: cache
               mountPath: /var/cache/nginx
             - name: run
@@ -81,10 +83,12 @@ spec:
           secret:
             secretName: {{ .Values.tls.existingSecret }}
             defaultMode: 0440
+        {{- if eq .Values.global.environment "preview" }}
         - name: preview-auth
           secret:
             secretName: {{ .Values.previewAuth.existingSecret }}
             defaultMode: 0440
+        {{- end }}
         - name: cache
           emptyDir: {}
         - name: run

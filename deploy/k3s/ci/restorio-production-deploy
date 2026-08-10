@@ -1,0 +1,198 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+readonly DEPLOY_HOME=/var/lib/restorio-deploy
+readonly DEPLOY_LOCK_FILE="$DEPLOY_HOME/production-deploy.lock"
+readonly REPOSITORY_DIR="$DEPLOY_HOME/restorio-fullstack"
+readonly REPOSITORY_URL=https://github.com/restorio-labs/restorio-fullstack.git
+readonly CONFIG_FILE=/etc/restorio-deploy/production.env
+export KUBECONFIG=/etc/restorio-deploy/kubeconfig
+readonly KUBECONFIG
+
+exec 9>"$DEPLOY_LOCK_FILE"
+if ! flock -n 9; then
+  echo "::error title=Production deployment already running::Another production deployment still owns the VPS lock. Wait for that deployment to finish, then choose Re-run failed jobs in GitHub Actions" >&2
+  exit 75
+fi
+
+if [ ! -r "$CONFIG_FILE" ] || [ ! -r "$KUBECONFIG" ]; then
+  echo "Missing local deployment configuration" >&2
+  exit 1
+fi
+
+read -r -a command <<< "${SSH_ORIGINAL_COMMAND:-}"
+if [ "${#command[@]}" -ne 8 ] || [ "${command[0]}" != deploy ]; then
+  echo "Expected: deploy VERSION COMMIT API_DIGEST ADMIN_PANEL_DIGEST KITCHEN_PANEL_DIGEST MOBILE_APP_DIGEST WAITER_PANEL_DIGEST" >&2
+  exit 1
+fi
+
+readonly RELEASE_VERSION="${command[1]}"
+readonly RELEASE_COMMIT="${command[2]}"
+readonly API_DIGEST="${command[3]}"
+readonly ADMIN_PANEL_DIGEST="${command[4]}"
+readonly KITCHEN_PANEL_DIGEST="${command[5]}"
+readonly MOBILE_APP_DIGEST="${command[6]}"
+readonly WAITER_PANEL_DIGEST="${command[7]}"
+
+if ! [[ "$RELEASE_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || \
+  ! [[ "$RELEASE_COMMIT" =~ ^[0-9a-f]{40}$ ]]; then
+  echo "Invalid deployment request" >&2
+  exit 1
+fi
+
+for image_digest in \
+  "$API_DIGEST" \
+  "$ADMIN_PANEL_DIGEST" \
+  "$KITCHEN_PANEL_DIGEST" \
+  "$MOBILE_APP_DIGEST" \
+  "$WAITER_PANEL_DIGEST"; do
+  if ! [[ "$image_digest" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+    echo "Invalid deployment request" >&2
+    exit 1
+  fi
+done
+
+# shellcheck disable=SC1090
+source "$CONFIG_FILE"
+: "${GHCR_PULL_TOKEN:?Missing GHCR_PULL_TOKEN}"
+: "${GHCR_USERNAME:?Missing GHCR_USERNAME}"
+: "${K3S_NAMESPACE:?Missing K3S_NAMESPACE}"
+
+if [ "$K3S_NAMESPACE" != production ]; then
+  echo "Production deployment must target the production namespace" >&2
+  exit 1
+fi
+
+if [ ! -d "$REPOSITORY_DIR/.git" ]; then
+  git clone --no-checkout "$REPOSITORY_URL" "$REPOSITORY_DIR"
+fi
+
+git -C "$REPOSITORY_DIR" remote set-url origin "$REPOSITORY_URL"
+if [ "$(git -C "$REPOSITORY_DIR" config --bool core.sparseCheckout 2>/dev/null || true)" != true ]; then
+  git -C "$REPOSITORY_DIR" sparse-checkout init --cone
+fi
+git -C "$REPOSITORY_DIR" sparse-checkout set --cone deploy
+git -C "$REPOSITORY_DIR" fetch --force origin "+refs/tags/$RELEASE_VERSION:refs/tags/$RELEASE_VERSION"
+
+if [ "$(git -C "$REPOSITORY_DIR" rev-parse "$RELEASE_VERSION^{commit}")" != "$RELEASE_COMMIT" ]; then
+  echo "Release tag does not resolve to the approved commit" >&2
+  exit 1
+fi
+
+git -C "$REPOSITORY_DIR" checkout --detach --force "$RELEASE_COMMIT"
+
+readonly chart_dir="$REPOSITORY_DIR/deploy/helm/restorio"
+readonly values_file="$chart_dir/values-production.yaml"
+readonly runtime_chart_dir="$REPOSITORY_DIR/deploy/helm/restorio-runtime"
+readonly runtime_values_file="$runtime_chart_dir/values-production.yaml"
+readonly edge_chart_dir="$REPOSITORY_DIR/deploy/helm/restorio-edge"
+readonly edge_values_file="$edge_chart_dir/values.yaml"
+readonly api_runtime_secret=restorio-api-runtime
+
+log() {
+  printf '[%s] %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*"
+}
+
+show_workload_status() {
+  kubectl get pods,jobs,deployments,statefulsets,pvc \
+    --namespace "$K3S_NAMESPACE" \
+    --output wide || true
+}
+
+run_with_progress() {
+  local description="$1"
+  shift
+
+  log "$description started"
+  "$@" &
+  local command_pid=$!
+
+  (
+    while kill -0 "$command_pid" 2>/dev/null; do
+      sleep 30
+      if kill -0 "$command_pid" 2>/dev/null; then
+        log "$description is still running"
+        show_workload_status
+      fi
+    done
+  ) &
+  local watcher_pid=$!
+  local exit_status=0
+
+  if wait "$command_pid"; then
+    log "$description completed"
+  else
+    exit_status=$?
+    log "$description failed with exit code $exit_status"
+    kubectl get events --namespace "$K3S_NAMESPACE" --sort-by='.lastTimestamp' | tail -n 30 || true
+  fi
+
+  kill "$watcher_pid" 2>/dev/null || true
+  wait "$watcher_pid" 2>/dev/null || true
+  return "$exit_status"
+}
+
+secret_value() {
+  kubectl get secret "$api_runtime_secret" \
+    --namespace "$K3S_NAMESPACE" \
+    --output="jsonpath={.data.$1}" | base64 --decode
+}
+
+if [ ! -f "$chart_dir/Chart.yaml" ] || [ ! -f "$values_file" ] || \
+  [ ! -f "$runtime_chart_dir/Chart.yaml" ] || [ ! -f "$runtime_values_file" ] || \
+  [ ! -f "$edge_chart_dir/Chart.yaml" ] || [ ! -f "$edge_values_file" ]; then
+  echo "Release does not contain the production Helm chart" >&2
+  exit 1
+fi
+
+if [[ "$(secret_value DATABASE_URL)" != *"@restorio-runtime-mongo.production.svc.cluster.local:27017"* ]] || \
+  [[ "$(secret_value POSTGRES_DSN)" != *"@restorio-runtime-postgres.production.svc.cluster.local:5432"* ]] || \
+  [[ "$(secret_value MINIO_ENDPOINT)" != "restorio-runtime-minio.production.svc.cluster.local:9000" ]]; then
+  echo "Production API runtime secret does not target the k3s stateful services" >&2
+  exit 1
+fi
+
+kubectl create secret docker-registry ghcr-pull \
+  --namespace "$K3S_NAMESPACE" \
+  --docker-server=ghcr.io \
+  --docker-username="$GHCR_USERNAME" \
+  --docker-password="$GHCR_PULL_TOKEN" \
+  --dry-run=client \
+  -o yaml | kubectl apply -f -
+
+run_with_progress "Deploying stateful runtime" helm upgrade --install restorio-runtime "$runtime_chart_dir" \
+  --namespace "$K3S_NAMESPACE" \
+  --values "$runtime_values_file" \
+  --wait \
+  --timeout 10m \
+  --atomic
+
+run_with_progress "Deploying Restorio applications" helm upgrade --install restorio "$chart_dir" \
+  --namespace "$K3S_NAMESPACE" \
+  --values "$values_file" \
+  --set global.imagePullSecrets[0].name=ghcr-pull \
+  --set-string api.image.digest="$API_DIGEST" \
+  --set-string staticFrontends.adminPanel.image.digest="$ADMIN_PANEL_DIGEST" \
+  --set-string staticFrontends.kitchenPanel.image.digest="$KITCHEN_PANEL_DIGEST" \
+  --set-string staticFrontends.mobileApp.image.digest="$MOBILE_APP_DIGEST" \
+  --set-string staticFrontends.waiterPanel.image.digest="$WAITER_PANEL_DIGEST" \
+  --wait \
+  --wait-for-jobs \
+  --timeout 10m \
+  --atomic
+
+run_with_progress "Deploying public edge" helm upgrade --install restorio-edge "$edge_chart_dir" \
+  --namespace "$K3S_NAMESPACE" \
+  --values "$edge_values_file" \
+  --wait \
+  --timeout 5m \
+  --atomic
+
+kubectl rollout status deployment/restorio-api --namespace "$K3S_NAMESPACE" --timeout=3m
+kubectl rollout status deployment/restorio-admin-panel --namespace "$K3S_NAMESPACE" --timeout=3m
+kubectl rollout status deployment/restorio-kitchen-panel --namespace "$K3S_NAMESPACE" --timeout=3m
+kubectl rollout status deployment/restorio-mobile-app --namespace "$K3S_NAMESPACE" --timeout=3m
+kubectl rollout status deployment/restorio-waiter-panel --namespace "$K3S_NAMESPACE" --timeout=3m
+kubectl rollout status deployment/restorio-edge --namespace "$K3S_NAMESPACE" --timeout=3m
+kubectl get pods,services --namespace "$K3S_NAMESPACE" -l app.kubernetes.io/instance=restorio

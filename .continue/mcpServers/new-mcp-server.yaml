@@ -1,0 +1,39 @@
+name: Dev MCPs
+version: 0.0.1
+schema: v1
+
+mcpServers:
+  - name: Context7
+    command: bunx
+    args:
+      - -y
+      - "@upstash/context7-mcp@latest"
+      - --api-key
+      - ${{ secrets.CONTEXT7_API_KEY }}
+
+  - name: DeepWiki
+    command: bunx
+    args:
+      - -y
+      - mcp-remote@latest
+      - https://mcp.deepwiki.com/mcp
+
+  - name: Tavily
+    command: bunx
+    args:
+      - -y
+      - tavily-mcp@latest
+    env:
+      TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+
+  - name: GitHub
+    command: docker
+    args:
+      - run
+      - -i
+      - --rm
+      - -e
+      - GITHUB_PERSONAL_ACCESS_TOKEN
+      - ghcr.io/github/github-mcp-server
+    env:
+      GITHUB_PERSONAL_ACCESS_TOKEN: ${{ secrets.GITHUB_PAT }}

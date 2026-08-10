@@ -1,0 +1,38 @@
+name: Deploy Vinext production
+description: Deploy the public-web production Worker from a published Restorio release
+
+inputs:
+  release_tag:
+    required: true
+  cloudflare_api_token:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: ./.github/actions/setup-bun
+
+    - name: Build workspace packages
+      shell: bash
+      run: bun run turbo run build --filter='./app/packages/*'
+
+    - name: Validate required Cloudflare secrets
+      shell: bash
+      env:
+        CLOUDFLARE_API_TOKEN: ${{ inputs.cloudflare_api_token }}
+      run: |
+        set -euo pipefail
+        [ -n "$CLOUDFLARE_API_TOKEN" ] || { echo "::error::Missing CLOUDFLARE_API_TOKEN"; exit 1; }
+
+    - name: Deploy public-web with vinext/wrangler
+      shell: bash
+      working-directory: app/apps/public-web
+      env:
+        CLOUDFLARE_API_TOKEN: ${{ inputs.cloudflare_api_token }}
+        RELEASE_VERSION: ${{ inputs.release_tag }}
+      run: |
+        set -euo pipefail
+        VITE_ENV=production \
+          NODE_ENV=production \
+          VITE_APP_VERSION="$RELEASE_VERSION" \
+          bunx vinext deploy
