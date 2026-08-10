@@ -121,8 +121,6 @@ class CSRFMiddleware(BaseHTTPMiddleware):
             if hostname in {"localhost", "127.0.0.1"}:
                 domain = None
                 secure = False
-            elif settings.ENV.strip().lower() == "preview":
-                domain = None
             else:
                 domain = None
                 for d in ["restorio.org"]:

@@ -274,6 +274,30 @@ async def test_csrf_middleware_sets_cookie_for_restorio_domain() -> None:
 
 
 @pytest.mark.asyncio
+@patch("core.middleware.csrf.settings")
+async def test_preview_csrf_cookie_is_shared_with_preview_subdomains(
+    mock_settings: MagicMock,
+) -> None:
+    mock_settings.ENV = "preview"
+    mock_settings.REFRESH_TOKEN_EXPIRE_DAYS = 14
+    middleware = CSRFMiddleware(MagicMock())
+    scope = {
+        "type": "http",
+        "method": "GET",
+        "path": "/x",
+        "headers": [],
+        "server": ("preview-api.restorio.org", 443),
+        "scheme": "https",
+    }
+
+    out = middleware._ensure_csrf_cookie(Request(scope), Response(content="ok"))
+    cookie_header = out.headers.get("set-cookie", "")
+
+    assert "preview_csrf_token" in cookie_header
+    assert ".restorio.org" in cookie_header
+
+
+@pytest.mark.asyncio
 async def test_csrf_middleware_sets_cookie_for_unknown_domain() -> None:
     middleware = CSRFMiddleware(MagicMock())
     scope = {

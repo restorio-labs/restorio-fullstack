@@ -35,6 +35,7 @@ jobs:
     with:
       bump: ${{ inputs.bump || 'patch' }}
       source_ref: ${{ github.event_name == 'push' && github.sha || 'main' }}
+      concise_summary: true
 
   publish-images:
     name: Publish release images

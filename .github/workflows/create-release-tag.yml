@@ -11,10 +11,27 @@ on:
         description: Main commit or branch to tag
         required: true
         type: string
+      concise_summary:
+        description: Write only the release tag to the job summary
+        required: false
+        default: false
+        type: boolean
     outputs:
       tag:
         description: Created vMAJOR.MINOR.PATCH tag
         value: ${{ jobs.create-tag.outputs.tag }}
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Version increment
+        required: true
+        default: patch
+        type: choice
+        options:
+          - initial
+          - patch
+          - minor
+          - major
 
 concurrency:
   group: create-release-tag-main
@@ -37,7 +54,7 @@ jobs:
       - name: Checkout main
         uses: actions/checkout@v6
         with:
-          ref: ${{ inputs.source_ref }}
+          ref: ${{ inputs.source_ref || github.sha }}
           fetch-depth: 0
 
       - name: Calculate next release tag
@@ -107,10 +124,15 @@ jobs:
         shell: bash
         env:
           RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          CONCISE_SUMMARY: ${{ inputs.concise_summary }}
         run: |
+          if [ "$CONCISE_SUMMARY" = true ]; then
+            echo "## Release tag: \`$RELEASE_TAG\`" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
           publish_workflow_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/workflows/publish-oci-images.yml"
-          preview_k3s_workflow_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/workflows/deploy-preview-k3s.yml"
-          vinext_workflow_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/workflows/deploy-vinext-frontend.yml"
+          preview_workflow_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/workflows/deploy-preview.yml"
 
           {
             echo "## Release tag created"
@@ -118,7 +140,6 @@ jobs:
             echo "- Tag: \`$RELEASE_TAG\`"
             echo "- Commit: \`$(git rev-parse HEAD)\`"
             echo
-            echo "1. [Publish Release OCI Images]($publish_workflow_url) starts automatically for \`$RELEASE_TAG\`."
-            echo "2. After it succeeds, run [Deploy preview to k3s]($preview_k3s_workflow_url) from \`$RELEASE_TAG\`."
-            echo "3. Then run [Deploy Vinext Frontend]($vinext_workflow_url) from \`$RELEASE_TAG\` for \`preview\`."
+            echo "1. Run [Publish Release OCI Images]($publish_workflow_url) for \`$RELEASE_TAG\`."
+            echo "2. Run [Deploy preview]($preview_workflow_url) from \`$RELEASE_TAG\` and approve the deployment."
           } >> "$GITHUB_STEP_SUMMARY"

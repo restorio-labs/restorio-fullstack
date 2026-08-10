@@ -74,10 +74,12 @@ class TestCookieDomain:
         assert _cookie_domain(None) is None
 
     @patch("core.foundation.auth_cookies.settings")
-    def test_preview_does_not_share_cookies_with_restorio_subdomains(self, mock_settings):
+    def test_preview_shares_environment_scoped_cookies_with_restorio_subdomains(
+        self, mock_settings
+    ):
         mock_settings.ENV = "preview"
 
-        assert _cookie_domain("preview-api.restorio.org") is None
+        assert _cookie_domain("preview-api.restorio.org") == ".restorio.org"
 
 
 class TestShouldUseSecureCookie:
