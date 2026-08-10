@@ -12,7 +12,6 @@
     "tests/**/*.ts",
     "tests/**/*.tsx",
     "proxy.ts",
-    "open-next.config.ts",
     "worker/**/*.ts"
   ],
   "exclude": ["postcss.config.cjs"]

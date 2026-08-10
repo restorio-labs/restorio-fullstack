@@ -6,8 +6,8 @@
     "dev": "next dev -p 3000",
     "dev:turbopack": "next dev -p 3000",
     "build": "next build --webpack",
-    "build:cloudflare": "opennextjs-cloudflare build",
-    "deploy": "bun run build:cloudflare && wrangler pages deploy",
+    "build:cloudflare": "vinext build",
+    "deploy": "vinext deploy",
     "clean": "rm -rf dist && rm -rf node_modules && rm -rf .next",
     "start": "next start",
     "lint": "next lint",
@@ -34,7 +34,6 @@
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.50.0",
-    "@opennextjs/cloudflare": "^1.20.2",
     "@testing-library/jest-dom": "^6.1.5",
     "@testing-library/react": "^14.1.2",
     "@types/node": "^20.10.6",
