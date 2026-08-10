@@ -1,0 +1,60 @@
+name: Deploy Vinext preview
+description: Deploy the public-web preview Worker from a published Restorio release
+
+inputs:
+  release_tag:
+    required: true
+  cloudflare_api_token:
+    required: true
+  preview_basic_auth_username:
+    required: true
+  preview_basic_auth_password:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: ./.github/actions/setup-bun
+
+    - name: Build workspace packages
+      shell: bash
+      run: bun run turbo run build --filter='./app/packages/*'
+
+    - name: Validate required Cloudflare secrets
+      shell: bash
+      env:
+        CLOUDFLARE_API_TOKEN: ${{ inputs.cloudflare_api_token }}
+        PREVIEW_BASIC_AUTH_USERNAME: ${{ inputs.preview_basic_auth_username }}
+        PREVIEW_BASIC_AUTH_PASSWORD: ${{ inputs.preview_basic_auth_password }}
+      run: |
+        set -euo pipefail
+        [ -n "$CLOUDFLARE_API_TOKEN" ] || { echo "::error::Missing CLOUDFLARE_API_TOKEN"; exit 1; }
+        [ -n "$PREVIEW_BASIC_AUTH_USERNAME" ] || { echo "::error::Missing PREVIEW_BASIC_AUTH_USERNAME"; exit 1; }
+        [ -n "$PREVIEW_BASIC_AUTH_PASSWORD" ] || { echo "::error::Missing PREVIEW_BASIC_AUTH_PASSWORD"; exit 1; }
+
+    - name: Configure preview authentication
+      shell: bash
+      working-directory: app/apps/public-web
+      env:
+        CLOUDFLARE_API_TOKEN: ${{ inputs.cloudflare_api_token }}
+        PREVIEW_BASIC_AUTH_USERNAME: ${{ inputs.preview_basic_auth_username }}
+        PREVIEW_BASIC_AUTH_PASSWORD: ${{ inputs.preview_basic_auth_password }}
+      run: |
+        set -euo pipefail
+        printf '%s' "$PREVIEW_BASIC_AUTH_USERNAME" | bunx wrangler secret put PREVIEW_BASIC_AUTH_USERNAME --env preview
+        printf '%s' "$PREVIEW_BASIC_AUTH_PASSWORD" | bunx wrangler secret put PREVIEW_BASIC_AUTH_PASSWORD --env preview
+
+    - name: Deploy public-web with vinext/wrangler
+      shell: bash
+      working-directory: app/apps/public-web
+      env:
+        CLOUDFLARE_API_TOKEN: ${{ inputs.cloudflare_api_token }}
+        RELEASE_VERSION: ${{ inputs.release_tag }}
+      run: |
+        set -euo pipefail
+        CLOUDFLARE_ENV=preview \
+          VITE_ENV=preview \
+          NODE_ENV=production \
+          NEXT_PUBLIC_API_BASE_URL=/api/v1 \
+          VITE_APP_VERSION="$RELEASE_VERSION" \
+          bunx vinext deploy --env preview

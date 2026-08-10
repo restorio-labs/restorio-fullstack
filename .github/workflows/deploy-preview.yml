@@ -7,20 +7,63 @@ on:
         description: Published vMAJOR.MINOR.PATCH tag to deploy
         required: true
         type: string
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-preview
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: read
 
 jobs:
-  deploy-k3s:
-    name: Deploy preview to k3s
-    uses: ./.github/workflows/deploy-preview-k3s.yml
-    with:
-      release_tag: ${{ inputs.release_tag }}
-    secrets: inherit
+  deploy:
+    name: Deploy release to preview
+    runs-on: ubuntu-latest
+    environment: preview
+    env:
+      RELEASE_TAG_INPUT: ${{ inputs.release_tag }}
+      RELEASE_VERSION: ${{ inputs.release_tag || github.ref_name }}
+    steps:
+      - name: Validate selected release
+        shell: bash
+        run: |
+          set -euo pipefail
 
-  deploy-vinext:
-    name: Deploy preview public web
-    needs: deploy-k3s
-    uses: ./.github/workflows/deploy-vinext-frontend.yml
-    with:
-      environment: preview
-      release_tag: ${{ inputs.release_tag }}
-    secrets: inherit
+          if [ -z "$RELEASE_TAG_INPUT" ] && [[ "$GITHUB_REF" != refs/tags/* ]]; then
+            echo "::error::Deploy preview must run from a release tag"
+            exit 1
+          fi
+
+          if ! [[ "$RELEASE_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Expected release tag vMAJOR.MINOR.PATCH, got: $RELEASE_VERSION"
+            exit 1
+          fi
+
+      - name: Checkout selected release
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.release_tag || github.sha }}
+          fetch-depth: 0
+
+      - name: Deploy k3s workloads
+        uses: ./.github/actions/deploy-preview-k3s
+        with:
+          release_tag: ${{ env.RELEASE_VERSION }}
+          deploy_ssh_host: ${{ vars.DEPLOY_SSH_HOST }}
+          deploy_ssh_port: ${{ vars.DEPLOY_SSH_PORT || '22' }}
+          deploy_ssh_private_key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          deploy_ssh_known_hosts: ${{ vars.DEPLOY_SSH_KNOWN_HOSTS }}
+          ghcr_pull_token: ${{ secrets.GHCR_PULL_TOKEN }}
+          preview_basic_auth_username: ${{ secrets.PREVIEW_BASIC_AUTH_USERNAME }}
+          preview_basic_auth_password: ${{ secrets.PREVIEW_BASIC_AUTH_PASSWORD }}
+          github_token: ${{ github.token }}
+
+      - name: Deploy public web
+        uses: ./.github/actions/deploy-vinext-preview
+        with:
+          release_tag: ${{ env.RELEASE_VERSION }}
+          cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          preview_basic_auth_username: ${{ secrets.PREVIEW_BASIC_AUTH_USERNAME }}
+          preview_basic_auth_password: ${{ secrets.PREVIEW_BASIC_AUTH_PASSWORD }}

@@ -31,16 +31,8 @@ permissions:
   security-events: write
 
 jobs:
-  approval:
-    name: Approve OCI publication
-    runs-on: ubuntu-latest
-    environment: release
-    steps:
-      - run: echo "OCI publication approved"
-
   resolve-release:
     name: Resolve release components
-    needs: approval
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.release.outputs.version }}
