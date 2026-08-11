@@ -46,6 +46,9 @@ spec:
         - name: mongo
           image: "{{ .Values.mongo.image.repository }}@{{ .Values.mongo.image.digest }}"
           imagePullPolicy: {{ .Values.mongo.image.pullPolicy }}
+          {{- with .Values.mongo.wiredTigerCacheSizeGB }}
+          args: ["--wiredTigerCacheSizeGB={{ . }}"]
+          {{- end }}
           ports:
             - name: mongo
               containerPort: 27017
@@ -73,6 +76,21 @@ spec:
             runAsGroup: 999
           resources:
             {{- toYaml .Values.mongo.resources | nindent 12 }}
+          {{- if .Values.mongo.useTcpProbes }}
+          startupProbe:
+            tcpSocket:
+              port: mongo
+            failureThreshold: 30
+            periodSeconds: 5
+          readinessProbe:
+            tcpSocket:
+              port: mongo
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: mongo
+            periodSeconds: 10
+          {{- else }}
           startupProbe:
             exec:
               command: ["sh", "-ec", "mongosh admin --quiet --username \"$MONGO_INITDB_ROOT_USERNAME\" --password \"$MONGO_INITDB_ROOT_PASSWORD\" --authenticationDatabase admin --eval 'db.adminCommand({ ping: 1 })'"]
@@ -89,6 +107,7 @@ spec:
               command: ["sh", "-ec", "mongosh admin --quiet --username \"$MONGO_INITDB_ROOT_USERNAME\" --password \"$MONGO_INITDB_ROOT_PASSWORD\" --authenticationDatabase admin --eval 'db.adminCommand({ ping: 1 })'"]
             timeoutSeconds: 5
             periodSeconds: 10
+          {{- end }}
           volumeMounts:
             - name: data
               mountPath: /data/db

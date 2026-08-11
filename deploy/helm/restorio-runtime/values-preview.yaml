@@ -17,6 +17,8 @@ postgres:
 
 mongo:
   glibcTunables: glibc.pthread.rseq=1
+  wiredTigerCacheSizeGB: 0.256
+  useTcpProbes: true
   persistence:
     size: 2Gi
   resources:
